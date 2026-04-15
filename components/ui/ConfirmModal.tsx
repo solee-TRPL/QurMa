@@ -68,10 +68,10 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   const currentVariant = colorClasses[variant] || colorClasses.danger;
 
   return (
-    <div className={`fixed inset-0 z-[200] flex items-center justify-center ${centerOnScreen ? '' : 'lg:pl-64'} p-4 sm:p-6 text-slate-800`}>
+    <div className={`fixed inset-0 z-[999999] flex items-center justify-center p-4 sm:p-6 text-slate-800 ${!centerOnScreen ? 'lg:pl-64 lg:pt-20' : ''}`}>
       {/* Cinematic Overlay */}
       <div 
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300" 
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300" 
         onClick={onClose}
       />
       

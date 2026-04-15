@@ -69,7 +69,7 @@ const StudentDetailModal: React.FC<StudentDetailModalProps> = ({ isOpen, onClose
 
     return (
         <div 
-            className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 text-slate-800"
+            className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800"
             onClick={onClose}
         >
             <div 
@@ -200,8 +200,8 @@ const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, st
     };
 
     return (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 text-slate-800">
-            <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 relative">
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800" onClick={onClose}>
+            <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 relative" onClick={e => e.stopPropagation()}>
                 {/* Close Button UI */}
                 <button 
                   onClick={onClose}
@@ -214,27 +214,32 @@ const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, st
                         <h3 className="text-base font-black text-slate-800 tracking-tight">Pencapaian Santri</h3>
                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.1em] mt-0.5">{student.full_name}</p>
                     </div>
-                    <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-full transition-colors"> <X className="w-4 h-4 text-slate-400" /> </button>
                 </div>
-                <div className="p-6 overflow-y-auto space-y-3 min-h-[200px] max-h-[400px]">
+                <div className="p-5 overflow-y-auto space-y-2.5 max-h-[190px] custom-scrollbar bg-slate-50/20">
                     {achievements.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-10 opacity-30">
                             <Trophy className="w-12 h-12 mb-2" />
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Belum ada pencapaian</p>
                         </div>
                     ) : achievements.map(ach => (
-                        <div key={ach.id} className="flex justify-between items-center bg-slate-50/50 p-3 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-sm">
+                        <div key={ach.id} className="group relative flex justify-between items-center bg-slate-50/30 p-2.5 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-md hover:border-indigo-100 ring-1 ring-transparent hover:ring-indigo-50/50">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-amber-50 rounded-xl">
-                                    <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                                <div className="p-2 bg-amber-50 rounded-xl border border-amber-100/50 shadow-sm transition-transform group-hover:scale-110">
+                                    <Trophy className="w-3 h-3 text-amber-500" />
                                 </div>
-                                <p className="text-sm font-bold text-slate-700">{ach.title}</p>
+                                <div>
+                                    <p className="text-[11px] font-black text-slate-700 uppercase tracking-tight leading-none">{ach.title}</p>
+                                    <div className="flex items-center gap-1.5 mt-1 opacity-40">
+                                        <Calendar className="w-2.5 h-2.5" />
+                                        <span className="text-[7.5px] font-black uppercase tracking-widest">{ach.date ? new Date(ach.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</span>
+                                    </div>
+                                </div>
                             </div>
                             <button 
                                 onClick={() => handleDelete(ach.id, ach.title)}
-                                className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                             >
-                                <Trash className="w-4 h-4"/>
+                                <Trash className="w-3.5 h-3.5"/>
                             </button>
                         </div>
                     ))}
@@ -330,8 +335,8 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
     };
 
     return (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 text-slate-800">
-            <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 relative">
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800" onClick={onClose}>
+            <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 relative" onClick={e => e.stopPropagation()}>
                 {/* Close Button UI */}
                 <button 
                   onClick={onClose}
@@ -344,18 +349,17 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
                         <h3 className="text-base font-black text-slate-800 tracking-tight">Catatan Ustadz</h3>
                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.1em] mt-0.5">{student.full_name}</p>
                     </div>
-                    <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-full transition-colors"> <X className="w-4 h-4 text-slate-400" /> </button>
                 </div>
-                <div className="p-6 overflow-y-auto space-y-4 max-h-[400px]">
+                <div className="p-5 overflow-y-auto space-y-3 max-h-[160px] custom-scrollbar bg-slate-50/20">
                     {notes.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-10 opacity-30">
                             <MessageSquare className="w-12 h-12 mb-2" />
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Belum ada catatan</p>
                         </div>
                     ) : notes.map(note => (
-                        <div key={note.id} className="group relative flex flex-col bg-slate-50/50 p-4 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-sm">
-                            <div className="flex justify-between items-start">
-                                <span className={`px-2 py-0.5 text-[8px] font-black uppercase tracking-widest rounded-md border ${
+                        <div key={note.id} className="group relative flex flex-col bg-slate-50/30 p-2.5 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-md hover:border-indigo-100 ring-1 ring-transparent hover:ring-indigo-50/50">
+                            <div className="flex justify-between items-center">
+                                <span className={`px-2 py-0.5 text-[7.5px] font-black uppercase tracking-[0.1em] rounded-lg border shadow-sm ${
                                     note.category === 'Motivasi' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
                                     note.category === 'Evaluasi' ? 'bg-amber-50 text-amber-600 border-amber-100' :
                                     note.category === 'Perilaku' ? 'bg-rose-50 text-rose-600 border-rose-100' :
@@ -363,58 +367,62 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
                                 }`}>
                                     {note.category}
                                 </span>
-                                <button 
-                                    onClick={() => handleDelete(note.id)}
-                                    className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                >
-                                    <Trash className="w-3.5 h-3.5"/>
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1 opacity-60">
+                                        <Calendar className="w-2.5 h-2.5" />
+                                        {note.date ? new Date(note.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                                    </p>
+                                    <button 
+                                        onClick={() => handleDelete(note.id)}
+                                        className="p-1 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                    >
+                                        <Trash className="w-3 h-3"/>
+                                    </button>
+                                </div>
                             </div>
-                            <p className="text-sm font-medium text-slate-700 mt-2.5 leading-relaxed">{note.content}</p>
-                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-3 flex items-center gap-1.5">
-                                <Calendar className="w-3 h-3" />
-                                {note.date ? (() => {
-                                    try {
-                                        return new Date(note.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-                                    } catch (e) {
-                                        return '-';
-                                    }
-                                })() : '-'}
-                            </p>
+                            <p className="text-[11px] font-black text-slate-700 mt-2 leading-tight tracking-tight px-1 uppercase">{note.content}</p>
                         </div>
                     ))}
                 </div>
-                <form onSubmit={handleAdd} className="p-5 border-t border-slate-100 bg-slate-50/50 space-y-4">
-                    <textarea 
-                        value={content} 
-                        onChange={e => setContent(e.target.value)} 
-                        placeholder="Tulis catatan perkembangan santri..." 
-                        className="w-full px-5 py-3 border-2 border-slate-50 bg-white rounded-2xl focus:ring-0 focus:border-indigo-400 shadow-sm transition-all text-sm font-bold text-slate-800 outline-none resize-none min-h-[100px]" 
-                    />
-                    <div className="flex justify-between items-center gap-4">
-                        <div className="flex bg-slate-100/50 p-1 rounded-xl border border-slate-200/50 w-full overflow-x-auto no-scrollbar">
+                <form onSubmit={handleAdd} className="p-3 border-t border-slate-100 bg-slate-50/30 space-y-2.5">
+                    <div className="flex items-center gap-3">
+                        <label className="text-[7.5px] font-black text-indigo-400 uppercase tracking-[0.2em] w-12 shrink-0 ml-1">Catatan</label>
+                        <input 
+                            type="text"
+                            value={content} 
+                            onChange={e => setContent(e.target.value)} 
+                            placeholder="Tulis catatan harian..." 
+                            className="flex-1 px-3.5 py-1.5 border border-slate-200 bg-white rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 shadow-sm transition-all text-xs font-bold text-slate-800 outline-none h-9 placeholder:text-slate-300 placeholder:font-black placeholder:uppercase placeholder:text-[9px]" 
+                        />
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                        <label className="text-[7.5px] font-black text-indigo-400 uppercase tracking-[0.2em] w-12 shrink-0 ml-1">Kategori</label>
+                        <div className="flex-1 flex bg-indigo-50/40 p-0.5 rounded-xl border border-indigo-100/30 overflow-x-auto no-scrollbar shadow-inner">
                             {categories.map((cat) => (
                                 <button
                                     type="button"
                                     key={cat}
                                     onClick={() => setCategory(cat)}
-                                    className={`flex-1 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all whitespace-nowrap ${
+                                    className={`flex-1 px-2.5 py-1.5 text-[8px] font-black uppercase tracking-tight rounded-lg transition-all whitespace-nowrap ${
                                         category === cat
-                                            ? 'bg-white text-indigo-600 shadow-sm'
-                                            : 'text-slate-400 hover:text-slate-600'
+                                            ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-indigo-100'
+                                            : 'text-slate-400 hover:text-indigo-400'
                                     }`}
                                 >
                                     {cat}
                                 </button>
                             ))}
                         </div>
-                        <button 
-                            type="submit"
-                            className="p-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 shrink-0"
-                        >
-                            <Save className="w-5 h-5"/>
-                        </button>
                     </div>
+
+                    <button 
+                        type="submit"
+                        className="w-full py-2.5 bg-indigo-600 text-white rounded-xl font-black text-[9px] uppercase tracking-[0.3em] hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group"
+                    >
+                        <Save className="w-4 h-4 transition-transform group-hover:scale-110"/>
+                        SIMPAN DATA
+                    </button>
                 </form>
                 <ConfirmModal
                     isOpen={!!noteToDelete}

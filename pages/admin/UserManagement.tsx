@@ -122,7 +122,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
                     value={formData.whatsapp_number}
                     onChange={e => setFormData({...formData, whatsapp_number: e.target.value})}
                     className="w-full pl-10 pr-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-xl focus:ring-0 focus:border-indigo-400 focus:bg-white transition-all text-xs font-bold text-slate-800 outline-none placeholder:text-slate-300"
-                    placeholder="08123"
+                    placeholder="08123456789"
                     />
                 </div>
             </div>
@@ -155,9 +155,9 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
                     onChange={e => setFormData({...formData, role: e.target.value as UserRole})}
                     className="w-full pl-4 pr-10 py-2.5 border-2 border-slate-100 bg-slate-50/30 rounded-xl focus:ring-0 focus:border-indigo-400 focus:bg-white text-xs font-black text-slate-800 appearance-none cursor-pointer transition-all outline-none"
                 >
-                    <option value={UserRole.TEACHER}>USTADZ / GURU</option>
-                    <option value={UserRole.ADMIN}>ADMIN SEKOLAH</option>
-                    <option value={UserRole.SUPERVISOR}>SUPERVISOR</option>
+                    <option value={UserRole.TEACHER}>Ustadz / Guru</option>
+                    <option value={UserRole.ADMIN}>Admin Sekolah</option>
+                    <option value={UserRole.SUPERVISOR}>Supervisor</option>
                 </select>
                 <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
              </div>
@@ -355,8 +355,8 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                                 </td>
                                 <td className="px-4 py-2.5 whitespace-nowrap text-[10.5px] border-r border-slate-100/50">
                                     <span className={`px-2 py-0.5 inline-flex text-[9px] font-black uppercase tracking-tight rounded-md border ${getRoleBadge(u.role)}`}>
-                                        {u.role === UserRole.TEACHER && 'Ustadz'}
-                                        {u.role === UserRole.ADMIN && 'Admin'}
+                                        {u.role === UserRole.TEACHER && 'Ustadz / Guru'}
+                                        {u.role === UserRole.ADMIN && 'Admin Sekolah'}
                                         {u.role === UserRole.SANTRI && 'Santri'}
                                         {u.role === UserRole.SUPERVISOR && 'Supervisor'}
                                     </span>

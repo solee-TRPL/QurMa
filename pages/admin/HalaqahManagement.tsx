@@ -45,7 +45,7 @@ const HalaqahFormModal: React.FC<HalaqahFormModalProps> = ({ isOpen, onClose, on
   };
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center lg:pl-64 p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in text-slate-800">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in text-slate-800 lg:pl-64">
       <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-sm overflow-hidden border border-white flex flex-col max-h-[80vh]">
         {/* Header */}
         <div className="px-6 py-3 bg-white border-b border-slate-50 flex justify-between items-center shrink-0">
@@ -141,7 +141,7 @@ const HalaqahDetailModal: React.FC<HalaqahDetailModalProps> = ({ isOpen, onClose
 
   return (
     <div 
-        className="fixed inset-0 z-[120] flex items-center justify-center lg:pl-64 p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300 text-slate-800"
+        className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300 text-slate-800 lg:pl-64"
         onClick={onClose}
     >
       <div 
@@ -165,8 +165,8 @@ const HalaqahDetailModal: React.FC<HalaqahDetailModalProps> = ({ isOpen, onClose
         </div>
 
         {/* Content */}
-        <div className="p-5 overflow-y-auto shrink-0 scrollbar-hide" style={{ maxHeight: '235px' }}>
-          <div className="space-y-2.5">
+        <div className={`p-5 overflow-y-auto shrink-0 scrollbar-hide flex-1 flex flex-col ${(!isLoading && students.length === 0) ? 'justify-center' : ''}`} style={{ maxHeight: '235px', minHeight: '235px' }}>
+          <div className="space-y-2.5 w-full">
             {isLoading ? (
                 <div className="py-16 flex flex-col items-center justify-center text-slate-400">
                     <div className="w-10 h-10 border-4 border-slate-100 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
@@ -190,7 +190,7 @@ const HalaqahDetailModal: React.FC<HalaqahDetailModalProps> = ({ isOpen, onClose
                     </div>
                 ))
             ) : (
-                <div className="py-20 text-center space-y-4">
+                <div className="text-center space-y-4">
                     <div className="w-16 h-16 bg-slate-50 rounded-[24px] border border-slate-100 flex items-center justify-center mx-auto shadow-sm">
                         <Users className="w-8 h-8 text-slate-200" />
                     </div>
@@ -203,23 +203,6 @@ const HalaqahDetailModal: React.FC<HalaqahDetailModalProps> = ({ isOpen, onClose
           </div>
         </div>
         
-        <div className="p-5 border-t border-slate-100 bg-[#FCFDFE] flex gap-3 shrink-0">
-        {!isReadOnly && (
-            <button 
-                onClick={onEdit}
-                className="flex-[2] flex items-center justify-center py-3.5 rounded-2xl border-2 border-indigo-600 bg-indigo-600 text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
-            >
-                <Edit className="w-4 h-4 mr-2" />
-                Edit Halaqah
-            </button>
-        )}
-            <button 
-                onClick={onClose}
-                className={`py-3.5 rounded-2xl border-2 border-slate-100 bg-white font-black text-[10px] uppercase tracking-[0.2em] text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all active:scale-95 shadow-sm ${isReadOnly ? 'flex-1' : 'flex-1'}`}
-            >
-                Tutup Panel
-            </button>
-        </div>
       </div>
     </div>
   );
@@ -238,6 +221,7 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
   // Modals State
   const [selectedHalaqah, setSelectedHalaqah] = useState<Halaqah | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [halaqahToDelete, setHalaqahToDelete] = useState<Halaqah | null>(null);
 
@@ -327,16 +311,19 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
       setSelectedHalaqah(null);
       setIsEditMode(false);
       setIsFormModalOpen(true);
+      setIsDetailModalOpen(false);
   };
 
   const handleEditFromDetail = () => {
       setIsEditMode(true);
       setIsFormModalOpen(true);
+      setIsDetailModalOpen(false);
   };
   
   const handleCardClick = (halaqah: Halaqah) => {
     setSelectedHalaqah(halaqah);
     setIsEditMode(false);
+    setIsDetailModalOpen(true);
   };
 
   const availableTeachersForModal = useMemo(() => {
@@ -420,14 +407,26 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
                   {!isReadOnly && (
                     <>
                       <button 
-                        onClick={(e) => { e.stopPropagation(); setIsEditMode(true); setSelectedHalaqah(cls); setIsFormModalOpen(true); }}
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          e.preventDefault();
+                          setIsEditMode(true); 
+                          setSelectedHalaqah(cls); 
+                          setIsFormModalOpen(true); 
+                          setIsDetailModalOpen(false);
+                        }}
                         className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all border border-transparent hover:border-indigo-100"
                         title="Edit Halaqah"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button 
-                        onClick={(e) => { e.stopPropagation(); setHalaqahToDelete(cls); }}
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          e.preventDefault();
+                          setHalaqahToDelete(cls); 
+                          setIsDetailModalOpen(false);
+                        }}
                         className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100"
                         title="Hapus Halaqah"
                       >
@@ -457,19 +456,23 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
         )}
       </div>
 
-      {!isFormModalOpen && (
-          <HalaqahDetailModal 
-            isOpen={!!selectedHalaqah} 
-            halaqah={selectedHalaqah} 
-            onClose={() => setSelectedHalaqah(null)} 
-            onEdit={handleEditFromDetail}
-            isReadOnly={isReadOnly}
-          />
-      )}
+      <HalaqahDetailModal 
+        isOpen={isDetailModalOpen} 
+        halaqah={selectedHalaqah} 
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          if (!isFormModalOpen) setSelectedHalaqah(null);
+        }} 
+        onEdit={handleEditFromDetail}
+        isReadOnly={isReadOnly}
+      />
 
       <HalaqahFormModal
         isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
+        onClose={() => {
+          setIsFormModalOpen(false);
+          setSelectedHalaqah(null);
+        }}
         onSubmit={handleCreateOrUpdate}
         teachers={availableTeachersForModal}
         initialData={isEditMode ? selectedHalaqah : null}

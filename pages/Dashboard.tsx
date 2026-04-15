@@ -414,7 +414,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
             if (studentsInHalaqah.length > 0) {
                 const allRecordsPromises = studentsInHalaqah.map(student => getStudentRecords(student.id));
                 const allRecordsArrays = await Promise.all(allRecordsPromises);
-                const flattenedRecords = allRecordsArrays.flat();
+                const flattenedRecords = allRecordsArrays.flat().filter(rec => (rec.ayat_end || 0) > 0);
                 flattenedRecords.sort((a, b) => new Date(b.record_date).getTime() - new Date(a.record_date).getTime());
                 setRecentRecords(flattenedRecords);
                 dashboardCache.recentRecords = flattenedRecords;
@@ -580,7 +580,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
 
     return (
       <div className="h-[calc(100vh-140px)] flex flex-col gap-6 animate-fade-in overflow-hidden">
-        {user.role === UserRole.TEACHER && !myHalaqah && (
+        {user.role === UserRole.TEACHER && !myHalaqah && !loading && (
            <div className="bg-amber-50 border-2 border-amber-100 rounded-2xl p-4 flex items-center gap-3 text-amber-800 shadow-sm shadow-amber-50">
                <AlertCircle className="w-5 h-5 shrink-0 text-amber-500" />
                <p className="text-xs font-bold uppercase tracking-tight">Anda belum ditugaskan ke halaqah manapun. Hubungi admin untuk pengaturan halaqah.</p>
@@ -588,7 +588,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
         )}
 
         {/* TOP STATS STRIP */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
           <div className="bg-white rounded-[22px] p-5 border-2 border-slate-50 shadow-sm flex items-center gap-4 relative overflow-hidden group">
             <div className="absolute right-0 top-0 w-24 h-24 bg-indigo-50/50 rounded-full -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500" />
             <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-sm relative z-10">
@@ -601,31 +601,35 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           </div>
 
           <div className="bg-white rounded-[22px] p-5 border-2 border-slate-50 shadow-sm flex items-center gap-4 relative overflow-hidden group">
-            <div className="absolute right-0 top-0 w-24 h-24 bg-emerald-50/50 rounded-full -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500" />
-            <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-sm relative z-10">
-                <Calendar className="w-5 h-5"/>
+            <div className="absolute right-0 top-0 w-24 h-24 bg-rose-50/50 rounded-full -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500" />
+            <div className="w-10 h-10 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center shadow-sm relative z-10">
+                <Book className="w-5 h-5"/>
             </div>
             <div className="relative z-10">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Setoran Hari Ini</p>
-                <h4 className="text-xl font-black text-slate-800 leading-none">
-                    {teacherStats?.studentsDepositedToday ?? 0} <span className="text-xs text-slate-300 font-bold">/ {students.length} Santri</span>
-                </h4>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Sabaq Hari Ini</p>
+                <h4 className="text-xl font-black text-slate-800 leading-none">{teacherStats?.sabaqToday ?? 0}</h4>
             </div>
           </div>
 
           <div className="bg-white rounded-[22px] p-5 border-2 border-slate-50 shadow-sm flex items-center gap-4 relative overflow-hidden group">
             <div className="absolute right-0 top-0 w-24 h-24 bg-amber-50/50 rounded-full -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500" />
             <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center shadow-sm relative z-10">
-                <Trophy className="w-5 h-5"/>
+                <Zap className="w-5 h-5"/>
             </div>
-            <div className="flex-1 relative z-10">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Target Tercapai</p>
-                <div className="flex items-center justify-between">
-                    <h4 className="text-xl font-black text-slate-800 leading-none">{teacherStats?.targetPercentage ?? 0}%</h4>
-                    <div className="w-16 bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                        <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: `${Math.min(teacherStats?.targetPercentage ?? 0, 100)}%` }}></div>
-                    </div>
-                </div>
+            <div className="relative z-10">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Sabqi Hari Ini</p>
+                <h4 className="text-xl font-black text-slate-800 leading-none">{teacherStats?.sabqiToday ?? 0}</h4>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-[22px] p-5 border-2 border-slate-50 shadow-sm flex items-center gap-4 relative overflow-hidden group">
+            <div className="absolute right-0 top-0 w-24 h-24 bg-emerald-50/50 rounded-full -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500" />
+            <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-sm relative z-10">
+                <Activity className="w-5 h-5"/>
+            </div>
+            <div className="relative z-10">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Manzil Hari Ini</p>
+                <h4 className="text-xl font-black text-slate-800 leading-none">{teacherStats?.manzilToday ?? 0}</h4>
             </div>
           </div>
         </div>
@@ -637,20 +641,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
                         <TrendingUp className="w-4 h-4 mr-2 text-indigo-500" />
                         Performa Pekan Ini
                     </h3>
-                    <div className="flex gap-4">
-                        <div className="flex items-center gap-1.5">
-                            <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                            <span className="text-[9px] font-black text-slate-400 uppercase">Sabaq</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                            <span className="text-[9px] font-black text-slate-400 uppercase">Sabqi</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                            <span className="text-[9px] font-black text-slate-400 uppercase">Manzil</span>
-                        </div>
-                    </div>
                 </div>
                 
                 <div className="flex-1 flex flex-col items-center justify-center min-h-[250px] w-full">
@@ -706,34 +696,32 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
                     Aktivitas Terbaru
                 </h3>
                 <div className="flex-1 p-1 overflow-y-auto no-scrollbar space-y-4">
-                    {recentRecords.slice(0, 3).map(rec => {
+                    {recentRecords.slice(0, 3).map((rec, idx) => {
                         const student = students.find(s => s.id === rec.student_id);
                         return (
-                            <div key={rec.id} className="flex items-start group">
-                                <div className={`w-1.5 h-10 rounded-full mr-4 shrink-0 shadow-sm ${rec.status === MemorizationStatus.LANCAR ? 'bg-emerald-500' : rec.status === MemorizationStatus.PERBAIKAN ? 'bg-amber-500' : 'bg-rose-500'}`}></div>
-                                <div className="min-w-0">
-                                    <div className="flex items-center justify-between mb-1">
-                                        <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest opacity-80">{rec.type}</p>
-                                        <span className={`px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter ${
-                                            rec.status === MemorizationStatus.LANCAR ? 'bg-emerald-50 text-emerald-600' : 
-                                            rec.status === MemorizationStatus.PERBAIKAN ? 'bg-amber-50 text-amber-600' : 
-                                            'bg-rose-50 text-rose-600'
-                                        }`}>
-                                            Lancar
-                                        </span>
-                                    </div>
+                            <div key={rec.id} className={`py-3 group transition-all ${idx !== 2 ? 'border-b border-slate-50' : ''}`}>
+                                <div className="flex items-center justify-between mb-1">
                                     <p className="text-[11px] font-black text-slate-800 uppercase tracking-tight truncate group-hover:text-indigo-600 transition-colors">
                                         {student?.full_name || 'Santri'}
                                     </p>
-                                    <div className="flex items-center gap-1.5 mt-1">
-                                        <BookOpen className="w-3 h-3 text-slate-300" />
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">
+                                    <span className={`px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter ${
+                                        rec.status === MemorizationStatus.LANCAR ? 'bg-emerald-50 text-emerald-600' : 
+                                        rec.status === MemorizationStatus.PERBAIKAN ? 'bg-amber-50 text-amber-600' : 
+                                        'bg-rose-50 text-rose-600'
+                                    }`}>
+                                        {rec.status}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center gap-4">
+                                    <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest opacity-80">{rec.type}</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight whitespace-nowrap">
+                                        <span className="text-slate-600">
                                             {rec.type === MemorizationType.SABAQ ? `${rec.ayat_end} Baris` : 
-                                             rec.type === MemorizationType.SABQI ? `${rec.ayat_end} Halaman` : 
+                                             rec.type === MemorizationType.SABQI ? `${rec.ayat_end} Hal` : 
                                              `${rec.surah_name} ${rec.ayat_start}-${rec.ayat_end}`}
-                                            <span className="ml-1.5 text-slate-300 font-normal">({new Date(rec.record_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })})</span>
-                                        </p>
-                                    </div>
+                                        </span>
+                                        <span className="ml-2 text-slate-300 font-medium">({new Date(rec.record_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })})</span>
+                                    </p>
                                 </div>
                             </div>
                         );

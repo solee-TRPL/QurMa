@@ -3,7 +3,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { getAllUsersWithTenant, updateUser, getAllTenants } from '../../services/dataService';
 import { UserProfile, UserRole, Tenant } from '../../types';
 import { Button } from '../../components/ui/Button';
-import { Mail, Building, Edit, X, Save, ChevronDown, Filter, RefreshCcw, LogIn, Search, ChevronsLeft, ChevronsRight, ChevronRight } from 'lucide-react';
+import { Mail, Building, Edit, X, Save, ChevronDown, Filter, RefreshCcw, LogIn, Search, ChevronsLeft, ChevronsRight, ChevronRight, User, ShieldCheck, Lock } from 'lucide-react';
 import { useLoading } from '../../lib/LoadingContext';
 import { useNotification } from '../../lib/NotificationContext';
 
@@ -41,78 +41,117 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSubmit
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in">
-      <div className="bg-white rounded-[28px] shadow-2xl w-full max-w-md overflow-hidden border-2 border-slate-50 transform animate-scale-in flex flex-col max-h-[90vh]">
-        <div className="px-8 py-5 border-b border-slate-50 flex justify-between items-center bg-[#FCFDFE] sticky top-0 z-10">
+    <div 
+        className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 lg:pl-64 pt-16"
+        onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-[32px] shadow-2xl w-full max-w-xl overflow-hidden border border-white/20 transform animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] relative"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-6 py-3 border-b border-slate-100 flex justify-between items-center bg-[#FCFDFE] sticky top-0 z-10 transition-all">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
-                <Edit className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shadow-sm">
+                <Edit className="w-4 h-4" />
             </div>
             <div>
-                <h3 className="font-black text-slate-800 uppercase text-[13px] tracking-tight">Edit Profile</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight truncate max-w-[180px]">{userToEdit.email}</p>
+                <h3 className="font-black text-slate-900 uppercase text-xs tracking-tight leading-none">Perbarui Identitas</h3>
+                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1 opacity-70 truncate max-w-[240px]">
+                    {userToEdit.email}
+                </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all"><X className="w-5 h-5"/></button>
+          <button onClick={onClose} className="p-1.5 bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all group">
+            <X className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300"/>
+          </button>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          <div className="group">
-            <label className="block text-[10px] font-black text-slate-400 uppercase mb-1.5 ml-1 group-focus-within:text-indigo-600 transition-colors">Nama Lengkap Pengguna</label>
-            <input 
-              required
-              type="text" 
-              value={formData.full_name}
-              onChange={e => setFormData({...formData, full_name: e.target.value})}
-              className="w-full px-4 py-3 bg-slate-50/50 border-2 border-transparent rounded-2xl text-slate-800 font-bold text-sm focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/30 outline-none transition-all"
-              placeholder="Contoh: Abdullah bin Ahmad"
-            />
-          </div>
+        <div className="overflow-y-auto px-6 py-5 flex-1 custom-scrollbar">
+            <form id="editUserForm" onSubmit={handleSubmit} className="space-y-5">
+                <div className="group">
+                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1 group-focus-within:text-indigo-600 transition-colors">Nama Lengkap Pengguna</label>
+                    <div className="relative">
+                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-600" />
+                        <input 
+                            required
+                            type="text" 
+                            value={formData.full_name}
+                            onChange={e => setFormData({...formData, full_name: e.target.value})}
+                            className="w-full pl-11 pr-5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 font-bold text-sm focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50/20 outline-none transition-all placeholder:text-slate-300"
+                            placeholder="Contoh: Abdullah bin Ahmad"
+                        />
+                    </div>
+                </div>
 
-          <div className="group">
-             <label className="block text-[10px] font-black text-slate-400 uppercase mb-1.5 ml-1 group-focus-within:text-indigo-600 transition-colors">Role & Privilege</label>
-             <div className="relative">
-                <select
-                    value={formData.role}
-                    onChange={e => setFormData({...formData, role: e.target.value as UserRole})}
-                    className="w-full pl-4 pr-10 py-3 bg-slate-50/50 border-2 border-transparent rounded-2xl text-slate-800 font-bold text-sm focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/30 outline-none transition-all appearance-none cursor-pointer"
-                >
-                    {Object.values(UserRole).map(role => (
-                        <option key={role} value={role} className="capitalize">{role.replace('_', ' ')}</option>
-                    ))}
-                </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 pointer-events-none" />
-             </div>
-          </div>
-          
-          <div className="group">
-             <label className="block text-[10px] font-black text-slate-400 uppercase mb-1.5 ml-1 group-focus-within:text-indigo-600 transition-colors">Afiliasi Sekolah</label>
-             <div className="relative">
-                <select
-                    value={formData.tenant_id || ''}
-                    onChange={e => setFormData({...formData, tenant_id: e.target.value || null})}
-                    className="w-full pl-4 pr-10 py-3 bg-slate-50/50 border-2 border-transparent rounded-2xl text-slate-800 font-bold text-sm focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/30 outline-none transition-all appearance-none cursor-pointer"
-                >
-                    <option value="">-- SYSTEM PLATFORM --</option>
-                    {tenants.map(tenant => (
-                        <option key={tenant.id} value={tenant.id}>{tenant.name}</option>
-                    ))}
-                </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 pointer-events-none" />
-             </div>
-             <p className="text-[10px] text-slate-300 font-bold mt-2 uppercase px-1 tracking-tight">Otoritas akses dibatasi pada lingkup institusi terpilih.</p>
-          </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="group opacity-60">
+                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Level Otoritas (Role)</label>
+                        <div className="relative">
+                            <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                            <select
+                                disabled
+                                value={formData.role}
+                                className="w-full pl-11 pr-10 py-2.5 bg-slate-100/50 border border-slate-200 rounded-xl text-slate-500 font-black text-[11px] uppercase tracking-wider outline-none appearance-none cursor-not-allowed"
+                            >
+                                {Object.values(UserRole).map(role => (
+                                    <option key={role} value={role}>
+                                        {role === UserRole.ADMIN ? 'Admin Sekolah' : 
+                                         role === UserRole.TEACHER ? 'Ustadz / Guru' :
+                                         role === UserRole.SANTRI ? 'Santri' :
+                                         role === UserRole.SUPERVISOR ? 'Supervisor' :
+                                         role === UserRole.SUPERADMIN ? 'Superadmin' : (role as string).replace('_', ' ')}
+                                    </option>
+                                ))}
+                            </select>
+                            <Lock className="absolute right-3.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300" />
+                        </div>
+                    </div>
+                    
+                    <div className="group opacity-60">
+                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Institusi Afiliasi</label>
+                        <div className="relative">
+                            <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                            <select
+                                disabled
+                                value={formData.tenant_id || ''}
+                                className="w-full pl-11 pr-10 py-2.5 bg-slate-100/50 border border-slate-200 rounded-xl text-slate-500 font-bold text-[12px] outline-none appearance-none cursor-not-allowed"
+                            >
+                                <option value="">PLATFORM CENTRAL</option>
+                                {tenants.map(tenant => (
+                                    <option key={tenant.id} value={tenant.id}>{tenant.name}</option>
+                                ))}
+                            </select>
+                            <Lock className="absolute right-3.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300" />
+                        </div>
+                    </div>
+                </div>
 
-          <div className="pt-4 flex gap-3">
-            <button type="button" onClick={onClose} className="flex-1 py-3 px-6 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-slate-100 bg-white text-slate-400 hover:bg-slate-50 transition-all">
+                <div className="bg-slate-50/50 p-3 rounded-2xl border border-dashed border-slate-200">
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight text-center leading-relaxed">
+                        Perubahan role dapat mempengaruhi hak akses pengguna secara langsung di seluruh platform.
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/30 flex gap-3">
+             <button 
+                type="button" 
+                onClick={onClose} 
+                className="flex-1 px-5 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 transition-all active:scale-95"
+            >
                 Batal
             </button>
-            <button type="submit" className="flex-[2] py-3 px-6 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-indigo-400 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 shadow-lg shadow-indigo-100/50 transition-all active:scale-95 flex items-center justify-center gap-2">
-                <Save className="w-4 h-4" />
-                Simpan Perubahan
+            <button 
+                form="editUserForm"
+                type="submit" 
+                className="flex-[2] px-5 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+                <Save className="w-3.5 h-3.5" />
+                Simpan Profil
             </button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );
@@ -243,7 +282,13 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                   >
                       <option value="all">Semua Role</option>
                       {Object.values(UserRole).map(role => (
-                          <option key={role} value={role}>{role.replace('_', ' ')}</option>
+                          <option key={role} value={role}>
+                              {role === UserRole.ADMIN ? 'Admin Sekolah' : 
+                               role === UserRole.TEACHER ? 'Ustadz / Guru' :
+                               role === UserRole.SANTRI ? 'Santri' :
+                               role === UserRole.SUPERVISOR ? 'Supervisor' :
+                               role === UserRole.SUPERADMIN ? 'Superadmin' : (role as string).replace('_', ' ')}
+                          </option>
                       ))}
                   </select>
                   <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 pointer-events-none" />
@@ -305,18 +350,17 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                             u.role === UserRole.ADMIN ? 'bg-purple-50 text-purple-600 border-purple-100' : 
                             u.role === UserRole.TEACHER ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
                             'bg-blue-50 text-blue-600 border-blue-100'}`}>
-                            {u.role.replace('_', ' ')}
+                            {u.role === UserRole.ADMIN ? 'Admin Sekolah' : 
+                             u.role === UserRole.TEACHER ? 'Ustadz / Guru' :
+                             u.role === UserRole.SANTRI ? 'Santri' :
+                             u.role === UserRole.SUPERVISOR ? 'Supervisor' :
+                             u.role === UserRole.SUPERADMIN ? 'Superadmin' : (u.role as string).replace('_', ' ')}
                         </span>
                     </td>
                     <td className="px-6 py-4 border-r border-slate-50/50">
-                        <div className="flex items-center gap-2 group/tenant">
-                            <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 group-hover/tenant:bg-emerald-50 group-hover/tenant:text-emerald-600 group-hover/tenant:border-emerald-100 transition-all">
-                                <Building className="w-3.5 h-3.5" />
-                            </div>
-                            <span className="text-[12px] font-bold text-slate-600 overflow-hidden text-ellipsis whitespace-nowrap">
-                                {u.tenant_name || 'System Platform'}
-                            </span>
-                        </div>
+                        <span className="text-[12px] font-bold text-slate-600 overflow-hidden text-ellipsis whitespace-nowrap block">
+                            {u.tenant_name || 'System Platform'}
+                        </span>
                     </td>
                     <td className="px-6 py-4 border-r border-slate-50/50">
                         <div className="flex flex-col gap-0.5 max-w-full overflow-hidden">

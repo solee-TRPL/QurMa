@@ -58,8 +58,13 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
   }, [user]);
 
   const filteredRecords = useMemo(() => {
-    const list = records.filter(r => r.record_date.startsWith(monthFilter));
-    // Reset page when filter changes
+    const list = records.filter(r => {
+      if (!r.record_date.startsWith(monthFilter)) return false;
+      // Sembunyikan data dengan nilai 0 atau kosong
+      const val = parseInt(r.ayat_end as any) || 0;
+      if ((r.type === MemorizationType.SABAQ || r.type === MemorizationType.SABQI) && val < 1) return false;
+      return true;
+    });
     return list;
   }, [records, monthFilter]);
 
@@ -189,61 +194,38 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                   <table className="w-full text-left">
                       <thead>
                           <tr className="bg-slate-50/50">
-                              <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest w-12">No.</th>
-                              <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Tanggal</th>
-                              <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Jenis</th>
-                              <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Materi</th>
-                              <th className="px-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">Kualitas</th>
+                              <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest w-10">No.</th>
+                              <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Tanggal</th>
+                              <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Materi</th>
                           </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50">
                           {paginatedRecords.map((rec, idx) => (
                               <tr key={rec.id} className="hover:bg-slate-50/50 transition-colors group">
-                                  <td className="px-6 py-4">
+                                  <td className="px-4 py-3 whitespace-nowrap">
                                       <p className="text-[10px] font-black text-slate-300">
                                           {String((currentPage - 1) * itemsPerPage + idx + 1).padStart(2, '0')}
                                       </p>
                                   </td>
-                                  <td className="px-6 py-4">
-                                      <p className="text-xs font-black text-slate-800 leading-none mb-1">
-                                          {new Date(rec.record_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
-                                      </p>
-                                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
-                                          {new Date(rec.record_date).toLocaleDateString('id-ID', { weekday: 'short' })}
+                                  <td className="px-4 py-3 whitespace-nowrap">
+                                      <p className="text-xs font-black text-slate-800 leading-none">
+                                          {new Date(rec.record_date).toLocaleDateString('id-ID', { weekday: 'short', day: '2-digit', month: 'short' })}
                                       </p>
                                   </td>
-                                  <td className="px-6 py-4">
-                                      <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">
-                                          {rec.type}
-                                      </span>
-                                  </td>
-                                  <td className="px-6 py-4">
-                                      <p className="text-xs font-black text-slate-700 uppercase tracking-tight mb-0.5">
-                                          {rec.type === MemorizationType.SABAQ ? 'Penambahan Baru' : 
-                                           rec.type === MemorizationType.SABQI ? 'Murojaah Sabqi' : 
-                                           rec.surah_name}
+                                  <td className="px-4 py-3 whitespace-nowrap">
+                                      <p className="text-xs font-black text-slate-800 leading-none">
+                                          {rec.type === MemorizationType.SABAQ
+                                              ? `Sabaq (${rec.ayat_end} Baris)`
+                                              : rec.type === MemorizationType.SABQI
+                                              ? `Sabqi (${rec.ayat_end} Hal)`
+                                              : `Manzil (${rec.surah_name} ${rec.ayat_start}–${rec.ayat_end})`}
                                       </p>
-                                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                                            {rec.type === MemorizationType.SABAQ ? `${rec.ayat_end} Baris` : 
-                                             rec.type === MemorizationType.SABQI ? `${rec.ayat_end} Halaman` : 
-                                             `Ayat ${rec.ayat_start}-${rec.ayat_end}`}
-                                      </p>
-                                  </td>
-                                  <td className="px-6 py-4 text-right">
-                                      <span className={`px-2 py-1 rounded-xl text-[8px] font-black uppercase tracking-widest border ${
-                                          rec.status === MemorizationStatus.LANCAR ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
-                                          rec.status === MemorizationStatus.PERBAIKAN ? 'bg-amber-50 text-amber-600 border-amber-100' : 
-                                          'bg-rose-50 text-rose-600 border-rose-100'
-                                      }`}>
-                                          {rec.status === MemorizationStatus.LANCAR ? 'Mumtaz' : 
-                                           rec.status === MemorizationStatus.PERBAIKAN ? 'Jayyid' : 'Naqish'}
-                                      </span>
                                   </td>
                               </tr>
                           ))}
                           {filteredRecords.length === 0 && (
                               <tr>
-                                  <td colSpan={5} className="px-6 py-20 text-center">
+                                  <td colSpan={3} className="px-6 py-20 text-center">
                                       <Clock className="w-8 h-8 text-slate-100 mx-auto mb-3" />
                                       <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Tidak Ada Setoran Bulan Ini</p>
                                   </td>
@@ -294,29 +276,58 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
           
           {/* TEACHER INSIGHTS SIDEBAR */}
           <div className="flex flex-col gap-6">
-              <div className="bg-slate-900 rounded-xl p-6 text-white shadow-xl shadow-slate-200 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -translate-y-16 translate-x-16 blur-2xl" />
+              <div className="bg-white rounded-xl p-6 border-2 border-slate-50 shadow-sm relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-full -translate-y-16 translate-x-16 group-hover:scale-110 transition-transform duration-500" />
                   
-                  <h3 className="text-[10px] font-black text-indigo-300 uppercase tracking-[0.2em] mb-6 flex items-center relative z-10">
-                      <Quote className="w-4 h-4 mr-2" />
+                  <h3 className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-6 flex items-center relative z-10">
+                      <span className="w-6 h-6 rounded-lg bg-indigo-50 flex items-center justify-center mr-2">
+                          <Quote className="w-3.5 h-3.5 text-indigo-500" />
+                      </span>
                       Evaluasi Ustadz
                   </h3>
 
-                  <div className="space-y-6 relative z-10">
+                  <div className="relative z-10">
                       {filteredNotes.length > 0 ? (
-                          filteredNotes.slice(0, 3).map(note => (
-                              <div key={note.id} className="border-l-2 border-indigo-500/30 pl-4 py-1">
-                                  <div className="flex items-center justify-between mb-2">
-                                      <span className="text-[8px] font-black text-indigo-400 uppercase tracking-widest">{note.category}</span>
-                                      <span className="text-[8px] font-bold text-slate-500">{new Date(note.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</span>
+                          <>
+                              {/* Badge jumlah total catatan */}
+                              {filteredNotes.length > 3 && (
+                                  <div className="flex items-center justify-end mb-3">
+                                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
+                                          {filteredNotes.length} Catatan
+                                      </span>
                                   </div>
-                                  <p className="text-[11px] font-bold text-slate-200 leading-relaxed italic italic">"{note.content}"</p>
-                                  <p className="text-[8px] font-black text-indigo-300 uppercase mt-3 tracking-widest">Ust. {note.teacher_name}</p>
+                              )}
+                              {/* Scrollable container — tinggi ~3 item */}
+                              <div
+                                  className="overflow-y-auto space-y-4"
+                                  style={{
+                                      maxHeight: '240px',
+                                      scrollbarWidth: 'none',
+                                      msOverflowStyle: 'none',
+                                  } as React.CSSProperties}
+                              >
+                                  {filteredNotes.map(note => (
+                                      <div key={note.id} className="pl-4 py-1 hover:border-indigo-400 transition-colors">
+                                          <div className="flex items-center justify-between mb-2">
+                                              <span className="text-[8px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg uppercase tracking-widest">{note.category}</span>
+                                              <span className="text-[8px] font-bold text-slate-400">{new Date(note.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</span>
+                                          </div>
+                                          <p className="text-[11px] font-bold text-slate-700 leading-relaxed">"{note.content}"</p>
+                                          <p className="text-[8px] font-black text-slate-400 uppercase mt-2.5 tracking-widest">Ust. {note.teacher_name}</p>
+                                      </div>
+                                  ))}
                               </div>
-                          ))
+                              {/* Fade gradient bawah sebagai hint scroll */}
+                              {filteredNotes.length > 3 && (
+                                  <div className="h-6 bg-gradient-to-t from-white to-transparent -mt-6 relative z-10 pointer-events-none rounded-b-xl" />
+                              )}
+                          </>
                       ) : (
                           <div className="py-10 text-center">
-                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Belum Ada Catatan</p>
+                            <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <Quote className="w-5 h-5 text-slate-200" />
+                            </div>
+                            <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Belum Ada Catatan</p>
                           </div>
                       )}
                   </div>

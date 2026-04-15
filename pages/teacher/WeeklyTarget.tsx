@@ -33,6 +33,10 @@ import { useLoading } from '../../lib/LoadingContext';
 
 interface WeeklyTargetProps {
   user: UserProfile;
+  onSetUnsavedChanges?: React.Dispatch<React.SetStateAction<boolean>>;
+  saveTrigger?: number;
+  onSaveSuccess?: () => void;
+  isGlobalModalOpen?: boolean;
 }
 
 interface TargetRow {
@@ -57,10 +61,23 @@ interface TargetRow {
   sabaqKet: 'A' | 'B' | 'C' | '';
 }
 
-export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user }) => {
+export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedChanges, saveTrigger, onSaveSuccess, isGlobalModalOpen }) => {
   const [loading, setLoading] = useState(true);
+  const [isDirty, setIsDirty] = useState(false);
   const { setLoading: setGlobalLoading } = useLoading();
   const { addNotification } = useNotification();
+
+  // Protect navigation
+  useEffect(() => {
+    if (onSetUnsavedChanges) onSetUnsavedChanges(isDirty);
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        if (isDirty) { e.preventDefault(); e.returnValue = ''; }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isDirty, onSetUnsavedChanges]);
   
   const [myHalaqah, setMyHalaqah] = useState<Halaqah | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
@@ -222,6 +239,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user }) => {
                 };
             });
             setTargets(initialTargets);
+            setIsDirty(false);
         }
     } catch (error) {
         addNotification({ type: 'error', title: 'Gagal', message: 'Gagal memuat data.' });
@@ -233,6 +251,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user }) => {
   useEffect(() => { fetchData(); }, [user.id]);
 
   const handleInputChange = (studentId: string, field: keyof TargetRow, value: string) => {
+    setIsDirty(true);
     setTargets(prev => {
         const studentTargets = { ...prev[studentId], [field]: value };
 
@@ -281,7 +300,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user }) => {
     );
   }, [students, searchQuery]);
 
-  const handleSave = async () => {
+  const handleSave = async (isSilent: boolean = false) => {
     setGlobalLoading(true);
     try {
         const updatePromises = Object.values(targets).map(async (target) => {
@@ -321,13 +340,16 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user }) => {
 
         await Promise.all(updatePromises);
         
-        addNotification({ 
-            type: 'success', 
-            title: 'Berhasil', 
-            message: 'Laporan target pekanan telah disimpan dan data santri diperbarui.' 
-        });
+        if (!isSilent) {
+          addNotification({ 
+              type: 'success', 
+              title: 'Berhasil', 
+              message: 'Laporan target pekanan telah disimpan dan data santri diperbarui.' 
+          });
+        }
         
         await fetchData(); // Refresh local data from DB
+        setIsDirty(false);
     } catch (error) {
         console.error("Failed to save targets:", error);
         addNotification({ 
@@ -340,10 +362,24 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user }) => {
     }
   };
 
+  // Add effect to handle save trigger from parent
+  useEffect(() => {
+    if (saveTrigger && saveTrigger > 0) {
+        handleSave(true).then(() => {
+            if (onSaveSuccess) onSaveSuccess();
+        }).catch(() => {
+            console.error("Auto-save failed during navigation.");
+        });
+    }
+  }, [saveTrigger]);
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64 bg-white rounded-3xl border border-slate-100 animate-pulse">
-        <div className="text-slate-300">Memuat data...</div>
+      <div className="flex flex-col items-center justify-center h-[400px] bg-white rounded-[32px] border-2 border-slate-50 shadow-sm animate-fade-in">
+        <div className="flex flex-col items-center justify-center space-y-4 opacity-40">
+            <div className="w-10 h-10 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 ml-[0.3em]">Memuat Data Target</p>
+        </div>
       </div>
     );
   }
@@ -418,7 +454,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user }) => {
                   <HelpCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
               </button>
               <button 
-                onClick={handleSave}
+                onClick={() => handleSave()}
                 className="flex-1 lg:flex-none flex items-center justify-center px-6 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-emerald-600 bg-emerald-600 text-white shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:border-emerald-700 transition-all active:scale-95"
               >
                   <Save className="w-4 h-4 mr-2" />
@@ -523,7 +559,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user }) => {
                                                 handleInputChange(s.id, 'hafalanJuz', val.toString());
                                             }
                                         }} 
-                                        className="w-full text-center text-xs font-bold bg-transparent border-none focus:ring-1 focus:ring-indigo-300 rounded h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                        className="w-full text-center text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-indigo-300 rounded h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                                         placeholder="Juz" 
                                     />
                                 </td>
@@ -542,21 +578,21 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user }) => {
                                                 handleInputChange(s.id, 'hafalanHal', val.toString());
                                             }
                                         }} 
-                                        className="w-full text-center text-xs font-bold bg-transparent border-none focus:ring-1 focus:ring-indigo-300 rounded h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                        className="w-full text-center text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-indigo-300 rounded h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                                         placeholder="Hal" 
                                     />
                                 </td>
                                 <td className="px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
-                                    <input readOnly type="text" value={target.manzilAtm} className="w-full text-center text-xs font-black text-blue-600 bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
+                                    <input readOnly type="text" value={target.manzilAtm} className="w-full text-center text-[11px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
                                 </td>
                                 <td className="px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
-                                    <input readOnly type="text" value={target.hariAtm} className="w-full text-center text-xs font-black text-blue-600 bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
+                                    <input readOnly type="text" value={target.hariAtm} className="w-full text-center text-[11px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
                                 </td>
                                 <td className="px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
-                                    <input readOnly type="text" value={target.sabqiAtm} className="w-full text-center text-xs font-black text-blue-600 bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
+                                    <input readOnly type="text" value={target.sabqiAtm} className="w-full text-center text-[11px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
                                 </td>
                                 <td className="px-1 py-1.5 border-r border-slate-100 text-center h-10">
-                                    <input type="text" value={target.css} onChange={e => handleInputChange(s.id, 'css', e.target.value)} className="w-full text-center text-[10px] font-black text-slate-800 bg-transparent border-none focus:ring-0" placeholder="%" />
+                                    <input type="text" value={target.css} onChange={e => handleInputChange(s.id, 'css', e.target.value)} className="w-full text-center text-[10px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0" placeholder="%" />
                                 </td>
 
                                 <td className="px-1.5 py-1.5 border-r border-slate-50 bg-emerald-50/5">
@@ -567,7 +603,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user }) => {
                                                 type="number" 
                                                 value={target.manzilHal} 
                                                 onChange={e => handleInputChange(s.id, 'manzilHal', e.target.value)} 
-                                                className="w-10 text-center text-xs font-bold bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0" 
+                                                className="w-10 text-center text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0" 
                                                 placeholder="0"
                                             />
                                             <span className="text-[8px] font-extrabold text-emerald-400 uppercase mr-1">Hal</span>
@@ -597,7 +633,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user }) => {
                                                 type="number" 
                                                 value={target.sabqiTarget} 
                                                 onChange={e => handleInputChange(s.id, 'sabqiTarget', e.target.value)} 
-                                                className="w-10 text-center text-xs font-bold bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0" 
+                                                className="w-10 text-center text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0" 
                                                 placeholder="0"
                                             />
                                             <span className="text-[8px] font-extrabold text-emerald-400 uppercase mr-1">Hal</span>
@@ -627,7 +663,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user }) => {
                                                 type="number" 
                                                 value={target.sabaqTarget} 
                                                 onChange={e => handleInputChange(s.id, 'sabaqTarget', e.target.value)} 
-                                                className="w-10 text-center text-xs font-bold bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0" 
+                                                className="w-10 text-center text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0" 
                                                 placeholder="0"
                                             />
                                             <span className="text-[8px] font-extrabold text-emerald-400 uppercase mr-1">Baris</span>
@@ -672,7 +708,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user }) => {
       {/* Info Modal */}
       {isInfoModalOpen && (
           <div 
-              className="fixed inset-0 z-[100] flex items-center justify-center lg:pl-64 p-6 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300"
+              className="fixed inset-0 z-[999999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 lg:pl-64 pt-20"
               onClick={() => setIsInfoModalOpen(false)}
           >
               <div 

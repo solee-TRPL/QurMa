@@ -178,9 +178,10 @@ export interface GuardianDashboardStats {
 }
 
 export interface TeacherStats {
-  studentsDepositedToday: number;
   totalStudentsInHalaqah: number;
-  targetPercentage: number;
+  sabaqToday: number;
+  sabqiToday: number;
+  manzilToday: number;
 }
 
 // UI State Types
@@ -196,6 +197,7 @@ export interface Notification {
   type: 'success' | 'error' | 'warning' | 'info';
   title: string;
   message: string;
+  duration?: number;
 }
 
 export interface PlatformSettings {

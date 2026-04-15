@@ -185,8 +185,8 @@ export const GlobalAuditLogs: React.FC = () => {
       </div>
 
       {/* Filter Bar - Modernized (No Card Background) */}
-      <div className="flex flex-wrap items-center gap-4 py-2">
-          <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-4 py-2">
+          <div className="flex items-center gap-4">
               <div className="relative group min-w-[300px]">
                   <select 
                     value={selectedTenantId}
@@ -201,8 +201,9 @@ export const GlobalAuditLogs: React.FC = () => {
                   </select>
                   <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 pointer-events-none" />
               </div>
+              <div className="h-10 w-px bg-slate-100 hidden md:block" />
           </div>
-          <div className="h-10 w-px bg-slate-100 hidden md:block" />
+          
           <div className="flex items-center gap-2.5 px-4 py-3 bg-white text-emerald-600 rounded-2xl border-2 border-slate-50 shadow-sm">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span className="text-[10px] font-black uppercase tracking-widest">Real-time Auditing Active</span>

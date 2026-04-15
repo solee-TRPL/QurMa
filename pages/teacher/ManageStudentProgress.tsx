@@ -73,11 +73,16 @@ export const ManageStudentProgress: React.FC<{ user: UserProfile }> = ({ user })
         fetchStudents();
     }, [user]);
 
-    // Sync selected student from URL param
+    // Sync selected student from URL param or auto-select first
     useEffect(() => {
-        if (students.length > 0 && studentIdParam) {
-            const student = students.find(s => s.id === studentIdParam);
-            if (student) setSelectedStudent(student);
+        if (students.length > 0) {
+            if (studentIdParam) {
+                const student = students.find(s => s.id === studentIdParam);
+                if (student) setSelectedStudent(student);
+            } else if (!selectedStudent) {
+                // Auto-select first student if none selected via URL
+                setSelectedStudent(students[0]);
+            }
         }
     }, [students, studentIdParam]);
 

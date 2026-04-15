@@ -1,11 +1,11 @@
-
 import React, { useEffect, useState } from 'react';
-import { getAllTenants, createTenant, updateTenant, createUser, getTenantAdmin, updateUser, sendPasswordReset } from '../../services/dataService';
+import { getAllTenants, createTenant, updateTenant, createUser, getTenantAdmin, updateUser, sendPasswordReset, deleteTenant } from '../../services/dataService';
 import { Tenant, UserProfile, UserRole } from '../../types';
 import { Button } from '../../components/ui/Button';
-import { Plus, Building, X, Save, Edit, User, Lock, Mail, Tag, UserCog, Send, Phone, Shield, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Plus, Building, X, Save, Edit, User, Lock, Mail, Tag, UserCog, Send, Phone, Shield, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle } from 'lucide-react';
 import { useLoading } from '../../lib/LoadingContext';
 import { useNotification } from '../../lib/NotificationContext';
+import { ConfirmModal } from '../../components/ui/ConfirmModal';
 
 interface TenantFormModalProps {
   isOpen: boolean;
@@ -22,17 +22,16 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSu
   const [adminData, setAdminData] = useState({
     full_name: '',
     email: '',
-    password: ''
+    password: '',
+    whatsapp_number: ''
   });
 
   useEffect(() => {
     if (initialData) {
-      setFormData({ name: initialData.name, plan: initialData.plan, code: initialData.code || '' });
-      // Reset admin data on edit mode (not used)
-      setAdminData({ full_name: '', email: '', password: '' });
+      setFormData({ name: initialData.name, plan: 'basic', code: initialData.code || '' });
     } else {
       setFormData({ name: '', plan: 'basic', code: defaultCode || '' });
-      setAdminData({ full_name: '', email: '', password: '' });
+      setAdminData({ full_name: '', email: '', password: '', whatsapp_number: '' });
     }
   }, [initialData, isOpen, defaultCode]);
 
@@ -40,111 +39,145 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSu
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Combine data. If initialData exists (Edit), we ignore adminData.
-    // If it's new, we pass adminData along.
     await onSubmit({ 
         tenant: { ...formData, id: initialData?.id },
         admin: initialData ? null : adminData
     });
-    
     onClose();
   };
 
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in">
-      <div className="bg-white rounded-[28px] shadow-2xl w-full max-w-lg overflow-hidden border-2 border-slate-50 transform animate-scale-in flex flex-col max-h-[90vh]">
-        <div className="px-8 py-5 border-b border-slate-50 flex justify-between items-center bg-[#FCFDFE] sticky top-0 z-10">
+    <div 
+        className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 lg:pl-64 pt-16"
+        onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-[32px] shadow-2xl w-full max-w-xl overflow-hidden border border-white/20 transform animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] relative"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-6 py-3 border-b border-slate-100 flex justify-between items-center bg-[#FCFDFE] sticky top-0 z-10 transition-all">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
-                <Building className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shadow-sm">
+                <Building className="w-4 h-4" />
             </div>
-            <h3 className="font-black text-slate-800 uppercase text-[13px] tracking-tight">{initialData ? 'Edit Data Sekolah' : 'Tambah Sekolah Baru'}</h3>
+            <div>
+                <h3 className="font-black text-slate-900 uppercase text-xs tracking-tight leading-none">
+                    {initialData ? 'Perbarui Institusi' : 'Registrasi Sekolah Baru'}
+                </h3>
+                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1 flex items-center gap-2 opacity-70">
+                    <Shield className="w-2.5 h-2.5 text-indigo-400" />
+                    Multi-Tenant System
+                </p>
+            </div>
           </div>
-          <button onClick={onClose} className="p-2 bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all"><X className="w-5 h-5"/></button>
+          <button onClick={onClose} className="p-1.5 bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all group">
+            <X className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300"/>
+          </button>
         </div>
         
-        <div className="overflow-y-auto">
-            <form onSubmit={handleSubmit} className="p-8 space-y-8">
-            {/* Section 1: Tenant Details */}
-            <div className="space-y-5">
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center">
-                    Data Institusi
-                </h4>
-                <div className="space-y-4">
-                    <div className="group">
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-tight mb-1.5 ml-1 group-focus-within:text-indigo-600 transition-colors">Nama Sekolah</label>
-                        <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full px-4 py-3 bg-slate-50/50 border-2 border-transparent rounded-2xl text-slate-800 font-bold text-sm focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/30 outline-none transition-all" placeholder="Contoh: Pesantren Darul Ilmi" />
+        <div className="overflow-y-auto px-6 py-4 flex-1 custom-scrollbar">
+            <form id="tenantForm" onSubmit={handleSubmit} className="space-y-4">
+                {/* Section 1: Basic Info */}
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                        <Tag className="w-3 h-3 text-slate-400" />
+                        <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Profil Institusi</h4>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="group">
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-tight mb-1.5 ml-1 group-focus-within:text-indigo-600 transition-colors">ID Sekolah (Otomatis)</label>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="md:col-span-2 group">
+                            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-indigo-600">Nama Lengkap Sekolah</label>
+                            <input 
+                                required 
+                                type="text" 
+                                value={formData.name} 
+                                onChange={e => setFormData({ ...formData, name: e.target.value })} 
+                                className="w-full px-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50/20 outline-none transition-all placeholder:text-slate-300 shadow-sm" 
+                                placeholder="Nama resmi..." 
+                            />
+                        </div>
+                        <div className="group opacity-70">
+                            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Kode / ID Institusi</label>
                             <div className="relative">
-                                <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300" />
                                 <input 
+                                    disabled
                                     type="text" 
                                     value={formData.code} 
-                                    onChange={e => setFormData({ ...formData, code: e.target.value })} 
-                                    className="w-full pl-11 pr-4 py-3 bg-slate-50/30 border border-slate-100 rounded-2xl text-slate-500 font-bold text-sm outline-none font-mono focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/30 transition-all" 
+                                    className="w-full pl-9 pr-4 py-2 bg-slate-100/50 border border-slate-200 rounded-xl text-slate-500 font-black text-[13px] outline-none font-mono cursor-not-allowed" 
                                     placeholder="0001" 
                                 />
                             </div>
                         </div>
-                        <div className="group">
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-tight mb-1.5 ml-1 group-focus-within:text-indigo-600 transition-colors">Paket Langganan</label>
-                            <select value={formData.plan} onChange={e => setFormData({ ...formData, plan: e.target.value as Tenant['plan'] })} className="w-full px-4 py-3 bg-slate-50/50 border-2 border-transparent rounded-2xl text-slate-800 font-bold text-sm focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/30 outline-none transition-all appearance-none cursor-pointer">
-                                <option value="basic">Basic</option>
-                                <option value="pro">Pro</option>
-                                <option value="enterprise">Enterprise</option>
-                            </select>
-                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Section 2: Admin Details (Only when creating new) */}
-            {!initialData && (
-                <div className="space-y-5 bg-slate-50/50 p-6 rounded-2xl border-2 border-slate-100 group">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center">
-                        Informasi Login Admin
-                    </h4>
-                    <div className="space-y-4">
-                        <div className="group/field">
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-tight mb-1.5 ml-1 group-focus-within/field:text-indigo-600 transition-colors">Nama Lengkap Admin</label>
-                            <div className="relative">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within/field:text-indigo-600" />
-                                <input required type="text" value={adminData.full_name} onChange={e => setAdminData({ ...adminData, full_name: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-white border-2 border-transparent rounded-2xl text-slate-800 font-bold text-sm focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/30 outline-none transition-all" placeholder="Admin Abdullah" />
-                            </div>
+                {/* Section 2: Admin Details */}
+                {!initialData && (
+                    <div className="space-y-3 relative pt-2">
+                        <div className="flex items-center gap-2">
+                            <User className="w-3 h-3 text-indigo-400" />
+                            <h4 className="text-[9px] font-black text-indigo-500 uppercase tracking-[0.2em]">Otoritas Admin</h4>
                         </div>
-                        <div className="group/field">
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-tight mb-1.5 ml-1 group-focus-within/field:text-indigo-600 transition-colors">Email Login Utama</label>
-                            <div className="relative">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within/field:text-indigo-600" />
-                                <input required type="email" value={adminData.email} onChange={e => setAdminData({ ...adminData, email: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-white border-2 border-transparent rounded-2xl text-slate-800 font-bold text-sm focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/30 outline-none transition-all" placeholder="admin@sekolah.com" />
+
+                        <div className="bg-gradient-to-br from-indigo-50/30 to-slate-50/30 p-4 rounded-2xl border border-indigo-100/50 space-y-3">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div className="group/field">
+                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-indigo-600">Administrator</label>
+                                    <div className="relative">
+                                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-indigo-600" />
+                                        <input required type="text" value={adminData.full_name} onChange={e => setAdminData({ ...adminData, full_name: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50/20 outline-none transition-all" placeholder="Nama Admin" />
+                                    </div>
+                                </div>
+                                <div className="group/field">
+                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-indigo-600">WhatsApp</label>
+                                    <div className="relative">
+                                        <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-indigo-600" />
+                                        <input required type="tel" value={adminData.whatsapp_number} onChange={e => setAdminData({ ...adminData, whatsapp_number: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50/20 outline-none transition-all placeholder:text-slate-300" placeholder="08123456789" />
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div className="group/field">
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-tight mb-1.5 ml-1 group-focus-within/field:text-indigo-600 transition-colors">Password Default</label>
-                            <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within/field:text-indigo-600" />
-                                <input required minLength={6} type="text" value={adminData.password} onChange={e => setAdminData({ ...adminData, password: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-white border-2 border-transparent rounded-2xl text-slate-800 font-bold text-sm focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/30 outline-none transition-all font-mono" placeholder="Min. 6 Karakter" />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div className="group/field">
+                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-indigo-600">Email</label>
+                                    <div className="relative">
+                                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-indigo-600" />
+                                        <input required type="email" value={adminData.email} onChange={e => setAdminData({ ...adminData, email: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-indigo-400 outline-none transition-all" placeholder="email@gmail.com" />
+                                    </div>
+                                </div>
+                                <div className="group/field">
+                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-indigo-600">Password</label>
+                                    <div className="relative">
+                                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-indigo-600" />
+                                        <input required minLength={6} type="text" value={adminData.password} onChange={e => setAdminData({ ...adminData, password: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-black text-[13px] outline-none font-mono" placeholder="••••••••" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-
-            <div className="pt-4 flex gap-3">
-                <button type="button" onClick={onClose} className="flex-1 py-3 px-6 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-slate-100 bg-white text-slate-400 hover:bg-slate-50 transition-all">
-                    Batal
-                </button>
-                <button type="submit" className="flex-[2] py-3 px-6 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-indigo-400 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 shadow-lg shadow-indigo-100/50 transition-all active:scale-95 flex items-center justify-center gap-2">
-                    <Save className="w-4 h-4" />
-                    {initialData ? 'Simpan Perubahan' : 'Buat Sekolah & Admin'}
-                </button>
-            </div>
+                )}
             </form>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex gap-3">
+            <button 
+                type="button" 
+                onClick={onClose} 
+                className="px-6 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all flex-1"
+            >
+                Batalkan
+            </button>
+            <button 
+                form="tenantForm"
+                type="submit" 
+                className="px-8 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 flex items-center justify-center gap-3 flex-1"
+            >
+                <Save className="w-4 h-4" />
+                {initialData ? 'PERBARUI DATA' : 'BUAT SEKOLAH'}
+            </button>
         </div>
       </div>
     </div>
@@ -210,124 +243,148 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in">
-            <div className="bg-white rounded-[28px] shadow-2xl w-full max-w-md overflow-hidden border-2 border-slate-50 flex flex-col max-h-[90vh] transform animate-scale-in">
-                <div className="px-8 py-5 border-b border-slate-50 flex justify-between items-center bg-[#FCFDFE] sticky top-0 z-10">
+        <div 
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 lg:pl-64 pt-16"
+            onClick={onClose}
+        >
+            <div 
+                className="bg-white rounded-[32px] shadow-2xl w-full max-w-xl overflow-hidden border border-white/20 transform animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] relative text-slate-800"
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div className="px-6 py-3 border-b border-slate-100 flex justify-between items-center bg-[#FCFDFE] sticky top-0 z-10">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
-                            <UserCog className="w-5 h-5" />
+                        <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shadow-sm">
+                            <UserCog className="w-4 h-4" />
                         </div>
                         <div>
-                            <h3 className="font-black text-slate-800 uppercase text-[13px] tracking-tight">Kelola Admin</h3>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight truncate max-w-[180px]">{tenant?.name}</p>
+                            <h3 className="font-black text-slate-900 uppercase text-xs tracking-tight leading-none">Otoritas Admin</h3>
+                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1 flex items-center gap-2">
+                                <Building className="w-2.5 h-2.5 text-indigo-400" />
+                                {tenant?.name}
+                            </p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all"><X className="w-5 h-5"/></button>
+                    <button onClick={onClose} className="p-1.5 bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all group">
+                        <X className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300"/>
+                    </button>
                 </div>
 
-                <div className="overflow-y-auto">
+                <div className="overflow-y-auto custom-scrollbar flex-1">
                     {isLoading ? (
-                        <div className="p-16 text-center text-slate-500 flex flex-col items-center">
-                            <div className="w-10 h-10 border-4 border-slate-100 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Memuat data admin...</p>
+                        <div className="p-20 text-center flex flex-col items-center justify-center">
+                            <div className="w-12 h-12 border-4 border-slate-100 border-t-indigo-500 rounded-full animate-spin mb-6 shadow-sm"></div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] animate-pulse">Sinkronisasi Data...</p>
                         </div>
                     ) : adminProfile ? (
-                        <>
+                        <div className="px-6 py-4 space-y-6">
                             {/* Profile Section */}
-                            <div className="p-8 space-y-6">
-                                <form onSubmit={handleUpdateProfile} className="space-y-5">
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center">
-                                        Informasi Profil Aktif
-                                    </h4>
-                                    <div className="space-y-4">
-                                        <div className="group">
-                                            <label className="block text-[10px] font-black text-slate-400 uppercase mb-1.5 ml-1 group-focus-within:text-indigo-600 transition-colors">Nama Lengkap</label>
-                                            <div className="relative">
-                                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-600" />
-                                                <input 
-                                                    type="text" 
-                                                    required 
-                                                    value={form.full_name} 
-                                                    onChange={e => setForm({...form, full_name: e.target.value})} 
-                                                    className="w-full pl-11 pr-4 py-3 border-2 border-transparent bg-slate-50/50 rounded-2xl text-slate-800 font-bold text-sm focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/30 outline-none transition-all" 
-                                                    placeholder="Nama Lengkap Admin"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="group">
-                                            <label className="block text-[10px] font-black text-slate-400 uppercase mb-1.5 ml-1 group-focus-within:text-indigo-600 transition-colors">Nomor WA / Kontak</label>
-                                            <div className="relative">
-                                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-600" />
-                                                <input 
-                                                    type="tel" 
-                                                    value={form.whatsapp_number} 
-                                                    onChange={e => setForm({...form, whatsapp_number: e.target.value})} 
-                                                    className="w-full pl-11 pr-4 py-3 border-2 border-transparent bg-slate-50/50 rounded-2xl text-slate-800 font-bold text-sm focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/30 outline-none transition-all" 
-                                                    placeholder="Nomor WhatsApp" 
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="group opacity-70">
-                                            <label className="block text-[10px] font-black text-slate-300 uppercase mb-1.5 ml-1">Email (Akun Login)</label>
-                                            <div className="relative cursor-not-allowed">
-                                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                                                <input 
-                                                    type="email" 
-                                                    disabled 
-                                                    value={adminProfile.email} 
-                                                    className="w-full pl-11 pr-4 py-3 bg-slate-100 text-slate-400 rounded-2xl text-sm font-bold border-2 border-transparent" 
-                                                />
-                                            </div>
+                            <form id="adminForm" onSubmit={handleUpdateProfile} className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <User className="w-3 h-3 text-indigo-600" />
+                                    <h4 className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Profil Administrator</h4>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div className="group">
+                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-indigo-600">Nama Lengkap</label>
+                                        <div className="relative">
+                                            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-indigo-600" />
+                                            <input 
+                                                type="text" 
+                                                required 
+                                                value={form.full_name} 
+                                                onChange={e => setForm({...form, full_name: e.target.value})} 
+                                                className="w-full pl-9 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50/20 outline-none transition-all" 
+                                                placeholder="Nama Admin"
+                                            />
                                         </div>
                                     </div>
-                                    <div className="pt-2">
-                                        <button type="submit" className="w-full py-3 px-6 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-indigo-400 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 shadow-lg shadow-indigo-100/50 transition-all active:scale-95 flex items-center justify-center gap-2">
-                                            <Save className="w-4 h-4" />
-                                            Simpan Perubahan
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-
-                            {/* Security Section */}
-                            <div className="bg-slate-50/50 p-8 pt-0 border-t border-slate-50">
-                                <div className="mt-8 space-y-4">
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center">
-                                        Keamanan Akun
-                                    </h4>
-                                    <div className="bg-white p-5 rounded-2xl border-2 border-slate-50 shadow-sm space-y-4">
-                                        <div className="flex items-start gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 border border-orange-100 shrink-0">
-                                                <Shield className="w-5 h-5" />
-                                            </div>
-                                            <div>
-                                                <p className="text-[12px] font-bold text-slate-800">Reset Password</p>
-                                                <p className="text-[10px] text-slate-400 font-bold leading-relaxed mt-1">
-                                                    Kirim instruksi reset password melalui email admin yang terdaftar.
-                                                </p>
-                                            </div>
+                                    <div className="group">
+                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-indigo-600">WhatsApp</label>
+                                        <div className="relative">
+                                            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-indigo-600" />
+                                            <input 
+                                                type="tel" 
+                                                value={form.whatsapp_number} 
+                                                onChange={e => setForm({...form, whatsapp_number: e.target.value})} 
+                                                className="w-full pl-9 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:bg-white focus:border-indigo-400 outline-none transition-all" 
+                                                placeholder="0812..." 
+                                            />
                                         </div>
-                                        <button type="button" onClick={handleResetPassword} className="w-full py-2.5 px-4 font-black text-[10px] uppercase tracking-tight rounded-xl border-2 border-orange-100 bg-orange-50 text-orange-600 hover:bg-orange-600 hover:text-white transition-all active:scale-95 flex items-center justify-center gap-2">
-                                            <Send className="w-3.5 h-3.5" />
-                                            Kirim Link Reset
-                                        </button>
+                                    </div>
+                                    <div className="md:col-span-2 group opacity-60 scale-95 origin-left">
+                                        <label className="block text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1 ml-1">Email Kredensial (Tetap)</label>
+                                        <div className="relative cursor-not-allowed">
+                                            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300" />
+                                            <input 
+                                                type="email" 
+                                                disabled 
+                                                value={adminProfile.email} 
+                                                className="w-full pl-9 pr-4 py-2 bg-slate-100/50 text-slate-400 rounded-xl text-[12px] font-bold border border-slate-200" 
+                                            />
+                                        </div>
                                     </div>
                                 </div>
+                            </form>
+
+                            {/* Security Section - Ultra Efficient Inline Layout */}
+                            <div className="pt-3 border-t border-slate-100">
+                                <div className="bg-gradient-to-r from-orange-50/50 to-slate-50/30 p-3 rounded-2xl border border-orange-100/50 flex items-center gap-4">
+                                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-orange-500 shadow-sm border border-orange-100 flex-shrink-0">
+                                        <Shield className="w-4 h-4" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[10px] font-black text-slate-800 uppercase tracking-tight">Kirim Reset Password</p>
+                                        <p className="text-[9px] text-slate-400 font-bold leading-none mt-1 uppercase tracking-tighter">Via Email Institusi</p>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        onClick={handleResetPassword} 
+                                        className="px-4 py-2 font-black text-[9px] uppercase tracking-[0.1em] rounded-xl border border-orange-200 bg-white text-orange-600 hover:bg-orange-600 hover:text-white transition-all active:scale-95 flex items-center gap-1.5 shadow-sm whitespace-nowrap"
+                                    >
+                                        <Send className="w-3 h-3" />
+                                        RESET SEKARANG
+                                    </button>
+                                </div>
                             </div>
-                        </>
+                        </div>
                     ) : (
-                        <div className="p-16 flex flex-col items-center justify-center text-center">
-                            <div className="bg-slate-50 w-24 h-24 rounded-[32px] flex items-center justify-center mb-6 text-slate-200 border-2 border-slate-50 shadow-inner">
-                                <User className="w-12 h-12" />
+                        <div className="p-12 flex flex-col items-center justify-center text-center">
+                            <div className="bg-slate-50 w-20 h-20 rounded-[32px] flex items-center justify-center mb-6 text-slate-200 border border-slate-100 shadow-inner">
+                                <User className="w-10 h-10" />
                             </div>
-                            <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight">Belum Ada Admin</h4>
-                            <p className="text-[11px] text-slate-400 font-bold mt-2 mb-8 max-w-[240px] leading-relaxed">
-                                Institusi ini belum memiliki administrator terdaftar di database.
-                            </p>
-                            <button onClick={onClose} className="w-full py-3 px-6 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-slate-100 bg-white text-slate-400 hover:bg-slate-50 transition-all">Tutup</button>
+                            <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight">Kosong</h4>
+                            <button 
+                                onClick={onClose} 
+                                className="px-8 py-2.5 font-black text-[9px] uppercase tracking-widest rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all"
+                            >
+                                Selesai
+                            </button>
                         </div>
                     )}
                 </div>
+
+                {/* Footer */}
+                {adminProfile && (
+                    <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex gap-3">
+                        <button 
+                            type="button" 
+                            onClick={onClose} 
+                            className="px-6 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all flex-1"
+                        >
+                            TUTUP
+                        </button>
+                        <button 
+                            form="adminForm"
+                            type="submit" 
+                            className="px-8 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 flex items-center justify-center gap-3 flex-1"
+                        >
+                            <Save className="w-4 h-4" />
+                            SIMPAN PROFIL
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -340,8 +397,10 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
+  const [tenantToDelete, setTenantToDelete] = useState<Tenant | null>(null);
   const [nextTenantCode, setNextTenantCode] = useState('0001');
   
   // Pagination State
@@ -400,15 +459,30 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
   };
 
   const handleSave = async (data: { tenant: Partial<Tenant>, admin: any }) => {
+    // Client-side uniqueness check
+    const isCodeTaken = tenants.some(t => 
+        t.code === data.tenant.code && 
+        (!selectedTenant || t.id !== selectedTenant.id)
+    );
+
+    if (isCodeTaken) {
+        addNotification({ 
+            type: 'error', 
+            title: 'Kode Sudah Digunakan', 
+            message: `ID Sekolah "${data.tenant.code}" sudah terdaftar untuk sekolah lain. Gunakan kode yang berbeda.` 
+        });
+        return;
+    }
+
     setGlobalLoading(true);
     try {
       if (selectedTenant) {
         // Edit Mode: Only update tenant
-        await updateTenant(selectedTenant.id, { name: data.tenant.name, plan: data.tenant.plan, code: data.tenant.code }, user);
+        await updateTenant(selectedTenant.id, { name: data.tenant.name, plan: 'basic', code: data.tenant.code }, user);
         addNotification({ type: 'success', title: 'Berhasil', message: 'Data sekolah telah diperbarui.' });
       } else {
         // Create Mode: Create Tenant THEN Create Admin
-        const newTenant = await createTenant({ name: data.tenant.name!, plan: data.tenant.plan!, code: data.tenant.code }, user);
+        const newTenant = await createTenant({ name: data.tenant.name!, plan: 'basic', code: data.tenant.code }, user);
         
         // Create the Admin User linked to this new tenant
         if (data.admin && data.admin.email && data.admin.password) {
@@ -419,7 +493,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                     full_name: data.admin.full_name,
                     role: UserRole.ADMIN,
                     tenant_id: newTenant.id,
-                    whatsapp_number: ''
+                    whatsapp_number: data.admin.whatsapp_number
                 }, user);
                 addNotification({ type: 'success', title: 'Berhasil', message: `Sekolah "${newTenant.name}" dan adminnya telah dibuat.` });
             } catch (adminError: any) {
@@ -437,6 +511,22 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!tenantToDelete) return;
+    setGlobalLoading(true);
+    try {
+        await deleteTenant(tenantToDelete.id, user, tenantToDelete.name);
+        addNotification({ type: 'success', title: 'Berhasil', message: 'Sekolah telah dihapus.' });
+        fetchTenants();
+    } catch (error: any) {
+        addNotification({ type: 'error', title: 'Gagal', message: error.message || 'Gagal menghapus sekolah.' });
+    } finally {
+        setGlobalLoading(false);
+        setIsDeleteModalOpen(false);
+        setTenantToDelete(null);
+    }
+  };
+
   const openCreateModal = () => {
     setSelectedTenant(null);
     setIsModalOpen(true);
@@ -450,6 +540,11 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
   const openAdminManager = (tenant: Tenant) => {
       setSelectedTenant(tenant);
       setIsAdminModalOpen(true);
+  };
+
+  const confirmDelete = (tenant: Tenant) => {
+      setTenantToDelete(tenant);
+      setIsDeleteModalOpen(true);
   };
 
   return (
@@ -483,8 +578,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
               <tr className="text-slate-400 font-black uppercase text-[10px] tracking-widest border-b border-slate-100">
                 <th className="w-[5%] px-6 py-4 text-left border-r border-slate-50">No.</th>
                 <th className="w-[15%] px-6 py-4 text-left border-r border-slate-50">Kode / ID</th>
-                <th className="w-[35%] px-6 py-4 text-left border-r border-slate-50">Nama Sekolah</th>
-                <th className="w-[15%] px-6 py-4 text-center border-r border-slate-50">Paket</th>
+                <th className="w-[45%] px-6 py-4 text-left border-r border-slate-50">Nama Sekolah</th>
                 <th className="w-[15%] px-6 py-4 text-center border-r border-slate-50">Registrasi</th>
                 <th className="w-[15%] px-6 py-4 text-right">Aksi</th>
               </tr>
@@ -504,15 +598,6 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                   </td>
                   <td className="px-6 py-4">
                       <span className="text-[13px] font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">{tenant.name}</span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tight ${
-                          tenant.plan === 'enterprise' ? 'bg-purple-50 text-purple-600 border border-purple-100' :
-                          tenant.plan === 'pro' ? 'bg-blue-50 text-blue-600 border border-blue-100' :
-                          'bg-slate-50 text-slate-500 border border-slate-100'
-                      }`}>
-                          {tenant.plan}
-                      </span>
                   </td>
                   <td className="px-6 py-4 text-center border-r border-slate-50/50">
                     <span className="text-[12px] font-bold text-slate-600">
@@ -534,6 +619,13 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                             className="p-2 rounded-xl bg-slate-50/50 border border-slate-100 text-slate-400 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all active:scale-90"
                         >
                             <Edit className="w-4 h-4" />
+                        </button>
+                        <button 
+                            onClick={() => confirmDelete(tenant)}
+                            title="Hapus Sekolah"
+                            className="p-2 rounded-xl bg-rose-50/50 border border-rose-100 text-rose-500 hover:bg-rose-600 hover:text-white transition-all active:scale-90"
+                        >
+                            <Trash2 className="w-4 h-4" />
                         </button>
                     </div>
                   </td>
@@ -638,6 +730,26 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
         onSubmit={handleSave}
         initialData={selectedTenant}
         defaultCode={nextTenantCode}
+      />
+
+      <ConfirmModal 
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Hapus Sekolah Permanen?"
+        confirmLabel="YA, HAPUS SEKOLAH"
+        variant="danger"
+        message={
+            <div className="space-y-3">
+                <p>Apakah Anda yakin ingin menghapus <strong>{tenantToDelete?.name}</strong> dari platform secara permanen?</p>
+                <div className="p-3 bg-rose-50 rounded-xl border border-rose-100 flex gap-3">
+                    <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0" />
+                    <p className="text-[10px] font-bold text-rose-600 leading-relaxed uppercase tracking-tight">
+                        Peringatan: Seluruh data santri, guru, ustadz, dan rekaman hafalan yang berkaitan dengan sekolah ini akan ikut terpengaruh atau tidak dapat diakses.
+                    </p>
+                </div>
+            </div>
+        }
       />
 
       <AdminManagerModal

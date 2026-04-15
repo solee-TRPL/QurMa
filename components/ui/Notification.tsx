@@ -8,13 +8,15 @@ const Toast: React.FC<{ notification: Notification; onDismiss: (id: string) => v
   const [isFadingOut, setIsFadingOut] = useState(false);
 
   useEffect(() => {
-    // 1.5s display duration as requested
+    // Default duration is now 2500ms if not specified, allowing more reading time
+    const displayDuration = notification.duration || 2500;
+    
     const timer = setTimeout(() => {
       handleDismiss();
-    }, 1500);
+    }, displayDuration);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [notification.duration]);
 
   const handleDismiss = () => {
     setIsFadingOut(true);

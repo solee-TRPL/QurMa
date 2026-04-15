@@ -1,16 +1,20 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { UserProfile, Student, MemorizationRecord, MemorizationType, MemorizationStatus, Halaqah } from '../../types';
 import { getHalaqahs, getStudentsByHalaqah, getWeeklyMemorization, upsertWeeklyMemorization, createRecord } from '../../services/dataService';
-import { BookOpen, Search, User, Users, Calendar, Plus, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, XCircle, Filter, Save, X, Book, Check, Eye, HelpCircle } from 'lucide-react';
+import { BookOpen, Search, User, Users, Calendar, Plus, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, XCircle, Filter, Save, X, Book, Check, Eye, HelpCircle, AlertTriangle } from 'lucide-react';
 import { useNotification } from '../../lib/NotificationContext';
 import { useLoading } from '../../lib/LoadingContext';
 import { SURAH_DATA } from '../../lib/quranData';
 
 interface InputHafalanProps {
     user: UserProfile;
+    onSetUnsavedChanges?: (hasChanges: boolean) => void;
+    saveTrigger?: number;
+    onSaveSuccess?: () => void;
+    isGlobalModalOpen?: boolean;
 }
 
-export const InputHafalan: React.FC<InputHafalanProps> = ({ user }) => {
+export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedChanges, saveTrigger, onSaveSuccess, isGlobalModalOpen }) => {
     const getStudentIdFromUrl = () => new URLSearchParams(window.location.search).get('studentId');
     const [studentIdParam, setStudentIdParam] = useState(getStudentIdFromUrl());
 
@@ -27,6 +31,8 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user }) => {
     
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
     const [isFetchingRecords, setIsFetchingRecords] = useState(false);
+    const [pendingStudent, setPendingStudent] = useState<Student | null>(null);
+    const [showLocalUnsavedModal, setShowLocalUnsavedModal] = useState(false);
     
     const { addNotification } = useNotification();
     const { setLoading: setGlobalLoading } = useLoading();
@@ -219,6 +225,25 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user }) => {
     const [pendingChanges, setPendingChanges] = useState<Record<string, any>>({});
     const [saveCounter, setSaveCounter] = useState(0);
 
+    useEffect(() => {
+        const hasChanges = Object.keys(pendingChanges).length > 0;
+        if (onSetUnsavedChanges) onSetUnsavedChanges(hasChanges);
+        
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (hasChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            // We DON'T reset to false here because the component might unmount 
+            // during a successful navigation. The parent (App.tsx) handles resetting.
+        };
+    }, [pendingChanges, onSetUnsavedChanges]);
+
     const fetchRecords = async () => {
         if (!selectedStudent) return;
         
@@ -297,9 +322,11 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user }) => {
         }));
     };
 
-    const handleMassSave = async () => {
+    const handleMassSave = async (isManual: boolean = false, isSilent: boolean = false) => {
         if (!selectedStudent || Object.keys(pendingChanges).length === 0) {
-            addNotification({ type: 'info', title: 'Info', message: 'Tidak ada perubahan untuk disimpan.' });
+            if (isManual) {
+                addNotification({ type: 'info', title: 'Info', message: 'Tidak ada perubahan untuk disimpan.' });
+            }
             return;
         }
         
@@ -345,11 +372,14 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user }) => {
             
             await fetchRecords();
             setSaveCounter(c => c + 1);
-            addNotification({ 
-                type: 'success', 
-                title: 'Data Tersimpan', 
-                message: 'Semua setoran pekan ini berhasil disimpan ke database.' 
-            });
+            
+            if (!isSilent) {
+                addNotification({ 
+                    type: 'success', 
+                    title: 'Data Tersimpan', 
+                    message: 'Semua setoran pekan ini berhasil disimpan ke database.' 
+                });
+            }
         } catch (error: any) {
             console.error("Mass save error:", error);
             addNotification({ 
@@ -361,6 +391,52 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user }) => {
             setGlobalLoading(false);
         }
     };
+
+    // Add effect to handle save trigger from parent
+    useEffect(() => {
+        if (saveTrigger && saveTrigger > 0) {
+            handleMassSave(false, true).then(() => {
+                if (onSaveSuccess) onSaveSuccess();
+            }).catch(() => {
+                // If save fails, we don't proceed with navigation so user can fix issues
+                console.error("Auto-save failed during navigation.");
+            });
+        }
+    }, [saveTrigger]);
+
+    const handleStudentSwitch = (student: Student) => {
+        if (student.id === selectedStudent?.id) return;
+        
+        if (Object.keys(pendingChanges).length > 0) {
+            setPendingStudent(student);
+            setShowLocalUnsavedModal(true);
+            return;
+        }
+        
+        setSelectedStudent(student);
+    };
+
+    const proceedStudentSwitch = () => {
+        if (pendingStudent) {
+            setSelectedStudent(pendingStudent);
+            setPendingStudent(null);
+            setPendingChanges({}); 
+        }
+        setShowLocalUnsavedModal(false);
+    };
+
+    const handleLocalSaveAndSwitch = async () => {
+        await handleMassSave(false, true);
+        proceedStudentSwitch();
+    };
+
+    // Prevent double modal: if app level modal is open, hide local modal
+    useEffect(() => {
+        if (isGlobalModalOpen) {
+            setShowLocalUnsavedModal(false);
+            setPendingStudent(null);
+        }
+    }, [isGlobalModalOpen]);
 
     const getStatusIcon = (status: MemorizationStatus) => {
         switch (status) {
@@ -428,7 +504,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user }) => {
                     {filteredStudents.map(student => (
                         <button
                             key={student.id}
-                            onClick={() => setSelectedStudent(student)}
+                            onClick={() => handleStudentSwitch(student)}
                             className={`w-full flex items-center p-3.5 rounded-2xl transition-all text-left group ${
                                 selectedStudent?.id === student.id 
                                 ? 'bg-indigo-50 border-indigo-100 text-indigo-700 shadow-sm ring-1 ring-indigo-100/50' 
@@ -519,7 +595,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user }) => {
                                     </button>
 
                                     <button 
-                                        onClick={handleMassSave}
+                                        onClick={() => handleMassSave(true)}
                                         className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-95 group"
                                     >
                                         <Save className="w-4 h-4 group-hover:rotate-12 transition-transform" />
@@ -529,9 +605,9 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user }) => {
                             </div>
 
                             {/* Dense Grid Table */}
-                            <div key={selectedStudent.id} className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                            <div key={selectedStudent.id} className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent -mt-[1px]">
                                 <table className="w-full border-collapse">
-                                    <thead className="sticky top-0 bg-white z-10 shadow-[0_1px_0_0_rgba(226,232,240,1)]">
+                                    <thead className="sticky top-0 bg-white z-30 shadow-[0_1px_0_0_rgba(226,232,240,1)]">
                                         <tr>
                                             <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center w-28 border border-slate-200 bg-slate-50">Tanggal</th>
                                             <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center w-32 border border-slate-200 bg-slate-50">Setoran</th>
@@ -852,10 +928,10 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user }) => {
                 </div>
             )}
 
-            {/* Info Modal */}
+            {/* Information Modal */}
             {isInfoModalOpen && (
                 <div 
-                    className="fixed inset-0 z-[100] flex items-center justify-center lg:pl-64 lg:pt-36 lg:pb-36 p-6 bg-slate-900/60 backdrop-blur-md animate-fade-in"
+                    className="fixed inset-0 z-[999999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-fade-in lg:pl-64 pt-20"
                     onClick={() => setIsInfoModalOpen(false)}
                 >
                     <div 
@@ -907,6 +983,42 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user }) => {
                                 className="w-full mt-6 py-3 bg-slate-900 border border-slate-800 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-100"
                             >
                                 Mengerti
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Local Unsaved Changes Modal (for Switching Students) */}
+            {showLocalUnsavedModal && (
+                <div className="fixed inset-0 z-[999999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-fade-in shadow-2xl">
+                    <div className="bg-white rounded-[28px] shadow-2xl w-full max-w-[380px] overflow-hidden animate-scale-in border border-white/50">
+                        <div className="p-8 text-center">
+                            <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-amber-500 shadow-sm border border-amber-100">
+                                <AlertTriangle className="w-8 h-8" />
+                            </div>
+                            <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest leading-normal mb-3">Tunggu Sebentar!</h3>
+                            <p className="text-[11px] font-bold text-slate-500 leading-relaxed uppercase tracking-wide opacity-80">
+                                Anda memiliki perubahan data untuk <b>{selectedStudent?.full_name}</b> yang belum disimpan. Ingin menyimpannya dulu?
+                            </p>
+                        </div>
+                        <div className="px-6 pb-8 flex items-center gap-2">
+                            <button 
+                                onClick={() => { setShowLocalUnsavedModal(false); setPendingStudent(null); }}
+                                className="flex-1 py-3 bg-white text-slate-400 border border-slate-100 rounded-xl text-[9px] font-black uppercase tracking-widest hover:text-slate-600 transition-all active:scale-95"
+                            >
+                                Batal
+                            </button>
+                            <button 
+                                onClick={proceedStudentSwitch}
+                                className="flex-1 py-3 bg-rose-50 text-rose-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all active:scale-95"
+                            >
+                                Buang
+                            </button>
+                            <button 
+                                onClick={handleLocalSaveAndSwitch}
+                                className="flex-[2] py-3 bg-indigo-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 outline-none"
+                            >
+                                Simpan & Pindah
                             </button>
                         </div>
                     </div>

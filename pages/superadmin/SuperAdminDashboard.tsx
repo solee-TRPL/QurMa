@@ -65,19 +65,6 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onNavi
         });
     }, [tenants]);
 
-    // 2. Plan Distribution Data
-    const planData = useMemo(() => {
-        const counts = { basic: 0, pro: 0, enterprise: 0 };
-        tenants.forEach(t => {
-            const plan = t.plan as keyof typeof counts;
-            if (counts[plan] !== undefined) counts[plan]++;
-        });
-        return [
-            { name: 'Basic', value: counts.basic, color: '#94a3b8' }, // Slate-400
-            { name: 'Pro', value: counts.pro, color: '#3b82f6' }, // Blue-500
-            { name: 'Enterprise', value: counts.enterprise, color: '#8b5cf6' } // Violet-500
-        ].filter(d => d.value > 0);
-    }, [tenants]);
 
     // 3. Recent Tenants
     const recentTenants = useMemo(() => {
@@ -130,7 +117,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onNavi
             {/* Charts Section */}
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
                 {/* Growth Chart */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-2xl border-2 border-slate-50 shadow-sm relative overflow-hidden flex flex-col min-h-0">
+                <div className="lg:col-span-3 bg-white p-6 rounded-2xl border-2 border-slate-50 shadow-sm relative overflow-hidden flex flex-col min-h-0">
                     <div className="flex justify-between items-center mb-6 shrink-0">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
@@ -176,76 +163,6 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onNavi
                     </div>
                 </div>
 
-                {/* Plan Distribution */}
-                <div className="bg-white p-6 rounded-2xl border-2 border-slate-50 shadow-sm flex flex-col min-h-0">
-                    <div className="flex items-center gap-4 mb-6 shrink-0">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
-                            <PieChartIcon className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-tight">
-                                Distribusi Paket
-                            </h3>
-                            <p className="text-[11px] font-bold text-slate-400">Pangsa pasar lisensi aktif</p>
-                        </div>
-                    </div>
-                    <div className="flex-1 relative min-h-0 w-full overflow-hidden">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={planData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius="65%"
-                                    outerRadius="90%"
-                                    paddingAngle={8}
-                                    dataKey="value"
-                                    animationBegin={200}
-                                    animationDuration={1200}
-                                    onMouseEnter={(_, index) => setActiveSlice(planData[index])}
-                                    onMouseLeave={() => setActiveSlice(null)}
-                                >
-                                    {planData.map((entry, index) => (
-                                        <Cell 
-                                            key={`cell-${index}`} 
-                                            fill={entry.color} 
-                                            strokeWidth={activeSlice?.name === entry.name ? 2 : 0} 
-                                            stroke="white"
-                                            style={{ outline: 'none', cursor: 'pointer', opacity: activeSlice && activeSlice.name !== entry.name ? 0.6 : 1, transition: 'all 0.3s px' }}
-                                        />
-                                    ))}
-                                </Pie>
-                            </PieChart>
-                        </ResponsiveContainer>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-all duration-300">
-                            {activeSlice ? (
-                                <>
-                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] mb-1" style={{ color: activeSlice.color }}>{activeSlice.name}</span>
-                                    <span className="text-3xl font-black text-slate-800 tracking-tight leading-none">{activeSlice.value}</span>
-                                </>
-                            ) : (
-                                <>
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Total</span>
-                                    <span className="text-2xl font-black text-slate-800 tracking-tight leading-none">{tenants.length}</span>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                    <div className="space-y-1 mt-4 pt-4 border-t border-slate-50 shrink-0">
-                        {planData.map((entry) => (
-                            <div key={entry.name} className="flex items-center justify-between p-1.5 rounded-xl hover:bg-slate-50 transition-colors group">
-                                <div className="flex items-center">
-                                    <div className="w-2 h-2 rounded-full mr-3 shadow-sm" style={{ backgroundColor: entry.color }}></div>
-                                    <span className="text-[11px] font-black text-slate-600 uppercase tracking-tight group-hover:text-indigo-600 transition-colors">{entry.name}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-[11px] font-black text-slate-800">{entry.value}</span>
-                                    <span className="text-[9px] font-bold text-slate-300">({Math.round((entry.value / (tenants.length || 1)) * 100)}%)</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
             </div>
         </div>
     );

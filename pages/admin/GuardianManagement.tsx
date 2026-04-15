@@ -123,7 +123,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
   const InfoModal = ({ student, onClose }: { student: StudentRekap, onClose: () => void }) => {
     return (
         <div 
-            className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 text-slate-800"
+            className="fixed inset-0 z-[150] flex items-center justify-center lg:pl-64 lg:pt-20 p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 text-slate-800"
             onClick={onClose}
         >
             <div 
@@ -515,22 +515,24 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
     ];
 
     // 2. Initial Data Row (Example)
-    const exampleRow = [
+    // NIS (col 1) and WhatsApp (col 7) must be cell objects with type 's' (string)
+    // to prevent Excel from treating long numerics as numbers (scientific notation)
+    const exampleRow: any[] = [
       'Ahmad Abdullah',
-      '20240001',
+      { v: '20240001', t: 's' },       // NIS as text
       'L',
       classes[0]?.name || '-',
       halaqahs[0]?.name || '-',
       'Abdullah Bin Zaid',
-      'ahmad.parent@email.com',
-      '08123456789',
+      'abdullah@gmail.com',
+      { v: '08123456789', t: 's' },    // WhatsApp as text
       '', // Gap
       '', // Gap
       classes[0]?.name || '-',
       halaqahs[0]?.name || '-'
     ];
 
-    const rows = [headers, exampleRow];
+    const rows: any[][] = [headers, exampleRow];
 
     // 3. Fill Reference Lists (Rows 3 and onwards)
     const maxReferenceRows = Math.max(classes.length, halaqahs.length);
@@ -542,6 +544,23 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
     }
 
     const ws = XLSX.utils.aoa_to_sheet(rows);
+
+    // Force NIS (col B = index 1) and WhatsApp (col H = index 7) columns to text format '@'
+    // This prevents Excel from auto-converting long numbers to scientific notation
+    const textColIndices = [1, 7];
+    const totalRows = rows.length;
+    for (const colIdx of textColIndices) {
+        for (let rowIdx = 0; rowIdx < totalRows; rowIdx++) {
+            const cellAddr = XLSX.utils.encode_cell({ r: rowIdx, c: colIdx });
+            if (!ws[cellAddr]) {
+                // Create an empty text cell so format is defined even for blank rows
+                ws[cellAddr] = { v: '', t: 's' };
+            } else {
+                ws[cellAddr].t = 's';
+            }
+            ws[cellAddr].z = '@'; // '@' = Text number format in Excel
+        }
+    }
 
     // Set Column Widths for readability
     ws['!cols'] = [
@@ -1238,68 +1257,94 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
       {/* Import Modal */}
       {showImportModal && (
           <div 
-            className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in cursor-pointer"
+            className="fixed inset-0 z-[120] flex items-center justify-center lg:pl-64 lg:pt-20 p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 cursor-pointer"
             onClick={() => setShowImportModal(false)}
           >
               <div 
-                className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden cursor-default"
+                className="bg-white rounded-[28px] shadow-2xl max-w-md w-full overflow-hidden cursor-default border border-white/20 animate-in zoom-in-95 duration-200"
                 onClick={(e) => e.stopPropagation()}
               >
-                  <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                      <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                          <Database className="w-5 h-5 text-emerald-500" />
-                          Import Progress
-                      </h3>
-                      <button onClick={() => setShowImportModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                          <X className="w-5 h-5" />
+                  {/* Header */}
+                  <div className="px-6 py-3.5 border-b border-slate-50 flex justify-between items-center bg-[#FCFDFE]">
+                      <div>
+                          <h3 className="text-sm font-black text-slate-800 tracking-tight flex items-center gap-2">
+                              <Database className="w-4 h-4 text-emerald-500" />
+                              Import Progress
+                          </h3>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Memproses Data Santri</p>
+                      </div>
+                      <button 
+                        onClick={() => setShowImportModal(false)} 
+                        className="p-1.5 text-slate-300 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-all"
+                      >
+                          <X className="w-3.5 h-3.5" />
                       </button>
                   </div>
-                  <div className="p-6">
-                      <div className="mb-6">
-                          <div className="flex justify-between text-sm font-bold text-slate-600 mb-2">
-                              <span>Memproses data...</span>
-                              <span>{importProgress.current} / {importProgress.total}</span>
+
+                  {/* Body */}
+                  <div className="p-6 space-y-5">
+                      {/* Progress Bar */}
+                      <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Memproses data...</span>
+                              <span className="text-[10px] font-black text-slate-600 tabular-nums">
+                                  {importProgress.current} / {importProgress.total}
+                              </span>
                           </div>
-                          <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                          <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
                               <div 
-                                className="bg-emerald-500 h-full transition-all duration-300" 
+                                className="bg-emerald-500 h-full rounded-full transition-all duration-500 ease-out" 
                                 style={{ width: `${(importProgress.current / (importProgress.total || 1)) * 100}%` }}
                               />
                           </div>
+                          <div className="flex justify-end">
+                              <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">
+                                  {Math.round((importProgress.current / (importProgress.total || 1)) * 100)}%
+                              </span>
+                          </div>
                       </div>
 
+                      {/* Error Log */}
                       {importProgress.errors.length > 0 && (
-                          <div className="bg-red-50 rounded-xl p-4 max-h-48 overflow-y-auto border border-red-100">
-                              <h4 className="text-xs font-bold text-red-600 flex items-center gap-2 mb-2">
-                                  <Info className="w-4 h-4" /> Log Kesalahan:
+                          <div className="bg-red-50 rounded-[16px] p-4 max-h-48 overflow-y-auto border border-red-100 scrollbar-hide">
+                              <h4 className="text-[9px] font-black text-red-600 uppercase tracking-widest flex items-center gap-2 mb-2.5">
+                                  <Info className="w-3.5 h-3.5" /> Log Kesalahan
                               </h4>
-                              <ul className="space-y-1">
+                              <ul className="space-y-1.5">
                                   {importProgress.errors.map((err, i) => (
-                                      <li key={i} className="text-[10px] text-red-500 leading-tight">• {err}</li>
+                                      <li key={i} className="text-[10px] font-bold text-red-500 leading-tight">• {err}</li>
                                   ))}
                               </ul>
                           </div>
                       )}
 
+                      {/* Done State */}
                       {importProgress.current === importProgress.total && importProgress.total > 0 && (
-                          <div className="mt-6">
-                              <div className="bg-emerald-50 p-4 rounded-xl flex gap-3 items-center mb-6 border border-emerald-100">
-                                  <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                          <div className="space-y-4">
+                              <div className="bg-emerald-50 p-4 rounded-[16px] flex gap-3 items-center border border-emerald-100">
+                                  <CheckCircle2 className="w-8 h-8 text-emerald-500 shrink-0" />
                                   <div>
-                                      <p className="text-sm font-bold text-emerald-800">Proses Selesai</p>
-                                      <p className="text-xs text-emerald-600">{importProgress.total - importProgress.errors.length} santri berhasil ditambahkan.</p>
+                                      <p className="text-xs font-black text-emerald-800 uppercase tracking-tight">Proses Selesai</p>
+                                      <p className="text-[10px] font-bold text-emerald-600 mt-0.5">{importProgress.total - importProgress.errors.length} santri berhasil ditambahkan.</p>
                                   </div>
                               </div>
-                              <Button className="w-full" onClick={() => setShowImportModal(false)}>
-                                  Tutup Selesai
-                              </Button>
+                              <button 
+                                className="w-full py-3 bg-white border-2 border-slate-100 rounded-2xl text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] hover:bg-slate-50 hover:text-slate-700 transition-all active:scale-95 shadow-sm"
+                                onClick={() => setShowImportModal(false)}
+                              >
+                                  Tutup Panel
+                              </button>
                           </div>
                       )}
-                      
+
+                      {/* Error-only State (no rows processed) */}
                       {importProgress.total === 0 && importProgress.errors.length > 0 && (
-                        <Button className="w-full" variant="danger" onClick={() => setShowImportModal(false)}>
-                            Tutup
-                        </Button>
+                          <button 
+                            className="w-full py-3 border-2 border-red-100 bg-red-50 rounded-2xl text-[10px] font-black text-red-500 uppercase tracking-[0.2em] hover:bg-red-100 transition-all active:scale-95"
+                            onClick={() => setShowImportModal(false)}
+                          >
+                              Tutup
+                          </button>
                       )}
                   </div>
               </div>

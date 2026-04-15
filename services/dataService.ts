@@ -77,7 +77,7 @@ export const getSuperAdminStats = async (): Promise<SuperAdminStats> => {
 };
 
 export const getAllTenants = async (): Promise<Tenant[]> => {
-    const { data, error } = await supabase.from('tenants').select('*').order('name');
+    const { data, error } = await supabase.from('tenants').select('*').order('code', { ascending: true });
     if (error) throw error;
     return data;
 };
@@ -299,17 +299,50 @@ export const createUser = async (userData: any, actor: UserProfile): Promise<Use
         full_name: userData.full_name, 
         role: userData.role, 
         tenant_id: userData.tenant_id, 
-        whatsapp: userData.whatsapp_number 
+        whatsapp_number: userData.whatsapp_number 
       } 
     }
   });
 
-  if (error) {
-    // Let the UI handle the specific error (e.g., "User already registered")
-    throw error;
+  // --- MULTI-TENANT SAFE: Handle "User already registered" ---
+  // Supabase Auth uses email as a GLOBAL unique key. If a parent's email is already
+  // registered in another school, signUp will fail — but that's fine.
+  // We simply reuse the existing auth user as the parent reference (parent_id).
+  // Student data isolation is guaranteed by tenant_id on the students table itself.
+  const isAlreadyRegistered = error?.message?.toLowerCase().includes('user already registered')
+    || error?.message?.toLowerCase().includes('already registered');
+
+  if (error && !isAlreadyRegistered) {
+    throw error; // Re-throw genuine errors (network, validation, etc.)
   }
-  
-  if (!authData.user) {
+
+  if (isAlreadyRegistered) {
+    // Find the existing profile by email (searches across all tenants)
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('email', userData.email)
+      .limit(1)
+      .maybeSingle();
+
+    if (!existingProfile) {
+      throw new Error(`Email ${userData.email} sudah terdaftar, namun profilnya tidak ditemukan. Hubungi administrator.`);
+    }
+
+    // Return the existing profile — their auth user ID will be used as parent_id.
+    // The student record will carry the correct tenant_id for the new school,
+    // so student data stays fully isolated per school.
+    await logAudit(
+      actor,
+      'CREATE',
+      `User: ${existingProfile.full_name}`,
+      `Orang tua lintas-sekolah: email ${userData.email} sudah terdaftar, profil yang ada digunakan sebagai referensi.`
+    );
+    return existingProfile as UserProfile;
+  }
+
+  // --- Normal new user flow ---
+  if (!authData?.user) {
     throw new Error("Gagal membuat objek pengguna di Supabase Auth.");
   }
 
@@ -328,11 +361,26 @@ export const createUser = async (userData: any, actor: UserProfile): Promise<Use
     throw new Error("Gagal memverifikasi profil pengguna baru setelah pembuatan.");
   }
 
+  // Explicitly update whatsapp_number just in case the trigger missed it or metadata sync delayed
+  if (userData.whatsapp_number) {
+    const { data: updatedProfile } = await supabase
+        .from('profiles')
+        .update({ whatsapp_number: userData.whatsapp_number })
+        .eq('id', newProfile.id)
+        .select()
+        .single();
+    
+    if (updatedProfile) {
+        newProfile = updatedProfile as UserProfile;
+    }
+  }
+
   await logAudit(actor, 'CREATE', `User: ${userData.full_name}`, `User baru dengan role ${userData.role} telah dibuat.`);
   
   // Return the actual, verified profile from the database, which includes the correct tenant_id.
   return newProfile;
 };
+
 
 export const updateUser = async (user: Partial<UserProfile>, actor: UserProfile): Promise<UserProfile> => {
   if (!user.id) throw new Error("ID required");
@@ -506,22 +554,89 @@ export const getTeacherStats = async (studentsInHalaqah: Student[]): Promise<Tea
     const todayDateStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
     const studentIds = studentsInHalaqah.map(s => s.id);
     
-    const { count } = await supabase.from('memorization_records')
-        .select('*', { count: 'exact', head: true })
+    const { data } = await supabase.from('memorization_records')
+        .select('type, ayat_end')
         .in('student_id', studentIds)
-        .eq('record_date', todayDateStr);
+        .eq('record_date', todayDateStr)
+        .gt('ayat_end', 0); // Only count actual progress entries
 
-    return {
+    const stats = {
         totalStudentsInHalaqah: studentsInHalaqah.length,
-        studentsDepositedToday: count || 0,
-        targetPercentage: Math.round(((count || 0) / studentsInHalaqah.length) * 100)
+        sabaqToday: 0,
+        sabqiToday: 0,
+        manzilToday: 0
     };
+
+    if (data) {
+        data.forEach(rec => {
+            if (rec.type === MemorizationType.SABAQ) stats.sabaqToday++;
+            else if (rec.type === MemorizationType.SABQI) stats.sabqiToday++;
+            else if (rec.type === MemorizationType.MANZIL) stats.manzilToday++;
+        });
+    }
+
+    return stats;
 };
 
 export const getGuardianStats = async (studentId: string): Promise<GuardianDashboardStats> => { 
-    const { data: student } = await supabase.from('students').select('current_juz, daily_target').eq('id', studentId).single();
+    const { data: student } = await supabase
+        .from('students')
+        .select('current_juz, daily_target, class_id, tenant_id')
+        .eq('id', studentId)
+        .single();
     const { data: lastRecord } = await supabase.from('memorization_records').select('surah_name, ayat_end, status').eq('student_id', studentId).order('created_at', { ascending: false }).limit(1).single();
     const { data: lastNote } = await supabase.from('teacher_notes').select('content, date').eq('student_id', studentId).order('date', { ascending: false }).limit(1).single();
+
+    // --- Hitung dailyTarget dari Acuan Sabaq berdasarkan kelas santri ---
+    let dailyTarget: string = student?.daily_target || '-';
+    try {
+        if (student?.class_id && student?.tenant_id) {
+            // Fetch kelas untuk dapatkan level/nama kelas
+            const { data: classData } = await supabase
+                .from('classes')
+                .select('name')
+                .eq('id', student.class_id)
+                .single();
+
+            // Fetch cycle_config dari tenant
+            const { data: tenantData } = await supabase
+                .from('tenants')
+                .select('cycle_config')
+                .eq('id', student.tenant_id)
+                .single();
+
+            if (classData?.name && tenantData?.cycle_config?.sabaq) {
+                // Ekstrak level kelas dari nama (misal "7A" → 7, "Kelas 3" → 3)
+                const match = classData.name.match(/(\d+)/);
+                const classLevel = match ? parseInt(match[1]) : null;
+
+                // Tentukan semester saat ini (Jan-Jun = 2, Jul-Des = 1)
+                const month = new Date().getMonth() + 1; // 1-12
+                const currentSemester = month >= 7 ? 1 : 2;
+
+                if (classLevel !== null) {
+                    const sabaqConfig: any[] = tenantData.cycle_config.sabaq;
+                    // Cari entry yang cocok dengan kelas & semester
+                    const entry = sabaqConfig.find(
+                        (s: any) => s.kelas === classLevel && s.semester === currentSemester
+                    );
+
+                    if (entry && typeof entry.target === 'number' && entry.target > 0) {
+                        // Target dalam Juz per semester → konversi ke baris/hari
+                        // 1 Juz ≈ 20 halaman, 1 halaman sabaq ≈ 10 baris, 1 semester ≈ 80 hari aktif
+                        const barisPerHari = Math.round((entry.target * 20 * 10) / 80);
+                        dailyTarget = `${barisPerHari} Baris`;
+                    } else if (entry && typeof entry.target === 'string') {
+                        // Semester pertama kelas awal: teks kemampuan membaca
+                        dailyTarget = 'Membaca Al-Qur\'an';
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        // Fallback ke daily_target dari DB jika ada error
+        dailyTarget = student?.daily_target || '-';
+    }
 
     return { 
         currentSurah: lastRecord?.surah_name || '-', 
@@ -531,7 +646,7 @@ export const getGuardianStats = async (studentId: string): Promise<GuardianDashb
         teacherNote: lastNote?.content || 'Belum ada catatan', 
         teacherNoteDate: lastNote?.date || '', 
         juzProgress: ((student?.current_juz || 0) / 30) * 100, 
-        dailyTarget: student?.daily_target || '-' 
+        dailyTarget 
     }; 
 };
 

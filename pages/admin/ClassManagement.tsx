@@ -4,7 +4,7 @@ import { getClasses, createClass, updateClass, deleteClass, getStudents, updateS
 import { Class, UserProfile, Student, UserRole } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
-import { Plus, Users, School, X, ChevronRight, Save, Edit, Trash2, TrendingUp, AlertTriangle, GraduationCap, MessageCircle, Check, ArrowRight, RefreshCw, Wand2, Lock } from 'lucide-react';
+import { Plus, Users, School, X, ChevronRight, Save, Edit, Trash2, TrendingUp, AlertTriangle, GraduationCap, MessageCircle, Check, ArrowRight, RefreshCw, Wand2, Lock, Archive, Search, Medal, Calendar, UserCheck, ChevronDown } from 'lucide-react';
 import { useLoading } from '../../lib/LoadingContext';
 import { useNotification } from '../../lib/NotificationContext';
 
@@ -68,9 +68,6 @@ const ClassFormModal: React.FC<ClassFormModalProps> = ({ isOpen, onClose, onSubm
             </h3>
             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Manajemen Kelas</p>
           </div>
-          <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
-            <X className="w-5 h-5" />
-          </button>
         </div>
         
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
@@ -134,6 +131,12 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [targetClassId, setTargetClassId] = useState<string>('');
   const [selectedClassIds, setSelectedClassIds] = useState<string[]>([]);
+  const [showAlumniView, setShowAlumniView] = useState(false);
+  const [alumniList, setAlumniList] = useState<any[]>([]);
+  const [alumniSearch, setAlumniSearch] = useState('');
+  const [alumniSortYear, setAlumniSortYear] = useState<string>('all');
+  const [alumniPage, setAlumniPage] = useState(1);
+  const ALUMNI_PER_PAGE = 10;
   
   // Delete Modal State
   const [deleteTarget, setDeleteTarget] = useState<Class | null>(null);
@@ -285,12 +288,21 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
 
         // Sync System Config from Database or Local Storage Fallback
         if (tenantData && (tenantData as any).cycle_config) {
-            setSystemConfig((tenantData as any).cycle_config);
+            const cfg = (tenantData as any).cycle_config;
+            setSystemConfig(cfg);
+            // Load alumni list from cycle_config
+            if (cfg.alumni && Array.isArray(cfg.alumni)) {
+                setAlumniList(cfg.alumni);
+            }
         } else {
             const localData = localStorage.getItem(`qurma_cycle_${tenantId}`);
             if (localData) {
                 try {
-                    setSystemConfig(JSON.parse(localData));
+                    const parsed = JSON.parse(localData);
+                    setSystemConfig(parsed);
+                    if (parsed.alumni && Array.isArray(parsed.alumni)) {
+                        setAlumniList(parsed.alumni);
+                    }
                 } catch (e) {
                     console.error("Failed to parse local cycle data");
                 }
@@ -554,6 +566,37 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
             })
             .sort((a, b) => b.grade - a.grade); // Sort DESCENDING to avoid collisions
         
+        // Collect graduating students before the loop for alumni snapshot
+        const graduatingStudentSnapshots: any[] = [];
+        for (const cls of classesToPromote) {
+            if (cls.grade >= systemConfig.max) {
+                const studentsInClass = allStudents.filter(s => s.class_id === cls.id);
+                studentsInClass.forEach(s => {
+                    graduatingStudentSnapshots.push({
+                        id: s.id,
+                        full_name: s.full_name,
+                        nis: s.nis || '-',
+                        gender: s.gender || '-',
+                        last_class: cls.name,
+                        graduated_at: new Date().toISOString().split('T')[0],
+                        graduated_year: new Date().getFullYear()
+                    });
+                });
+            }
+        }
+
+        // Save graduating students to alumni list in cycle_config
+        if (graduatingStudentSnapshots.length > 0) {
+            const tenantCurrent = await getTenant(tenantId);
+            const existingConfig = (tenantCurrent as any)?.cycle_config || {};
+            const existingAlumni: any[] = existingConfig.alumni || [];
+            const updatedAlumni = [...existingAlumni, ...graduatingStudentSnapshots];
+            await updateTenant(tenantId, {
+                cycle_config: { ...existingConfig, alumni: updatedAlumni }
+            }, user);
+            setAlumniList(updatedAlumni);
+        }
+
         for (const cls of classesToPromote) {
             if (cls.grade === 0) continue;
 
@@ -752,62 +795,86 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
           </div>
       </div>
 
-      {!isReadOnly && (
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 mb-8">
-            <div className="flex items-center gap-1.5">
-                <div className="flex gap-1.5">
-                    <button 
-                        onClick={() => isSystemReady && setShowPromoteModal(true)} 
-                        disabled={selectedClassIds.length === 0 || !isSystemReady}
-                        className={`flex items-center px-5 py-2.5 font-black text-sm rounded-2xl border-2 transition-all active:scale-95 whitespace-nowrap ${
-                            selectedClassIds.length > 0 && isSystemReady 
-                            ? "border-orange-400 bg-orange-50 text-orange-700 hover:bg-orange-100 shadow-lg shadow-orange-100" 
-                            : "border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed opacity-60"
-                        }`}
-                        title={selectedStudentIds.length === 0 ? "Pilih kelas terlebih dahulu" : (!isSystemReady ? "Checklist semua kelas dan pastikan rentang kelas lengkap untuk menjalankan siklus" : "")}
-                    >
-                        {isSystemReady || selectedClassIds.length === 0 ? <TrendingUp className={`w-4 h-4 mr-2 ${selectedClassIds.length > 0 ? 'animate-pulse' : ''}`} /> : <Lock className="w-4 h-4 mr-2" />}
-                        Jalankan Siklus ({selectedClassIds.length})
-                    </button>
+      {/* Action Bar + Alumni button */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 mb-8">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Alumni Button (always visible, left side) */}
+          <button
+            onClick={() => setShowAlumniView(v => !v)}
+            className={`flex items-center gap-2 px-4 py-2 font-black text-[11px] uppercase tracking-widest rounded-2xl border-2 transition-all active:scale-95 ${
+              showAlumniView
+                ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-200'
+                : 'bg-amber-50 border-amber-200 text-amber-600 hover:bg-amber-100 hover:border-amber-400'
+            }`}
+          >
+            <GraduationCap className="w-4 h-4" />
+            Alumni
+            <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${
+              showAlumniView ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-700'
+            }`}>
+              {alumniList.length}
+            </span>
+          </button>
 
-                    <button 
-                        onClick={() => setIsBulkDeleteModalOpen(true)}
-                        disabled={selectedClassIds.length === 0}
-                        className={`flex items-center px-4 py-2 font-black text-sm rounded-2xl border-2 transition-all active:scale-95 whitespace-nowrap ${
-                            selectedClassIds.length > 0
-                            ? "border-red-400 bg-red-50 text-red-700 hover:bg-red-100 shadow-lg shadow-red-100" 
-                            : "border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed opacity-60"
-                        }`}
-                    >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Hapus ({selectedClassIds.length})
-                    </button>
-                </div>
+          {!showAlumniView && !isReadOnly && (
+            <>
+              <div className="w-px h-8 bg-slate-200 mx-1 shrink-0" />
+              <div className="flex gap-1.5">
+                <button 
+                  onClick={() => isSystemReady && setShowPromoteModal(true)} 
+                  disabled={selectedClassIds.length === 0 || !isSystemReady}
+                  className={`flex items-center px-5 py-2.5 font-black text-sm rounded-2xl border-2 transition-all active:scale-95 whitespace-nowrap ${
+                    selectedClassIds.length > 0 && isSystemReady 
+                    ? "border-orange-400 bg-orange-50 text-orange-700 hover:bg-orange-100 shadow-lg shadow-orange-100" 
+                    : "border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed opacity-60"
+                  }`}
+                  title={selectedStudentIds.length === 0 ? "Pilih kelas terlebih dahulu" : (!isSystemReady ? "Checklist semua kelas dan pastikan rentang kelas lengkap untuk menjalankan siklus" : "")}
+                >
+                  {isSystemReady || selectedClassIds.length === 0 ? <TrendingUp className={`w-4 h-4 mr-2 ${selectedClassIds.length > 0 ? 'animate-pulse' : ''}`} /> : <Lock className="w-4 h-4 mr-2" />}
+                  Jalankan Siklus ({selectedClassIds.length})
+                </button>
 
-                <div className="w-px h-8 bg-slate-200 mx-1 shrink-0" />
+                <button 
+                  onClick={() => setIsBulkDeleteModalOpen(true)}
+                  disabled={selectedClassIds.length === 0}
+                  className={`flex items-center px-4 py-2 font-black text-sm rounded-2xl border-2 transition-all active:scale-95 whitespace-nowrap ${
+                    selectedClassIds.length > 0
+                    ? "border-red-400 bg-red-50 text-red-700 hover:bg-red-100 shadow-lg shadow-red-100" 
+                    : "border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed opacity-60"
+                  }`}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Hapus ({selectedClassIds.length})
+                </button>
+              </div>
 
-                {classes.length > 0 && (
-                    <button 
-                        onClick={toggleSelectAllClasses}
-                        className="p-1.5 transition-all group shrink-0"
-                        title="Pilih Semua Kelas"
-                    >
-                        <div className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all ${selectedClassIds.length === classes.length ? 'bg-primary-600 border-primary-600 text-white shadow-sm' : 'bg-white border-slate-200 text-primary-600 group-hover:border-primary-400'}`}>
-                            {selectedClassIds.length === classes.length ? <Check className="w-4 h-4" /> : <div className="w-2.5 h-2.5 rounded-sm bg-slate-100 group-hover:bg-slate-200 transition-colors" />}
-                        </div>
-                    </button>
-                )}
-            </div>
+              <div className="w-px h-8 bg-slate-200 mx-1 shrink-0" />
 
-            <button 
-                onClick={openCreateModal}
-                className="flex items-center px-4 py-2 font-black text-xs rounded-xl border-2 border-primary-600 bg-primary-600 text-white shadow-lg shadow-primary-200 hover:bg-primary-700 hover:border-primary-700 transition-all active:scale-95 shrink-0"
-            >
-                TAMBAH KELAS
-            </button>
+              {classes.length > 0 && (
+                <button 
+                  onClick={toggleSelectAllClasses}
+                  className="p-1.5 transition-all group shrink-0"
+                  title="Pilih Semua Kelas"
+                >
+                  <div className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all ${selectedClassIds.length === classes.length ? 'bg-primary-600 border-primary-600 text-white shadow-sm' : 'bg-white border-slate-200 text-primary-600 group-hover:border-primary-400'}`}>
+                    {selectedClassIds.length === classes.length ? <Check className="w-4 h-4" /> : <div className="w-2.5 h-2.5 rounded-sm bg-slate-100 group-hover:bg-slate-200 transition-colors" />}
+                  </div>
+                </button>
+              )}
+            </>
+          )}
         </div>
-      )}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        {!showAlumniView && !isReadOnly && (
+          <button 
+            onClick={openCreateModal}
+            className="flex items-center px-4 py-2 font-black text-xs rounded-xl border-2 border-primary-600 bg-primary-600 text-white shadow-lg shadow-primary-200 hover:bg-primary-700 hover:border-primary-700 transition-all active:scale-95 shrink-0"
+          >
+            TAMBAH KELAS
+          </button>
+        )}
+      </div>
+      {!showAlumniView && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {Object.entries(groupedClasses).map(([groupKey, groupMembers]) => {
           const gradeNum = groupKey.match(/\d+/)?.[0] || '';
           const totalStudentsInGrade = groupMembers.reduce((sum, c) => sum + (c.student_count || 0), 0);
@@ -994,7 +1061,265 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
                 <p className="text-sm text-slate-400">Klik tombol "Tambah Kelas" untuk memulai struktur organisasi kelas.</p>
             </div>
         )}
-      </div>
+      </div>}
+
+      {/* Alumni Full-Page View */}
+      {showAlumniView && (
+        <div className="animate-in slide-in-from-top-4 duration-300 bg-white rounded-lg border border-amber-100 shadow-lg shadow-amber-50 overflow-hidden">
+          {/* Alumni Header */}
+          <div className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-400 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <button
+                onClick={() => setShowAlumniView(false)}
+                className="w-7 h-7 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center text-white transition-all active:scale-95"
+                title="Kembali ke Manajemen Kelas"
+              >
+                <ChevronRight className="w-4 h-4 rotate-180" />
+              </button>
+              <GraduationCap className="w-4 h-4 text-white/80" />
+              <div>
+                <h3 className="text-[11px] font-black text-white uppercase tracking-widest leading-none">Data Santri Alumni</h3>
+                <p className="text-[8px] font-bold text-white/60 uppercase tracking-[0.15em] mt-0.5">
+                  {alumniList.length} Alumni Terdaftar
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="px-4 py-2.5 border-b border-amber-100 flex flex-col sm:flex-row gap-2 bg-amber-50/30">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari nama atau NIS alumni..."
+                value={alumniSearch}
+                onChange={e => setAlumniSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 text-[11px] font-bold bg-white border border-amber-100 rounded-xl outline-none focus:border-amber-400 transition-all"
+              />
+            </div>
+            <select
+              value={alumniSortYear}
+              onChange={e => setAlumniSortYear(e.target.value)}
+              className="px-3 py-2 text-[11px] font-bold bg-white border border-amber-100 rounded-xl outline-none focus:border-amber-400 transition-all text-slate-700"
+            >
+              <option value="all">Semua Angkatan</option>
+              {[...new Set(alumniList.map(a => a.graduated_year).filter(Boolean))].sort((a,b)=>b-a).map(yr => (
+                <option key={yr} value={yr.toString()}>Angkatan {yr}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Alumni Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50/50">
+                <tr>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-left border-b border-slate-100 w-10">No</th>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-left border-b border-slate-100">Nama Santri</th>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 w-24">NIS</th>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 w-20">JK</th>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 w-24">Kelas Akhir</th>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 w-28">Tgl Lulus</th>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 w-24">Angkatan</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {(() => {
+                  const filtered = alumniList
+                    .filter(a => {
+                      const matchSearch = alumniSearch === '' ||
+                        a.full_name?.toLowerCase().includes(alumniSearch.toLowerCase()) ||
+                        a.nis?.toLowerCase().includes(alumniSearch.toLowerCase());
+                      const matchYear = alumniSortYear === 'all' || String(a.graduated_year) === alumniSortYear;
+                      return matchSearch && matchYear;
+                    })
+                    .sort((a, b) => new Date(b.graduated_at || 0).getTime() - new Date(a.graduated_at || 0).getTime());
+
+                  const totalPages = Math.max(1, Math.ceil(filtered.length / ALUMNI_PER_PAGE));
+                  const safePage = Math.min(alumniPage, totalPages);
+                  const paginated = filtered.slice((safePage - 1) * ALUMNI_PER_PAGE, safePage * ALUMNI_PER_PAGE);
+
+                  if (filtered.length === 0) return (
+                    <tr>
+                      <td colSpan={7} className="py-20 text-center">
+                        <GraduationCap className="w-12 h-12 mx-auto mb-3 text-slate-200" />
+                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
+                          {alumniList.length === 0 ? 'Belum ada data alumni' : 'Tidak ditemukan'}
+                        </p>
+                        {alumniList.length === 0 && (
+                          <p className="text-[9px] text-slate-300 mt-1">Data alumni akan muncul otomatis setelah siklus kenaikan kelas dijalankan</p>
+                        )}
+                      </td>
+                    </tr>
+                  );
+
+                  return paginated.map((alumni, idx) => (
+                    <tr key={alumni.id + idx} className="hover:bg-amber-50/20 transition-colors group">
+                      <td className="px-4 py-3 text-[10px] font-black text-slate-300">{String((safePage - 1) * ALUMNI_PER_PAGE + idx + 1).padStart(2,'0')}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center shrink-0">
+                            <span className="text-[10px] font-black text-amber-600">
+                              {alumni.full_name?.charAt(0)?.toUpperCase() || '?'}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-[11px] font-black text-slate-800 leading-tight capitalize">{alumni.full_name}</p>
+                            <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">ID: {alumni.id?.slice(-6) || '-'}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="text-[10px] font-black text-slate-600">{alumni.nis || '-'}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${
+                          alumni.gender === 'L' ? 'bg-indigo-50 text-indigo-600' : 'bg-pink-50 text-pink-600'
+                        }`}>
+                          {alumni.gender === 'L' ? 'Putra' : alumni.gender === 'P' ? 'Putri' : '-'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-[9px] font-black border border-amber-100">
+                          {alumni.last_class || '-'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="text-[10px] font-bold text-slate-500">
+                          {alumni.graduated_at ? new Date(alumni.graduated_at).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' }) : '-'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="px-2 py-1 bg-slate-50 text-slate-600 rounded-lg text-[10px] font-black border border-slate-100">
+                          {alumni.graduated_year || '-'}
+                        </span>
+                      </td>
+                    </tr>
+                  ));
+                })()}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {(() => {
+            const filtered = alumniList.filter(a => {
+              const matchSearch = alumniSearch === '' ||
+                a.full_name?.toLowerCase().includes(alumniSearch.toLowerCase()) ||
+                a.nis?.toLowerCase().includes(alumniSearch.toLowerCase());
+              const matchYear = alumniSortYear === 'all' || String(a.graduated_year) === alumniSortYear;
+              return matchSearch && matchYear;
+            });
+            const totalPages = Math.max(1, Math.ceil(filtered.length / ALUMNI_PER_PAGE));
+            const safePage = Math.min(alumniPage, totalPages);
+            const startItem = filtered.length === 0 ? 0 : (safePage - 1) * ALUMNI_PER_PAGE + 1;
+            const endItem = Math.min(safePage * ALUMNI_PER_PAGE, filtered.length);
+
+            if (filtered.length <= ALUMNI_PER_PAGE) return null;
+
+            return (
+              <div className="px-4 py-3 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                  Menampilkan <span className="text-slate-600 font-black">{startItem}–{endItem}</span> dari <span className="text-slate-600 font-black">{filtered.length}</span> alumni
+                </p>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setAlumniPage(1)}
+                    disabled={safePage === 1}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg text-[9px] font-black border transition-all disabled:opacity-30 disabled:cursor-not-allowed border-slate-200 bg-white text-slate-500 hover:border-amber-300 hover:text-amber-600 active:scale-95"
+                  >
+                    «
+                  </button>
+                  <button
+                    onClick={() => setAlumniPage(p => Math.max(1, p - 1))}
+                    disabled={safePage === 1}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg border transition-all disabled:opacity-30 disabled:cursor-not-allowed border-slate-200 bg-white text-slate-500 hover:border-amber-300 hover:text-amber-600 active:scale-95"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5 rotate-180" />
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(p => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
+                    .reduce<(number | string)[]>((acc, p, i, arr) => {
+                      if (i > 0 && (p as number) - (arr[i - 1] as number) > 1) acc.push('…');
+                      acc.push(p);
+                      return acc;
+                    }, [])
+                    .map((p, i) =>
+                      p === '…' ? (
+                        <span key={`ellipsis-${i}`} className="w-7 h-7 flex items-center justify-center text-[9px] text-slate-300 font-bold">…</span>
+                      ) : (
+                        <button
+                          key={p}
+                          onClick={() => setAlumniPage(p as number)}
+                          className={`w-7 h-7 flex items-center justify-center rounded-lg text-[9px] font-black border transition-all active:scale-95 ${
+                            safePage === p
+                              ? 'bg-amber-500 border-amber-500 text-white shadow-sm shadow-amber-200'
+                              : 'border-slate-200 bg-white text-slate-500 hover:border-amber-300 hover:text-amber-600'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      )
+                    )
+                  }
+
+                  <button
+                    onClick={() => setAlumniPage(p => Math.min(totalPages, p + 1))}
+                    disabled={safePage === totalPages}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg border transition-all disabled:opacity-30 disabled:cursor-not-allowed border-slate-200 bg-white text-slate-500 hover:border-amber-300 hover:text-amber-600 active:scale-95"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setAlumniPage(totalPages)}
+                    disabled={safePage === totalPages}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg text-[9px] font-black border transition-all disabled:opacity-30 disabled:cursor-not-allowed border-slate-200 bg-white text-slate-500 hover:border-amber-300 hover:text-amber-600 active:scale-95"
+                  >
+                    »
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+          {alumniList.length > 0 && (
+            <div className="px-6 py-4 bg-gradient-to-r from-amber-50 to-orange-50 border-t border-amber-100 flex flex-wrap gap-6">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center">
+                  <Medal className="w-4 h-4 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Total Alumni</p>
+                  <p className="text-sm font-black text-slate-800">{alumniList.length} Santri</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-orange-100 rounded-xl flex items-center justify-center">
+                  <Calendar className="w-4 h-4 text-orange-500" />
+                </div>
+                <div>
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Total Angkatan</p>
+                  <p className="text-sm font-black text-slate-800">
+                    {new Set(alumniList.map(a => a.graduated_year).filter(Boolean)).size} Angkatan
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-emerald-100 rounded-xl flex items-center justify-center">
+                  <UserCheck className="w-4 h-4 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Putra / Putri</p>
+                  <p className="text-sm font-black text-slate-800">
+                    {alumniList.filter(a => a.gender === 'L').length} / {alumniList.filter(a => a.gender === 'P').length}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <ClassFormModal
         isOpen={isFormModalOpen}
@@ -1140,49 +1465,71 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
 
       {/* Promotion Confirmation Modal */}
       {showPromoteModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
-              <div className="bg-white rounded-[32px] shadow-2xl max-w-md w-full overflow-hidden relative border border-slate-100">
-                  {/* Close Button UI */}
-                  <button 
-                    onClick={() => setShowPromoteModal(false)}
-                    className="absolute top-6 right-6 p-1.5 text-slate-300 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-all z-20"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                  <div className="p-8 text-center">
-                      <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <TrendingUp className="w-8 h-8 text-orange-500" />
+          <div className="fixed inset-0 z-[200] flex items-center justify-center lg:pl-64 lg:pt-20 p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
+              <div className="bg-white rounded-[28px] shadow-2xl max-w-sm w-full overflow-hidden relative border border-white/20 animate-in zoom-in-95 duration-200">
+                  
+                  {/* Header */}
+                  <div className="px-5 py-3.5 border-b border-slate-50 flex justify-between items-center bg-[#FCFDFE]">
+                      <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 bg-orange-50 text-orange-500 rounded-xl flex items-center justify-center shrink-0">
+                              <TrendingUp className="w-4 h-4" />
+                          </div>
+                          <div>
+                              <h3 className="text-sm font-black text-slate-800 tracking-tight leading-none">Siklus Kenaikan Kelas</h3>
+                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                                  {selectedClassIds.length} Kelas Dipilih
+                              </p>
+                          </div>
                       </div>
-                      <h3 className="text-xl font-bold text-slate-800 mb-2">Siklus Kenaikan Kelas</h3>
-                      <p className="text-slate-500 text-sm mb-6 leading-relaxed text-left">
-                          Sistem akan memproses <span className="font-bold text-orange-600">{selectedClassIds.length} kelas</span> yang Anda pilih dengan aturan:
-                          <br /><br />
-                          1. <span className="text-emerald-600 font-bold">Naik Tingkat</span>: Angka pada nama kelas bertambah <span className="font-bold text-slate-800">+1</span>.
-                          <br />
-                          2. <span className="text-amber-600 font-bold">Kelulusan</span>: Jika sudah mencapai <span className="font-bold">Kelas {systemConfig.max}</span>, kelas akan dihapus dan <span className="font-bold text-indigo-600">terlahir kembali</span> sebagai <span className="font-bold text-indigo-600">Kelas {systemConfig.min}</span>.
-                      </p>
-                      
-                      <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-left mb-6 flex gap-3">
-                          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
-                          <div className="text-[11px] text-amber-700 leading-normal">
-                              <strong>Peringatan Penting:</strong> Proses "Kelulusan" akan <strong>MENGHAPUS</strong> card kelas tersebut. Pastikan data santri di kelas {systemConfig.max} sudah diproses sebelum menjalankan ini.
+                      <button 
+                        onClick={() => setShowPromoteModal(false)}
+                        className="p-1.5 text-slate-300 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-all"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                  </div>
+
+                  {/* Body */}
+                  <div className="p-5 space-y-4">
+                      {/* Rules */}
+                      <div className="space-y-2">
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Aturan Proses</p>
+                          <div className="flex items-start gap-2.5 p-3 bg-emerald-50 rounded-[14px] border border-emerald-100">
+                              <span className="text-[9px] font-black text-emerald-600 bg-emerald-100 rounded-md px-1.5 py-0.5 shrink-0 mt-0.5">01</span>
+                              <p className="text-[10px] font-bold text-emerald-800 leading-snug">
+                                  <span className="font-black">Naik Tingkat:</span> Angka nama kelas bertambah <span className="font-black text-slate-800">+1</span>
+                              </p>
+                          </div>
+                          <div className="flex items-start gap-2.5 p-3 bg-amber-50 rounded-[14px] border border-amber-100">
+                              <span className="text-[9px] font-black text-amber-600 bg-amber-100 rounded-md px-1.5 py-0.5 shrink-0 mt-0.5">02</span>
+                              <p className="text-[10px] font-bold text-amber-800 leading-snug">
+                                  <span className="font-black">Kelulusan:</span> Jika mencapai Kelas <span className="font-black text-slate-800">{systemConfig.max}</span>, kelas dihapus dan terlahir kembali sebagai Kelas <span className="font-black text-indigo-600">{systemConfig.min}</span>
+                              </p>
                           </div>
                       </div>
 
-                      <div className="flex gap-3">
-                          <Button 
-                            variant="secondary" 
-                            className="flex-1" 
+                      {/* Warning */}
+                      <div className="bg-amber-50 border border-amber-100 rounded-[14px] p-3 flex gap-2.5 items-start">
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                          <p className="text-[10px] font-bold text-amber-700 leading-snug">
+                              <span className="font-black">Peringatan:</span> Proses "Kelulusan" akan <span className="font-black">MENGHAPUS</span> card kelas. Pastikan data santri kelas {systemConfig.max} sudah diproses.
+                          </p>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2.5 pt-1">
+                          <button 
                             onClick={() => setShowPromoteModal(false)}
+                            className="flex-1 py-2.5 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-2 border-slate-100 hover:bg-slate-50 hover:text-slate-600 transition-all active:scale-[0.98]"
                           >
                               Batal
-                          </Button>
-                          <Button 
-                            className="flex-1 bg-orange-500 hover:bg-orange-600 border-orange-500 shadow-lg shadow-orange-100" 
+                          </button>
+                          <button 
                             onClick={handleBulkPromote}
+                            className="flex-[2] py-2.5 rounded-xl text-[10px] font-black text-white uppercase tracking-[0.15em] bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-100 border-2 border-orange-500 transition-all active:scale-[0.98]"
                           >
                               Proses Sekarang
-                          </Button>
+                          </button>
                       </div>
                   </div>
               </div>
@@ -1193,7 +1540,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
-        centerOnScreen={true}
+        centerOnScreen={false}
         title="Hapus Kelas?"
         icon={<Trash2 className="w-8 h-8" />}
         variant="danger"
@@ -1213,7 +1560,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
         isOpen={isBulkDeleteModalOpen}
         onClose={() => setIsBulkDeleteModalOpen(false)}
         onConfirm={handleBulkDelete}
-        centerOnScreen={true}
+        centerOnScreen={false}
         title="Hapus Massal?"
         icon={<Trash2 className="w-8 h-8" />}
         variant="danger"

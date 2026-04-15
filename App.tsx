@@ -32,7 +32,7 @@ import { EmailSettings } from './pages/superadmin/EmailSettings';
 import { GlobalAuditLogs } from './pages/superadmin/GlobalAuditLogs';
 // Common Page
 import { Settings } from './pages/Settings';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, AlertTriangle } from 'lucide-react';
 
 import { UserProfile, PageView, UserRole, Tenant } from './types';
 import { getProfileWithRetry, signOut } from './services/authService';
@@ -119,11 +119,6 @@ const AppContent: React.FC = () => {
 
   const switchAccount = async (targetAccount: any) => {
     setLoading(true);
-    addNotification({ 
-        type: 'info', 
-        title: 'Beralih Profil', 
-        message: `Masuk sebagai ${targetAccount.profile.full_name}...` 
-    });
 
     try {
         if (!targetAccount.session) throw new Error("No session");
@@ -131,6 +126,12 @@ const AppContent: React.FC = () => {
         if (error) throw error;
         
         if (data.session) {
+            addNotification({ 
+                type: 'info', 
+                title: 'Beralih Profil', 
+                message: `Masuk sebagai ${targetAccount.profile.full_name}...` 
+            });
+
             const isSuperAdmin = targetAccount.profile.role === UserRole.SUPERADMIN;
             const targetPath = isSuperAdmin ? '/app/sa-dashboard' : '/app/dashboard';
             
@@ -144,7 +145,8 @@ const AppContent: React.FC = () => {
         addNotification({ 
             type: 'error', 
             title: 'Sesi Habis', 
-            message: 'Silakan login ulang manual untuk akun ini.' 
+            message: 'Silakan login ulang manual untuk ini.',
+            duration: 6000
         });
         setLoading(false);
     }
@@ -304,10 +306,36 @@ const AppContent: React.FC = () => {
     };
   }, []); 
 
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [pendingPage, setPendingPage] = useState<PageView | null>(null);
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const [saveTriggered, setSaveTriggered] = useState(0);
+
   const handleNavigation = (page: PageView) => {
+    if (page === currentPage) return;
+    if (hasUnsavedChanges) {
+        setPendingPage(page);
+        setShowUnsavedModal(true);
+        return;
+    }
     setCurrentPage(page);
     window.history.pushState({}, '', `/app/${page}`);
   }; 
+
+  const proceedNavigation = () => {
+    if (pendingPage) {
+        setHasUnsavedChanges(false);
+        setCurrentPage(pendingPage);
+        window.history.pushState({}, '', `/app/${pendingPage}`);
+        setPendingPage(null);
+    }
+    setShowUnsavedModal(false);
+  };
+
+  const handleSaveAndProceed = () => {
+    setSaveTriggered(prev => prev + 1);
+    // The component will handle save then call onSaveSuccess
+  };
 
   // --- AUTH ACTIONS ---
 
@@ -472,10 +500,10 @@ const AppContent: React.FC = () => {
       case 'target-management': return (user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) ? <TargetManagement tenantId={user.tenant_id!} user={user} /> : <div>Akses Ditolak</div>;
       case 'audit-logs': return (user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) ? <AuditLogs tenantId={user.tenant_id!} /> : <div>Akses Ditolak</div>;
       case 'data-santri': return (user.role === UserRole.TEACHER || user.role === UserRole.SUPERVISOR || user.role === UserRole.ADMIN) ? <StudentDirectory user={user} tenantId={user.tenant_id!} /> : <div>Akses Ditolak</div>;
-      case 'input-hafalan': return user.role === UserRole.TEACHER ? <InputHafalan user={user} /> : <div>Akses Ditolak</div>;
+      case 'input-hafalan': return user.role === UserRole.TEACHER ? <InputHafalan user={user} onSetUnsavedChanges={setHasUnsavedChanges} saveTrigger={saveTriggered} onSaveSuccess={proceedNavigation} isGlobalModalOpen={showUnsavedModal} /> : <div>Akses Ditolak</div>;
       case 'recap-hafalan': return (user.role === UserRole.SUPERVISOR || user.role === UserRole.ADMIN) ? <MemorizationRecap user={user} /> : <div>Akses Ditolak</div>;
       case 'reports': return user.role === UserRole.SANTRI ? <StudentReports user={user} /> : <div>Akses Ditolak</div>;
-      case 'weekly-target': return user.role === UserRole.TEACHER ? <WeeklyTarget user={user} /> : <div>Akses Ditolak</div>;
+      case 'weekly-target': return user.role === UserRole.TEACHER ? <WeeklyTarget user={user} onSetUnsavedChanges={setHasUnsavedChanges} saveTrigger={saveTriggered} onSaveSuccess={proceedNavigation} isGlobalModalOpen={showUnsavedModal} /> : <div>Akses Ditolak</div>;
       case 'student-progress-manage': return user.role === UserRole.TEACHER ? <ManageStudentProgress user={user} /> : <div>Akses Ditolak</div>;
       case 'weekly-target-monitor': return (user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) ? <WeeklyTargetMonitor user={user} tenantId={user.tenant_id!} /> : <div>Akses Ditolak</div>;
       case 'guardian-exams': return user.role === UserRole.SANTRI ? <StudentExamResults user={user} /> : <div>Akses Ditolak</div>;
@@ -533,6 +561,43 @@ const AppContent: React.FC = () => {
       <div className="animate-fade-in">
         {renderContent()}
       </div>
+
+      {/* Unsaved Changes Confirmation Modal */}
+      {showUnsavedModal && (
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in">
+              <div className="bg-white rounded-[28px] shadow-2xl w-full max-w-[380px] overflow-hidden animate-scale-in border border-white/50">
+                  <div className="p-8 text-center">
+                      <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-amber-500 shadow-sm border border-amber-100">
+                          <AlertTriangle className="w-8 h-8" />
+                      </div>
+                      <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest leading-normal mb-3">Tunggu Sebentar!</h3>
+                      <p className="text-[11px] font-bold text-slate-500 leading-relaxed uppercase tracking-wide opacity-80">
+                          Anda memiliki perubahan data yang belum disimpan. Ingin menyimpannya sebelum pindah halaman?
+                      </p>
+                  </div>
+                  <div className="px-6 pb-8 flex items-center gap-2">
+                      <button 
+                          onClick={() => { setShowUnsavedModal(false); setPendingPage(null); }}
+                          className="flex-1 py-3 bg-white text-slate-400 border border-slate-100 rounded-xl text-[9px] font-black uppercase tracking-widest hover:text-slate-600 transition-all active:scale-95"
+                      >
+                          Batal
+                      </button>
+                      <button 
+                          onClick={proceedNavigation}
+                          className="flex-1 py-3 bg-rose-50 text-rose-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all active:scale-95"
+                      >
+                          Buang
+                      </button>
+                      <button 
+                          onClick={handleSaveAndProceed}
+                          className="flex-[2] py-3 bg-indigo-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 outline-none"
+                      >
+                          Simpan & Pindah
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}
     </Layout>
   );
 }

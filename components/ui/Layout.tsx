@@ -157,9 +157,10 @@ export const Layout: React.FC<LayoutProps> = ({
       } else {
           // If no session, show notification and logout
           addNotification({
-              type: 'info',
-              title: 'Sesi Terputus',
-              message: 'Akun ini belum tertaut sesi instan. Silakan login manual satu kali lagi.'
+              type: 'error',
+              title: 'Sesi Habis',
+              message: 'Silakan login ulang manual untuk ini.',
+              duration: 6000
           });
           onLogout();
       }

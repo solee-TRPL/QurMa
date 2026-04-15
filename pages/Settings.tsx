@@ -318,7 +318,11 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                             <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} accept="image/png, image/jpeg" style={{ display: 'none' }} />
                             <h3 className="text-2xl font-black text-slate-800 tracking-tight">{user.full_name}</h3>
                             <p className="text-[11px] font-black text-indigo-600 mt-1.5 uppercase tracking-widest leading-none px-3 py-1.5 bg-indigo-50 rounded-xl w-fit mx-auto md:mx-0 border border-indigo-100">
-                                {user.role.toLowerCase() === 'guardian' ? 'Wali Santri' : user.role}
+                                {user.role === UserRole.ADMIN ? 'Admin Sekolah' : 
+                                 user.role === UserRole.TEACHER ? 'Ustadz / Guru' :
+                                 user.role === UserRole.SANTRI ? 'Santri' :
+                                 user.role === UserRole.SUPERVISOR ? 'Supervisor' :
+                                 user.role === UserRole.SUPERADMIN ? 'Superadmin' : user.role}
                             </p>
                         </div>
                     </div>
@@ -360,11 +364,11 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                     className="w-full px-5 py-2 border-2 border-slate-100 bg-slate-50 text-slate-400 rounded-2xl cursor-not-allowed text-sm font-bold outline-none appearance-none"
                                     disabled
                                 >
-                                    <option value={UserRole.ADMIN}>ADMIN SEKOLAH</option>
-                                    <option value={UserRole.TEACHER}>USTADZ / GURU</option>
-                                    <option value={UserRole.SANTRI}>SANTRI</option>
-                                    <option value={UserRole.SUPERVISOR}>SUPERVISOR</option>
-                                    <option value={UserRole.SUPERADMIN}>SUPERADMIN</option>
+                                    <option value={UserRole.ADMIN}>Admin Sekolah</option>
+                                    <option value={UserRole.TEACHER}>Ustadz / Guru</option>
+                                    <option value={UserRole.SANTRI}>Santri</option>
+                                    <option value={UserRole.SUPERVISOR}>Supervisor</option>
+                                    <option value={UserRole.SUPERADMIN}>Superadmin</option>
                                 </select>
                                 <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300" />
                              </div>
