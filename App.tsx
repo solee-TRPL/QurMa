@@ -48,13 +48,21 @@ const AppContent: React.FC = () => {
   // --- PERFORMANCE 1: HYDRATION ---
   // Instantly load from cache to avoid white screen flicker
   const [user, setUser] = useState<UserProfile | null>(() => {
-    const cached = localStorage.getItem('qurma_active_profile');
-    return cached ? JSON.parse(cached) : null;
+    try {
+        const cached = localStorage.getItem('qurma_active_profile');
+        return cached ? JSON.parse(cached) : null;
+    } catch (e) {
+        return null;
+    }
   });
   
   const [tenant, setTenant] = useState<Tenant | null>(() => {
-    const cached = localStorage.getItem('qurma_active_tenant');
-    return cached ? JSON.parse(cached) : null;
+    try {
+        const cached = localStorage.getItem('qurma_active_tenant');
+        return cached ? JSON.parse(cached) : null;
+    } catch (e) {
+        return null;
+    }
   });
 
   const [isInitializing, setIsInitializing] = useState(true);
@@ -73,7 +81,17 @@ const AppContent: React.FC = () => {
   const [deviceId] = useState(() => {
     let id = localStorage.getItem('qurma_device_id');
     if (!id) {
-        id = crypto.randomUUID();
+        // Fallback for insecure contexts (HTTP via IP)
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            id = crypto.randomUUID();
+        } else {
+            // Simple UUID v4 fallback
+            id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
         localStorage.setItem('qurma_device_id', id);
     }
     return id;
