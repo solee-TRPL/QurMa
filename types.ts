@@ -1,34 +1,34 @@
-
-
-
-
 // Domain Types
 
 export enum UserRole {
-  SUPERADMIN = 'superadmin',
-  ADMIN = 'admin',
-  TEACHER = 'teacher', // Guru / Ustadz
-  SANTRI = 'santri', // Santri
-  SUPERVISOR = 'supervisor', // Supervisor
+  SUPERADMIN = "superadmin",
+  ADMIN = "admin",
+  TEACHER = "teacher", // Guru / Ustadz
+  SANTRI = "santri", // Santri
+  SUPERVISOR = "supervisor", // Supervisor
 }
 
 export enum MemorizationType {
-  SABAQ = 'sabaq', // Hafalan Baru
-  SABQI = 'sabqi', // Penguatan Hafalan Baru
-  MANZIL = 'manzil', // Murajaah Lama
+  SABAQ = "sabaq", // Hafalan Baru
+  SABQI = "sabqi", // Penguatan Hafalan Baru
+  MANZIL = "manzil", // Murajaah Lama
 }
 
 export enum MemorizationStatus {
-  LANCAR = 'mumtaz',      // Changed to Mumtaz based on previous request
-  PERBAIKAN = 'jayyid',   // Changed to Jayyid
-  ULANG = 'naqish',       // Changed to Naqish
+  LANCAR = "LANCAR",
+  TIDAK_LANCAR = "TIDAK_LANCAR",
+  TIDAK_SETOR = "TIDAK_SETOR",
+  SAKIT = "SAKIT",
+  IZIN = "IZIN",
+  ALPA = "ALPA",
+  EMPTY = "-",
 }
 
 export interface Tenant {
   id: string;
   name: string;
   code?: string; // School Code / ID (e.g., 0001)
-  plan: 'basic' | 'pro' | 'enterprise';
+  plan: "basic" | "pro" | "enterprise";
   logo_url?: string;
   created_at: string;
   cycle_config?: any; // To store class cycle settings
@@ -36,6 +36,7 @@ export interface Tenant {
     sabaq?: any[];
     manzil?: any[];
     sabqi?: any[];
+    target_info?: { label: string; value: string }[];
   };
 }
 
@@ -47,6 +48,7 @@ export interface UserProfile {
   tenant_id: string | null; // Superadmin has null tenant_id
   avatar_url?: string;
   whatsapp_number?: string;
+  initial_password?: string; // Backup for manual reset (no-email env)
   student_name?: string; // For UI display
   tenant_name?: string; // For Superadmin UI display
 }
@@ -61,9 +63,18 @@ export interface Student {
   class_id?: string;
   current_juz?: number;
   current_page?: number;
-  gender?: 'L' | 'P';
+  gender?: "L" | "P";
   photo_url?: string;
   daily_target?: string;
+  father_name?: string;
+  mother_name?: string;
+  father_phone?: string;
+  mother_phone?: string;
+  address?: string; // Standardized as a concatenated version or the main street address
+  rt_rw?: string;
+  village?: string;
+  district?: string;
+  city?: string;
 }
 
 export interface Class {
@@ -89,11 +100,14 @@ export interface MemorizationRecord {
   record_date: string;
   type: MemorizationType;
   surah_name: string;
-  ayat_start: number;
-  ayat_end: number;
+  ayat_start: number; // Stores Position (Ayat Terakhir)
+  ayat_end: number;   // Stores Volume (Jumlah Baris/Halaman)
+  jumlah?: number;    // Optional virtual field for UI/JSON
   status: MemorizationStatus;
+  keterangan?: string;
   score?: number;
   is_verified?: boolean;
+  is_read_by_parent?: boolean;
   notes?: string;
   created_at: string;
   created_by?: string;
@@ -117,7 +131,7 @@ export interface ExamSchedule {
   time: string;
   examiner_name: string;
   location: string;
-  status: 'upcoming' | 'completed' | 'cancelled';
+  status: "upcoming" | "completed" | "cancelled";
   notes?: string;
   score?: number;
   verdict?: MemorizationStatus;
@@ -130,7 +144,7 @@ export interface TeacherNote {
   student_id: string;
   teacher_name: string;
   date: string;
-  category: 'Motivasi' | 'Evaluasi' | 'Perilaku' | 'Lainnya';
+  category: "Motivasi" | "Evaluasi" | "Perilaku" | "Lainnya";
   content: string;
 }
 
@@ -138,7 +152,7 @@ export interface AuditLogEntry {
   id: string;
   actor_name: string;
   actor_role: string;
-  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'EXPORT';
+  action: "CREATE" | "UPDATE" | "DELETE" | "LOGIN" | "EXPORT";
   entity: string;
   details: string;
   ip_address: string;
@@ -153,28 +167,33 @@ export interface AdminStats {
   totalTeachers: number;
   totalHalaqahs: number;
   totalRecordsToday: number;
-  memorizationQuality: { name: string, value: number, color: string }[];
-  memorizationTrend: { name: string, total: number, fullDate: string }[];
-  monthlyTrend?: { name: string, total: number }[];
+  sabaqToday: number;
+  sabqiToday: number;
+  manzilToday: number;
+  notManzilToday: number;
+  manzilDoneIds: string[];
+  memorizationQuality: { name: string; value: number; color: string }[];
+  memorizationTrend: { name: string; total: number; fullDate: string }[];
+  monthlyTrend?: { name: string; total: number }[];
 }
 
 export interface SuperAdminStats {
-    totalTenants: number;
-    totalUsers: number;
+  totalTenants: number;
+  totalUsers: number;
 
-    totalTeachers: number;
-    totalStudents: number;
+  totalTeachers: number;
+  totalStudents: number;
 }
 
 export interface GuardianDashboardStats {
-    currentSurah: string;
-    currentAyat: string;
-    totalJuz: number;
-    lastStatus: MemorizationStatus;
-    teacherNote: string;
-    teacherNoteDate: string;
-    juzProgress: number; // 0-100
-    dailyTarget: string;
+  currentSurah: string;
+  currentAyat: string;
+  totalJuz: number;
+  lastStatus: MemorizationStatus;
+  teacherNote: string;
+  teacherNoteDate: string;
+  juzProgress: number; // 0-100
+  dailyTarget: string;
 }
 
 export interface TeacherStats {
@@ -194,7 +213,7 @@ export interface AuthState {
 
 export interface Notification {
   id: string;
-  type: 'success' | 'error' | 'warning' | 'info';
+  type: "success" | "error" | "warning" | "info";
   title: string;
   message: string;
   duration?: number;
@@ -218,13 +237,13 @@ export interface WeeklyTarget {
     css?: string;
     manzil_target?: string;
     manzil_hal?: number;
-    manzil_ket?: 'A' | 'B' | 'C' | '';
+    manzil_ket?: "A" | "B" | "C" | "";
     sabqi_target?: number;
     sabqi_target_surat?: string;
-    sabqi_ket?: 'A' | 'B' | 'C' | '';
+    sabqi_ket?: "A" | "B" | "C" | "";
     sabaq_target?: number;
     sabaq_target_surat?: string;
-    sabaq_ket?: 'A' | 'B' | 'C' | '';
+    sabaq_ket?: "A" | "B" | "C" | "";
     current_juz?: number;
     current_page?: number;
   };
@@ -232,10 +251,34 @@ export interface WeeklyTarget {
   updated_at?: string;
 }
 
-export type PageView = 
+export type PageView =
   // Standard Roles
-  'dashboard' | 'input-hafalan' | 'recap-hafalan' | 'data-santri' | 'student-contacts' | 'exam-grades' | 
-  'guardian-exams' | 'users' | 'student-management' | 'classes' | 'halaqah-management' | 'audit-logs' | 'reports' | 'settings' | 'target-management' |
-  'weekly-target' | 'student-progress' | 'weekly-target-monitor' | 'student-progress-manage' |
+  | "dashboard"
+  | "input-hafalan"
+  | "recap-hafalan"
+  | "data-santri"
+  | "student-contacts"
+  | "exam-grades"
+  | "guardian-exams"
+  | "users"
+  | "student-management"
+  | "classes"
+  | "halaqah-management"
+  | "audit-logs"
+  | "reports"
+  | "settings"
+  | "target-management"
+  | "weekly-target"
+  | "student-progress"
+  | "weekly-target-monitor"
+  | "monitor-hafalan"
+  | "student-progress-manage"
+  | "pencapaian"
+  | "teacher-notes"
   // Superadmin Roles
-  'sa-dashboard' | 'sa-tenants' | 'sa-users' | 'sa-platform-settings' | 'sa-email-settings' | 'sa-audit-logs';
+  | "sa-dashboard"
+  | "sa-tenants"
+  | "sa-users"
+  | "sa-platform-settings"
+  | "sa-email-settings"
+  | "sa-audit-logs";

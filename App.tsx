@@ -11,6 +11,7 @@ import { ClassManagement } from './pages/admin/ClassManagement';
 import { AuditLogs } from './pages/admin/AuditLogs';
 import { TargetManagement } from './pages/admin/TargetManagement';
 import { WeeklyTargetMonitor } from './pages/admin/WeeklyTargetMonitor';
+import { MonitorHafalan } from './pages/admin/MonitorHafalan';
 // Teacher Pages
 import { StudentDirectory } from './pages/teacher/StudentDirectory';
 import { GuardianDirectory } from './pages/teacher/GuardianDirectory';
@@ -23,6 +24,8 @@ import { ManageStudentProgress } from './pages/teacher/ManageStudentProgress';
 import { StudentReports } from './pages/guardian/GuardianReports';
 import { StudentExamResults } from './pages/guardian/GuardianExamResults';
 import { StudentProgress } from './pages/guardian/StudentProgress';
+import { StudentAchievements } from './pages/guardian/StudentAchievements';
+import { TeacherNotesList } from './pages/guardian/TeacherNotesList';
 // Superadmin Pages
 import { SuperAdminDashboard } from './pages/superadmin/SuperAdminDashboard';
 import { TenantManagement } from './pages/superadmin/TenantManagement';
@@ -32,7 +35,7 @@ import { EmailSettings } from './pages/superadmin/EmailSettings';
 import { GlobalAuditLogs } from './pages/superadmin/GlobalAuditLogs';
 // Common Page
 import { Settings } from './pages/Settings';
-import { BookOpen, AlertTriangle } from 'lucide-react';
+import { BookOpen, AlertTriangle, AlertCircle } from 'lucide-react';
 
 import { UserProfile, PageView, UserRole, Tenant } from './types';
 import { getProfileWithRetry, signOut } from './services/authService';
@@ -55,6 +58,7 @@ const AppContent: React.FC = () => {
   });
 
   const [isInitializing, setIsInitializing] = useState(true);
+  const [showCapacityPrompt, setShowCapacityPrompt] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState<PageView>(() => {
     const path = window.location.pathname.substring(1);
     // Handle /app prefix
@@ -63,6 +67,16 @@ const AppContent: React.FC = () => {
         return subPath || 'dashboard';
     }
     return (path as PageView) || 'dashboard';
+  });
+
+  // --- DEVICE ID & SESSION BACKUP CORE ---
+  const [deviceId] = useState(() => {
+    let id = localStorage.getItem('qurma_device_id');
+    if (!id) {
+        id = crypto.randomUUID();
+        localStorage.setItem('qurma_device_id', id);
+    }
+    return id;
   });
   
   const { isLoading, setLoading } = useLoading();
@@ -83,71 +97,169 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const saveAccount = (profile: UserProfile, session: any) => {
+  const saveAccount = async (profile: UserProfile, session: any) => {
+    if (!profile || !profile.id) return;
     const accounts = getAccounts();
-    // Filter out if already exists (no duplicates)
-    const filtered = accounts.filter((a: any) => a.id !== profile.id);
+    const filtered = accounts.filter((a: any) => (a.id || a.profile?.id) !== profile.id);
     
-    // Check limit
-    if (filtered.length >= 5) {
+    // CHECK LIMIT (Increased to 100 for 'Forever' feel)
+    if (filtered.length >= 100) {
         const oldest = filtered[filtered.length - 1];
+        const oldestId = oldest.id || oldest.profile?.id;
+        
+        // DESTROY FROM DB BACKUP TO PREVENT GHOST SYNC
+        try {
+            await supabase.rpc('delete_backup_session', {
+                target_user_id: oldestId,
+                target_device_id: deviceId
+            });
+        } catch (e) {
+            console.error("[Auth] Failed to purge oldest account from DB:", e);
+        }
+
         addNotification({ 
             type: 'warning', 
             title: 'Kapasitas Penuh', 
-            message: `Akun tertua (${oldest.profile.full_name}) dicabut untuk memberi ruang.` 
+            message: `Akun tertua (${oldest.profile?.full_name || 'Tanpa Nama'}) dicabut untuk memberi ruang.` 
         });
     }
+
+    const sessionData = { 
+        access_token: session.access_token, 
+        refresh_token: session.refresh_token 
+    };
 
     const newEntry = {
         id: profile.id,
         profile: profile,
-        session: { access_token: session.access_token, refresh_token: session.refresh_token },
+        session: sessionData,
         last_active: new Date().toISOString()
     };
 
-    // Newest always first, limit to 5
-    const updatedList = [newEntry, ...filtered].slice(0, 5);
+    const updatedList = [newEntry, ...filtered].slice(0, 100);
     localStorage.setItem('otherAccounts', JSON.stringify(updatedList));
+
+    // SYNC TO DB BACKUP (Using RPC to avoid race-condition 401 errors)
+    try {
+        await supabase.rpc('save_backup_session', {
+            target_user_id: profile.id,
+            target_device_id: deviceId,
+            target_token: session.refresh_token,
+            target_profile: profile
+        });
+    } catch (e) {
+        console.error("[Auth] DB Sync failed:", e);
+    }
   };
 
-  const removeAccount = (id: string) => {
+  const removeAccount = async (userId: string, fullName: string) => {
     const accounts = getAccounts();
-    const updated = accounts.filter((a: any) => a.id !== id);
+    const updated = accounts.filter((a: any) => (a.id || a.profile?.id) !== userId);
     localStorage.setItem('otherAccounts', JSON.stringify(updated));
-    // Trigger re-render by not doing anything since Layout reads from localStorage
+    
+    // DB Cleanup using RPC (to bypass RLS for non-active accounts)
+    try {
+        await supabase.rpc('delete_backup_session', {
+            target_user_id: userId,
+            target_device_id: deviceId
+        });
+        
+        addNotification({
+            type: 'success',
+            title: 'Akun Dilepas',
+            message: `Akun ${fullName} berhasil dihapus dari perangkat ini.`
+        });
+
+        // Fresh sync after delete
+        await syncAccountsFromDB();
+    } catch(e) {
+        console.error("[Auth] DB Cleanup failed:", e);
+    }
+  };
+
+  const syncAccountsFromDB = async () => {
+    try {
+        const { data, error } = await supabase.rpc('get_all_device_sessions', {
+            target_device_id: deviceId
+        });
+
+        if (!error && data) {
+            const normalized = data.map((d: any) => ({
+                id: d.user_id,
+                profile: d.profile_data,
+                session: { refresh_token: d.refresh_token, access_token: '' },
+                last_active: d.updated_at
+            }));
+            localStorage.setItem('otherAccounts', JSON.stringify(normalized));
+        }
+    } catch (e) {}
   };
 
   const switchAccount = async (targetAccount: any) => {
+    if (!targetAccount) return;
+    
+    if (hasUnsavedChanges) {
+        setPendingSwitchTarget(targetAccount);
+        setShowUnsavedModal(true);
+        return;
+    }
+
     setLoading(true);
 
+    const targetId = targetAccount.id || targetAccount.profile?.id;
+    
     try {
-        if (!targetAccount.session) throw new Error("No session");
-        const { data, error } = await supabase.auth.setSession(targetAccount.session);
-        if (error) throw error;
-        
-        if (data.session) {
-            addNotification({ 
-                type: 'info', 
-                title: 'Beralih Profil', 
-                message: `Masuk sebagai ${targetAccount.profile.full_name}...` 
-            });
+        // 1. PRIMARY: Fetch from database (Cloud Source of Truth)
+        const { data: backup, error: rpcError } = await supabase.rpc('get_backup_session', {
+            target_user_id: targetId,
+            target_device_id: deviceId
+        });
 
-            const isSuperAdmin = targetAccount.profile.role === UserRole.SUPERADMIN;
-            const targetPath = isSuperAdmin ? '/app/sa-dashboard' : '/app/dashboard';
-            
-            // Persist the active profile intent
-            localStorage.setItem('qurma_active_profile', JSON.stringify(targetAccount.profile));
-            
-            // Chrome-like isolated hard-reload
-            window.location.href = targetPath;
+        let activeToken = backup?.shared_token;
+
+        // 2. FALLBACK SELF-HEALING: Only if DB is empty, try local for one-time recovery
+        if (!activeToken && targetAccount.session?.refresh_token) {
+            console.log("[Auth] Session not in DB, trying local fallback recovery...");
+            activeToken = targetAccount.session.refresh_token;
         }
-    } catch (error) {
+
+        if (!activeToken) {
+            throw new Error(`Sesi tidak ditemukan di database maupun lokal untuk ${targetAccount.profile?.full_name || 'akun ini'}.`);
+        }
+
+        // Use the token to restore session
+        const { data, error: refreshError } = await supabase.auth.refreshSession({ 
+            refresh_token: activeToken 
+        });
+
+        if (refreshError || !data.session) {
+            console.warn("[Auth] Background refresh failed, continuing with local state anyway.");
+        }
+        
+        // 1. INSTANT UI UPDATE (Chrome-like feel)
+        // Set user and tenant data instantly from the switcher list
+        setUser(targetAccount.profile);
+        userRef.current = targetAccount.profile;
+        localStorage.setItem('qurma_active_profile', JSON.stringify(targetAccount.profile));
+        
+        // 2. Perform background sync if we have a session
+        if (data?.session) {
+            await handleAuthSuccess(data.session.user.id, data.session);
+        }
+
+        // 3. Client-side navigation
+        const isSuperAdmin = targetAccount.profile.role === UserRole.SUPERADMIN;
+        const targetHome = isSuperAdmin ? 'sa-dashboard' : 'dashboard';
+        setCurrentPage(targetHome);
+        window.history.pushState({}, '', `/app/${targetHome}`);
+    } catch (error: any) {
+        console.error("[Auth] Switch failed:", error);
         addNotification({ 
             type: 'error', 
-            title: 'Sesi Habis', 
-            message: 'Silakan login ulang manual untuk ini.',
-            duration: 6000
+            title: 'Sesi Tidak Valid', 
+            message: error.message || 'Terjadi kesalahan sistem saat menghubungi database.'
         });
+    } finally {
         setLoading(false);
     }
   };
@@ -157,8 +269,13 @@ const AppContent: React.FC = () => {
     isUpdatingAuth.current = true;
     
     try {
-        const profile = await getProfileWithRetry(userId);
-        if (!profile) return;
+        // Reduced delay for faster transition
+        const profile = await getProfileWithRetry(userId, session?.user);
+        if (!profile) {
+            // If profile still fails, maybe session is truly invalid
+            isUpdatingAuth.current = false;
+            return;
+        }
 
         setUser(profile);
         userRef.current = profile;
@@ -170,8 +287,16 @@ const AppContent: React.FC = () => {
             localStorage.setItem('qurma_active_tenant', JSON.stringify(tenantData));
         }
 
-        // Use our new standardized save function
-        saveAccount(profile, session);
+        // CHECK CAPACITY BEFORE SAVING
+        const accounts = getAccounts();
+        const isAlreadyIn = accounts.some((a: any) => (a.id || a.profile?.id) === profile.id);
+        
+        if (!isAlreadyIn && accounts.length >= 100) {
+            // Effectively disabled for 100 accounts
+        } else {
+            // CRITICAL: Await the save to DB before proceeding
+            await saveAccount(profile, session);
+        }
 
         // Smart URL Redirection
         const path = window.location.pathname.substring(1);
@@ -183,8 +308,11 @@ const AppContent: React.FC = () => {
             setCurrentPage(targetHome);
             window.history.pushState({}, '', `/app/${targetHome}`);
         }
+        
+        return profile;
     } catch (e) {
         console.error("[Auth] Sync failed:", e);
+        return null;
     } finally {
         isUpdatingAuth.current = false;
     }
@@ -207,60 +335,37 @@ const AppContent: React.FC = () => {
 
 
 
-  const refreshAllSessions = async () => {
-        const cached = localStorage.getItem('otherAccounts');
-        if (!cached) return;
-        try {
-            const accounts = JSON.parse(cached) as any[];
-            let changed = false;
-            for (let i = 0; i < accounts.length; i++) {
-                const acc = accounts[i];
-                // Refresh tokens for background accounts proactively
-                    if (userRef.current?.id !== acc.id && acc.session?.refresh_token) {
-                        try {
-                            const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=refresh_token`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json', 'apikey': supabaseAnonKey },
-                                body: JSON.stringify({ refresh_token: acc.session.refresh_token })
-                            });
-                            
-                            if (response.ok) {
-                                const data = await response.json();
-                                accounts[i] = { 
-                                    ...acc, 
-                                    session: { access_token: data.access_token, refresh_token: data.refresh_token }, 
-                                    last_active: new Date().toISOString() 
-                                };
-                                changed = true;
-                            } else if (response.status === 400 || response.status === 401) {
-                                // Token is dead, clear session so we stop trying
-                                accounts[i] = { ...acc, session: null };
-                                changed = true;
-                            }
-                        } catch (e) {
-                            console.error("[Auth] Background refresh failed:", e);
-                        }
-                    }
-            }
-            if (changed) localStorage.setItem('otherAccounts', JSON.stringify(accounts));
-        } catch (e) {}
-    };
+    // [REMOVED AGGRESSIVE REFRESHER THAT WAS CAUSING SESSION LOSS]
 
     // 2. Auth Initialization
     const initAuth = async () => {
       try {
         let { data: { session } } = await supabase.auth.getSession();
         
-        // --- AUTO-RECOVERY LOGIC (FOREVER SESSION) ---
-        // If no active session, try to recover from otherAccounts for the last known active profile
+        // --- DEEP RECOVERY LOGIC (DATABASE-BACKED) ---
         if (!session) {
             const activeProfileStr = localStorage.getItem('qurma_active_profile');
             if (activeProfileStr) {
                 const activeProfile = JSON.parse(activeProfileStr);
                 const accounts = getAccounts();
                 const matched = accounts.find((a: any) => a.id === activeProfile.id);
-                if (matched?.session) {
-                    const { data } = await supabase.auth.setSession(matched.session);
+                
+                // Fallback 1: Try local session cache
+                let recoveryToken = matched?.session?.refresh_token;
+
+                // Fallback 2: If local cache missing, try DB via RPC
+                if (!recoveryToken) {
+                    const { data: backup } = await supabase.rpc('get_backup_session', {
+                        target_user_id: activeProfile.id,
+                        target_device_id: deviceId
+                    });
+                    if (backup?.shared_token) {
+                        recoveryToken = backup.shared_token;
+                    }
+                }
+
+                if (recoveryToken) {
+                    const { data } = await supabase.auth.refreshSession({ refresh_token: recoveryToken });
                     session = data.session;
                 }
             }
@@ -268,13 +373,16 @@ const AppContent: React.FC = () => {
 
         if (session) {
           await handleAuthSuccess(session.user.id, session);
-          // Run an eager refresh for all background accounts immediately
-          refreshAllSessions();
         } else {
           setUser(null);
           setTenant(null);
-          if (window.location.pathname.startsWith('/app')) window.history.pushState({}, '', '/');
+          // Only redirect if we are currently on an app page
+          if (window.location.pathname.startsWith('/app')) {
+            window.history.pushState({}, '', '/');
+          }
         }
+      } catch (err) {
+          console.error("[Auth] Init failed:", err);
       } finally {
         setIsInitializing(false);
       }
@@ -286,7 +394,10 @@ const AppContent: React.FC = () => {
     }
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
+        // PREVENT DOUBLE EXECUTE: Ignore background events if we are already in the middle of a manual switch
+        if (isUpdatingAuth.current) return;
+
+        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && session) {
             handleAuthSuccess(session.user.id, session);
         } else if (event === 'SIGNED_OUT') {
             setUser(null);
@@ -297,10 +408,9 @@ const AppContent: React.FC = () => {
         }
     });
 
-    const sessionRefresher = setInterval(refreshAllSessions, 1000 * 60 * 15); // Refresh background accounts every 15 mins
+    const sessionRefresher = null; // Removed
 
     return () => { 
-        clearInterval(sessionRefresher);
         authListener.subscription.unsubscribe();
         window.removeEventListener('popstate', handlePopState);
     };
@@ -308,6 +418,9 @@ const AppContent: React.FC = () => {
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [pendingPage, setPendingPage] = useState<PageView | null>(null);
+  const [pendingSwitchTarget, setPendingSwitchTarget] = useState<any | null>(null);
+  const [pendingAddAccount, setPendingAddAccount] = useState(false);
+  const [pendingLogout, setPendingLogout] = useState(false);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
   const [saveTriggered, setSaveTriggered] = useState(0);
 
@@ -328,6 +441,19 @@ const AppContent: React.FC = () => {
         setCurrentPage(pendingPage);
         window.history.pushState({}, '', `/app/${pendingPage}`);
         setPendingPage(null);
+    } else if (pendingSwitchTarget) {
+        setHasUnsavedChanges(false);
+        const target = pendingSwitchTarget;
+        setPendingSwitchTarget(null);
+        switchAccount(target);
+    } else if (pendingAddAccount) {
+        setHasUnsavedChanges(false);
+        setPendingAddAccount(false);
+        handleAddAccount();
+    } else if (pendingLogout) {
+        setHasUnsavedChanges(false);
+        setPendingLogout(false);
+        handleLogout();
     }
     setShowUnsavedModal(false);
   };
@@ -340,13 +466,20 @@ const AppContent: React.FC = () => {
   // --- AUTH ACTIONS ---
 
   // Soft Logout: For 'Masuk Akun Lain'
-  // Clears active session locally but KEEPS it alive on server so we can switch back
   const handleAddAccount = async () => {
+    if (hasUnsavedChanges) {
+        setPendingAddAccount(true);
+        setShowUnsavedModal(true);
+        return;
+    }
     setLoading(true);
     try {
-        // IMPORTANT: We explicitly save the current state before clearing local session
-        // so it stays 'nyangkut' in otherAccounts
-        
+        // PROACTIVE SAVE: Ensure current session is captured one last time before we clear active state
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && user) {
+            saveAccount(user, session);
+        }
+
         // signOut with scope: 'local' ONLY removes storage, doesn't kill session on server
         await supabase.auth.signOut({ scope: 'local' });
         
@@ -362,19 +495,47 @@ const AppContent: React.FC = () => {
 
   // Hard Logout: Full Sign Out (User explicitly wants to leave the PC/device)
   const handleLogout = async () => {
+    if (!user) return;
+    
+    if (hasUnsavedChanges) {
+        setPendingLogout(true);
+        setShowUnsavedModal(true);
+        return;
+    }
+
     setLoading(true);
-    addNotification({ type: 'info', title: 'Keluar', message: 'Menutup seluruh sesi dan keluar...' });
+    addNotification({ type: 'info', title: 'Keluar', message: 'Tutup sesi akun ini...' });
+    
     try {
-        // Full signOut invalidates the session on the server
+        const userId = user.id;
+        // 1. Remove from otherAccounts & DB so it doesn't 'nyangkut'
+        const accounts = getAccounts();
+        const updated = accounts.filter((a: any) => (a.id || a.profile?.id) !== userId);
+        localStorage.setItem('otherAccounts', JSON.stringify(updated));
+
+        try {
+            await supabase.rpc('delete_backup_session', {
+                target_user_id: userId,
+                target_device_id: deviceId
+            });
+        } catch(e) {}
+
+        // 2. Full signOut invalidates the session on the server
         await supabase.auth.signOut();
         
+        // 3. Clear active state
         setUser(null);
         setTenant(null);
         localStorage.removeItem('qurma_active_profile');
         localStorage.removeItem('qurma_active_tenant');
-        // Note: otherAccounts stays as a history unless we manually clear it, 
-        // but the session within it will now be invalid.
-        window.location.href = '/';
+
+        // 4. If there are other accounts still available, try to auto-switch to the next one
+        if (updated.length > 0) {
+            const nextAcc = updated[0];
+            switchAccount(nextAcc);
+        } else {
+            window.location.href = '/';
+        }
     } finally {
         setLoading(false);
     }
@@ -439,9 +600,11 @@ const AppContent: React.FC = () => {
       case 'reports': return 'Laporan Hafalan';
       case 'guardian-exams': return 'Nilai Ujian';
       case 'student-progress': return 'Perkembangan Santri';
+      case 'pencapaian': return 'Pencapaian Santri';
+      case 'teacher-notes': return 'Catatan Untuk Santri';
       case 'settings': return 'Pengaturan';
       case 'weekly-target': return 'Input Target Pekanan';
-      case 'student-progress-manage': return 'Kelola Perkembangan';
+      // case 'student-progress-manage': return 'Kelola Perkembangan';
       case 'sa-dashboard': return 'Platform Dashboard';
       case 'sa-tenants': return 'Manajemen Sekolah';
       case 'sa-users': return 'Manajemen Pengguna Global';
@@ -449,6 +612,7 @@ const AppContent: React.FC = () => {
       case 'sa-platform-settings': return 'Pengaturan Platform';
       case 'sa-email-settings': return 'Pengaturan Email';
       case 'weekly-target-monitor': return 'Monitor Target Pekanan';
+      case 'monitor-hafalan': return 'Monitor Hafalan Santri';
       default: return 'QurMa';
     }
   };
@@ -479,6 +643,9 @@ const AppContent: React.FC = () => {
       case 'student-progress': return 'Visualisasi grafik perkembangan dan pencapaian target hafalan';
       case 'guardian-exams': return 'Rekapitulasi hasil ujian kumulatif dan standar penilaian asatidz';
       case 'weekly-target-monitor': return 'Pantau rencana dan pencapaian target hafalan seluruh ustadz';
+      case 'monitor-hafalan': return 'Pantau progres dan kualitas setoran hafalan santri secara menyeluruh';
+      case 'pencapaian': return 'Daftar penghargaan dan apresiasi atas kedisiplinan menghafal';
+      case 'teacher-notes': return 'Kumpulan pesan motivasi dan evaluasi dari ustadz pembimbing';
       default: return undefined;
     }
   };
@@ -506,8 +673,11 @@ const AppContent: React.FC = () => {
       case 'weekly-target': return user.role === UserRole.TEACHER ? <WeeklyTarget user={user} onSetUnsavedChanges={setHasUnsavedChanges} saveTrigger={saveTriggered} onSaveSuccess={proceedNavigation} isGlobalModalOpen={showUnsavedModal} /> : <div>Akses Ditolak</div>;
       case 'student-progress-manage': return user.role === UserRole.TEACHER ? <ManageStudentProgress user={user} /> : <div>Akses Ditolak</div>;
       case 'weekly-target-monitor': return (user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) ? <WeeklyTargetMonitor user={user} tenantId={user.tenant_id!} /> : <div>Akses Ditolak</div>;
+      case 'monitor-hafalan': return (user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) ? <MonitorHafalan user={user} tenantId={user.tenant_id!} /> : <div>Akses Ditolak</div>;
       case 'guardian-exams': return user.role === UserRole.SANTRI ? <StudentExamResults user={user} /> : <div>Akses Ditolak</div>;
       case 'student-progress': return user.role === UserRole.SANTRI ? <StudentProgress user={user} /> : <div>Akses Ditolak</div>;
+      case 'pencapaian': return user.role === UserRole.SANTRI ? <StudentAchievements user={user} /> : <div>Akses Ditolak</div>;
+      case 'teacher-notes': return user.role === UserRole.SANTRI ? <TeacherNotesList user={user} /> : <div>Akses Ditolak</div>;
       case 'settings': return <Settings user={user} tenant={tenant} onProfileUpdate={handleProfileUpdate} onTenantUpdate={handleTenantUpdate} />;
       default: return user.role === UserRole.SUPERADMIN ? <SuperAdminDashboard onNavigate={handleNavigation} /> : <Dashboard user={user} onNavigate={handleNavigation} />;
     }
@@ -554,6 +724,8 @@ const AppContent: React.FC = () => {
       onLogout={handleLogout}
       onAddAccount={handleAddAccount}
       onSwitchAccount={switchAccount}
+      onRemoveAccount={removeAccount}
+      onSyncAccounts={syncAccountsFromDB}
       isImpersonating={!!originalUser}
       onStopImpersonating={stopImpersonating}
       subtitle={getPageSubtitle(currentPage)}
@@ -564,7 +736,7 @@ const AppContent: React.FC = () => {
 
       {/* Unsaved Changes Confirmation Modal */}
       {showUnsavedModal && (
-          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in">
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in lg:pl-64">
               <div className="bg-white rounded-[28px] shadow-2xl w-full max-w-[380px] overflow-hidden animate-scale-in border border-white/50">
                   <div className="p-8 text-center">
                       <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-amber-500 shadow-sm border border-amber-100">
@@ -597,6 +769,42 @@ const AppContent: React.FC = () => {
                   </div>
               </div>
           </div>
+      )}
+      {/* ACCOUNT CAPACITY MODAL */}
+      {showCapacityPrompt && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in">
+          <div className="bg-white rounded-[28px] shadow-2xl w-full max-w-[380px] overflow-hidden animate-scale-in border border-white/50">
+            <div className="p-8 text-center text-balance">
+              <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 mx-auto mb-6 border border-amber-100/50">
+                <AlertCircle className="w-8 h-8" />
+              </div>
+              <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest leading-normal mb-3">Slot Akun Penuh</h3>
+              <p className="text-[11px] font-bold text-slate-500 leading-relaxed uppercase tracking-wide opacity-80 mb-8">
+                Hanya dapat menyimpan maksimal <span className="font-black text-slate-800">5 akun</span>. 
+                Hubungkan akun ini dengan melepas <span className="font-black text-indigo-600">{(getAccounts().sort((a: any, b: any) => new Date(a.last_active).getTime() - new Date(b.last_active).getTime())[0]?.profile?.full_name)}</span>?
+              </p>
+              
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={async () => {
+                    const { profile, session } = showCapacityPrompt;
+                    await saveAccount(profile, session);
+                    setShowCapacityPrompt(null);
+                  }}
+                  className="w-full py-4 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95"
+                >
+                  Ganti Akun Terlama
+                </button>
+                <button 
+                  onClick={() => setShowCapacityPrompt(null)}
+                  className="w-full py-3.5 bg-slate-50 text-slate-500 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 transition-all border border-slate-100 active:scale-95"
+                >
+                  Masuk Saja
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </Layout>
   );

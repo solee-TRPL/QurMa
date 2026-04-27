@@ -210,28 +210,28 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         {/* Main Content Area - Table (Left) */}
         <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+            <div className="bg-white shadow-sm border-2 border-slate-200 overflow-hidden flex flex-col">
                 {activeTab === 'sabaq' && (
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-slate-100">
-                                <thead className="bg-[#FCFDFE]">
-                                      <tr className="text-slate-400 font-black uppercase text-[10px] tracking-tight">
-                                          <th className="px-6 py-2 text-center border-r border-slate-100 w-20">Kelas</th>
-                                          <th className="px-4 py-2 text-center border-r border-slate-100 w-24">Semester</th>
-                                          <th className="px-6 py-2 text-center border-r border-slate-50 w-1/3">Target Sabaq (Semester)</th>
-                                          <th className="px-6 py-2 text-center w-1/3">Target Total</th>
+                        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                            <table className="min-w-full border-separate border-spacing-0">
+                                <thead className="sticky top-0 z-40 bg-white">
+                                      <tr>
+                                          <th className="px-6 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-20">KELAS</th>
+                                          <th className="px-4 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-24">SEMESTER</th>
+                                          <th className="px-6 py-4 text-center text-[9.5px] font-black text-indigo-600 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-indigo-50/30 w-1/3">TARGET SABAQ (SEMESTER)</th>
+                                          <th className="px-6 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-slate-100 w-1/3">TARGET TOTAL</th>
                                       </tr>
                                   </thead>
-                                <tbody className="bg-white divide-y divide-slate-200">
+                                <tbody className="bg-white">
                                     {sabaqTargets.map((st, i) => (
-                                        <tr key={i} className="hover:bg-slate-50 transition-colors">
+                                        <tr key={i} className="group transition-colors hover:bg-slate-50/30">
                                             {i % 2 === 0 && (
-                                                <td rowSpan={2} className="px-4 py-3 whitespace-nowrap text-[15px] font-bold text-slate-800 text-center border-r border-slate-100 bg-slate-50/30">
+                                                <td rowSpan={2} className="px-4 py-4 whitespace-nowrap text-[15px] font-black text-slate-800 text-center border-r-2 border-b border-slate-100 bg-slate-50/20">
                                                     {st.kelas}
                                                 </td>
                                             )}
-                                            <td className="px-4 py-3 whitespace-nowrap text-[13px] text-slate-600 text-center border-r border-slate-100 relative group/sem">
+                                            <td className="px-4 py-4 whitespace-nowrap text-[11px] font-black text-slate-600 text-center border-r-2 border-b border-slate-100 relative group/sem">
                                                 {st.semester}
                                                 {!isReadOnly && (
                                                     <button 
@@ -245,7 +245,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                           
                                                           setSabaqTargets(recalculateSabaqTotals(NewD));
                                                       }}
-                                                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1 bg-white shadow-sm border border-slate-100 rounded-md text-slate-300 hover:text-indigo-600 opacity-0 group-hover/sem:opacity-100 transition-all z-10"
+                                                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1 bg-white shadow-sm border border-slate-200 rounded-md text-slate-300 hover:text-indigo-600 opacity-0 group-hover/sem:opacity-100 transition-all z-10"
                                                       title={st.total === null ? "Ganti ke Mode Target" : "Ganti ke Mode Teks"}
                                                     >
                                                         <RefreshCw className={`w-2.5 h-2.5 ${st.total === null ? 'rotate-90' : ''} transition-transform`} />
@@ -254,7 +254,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                             </td>
 
                                             {st.total === null ? (
-                                                <td colSpan={2} className={`px-4 py-3 text-[11px] font-black text-slate-400 text-center bg-slate-50/20 uppercase tracking-[0.15em] ${!isReadOnly && 'cursor-pointer hover:bg-slate-50'} transition-all`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'sabaq-target' })}>
+                                                <td colSpan={2} className={`px-6 py-4 text-[10.5px] font-black text-slate-400 text-center bg-slate-50/5 border-b border-slate-100 uppercase tracking-widest ${!isReadOnly && 'cursor-pointer hover:bg-slate-50/50'} transition-all`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'sabaq-target' })}>
                                                     {editingCell?.row === i && editingCell?.field === 'sabaq-target' ? (
                                                       <input 
                                                           autoFocus
@@ -267,7 +267,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                           }}
                                                           onBlur={() => setEditingCell(null)}
                                                           onKeyDown={(e) => { if (e.key === 'Enter') setEditingCell(null); }}
-                                                          className="w-full bg-white border-2 border-indigo-200 rounded-xl px-4 py-1 text-center font-black text-indigo-600 outline-none text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
+                                                          className="w-full bg-white border-2 border-indigo-200 rounded-xl px-4 py-1.5 text-center font-black text-indigo-600 outline-none text-[10.5px] uppercase tracking-widest shadow-lg shadow-indigo-100"
                                                       />
                                                     ) : (
                                                       st.target
@@ -275,7 +275,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                 </td>
                                             ) : (
                                                 <>
-                                                    <td className={`px-4 py-3 text-[13px] text-primary-600 font-bold text-center ${!isReadOnly && 'cursor-pointer hover:bg-slate-50'} transition-all border-r border-slate-100`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'sabaq-target' })}>
+                                                    <td className={`px-6 py-4 text-[13px] text-indigo-700 font-black text-center ${!isReadOnly && 'cursor-pointer hover:bg-indigo-50/30'} transition-all border-r-2 border-b border-slate-100 bg-indigo-50/5`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'sabaq-target' })}>
                                                         {editingCell?.row === i && editingCell?.field === 'sabaq-target' ? (
                                                             <div className="flex items-center justify-center gap-1 animate-in zoom-in-95 duration-100">
                                                               <input 
@@ -301,21 +301,21 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                                           setEditingCell(null);
                                                                       }}
                                                                   onKeyDown={(e) => { if (e.key === 'Enter') setEditingCell(null); }}
-                                                                  className="w-14 bg-white rounded border border-indigo-200 px-1 py-0.5 focus:ring-1 focus:ring-indigo-500 text-center font-bold text-primary-600 shadow-sm text-[13px]"
+                                                                  className="w-16 bg-white rounded-lg border-2 border-indigo-200 px-2 py-1 focus:ring-4 focus:ring-indigo-50 text-center font-black text-indigo-600 shadow-sm text-[13px] outline-none"
                                                               />
-                                                              <span className="text-[10px] font-bold text-primary-400 uppercase">Juz</span>
+                                                              <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Juz</span>
                                                             </div>
                                                         ) : (
-                                                            <div className="flex items-center justify-center gap-1 group">
-                                                                <span className="font-bold">{st.target}</span>
-                                                                <span className="text-[10px] font-bold text-slate-400 uppercase">Juz</span>
+                                                            <div className="flex items-center justify-center gap-1.5 group">
+                                                                <span className="font-black text-indigo-700">{st.target}</span>
+                                                                <span className="text-[10px] font-black text-indigo-300 uppercase tracking-widest">JUZ</span>
                                                             </div>
                                                         )}
                                                     </td>
-                                                    <td className="px-4 py-3 text-[13px] text-slate-500 font-bold text-center whitespace-nowrap bg-slate-50/50">
-                                                        <div className="flex items-center justify-center gap-1">
-                                                            <span className="font-bold">{st.total && st.total > 0 ? st.total : (st.total === 0 ? 0 : '-')}</span>
-                                                            <span className="text-[10px] font-bold text-slate-300 uppercase">{st.total !== null ? 'Juz' : ''}</span>
+                                                    <td className="px-6 py-4 text-[13px] text-slate-500 font-black text-center whitespace-nowrap bg-slate-50/20 border-b border-slate-100">
+                                                        <div className="flex items-center justify-center gap-1.5">
+                                                            <span className="font-black text-slate-600">{st.total && st.total > 0 ? st.total : (st.total === 0 ? 0 : '-')}</span>
+                                                            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{st.total !== null ? 'JUZ' : ''}</span>
                                                         </div>
                                                     </td>
                                                 </>
@@ -330,25 +330,25 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
 
                 {activeTab === 'manzil' && (
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-slate-200">
-                                <thead className="bg-[#FCFDFE]">
-                                    <tr className="text-slate-500 font-bold uppercase text-[10px] tracking-wider">
-                                        <th className="px-4 py-2 text-center border-r border-slate-200/50">Level</th>
-                                        <th className="px-4 py-2 text-center border-r border-slate-200/50">Jumlah Hafalan</th>
-                                        <th className="px-4 py-2 text-center">Acuan Target Muraja'ah (ATM/Hari)</th>
+                        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                            <table className="min-w-full border-separate border-spacing-0">
+                                <thead className="sticky top-0 z-40 bg-white">
+                                    <tr>
+                                        <th className="px-4 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-24">LEVEL</th>
+                                        <th className="px-6 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100">JUMLAH HAFALAN</th>
+                                        <th className="px-6 py-4 text-center text-[9.5px] font-black text-indigo-600 uppercase tracking-widest border-b-2 border-slate-100 bg-indigo-50/30">ACUAN TARGET MURAJA'AH (ATM/HARI)</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-slate-200">
+                                <tbody className="bg-white">
                                     {manzilAcuan.map((m, i) => (
-                                        <tr key={i} className="hover:bg-slate-50 transition-colors">
-                                            <td className="px-4 py-3 whitespace-nowrap text-[15px] font-bold text-slate-800 text-center border-r border-slate-100 bg-slate-50/30 w-24">
+                                        <tr key={i} className="group transition-colors hover:bg-slate-50/30">
+                                            <td className="px-4 py-4 whitespace-nowrap text-[15px] font-black text-slate-800 text-center border-r-2 border-b border-slate-100 bg-slate-50/20 w-24">
                                                 {m.id}
                                             </td>
-                                            <td className={`px-4 py-3 text-[13px] text-slate-700 border-r border-slate-100 text-center transition-all ${!isReadOnly && 'cursor-pointer hover:bg-slate-50'}`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'manzil-jumlah' })}>
+                                            <td className={`px-6 py-4 text-[13px] text-slate-700 border-r-2 border-b border-slate-100 text-center transition-all ${!isReadOnly && 'cursor-pointer hover:bg-slate-50/50'}`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'manzil-jumlah' })}>
                                                 {editingCell?.row === i && editingCell?.field === 'manzil-jumlah' ? (
                                                   <div 
-                                                    className="flex items-center justify-center gap-1 animate-in zoom-in-95 duration-100" 
+                                                    className="flex items-center justify-center gap-2 animate-in zoom-in-95 duration-100" 
                                                     onClick={e => e.stopPropagation()}
                                                     onBlur={e => {
                                                         if (!e.currentTarget.contains(e.relatedTarget as Node)) {
@@ -406,9 +406,9 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                                 setEditingCell(null);
                                                             }
                                                         }}
-                                                        className="w-10 bg-white rounded border border-primary-200 px-1 py-0.5 focus:ring-1 focus:ring-primary-500 text-center font-bold text-primary-600 shadow-sm text-[13px]"
+                                                        className="w-12 bg-white rounded-lg border-2 border-indigo-200 px-1 py-1 focus:ring-4 focus:ring-indigo-50 text-center font-black text-indigo-600 shadow-sm text-[13px] outline-none"
                                                     />
-                                                    <span className="text-slate-400 font-medium">-</span>
+                                                    <span className="text-slate-300 font-black">-</span>
                                                     <input 
                                                         type="number" 
                                                         min="1"
@@ -441,20 +441,20 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                                 setEditingCell(null);
                                                             }
                                                         }}
-                                                        className="w-10 bg-white rounded border border-primary-200 px-1 py-0.5 focus:ring-1 focus:ring-primary-500 text-center font-bold text-primary-600 shadow-sm text-[13px]"
+                                                        className="w-12 bg-white rounded-lg border-2 border-indigo-200 px-1 py-1 focus:ring-4 focus:ring-indigo-50 text-center font-black text-indigo-600 shadow-sm text-[13px] outline-none"
                                                     />
-                                                    <span className="text-[10px] font-bold text-primary-400">Juz</span>
+                                                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">JUZ</span>
                                                   </div>
                                                 ) : (
-                                                  <div className="flex items-center justify-center gap-1">
-                                                    <span className="font-bold text-slate-700">{m.min} - {m.max}</span>
-                                                    <span className="text-[10px] font-bold text-slate-400">Juz</span>
+                                                  <div className="flex items-center justify-center gap-1.5 group">
+                                                    <span className="font-black text-slate-700">{m.min} - {m.max}</span>
+                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">JUZ</span>
                                                   </div>
                                                 )}
                                             </td>
-                                            <td className={`px-4 py-3 text-[13px] text-primary-600 font-bold text-center transition-all ${!isReadOnly && 'cursor-pointer hover:bg-slate-50'}`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'manzil-atm' })}>
+                                            <td className={`px-6 py-4 text-[13px] text-indigo-700 font-black text-center transition-all border-b border-slate-100 bg-indigo-50/5 ${!isReadOnly && 'cursor-pointer hover:bg-indigo-50/30'}`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'manzil-atm' })}>
                                                 {editingCell?.row === i && editingCell?.field === 'manzil-atm' ? (
-                                                  <div className="flex items-center justify-center gap-1 animate-in zoom-in-95 duration-100" onClick={e => e.stopPropagation()}>
+                                                  <div className="flex items-center justify-center gap-1.5 animate-in zoom-in-95 duration-100" onClick={e => e.stopPropagation()}>
                                                     <input 
                                                         autoFocus
                                                         type="number" 
@@ -466,14 +466,14 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                         }}
                                                         onBlur={() => setEditingCell(null)}
                                                         onKeyDown={(e) => { if (e.key === 'Enter') setEditingCell(null); }}
-                                                        className="w-14 bg-white rounded border border-primary-200 px-1 py-0.5 focus:ring-1 focus:ring-primary-500 text-center font-bold text-primary-600 shadow-sm text-[13px]"
+                                                        className="w-16 bg-white rounded-lg border-2 border-indigo-200 px-2 py-1 focus:ring-4 focus:ring-indigo-50 text-center font-black text-indigo-600 shadow-sm text-[13px] outline-none"
                                                     />
-                                                    <span className="text-[10px] font-bold text-primary-400">Hlm</span>
+                                                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">HLM</span>
                                                   </div>
                                                 ) : (
-                                                  <div className="flex items-center justify-center gap-1">
-                                                      <span className="font-bold">{m.atm}</span>
-                                                      <span className="text-[10px] text-slate-400 font-bold uppercase">Halaman</span>
+                                                  <div className="flex items-center justify-center gap-2">
+                                                      <span className="font-black text-indigo-700">{m.atm}</span>
+                                                      <span className="text-[10px] text-indigo-300 font-black uppercase tracking-widest">HALAMAN</span>
                                                   </div>
                                                 )}
                                             </td>
@@ -487,21 +487,21 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
 
                 {activeTab === 'sabqi' && (
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-slate-200">
-                                <thead className="bg-[#FCFDFE]">
-                                    <tr className="text-slate-500 font-bold uppercase text-[10px] tracking-wider">
-                                        <th className="px-4 py-2 text-center border-r border-slate-200/50">Jumlah Hafalan Baru</th>
-                                        <th className="px-4 py-2 text-center">Target Muraja'ah Sabqi</th>
+                        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                            <table className="min-w-full border-separate border-spacing-0">
+                                <thead className="sticky top-0 z-40 bg-white">
+                                    <tr>
+                                        <th className="px-6 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100">JUMLAH HAFALAN BARU</th>
+                                        <th className="px-6 py-4 text-center text-[9.5px] font-black text-indigo-600 uppercase tracking-widest border-b-2 border-slate-100 bg-indigo-50/30">TARGET MURAJA'AH SABQI</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-slate-200">
+                                <tbody className="bg-white">
                                     {sabqiAcuan.map((s, i) => (
-                                        <tr key={i} className="hover:bg-slate-50 transition-colors">
-                                             <td className={`px-4 py-3 whitespace-nowrap text-[13px] font-bold text-slate-800 border-r border-slate-100 transition-all text-center ${!isReadOnly && 'cursor-pointer hover:bg-slate-50'}`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'sabqi-hafalan' })}>
+                                        <tr key={i} className="group transition-colors hover:bg-slate-50/30">
+                                             <td className={`px-6 py-4 whitespace-nowrap text-[13px] font-black text-slate-700 border-r-2 border-b border-slate-100 transition-all text-center bg-slate-50/20 ${!isReadOnly && 'cursor-pointer hover:bg-slate-50/50'}`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'sabqi-hafalan' })}>
                                                 {editingCell?.row === i && editingCell?.field === 'sabqi-hafalan' ? (
                                                   <div 
-                                                    className="flex items-center justify-center gap-1 animate-in zoom-in-95 duration-100" 
+                                                    className="flex items-center justify-center gap-2 animate-in zoom-in-95 duration-100" 
                                                     onClick={e => e.stopPropagation()}
                                                     onBlur={e => {
                                                         if (!e.currentTarget.contains(e.relatedTarget as Node)) {
@@ -558,9 +558,9 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                                 setEditingCell(null);
                                                             }
                                                         }}
-                                                        className="w-10 bg-white rounded border border-primary-200 px-1 py-0.5 focus:ring-1 focus:ring-primary-500 text-center font-bold text-primary-600 shadow-sm text-[13px]"
+                                                        className="w-12 bg-white rounded-lg border-2 border-indigo-200 px-1 py-1 focus:ring-4 focus:ring-indigo-50 text-center font-black text-indigo-600 shadow-sm text-[13px] outline-none"
                                                     />
-                                                    <span className="text-slate-400 font-medium">-</span>
+                                                    <span className="text-slate-300 font-black">-</span>
                                                     <input 
                                                         type="number" 
                                                         min="1"
@@ -592,19 +592,19 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                                 setEditingCell(null);
                                                             }
                                                         }}
-                                                        className="w-10 bg-white rounded border border-primary-200 px-1 py-0.5 focus:ring-1 focus:ring-primary-500 text-center font-bold text-primary-600 shadow-sm text-[13px]"
+                                                        className="w-12 bg-white rounded-lg border-2 border-indigo-200 px-1 py-1 focus:ring-4 focus:ring-indigo-50 text-center font-black text-indigo-600 shadow-sm text-[13px] outline-none"
                                                     />
-                                                    <span className="text-[10px] font-bold text-primary-400">Hlm</span>
+                                                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">HLM</span>
                                                   </div>
                                                 ) : (
-                                                  <div className="flex items-center justify-center gap-1">
-                                                    <span className="font-bold text-slate-700">{s.min} - {s.max}</span>
-                                                    <span className="text-[10px] font-bold text-slate-400">Hlm</span>
+                                                  <div className="flex items-center justify-center gap-1.5 group">
+                                                    <span className="font-black text-slate-700">{s.min} - {s.max}</span>
+                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">HLM</span>
                                                   </div>
                                                 )}
                                              </td>
                                              <td 
-                                                 className={`px-4 py-3 font-bold text-center transition-all ${!isReadOnly && 'cursor-pointer hover:bg-slate-50'}`} 
+                                                 className={`px-6 py-4 font-black text-center transition-all border-b border-slate-100 bg-indigo-50/5 ${!isReadOnly && 'cursor-pointer hover:bg-indigo-50/30'}`} 
                                                  onClick={() => {
                                                      if (isReadOnly) return;
                                                      setEditingCell({ row: i, field: 'sabqi-murajaah' });
@@ -619,15 +619,15 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                  }}
                                              >
                                                  {editingCell?.row === i && editingCell?.field === 'sabqi-murajaah' ? (
-                                                   <>
+                                                   <div onClick={e => e.stopPropagation()} className="flex items-center justify-center gap-2">
                                                      {sabqiEditMode === 'type' || tempSabqiType === 'Rabth' ? (
-                                                       <div className="flex items-center gap-1.5 p-1 bg-white rounded-full shadow-lg border border-primary-100 animate-in zoom-in-95 duration-100 w-fit mx-auto" onClick={e => e.stopPropagation()}>
+                                                       <div className="flex items-center gap-2 p-1 bg-white rounded-full shadow-lg border-2 border-indigo-100 animate-in zoom-in-95 duration-100 w-fit mx-auto">
                                                           <div className="flex p-0.5 bg-slate-100 rounded-full">
                                                               <button 
                                                                   onClick={() => setTempSabqiType('Rabth')}
-                                                                  className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all ${tempSabqiType === 'Rabth' ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                                                  className={`px-3 py-1.5 text-[10px] font-black rounded-full transition-all ${tempSabqiType === 'Rabth' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                                                               >
-                                                                  Rabth
+                                                                  RABTH
                                                               </button>
                                                               <button 
                                                                   onClick={() => {
@@ -635,9 +635,9 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                                           setTempSabqiType('1');
                                                                       }
                                                                   }}
-                                                                  className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all ${tempSabqiType && tempSabqiType !== 'Rabth' ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                                                  className={`px-3 py-1.5 text-[10px] font-black rounded-full transition-all ${tempSabqiType && tempSabqiType !== 'Rabth' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                                                               >
-                                                                  Halaman
+                                                                  HALAMAN
                                                               </button>
                                                           </div>
                                                           <button 
@@ -647,13 +647,13 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                                   setSabqiAcuan(newVal);
                                                                   setEditingCell(null);
                                                               }}
-                                                              className="px-3 py-1.5 text-[10px] font-bold bg-primary-600 text-white rounded-full hover:bg-primary-700 shadow-sm whitespace-nowrap"
+                                                              className="px-4 py-2 text-[10px] font-black bg-indigo-600 text-white rounded-full hover:bg-indigo-700 shadow-md whitespace-nowrap active:scale-95 transition-all"
                                                           >
-                                                              Terapkan
+                                                              OK
                                                           </button>
                                                        </div>
                                                      ) : (
-                                                      <div className="flex items-center justify-center gap-1 animate-in zoom-in-95 duration-100" onClick={e => e.stopPropagation()}>
+                                                      <div className="flex items-center justify-center gap-1.5 animate-in zoom-in-95 duration-100">
                                                           <input 
                                                               autoFocus
                                                               type="number" 
@@ -666,16 +666,17 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                               }}
                                                               onBlur={() => setEditingCell(null)}
                                                               onKeyDown={(e) => { if (e.key === 'Enter') setEditingCell(null); }}
-                                                              className="w-14 bg-white rounded border border-primary-200 px-1 py-0.5 focus:ring-1 focus:ring-primary-500 text-center font-bold text-primary-600 shadow-sm text-[13px]"
+                                                              className="w-16 bg-white rounded-lg border-2 border-indigo-200 px-2 py-1 focus:ring-4 focus:ring-indigo-50 text-center font-black text-indigo-600 shadow-sm text-[13px] outline-none"
                                                           />
-                                                          <span className="text-[10px] font-bold text-primary-400">Hlm</span>
+                                                          <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">HLM</span>
                                                       </div>
                                                      )}
-                                                   </>
+                                                   </div>
                                                  ) : (
-                                                  <div className="flex items-center justify-center text-rose-600 font-bold text-[13px]">
-                                                      <ChevronRight className="w-3.5 h-3.5 mr-1 opacity-50" />
+                                                  <div className="flex items-center justify-center text-indigo-700 font-extrabold text-[13px] tracking-tight">
+                                                      <ChevronRight className="w-4 h-4 mr-1.5 text-indigo-300" />
                                                       {s.murajaah}
+                                                      {s.murajaah !== 'Rabth' && <span className="text-[10px] font-black text-indigo-300 uppercase tracking-widest ml-1.5">HALAMAN</span>}
                                                   </div>
                                                  )}
                                              </td>

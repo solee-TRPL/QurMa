@@ -259,9 +259,9 @@ export const MemorizationForm: React.FC<MemorizationFormProps> = ({
           <label className="block text-sm font-medium text-slate-700 mb-2">Penilaian</label>
           <div className="grid grid-cols-3 gap-4">
             {[
-              { val: MemorizationStatus.LANCAR, label: 'Mumtaz', color: 'border-green-500 bg-green-50 text-green-800' },
-              { val: MemorizationStatus.PERBAIKAN, label: 'Jayyid', color: 'border-yellow-500 bg-yellow-50 text-yellow-800' },
-              { val: MemorizationStatus.ULANG, label: 'Naqis', color: 'border-red-500 bg-red-50 text-red-800' }
+              { val: MemorizationStatus.LANCAR, label: 'Lancar', color: 'border-green-500 bg-green-50 text-green-800' },
+              { val: MemorizationStatus.TIDAK_LANCAR, label: 'Tidak Lancar', color: 'border-yellow-500 bg-yellow-50 text-yellow-800' },
+              { val: MemorizationStatus.TIDAK_SETOR, label: 'Tidak Setor', color: 'border-red-500 bg-red-50 text-red-800' }
             ].map((option) => (
               <label 
                 key={option.val}

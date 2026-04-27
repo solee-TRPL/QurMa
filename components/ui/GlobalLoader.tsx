@@ -2,7 +2,7 @@ import React from 'react';
 
 export const GlobalLoader: React.FC = () => {
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/5 backdrop-blur-md animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/5 backdrop-blur-md animate-in fade-in duration-300 lg:pl-64">
       <div className="flex flex-col items-center justify-center bg-white/40 p-10 rounded-[40px] shadow-2xl border border-white/40 backdrop-blur-2xl animate-in zoom-in-95 duration-200">
         <div className="relative w-16 h-16 flex items-center justify-center">
             <div className="absolute inset-0 border-[6px] border-indigo-100 rounded-full opacity-30"></div>

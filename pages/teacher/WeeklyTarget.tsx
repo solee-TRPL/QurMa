@@ -7,7 +7,8 @@ import {
     getWeeklyTargets, 
     upsertWeeklyTarget, 
     getWeeklyAllTypeTotals,
-    updateStudent 
+    updateStudent,
+    getTenant
 } from '../../services/dataService';
 import { 
   ClipboardList, 
@@ -25,9 +26,11 @@ import {
   Info,
   Target,
   HelpCircle,
+  RotateCcw,
   X
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
+import { SURAH_DATA } from '../../lib/quranData';
 import { useNotification } from '../../lib/NotificationContext';
 import { useLoading } from '../../lib/LoadingContext';
 
@@ -49,7 +52,6 @@ interface TargetRow {
   manzilAtm: string;
   hariAtm: string;
   sabqiAtm: string;
-  css: string;
   manzilTarget: string;
   manzilHal: string;
   manzilKet: 'A' | 'B' | 'C' | '';
@@ -86,6 +88,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
   const [showNisKelas, setShowNisKelas] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [weeklyActualTotals, setWeeklyActualTotals] = useState<Record<string, { sabaq: number, sabqi: number, manzil: number }>>({});
+  const [tenant, setTenant] = useState<any>(null);
   
   const [currentWeekOffset, setCurrentWeekOffset] = useState(() => {
     const params = new URLSearchParams(window.location.search);
@@ -180,16 +183,18 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
   const fetchData = async () => {
     setLoading(true);
     try {
-        const [halaqahData, studentData, classData] = await Promise.all([
+        const [halaqahData, studentData, classData, tenantData] = await Promise.all([
             getHalaqahs(user.tenant_id!),
             getStudents(user.tenant_id!),
-            getClasses(user.tenant_id!)
+            getClasses(user.tenant_id!),
+            getTenant(user.tenant_id!)
         ]);
 
         const filteredHalaqah = halaqahData.find(h => h.teacher_id === user.id);
         const classMap = new Map(classData.map(c => [c.id, c.name]));
         
         setMyHalaqah(filteredHalaqah || null);
+        setTenant(tenantData);
 
         if (filteredHalaqah) {
             const hStudents = studentData.filter(s => s.halaqah_id === filteredHalaqah.id);
@@ -221,12 +226,11 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                     nis: s.nis || '-',
                     name: s.full_name,
                     className: currentClassName,
-                    hafalanJuz: juz > 0 ? juz.toString() : '',
-                    hafalanHal: hal > 0 ? hal.toString() : '',
+                    hafalanJuz: (juz && juz > 0) ? juz.toString() : '',
+                    hafalanHal: (hal && hal > 0) ? hal.toString() : '',
                     manzilAtm: manzilAtmValue > 0 ? manzilAtmValue.toString() : '',
                     hariAtm: hariAtmValue > 0 ? hariAtmValue.toString() : '',
                     sabqiAtm: sabqiAtmValue,
-                    css: data.css || '',
                     manzilTarget: data.manzil_target || '',
                     manzilHal: data.manzil_hal?.toString() || '',
                     manzilKet: calculateABCStatus(weeklyTotals[s.id]?.manzil || 0, data.manzil_hal || 0),
@@ -249,6 +253,10 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
   };
 
   useEffect(() => { fetchData(); }, [user.id]);
+  
+  const handleReset = () => {
+    fetchData();
+  };
 
   const handleInputChange = (studentId: string, field: keyof TargetRow, value: string) => {
     setIsDirty(true);
@@ -320,7 +328,6 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                 student_id: target.studentId,
                 week_start: weekDates[0],
                 target_data: {
-                    css: target.css,
                     manzil_target: target.manzilTarget,
                     manzil_hal: target.manzilHal ? parseInt(target.manzilHal) : (target.manzilHal === '0' ? 0 : undefined),
                     manzil_ket: target.manzilKet as any,
@@ -387,21 +394,23 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
   return (
     <div className="space-y-4">
       {/* Top Utility Strip */}
-      <div className="flex flex-col lg:flex-row justify-between items-center gap-4 bg-slate-100/30 p-2 rounded-[24px] border border-slate-200/50 backdrop-blur-sm">
-          <div className="flex flex-col md:flex-row items-center gap-3 flex-1 w-full lg:w-auto">
-              <div className="flex bg-white p-1 rounded-[20px] border border-slate-200 shadow-sm ring-1 ring-white">
+      <div className="flex flex-col gap-2 p-2 lg:flex-row lg:justify-between lg:items-center bg-slate-100/30 rounded-[28px] border border-slate-200/50 backdrop-blur-sm shadow-sm">
+          {/* Row 1: Week & Halaqah */}
+          <div className="flex items-stretch gap-2 w-full lg:w-auto">
+              {/* Week Selector */}
+              <div className="flex-1 lg:flex-none flex bg-white p-0.5 lg:p-1 rounded-2xl border border-slate-200 shadow-sm ring-1 ring-white">
                   <button 
                       onClick={() => setCurrentWeekOffset(prev => prev - 1)}
-                      className="p-1 px-2.5 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
+                      className="p-1 px-1.5 lg:px-2.5 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
                   >
-                      <ChevronLeft className="w-4 h-4" />
+                      <ChevronLeft className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
                   </button>
-                  <div className="px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-indigo-600 flex flex-col items-center justify-center min-w-[160px]">
-                      <span className="flex items-center gap-2 whitespace-nowrap">
-                          <Calendar className="w-3.5 h-3.5" />
+                  <div className="flex-1 flex flex-col items-center justify-center px-1 lg:px-4 py-1 text-center min-w-[120px] lg:min-w-[160px]">
+                      <span className="flex items-center gap-1.5 text-[8.5px] lg:text-[10px] font-black uppercase tracking-widest text-indigo-600 whitespace-nowrap">
+                          <Calendar className="w-2.5 h-2.5 lg:w-3.5 lg:h-3.5" />
                           {weekDisplayRange}
                       </span>
-                      <span className="text-[7px] text-indigo-300 mt-0.5 opacity-80 uppercase tracking-widest font-black">
+                      <span className="text-[6px] lg:text-[7px] text-indigo-300 mt-0.5 opacity-80 uppercase tracking-[0.2em] font-black leading-none">
                           {currentWeekOffset === 0 ? 'Pekan Ini' : 
                            currentWeekOffset === -1 ? 'Pekan Lalu' : 
                            currentWeekOffset === 1 ? 'Pekan Depan' : 
@@ -411,74 +420,84 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                   </div>
                   <button 
                       onClick={() => setCurrentWeekOffset(prev => prev + 1)}
-                      className="p-1 px-2.5 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
+                      className="p-1 px-1.5 lg:px-2.5 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
                   >
-                      <ChevronRight className="w-4 h-4" />
+                      <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
                   </button>
               </div>
 
-              <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border-2 border-slate-50 shadow-sm flex-1 md:flex-initial">
-                  <div className="p-1.5 bg-slate-50 rounded-lg text-slate-400">
-                      <BookOpen className="w-4 h-4" />
+              {/* Halaqah Info */}
+              <div className="flex items-center gap-2 lg:gap-3 bg-white px-2.5 lg:px-4 py-1.5 lg:py-2 rounded-2xl border border-slate-200 shadow-sm">
+                  <div className="p-1 lg:p-1.5 bg-slate-50 rounded-lg text-slate-400">
+                      <BookOpen className="w-3 h-3 lg:w-4 lg:h-4" />
                   </div>
-                  <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Halaqah</p>
-                      <p className="text-[10px] font-black text-slate-800 uppercase tracking-tight">{myHalaqah?.name || '-'}</p>
+                  <div className="text-left">
+                      <p className="hidden lg:block text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Halaqah</p>
+                      <p className="text-[8.5px] lg:text-[10px] font-black text-slate-800 uppercase tracking-tight truncate max-w-[70px] lg:max-w-none">
+                          {myHalaqah?.name || '-'}
+                      </p>
                   </div>
               </div>
-
-              <div className="relative flex-1 w-full max-w-xs group">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-4 h-4 group-focus-within:text-indigo-500 transition-colors" />
+          </div>
+          
+          {/* Row 2: Search & Actions */}
+          <div className="flex items-stretch gap-2 w-full lg:w-auto">
+              <div className="relative flex-1 group">
+                  <Search className="absolute left-3 lg:left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3 h-3 lg:w-4 lg:h-4 group-focus-within:text-indigo-500 transition-colors" />
                   <input 
                       type="text" 
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      placeholder="Cari NIS atau Nama..." 
-                      className="w-full pl-11 pr-4 py-2.5 text-xs font-black border-2 border-slate-50 rounded-2xl focus:ring-4 focus:ring-indigo-50/50 focus:border-indigo-500 focus:outline-none bg-white text-slate-900 transition-all placeholder:font-bold placeholder:text-slate-400 shadow-sm"
+                      placeholder="Cari..." 
+                      className="w-full pl-8 lg:pl-11 pr-3 lg:pr-4 py-2 lg:py-2.5 text-[10px] lg:text-xs font-black border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-50/50 focus:border-indigo-500 focus:outline-none bg-white text-slate-900 transition-all placeholder:font-bold placeholder:text-slate-300 shadow-sm"
                   />
               </div>
-          </div>
-          
-          <div className="flex gap-2 w-full lg:w-auto">
-              <button 
-                onClick={() => addNotification({type: 'info', title: 'Reset', message: 'Form direset.'})}
-                className="flex-1 lg:flex-none px-6 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-slate-100 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all active:scale-95 shadow-sm"
-              >
-                  RESET
-              </button>
-              <button 
-                onClick={() => setIsInfoModalOpen(true)}
-                className="p-2.5 bg-white border border-slate-200/60 rounded-xl text-slate-400 hover:text-indigo-600 hover:border-indigo-100 transition-all shadow-sm group"
-                title="Informasi Target Harian"
-              >
-                  <HelpCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
-              </button>
-              <button 
-                onClick={() => handleSave()}
-                className="flex-1 lg:flex-none flex items-center justify-center px-6 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-emerald-600 bg-emerald-600 text-white shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:border-emerald-700 transition-all active:scale-95"
-              >
-                  <Save className="w-4 h-4 mr-2" />
-                  SIMPAN LAPORAN
-              </button>
+              
+              <div className="flex items-center gap-1.5 lg:gap-2">
+                  <button 
+                    onClick={() => {
+                        handleReset();
+                        addNotification({type: 'info', title: 'Reset', message: 'Form direset.'});
+                    }}
+                    className="h-full px-3 lg:px-6 py-2 lg:py-2.5 font-black text-[9px] lg:text-[10px] uppercase tracking-widest rounded-xl border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all active:scale-95 shadow-sm"
+                  >
+                      <span className="hidden lg:inline">RESET</span>
+                      <RotateCcw className="w-3.5 h-3.5 lg:hidden" />
+                  </button>
+                  <button 
+                    onClick={() => setIsInfoModalOpen(true)}
+                    className="h-full p-2 lg:p-2.5 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 hover:border-indigo-100 transition-all shadow-sm group"
+                    title="Informasi Target Harian"
+                  >
+                      <HelpCircle className="w-3.5 h-3.5 lg:w-4 lg:h-4 group-hover:scale-110 transition-transform" />
+                  </button>
+                  <button 
+                    onClick={() => handleSave()}
+                    className="h-full flex items-center justify-center px-3 lg:px-6 py-2 lg:py-2.5 font-black text-[9px] lg:text-[10px] uppercase tracking-widest rounded-xl bg-emerald-600 text-white shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all active:scale-95 border border-emerald-600"
+                  >
+                      <Save className="w-3.5 h-3.5 lg:mr-2" />
+                      <span className="hidden lg:inline">SIMPAN LAPORAN</span>
+                      <span className="lg:hidden ml-1.5">SIMPAN</span>
+                  </button>
+              </div>
           </div>
       </div>
 
       {/* Main Table Grid */}
       <div className="bg-transparent rounded-none overflow-hidden flex flex-col">
-          <div className="p-4 bg-transparent flex flex-col sm:flex-row justify-end items-center gap-4">
-              <div className="flex items-center gap-2 bg-transparent">
-                  <button 
-                    onClick={() => setShowNisKelas(!showNisKelas)}
-                    className={`flex items-center gap-2 px-3 py-1 rounded-xl transition-all text-[10px] font-black uppercase tracking-tight ${showNisKelas ? 'bg-indigo-50/50 text-indigo-600 border border-indigo-100' : 'bg-slate-100/50 text-slate-400 border border-slate-200/50 hover:bg-slate-100'}`}
-                  >
-                    {showNisKelas ? 'Sembunyikan Identitas' : 'Tampilkan Identitas'}
-                  </button>
-                  <span className="w-px h-3 bg-slate-200 mx-2"></span>
-                  <div className="flex items-center gap-4">
-                      <span className="flex items-center gap-1.5 text-[9px] font-black text-amber-500 uppercase tracking-tighter"><CheckCircle2 className="w-3 h-3" /> A: Terampaui</span>
-                      <span className="flex items-center gap-1.5 text-[9px] font-black text-emerald-600 uppercase tracking-tighter"><CheckCircle2 className="w-3 h-3" /> B: Tercapai</span>
-                      <span className="flex items-center gap-1.5 text-[9px] font-black text-rose-500 uppercase tracking-tighter"><XCircle className="w-3 h-3" /> C: Tidak Tercapai</span>
-                  </div>
+          <div className="px-2 py-2 lg:p-4 bg-transparent flex flex-row items-center justify-between gap-2 overflow-x-auto no-scrollbar mb-1 lg:mb-0">
+              <button 
+                onClick={() => setShowNisKelas(!showNisKelas)}
+                className={`hidden sm:flex flex-none items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all text-[8.5px] lg:text-[10px] font-black uppercase tracking-tight ${showNisKelas ? 'bg-indigo-50/50 text-indigo-600 border border-indigo-100' : 'bg-white text-slate-400 border border-slate-200 hover:bg-slate-50'}`}
+              >
+                <span className="lg:hidden">{showNisKelas ? 'Pribadi' : 'Identitas'}</span>
+                <span className="hidden lg:inline">{showNisKelas ? 'Sembunyikan Identitas' : 'Tampilkan Identitas'}</span>
+              </button>
+
+              <div className="flex items-center gap-2 lg:gap-4 flex-nowrap whitespace-nowrap py-1">
+                  <span className="flex items-center gap-1 text-[7.5px] lg:text-[9px] font-black text-amber-500 uppercase tracking-tighter"><CheckCircle2 className="w-2.5 h-2.5" /> A: Terlampaui</span>
+                  <span className="flex items-center gap-1 text-[7.5px] lg:text-[9px] font-black text-emerald-600 uppercase tracking-tighter"><CheckCircle2 className="w-2.5 h-2.5" /> B: Tercapai</span>
+                  <span className="flex items-center gap-1 text-[7.5px] lg:text-[9px] font-black text-rose-500 uppercase tracking-tighter"><XCircle className="w-2.5 h-2.5" /> C: Tidak Tercapai</span>
               </div>
           </div>
 
@@ -487,33 +506,32 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                 <thead className="sticky top-0 z-40">
                     <tr className="bg-white">
                         {/* Frozen Headers */}
-                        <th rowSpan={2} className="w-[50px] min-w-[50px] sticky left-0 bg-white z-50 px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">No</th>
+                        <th rowSpan={2} className="w-[35px] lg:w-[50px] min-w-[35px] lg:min-w-[50px] hidden sm:table-cell sticky sm:left-0 bg-white z-50 px-1 lg:px-3 py-4 text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">No</th>
                         {showNisKelas && (
-                            <th rowSpan={2} className="w-[100px] min-w-[100px] sticky left-[50px] bg-white z-50 px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100 animate-in slide-in-from-left-1 duration-300">NIS</th>
+                            <th rowSpan={2} className="w-[70px] lg:w-[100px] min-w-[70px] lg:min-w-[100px] sticky sm:left-[50px] left-0 bg-white z-50 px-1 lg:px-3 py-4 text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100 animate-in slide-in-from-left-1 duration-300">NIS</th>
                         )}
-                        <th rowSpan={2} className={`w-[220px] min-w-[220px] sticky ${showNisKelas ? 'left-[150px]' : 'left-[50px]'} bg-white z-50 px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)] transition-all duration-300`}>Nama Santri</th>
-                        {showNisKelas && (
+                        <th rowSpan={2} className={`w-[95px] lg:w-[220px] min-w-[95px] lg:min-w-[220px] sticky ${showNisKelas ? 'sm:left-[150px] left-[70px]' : 'sm:left-[50px] left-0'} bg-white z-50 px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)] transition-all duration-300`}>Nama Santri</th>
+                        {/* {showNisKelas && (
                             <th rowSpan={2} className="w-[80px] min-w-[80px] sticky left-[370px] bg-white z-50 px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)] animate-in slide-in-from-left-1 duration-300">Kelas</th>
-                        )}
+                        )} */}
                         
                         {/* Scrollable Group Headers */}
-                        <th colSpan={2} className="px-4 py-3 text-[10px] font-bold text-indigo-600 uppercase tracking-widest text-center border-b border-r border-slate-100 bg-indigo-50/30">Hafalan Saat Ini</th>
-                        <th colSpan={3} className="px-4 py-3 text-[10px] font-bold text-blue-600 uppercase tracking-widest text-center border-b border-r border-slate-100 bg-blue-50/30">ATM</th>
-                        <th rowSpan={2} className="w-24 min-w-[96px] bg-slate-50 px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">CSS</th>
-                        <th colSpan={6} className="px-4 py-3 text-[10px] font-bold text-emerald-600 uppercase tracking-widest text-center border-b border-slate-100 bg-emerald-50/30">Target Pekanan</th>
+                        <th colSpan={2} className="px-4 py-3 text-[9px] lg:text-[10px] font-bold text-emerald-600 uppercase tracking-tighter lg:tracking-widest text-center border-b border-r border-slate-100 bg-indigo-50/30 whitespace-nowrap">Hafalan Saat Ini</th>
+                        <th colSpan={3} className="px-4 py-3 text-[9px] lg:text-[10px] font-bold text-blue-600 uppercase tracking-tighter lg:tracking-widest text-center border-b border-r border-slate-100 bg-blue-50/30 whitespace-nowrap">ATM</th>
+                        <th colSpan={6} className="px-4 py-3 text-[9px] lg:text-[10px] font-bold text-emerald-600 uppercase tracking-tighter lg:tracking-widest text-center border-b border-slate-100 bg-emerald-50/30 whitespace-nowrap">Target Pekanan</th>
                     </tr>
                     <tr className="bg-white">
-                        <th className="px-2 py-2 text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-indigo-50/10 min-w-[60px]">Juz</th>
-                        <th className="px-2 py-2 text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-indigo-50/10 min-w-[80px]">Hal</th>
-                        <th className="px-2 py-2 text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-blue-50/10 min-w-[80px]">Manzil</th>
-                        <th className="px-2 py-2 text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-blue-50/10 min-w-[60px]">/Hari</th>
-                        <th className="px-2 py-2 text-[9px] font-bold text-blue-600 uppercase text-center border-b border-r border-slate-100 bg-blue-50/10 min-w-[80px]">Sabqi</th>
-                        <th className="px-2 py-2 text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[180px]">Manzil (Hal/Juz)</th>
-                        <th className="px-2 py-2 text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[50px]">Ket</th>
-                        <th className="px-2 py-2 text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[180px]">Sabqi (Hal)</th>
-                        <th className="px-2 py-2 text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[50px]">Ket</th>
-                        <th className="px-2 py-2 text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[180px]">Sabaq (Baris)</th>
-                        <th className="px-2 py-2 text-[9px] font-bold text-slate-500 uppercase text-center border-b bg-emerald-50/10 min-w-[50px]">Ket</th>
+                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-indigo-50/10 min-w-[45px] lg:min-w-[60px]">Juz</th>
+                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-indigo-50/10 min-w-[55px] lg:min-w-[80px]">Hal</th>
+                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-blue-50/10 min-w-[55px] lg:min-w-[80px]">Manzil</th>
+                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-blue-50/10 min-w-[45px] lg:min-w-[60px]">Berputar</th>
+                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-blue-600 uppercase text-center border-b border-r border-slate-100 bg-blue-50/10 min-w-[55px] lg:min-w-[80px]">Sabqi</th>
+                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[130px] lg:min-w-[180px]">Manzil (Hal/Juz)</th>
+                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[40px] lg:min-w-[50px]">Ket</th>
+                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[130px] lg:min-w-[180px]">Sabqi (Hal)</th>
+                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[40px] lg:min-w-[50px]">Ket</th>
+                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[130px] lg:min-w-[180px]">Sabaq (Baris)</th>
+                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b bg-emerald-50/10 min-w-[40px] lg:min-w-[50px]">Ket</th>
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-100">
@@ -527,24 +545,24 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                     ) : filteredStudents.map((s, idx) => {
                         const target = targets[s.id] || {
                           studentId: s.id, nis: s.nis || '-', name: s.full_name, className: '-',
-                          hafalanJuz: '', hafalanHal: '', manzilAtm: '', hariAtm: '', sabqiAtm: '', css: '',
+                          hafalanJuz: '', hafalanHal: '', manzilAtm: '', hariAtm: '', sabqiAtm: '',
                           manzilTarget: '', manzilHal: '', manzilKet: '', sabqiTarget: '', sabqiTargetSurat: '', sabqiKet: '', sabaqTarget: '', sabaqTargetSurat: '', sabaqKet: ''
                         } as TargetRow;
 
                         return (
                             <tr key={s.id} className="group transition-colors">
                                 {/* Frozen Body Cells */}
-                                <td className="sticky left-0 bg-white px-3 py-4 text-[11px] font-bold text-slate-400 text-center border-r border-slate-50 z-20 transition-colors">{idx + 1}</td>
+                                <td className="hidden sm:table-cell sticky sm:left-0 bg-white px-1 lg:px-3 py-4 text-[10px] lg:text-[11px] font-bold text-slate-400 text-center border-r border-slate-50 z-20 transition-colors">{idx + 1}</td>
                                 {showNisKelas && (
-                                    <td className="sticky left-[50px] bg-white px-3 py-4 text-[11px] font-bold text-slate-600 text-center border-r border-slate-50 z-20 transition-all duration-300">{target.nis}</td>
+                                    <td className="sticky sm:left-[50px] left-0 bg-white px-1 lg:px-3 py-4 text-[10px] lg:text-[11px] font-bold text-slate-600 text-center border-r border-slate-50 z-20 transition-all duration-300">{target.nis}</td>
                                 )}
-                                <td className={`sticky ${showNisKelas ? 'left-[150px]' : 'left-[50px]'} bg-white px-4 py-4 text-xs font-bold text-slate-800 border-r border-slate-100 z-20 transition-all duration-300 truncate shadow-[2px_0_5px_rgba(0,0,0,0.05)]`}>{target.name}</td>
-                                {showNisKelas && (
+                                <td className={`sticky ${showNisKelas ? 'sm:left-[150px] left-[70px]' : 'sm:left-[50px] left-0'} bg-white px-2 lg:px-4 py-4 text-[9.5px] lg:text-xs font-bold text-slate-800 border-r border-slate-100 z-20 transition-all duration-300 whitespace-normal leading-tight break-words shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-[95px] lg:w-[220px]`}>{target.name}</td>
+                                {/* {showNisKelas && (
                                     <td className="sticky left-[370px] bg-white px-3 py-4 text-[11px] font-bold text-slate-600 text-center border-r border-slate-100 z-20 transition-all duration-300 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">{target.className}</td>
-                                )}
+                                )} */}
                                 
                                 {/* Scrollable Content */}
-                                <td className="px-1 py-1.5 border-r border-slate-50 text-center bg-indigo-50/5">
+                                <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-indigo-50/5">
                                     <input 
                                         type="number" 
                                         min="1" 
@@ -554,16 +572,16 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                                             let val = parseInt(e.target.value);
                                             if (isNaN(val)) handleInputChange(s.id, 'hafalanJuz', '');
                                             else {
-                                                if (val < 1) val = 1;
+                                                if (val < 0) val = 0;
                                                 if (val > 30) val = 30;
                                                 handleInputChange(s.id, 'hafalanJuz', val.toString());
                                             }
                                         }} 
-                                        className="w-full text-center text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-indigo-300 rounded h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                        className="w-full text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-indigo-300 rounded h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                                         placeholder="Juz" 
                                     />
                                 </td>
-                                <td className="px-1 py-1.5 border-r border-slate-50 text-center bg-indigo-50/5">
+                                <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-indigo-50/5">
                                     <input 
                                         type="number" 
                                         min="1" 
@@ -573,48 +591,82 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                                             let val = parseInt(e.target.value);
                                             if (isNaN(val)) handleInputChange(s.id, 'hafalanHal', '');
                                             else {
-                                                if (val < 1) val = 1;
+                                                if (val < 0) val = 0;
                                                 if (val > 20) val = 20;
                                                 handleInputChange(s.id, 'hafalanHal', val.toString());
                                             }
                                         }} 
-                                        className="w-full text-center text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-indigo-300 rounded h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                        className="w-full text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-indigo-300 rounded h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                                         placeholder="Hal" 
                                     />
                                 </td>
-                                <td className="px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
-                                    <input readOnly type="text" value={target.manzilAtm} className="w-full text-center text-[11px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
+                                <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
+                                    <input readOnly type="text" value={target.manzilAtm} className="w-full text-center text-[10px] lg:text-[11px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
                                 </td>
-                                <td className="px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
-                                    <input readOnly type="text" value={target.hariAtm} className="w-full text-center text-[11px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
+                                <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
+                                    <input readOnly type="text" value={target.hariAtm ? `${target.hariAtm} hari` : ''} className="w-full text-center text-[10px] lg:text-[11px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
                                 </td>
-                                <td className="px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
-                                    <input readOnly type="text" value={target.sabqiAtm} className="w-full text-center text-[11px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
-                                </td>
-                                <td className="px-1 py-1.5 border-r border-slate-100 text-center h-10">
-                                    <input type="text" value={target.css} onChange={e => handleInputChange(s.id, 'css', e.target.value)} className="w-full text-center text-[10px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0" placeholder="%" />
+                                <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
+                                    <input readOnly type="text" value={target.sabqiAtm} className="w-full text-center text-[10px] lg:text-[11px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
                                 </td>
 
-                                <td className="px-1.5 py-1.5 border-r border-slate-50 bg-emerald-50/5">
-                                    <div className="flex items-center gap-1">
-                                        <input type="text" value={target.manzilTarget} onChange={e => handleInputChange(s.id, 'manzilTarget', e.target.value)} className="w-[100px] px-2 text-[10px] font-bold bg-white border border-slate-100 rounded-lg h-9 shadow-sm focus:border-emerald-300" placeholder="[Surat]:[Ayat]" />
-                                        <div className="flex items-center bg-white border border-slate-100 rounded-lg px-1 shadow-sm focus-within:border-emerald-300">
+                                <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-50 bg-emerald-50/5">
+                                    <div className="flex items-center gap-0.5">
+                                        {/* Manzil Surah & Ayat */}
+                                        <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 shadow-sm focus-within:border-emerald-300">
+                                            <select 
+                                                value={target.manzilTarget.split(':')[0] || ''} 
+                                                onChange={e => {
+                                                    const surahName = e.target.value;
+                                                    // Set ayah to 1 automatically when surah is selected
+                                                    const ayah = surahName ? '1' : '';
+                                                    handleInputChange(s.id, 'manzilTarget', surahName ? `${surahName}:${ayah}` : '');
+                                                }}
+                                                className="w-[75px] lg:w-[100px] bg-transparent border-none focus:ring-0 text-[9px] lg:text-[10px] font-bold text-slate-700 outline-none appearance-none px-1 text-center"
+                                            >
+                                                <option value="">- Surat -</option>
+                                                {SURAH_DATA.map(surah => (
+                                                    <option key={surah.name} value={surah.name}>{surah.name}</option>
+                                                ))}
+                                            </select>
+                                            <span className="text-slate-600 font-bold">:</span>
+                                            <input 
+                                                type="number" 
+                                                value={target.manzilTarget.split(':')[1] || ''} 
+                                                onChange={e => {
+                                                    const surahName = target.manzilTarget.split(':')[0] || '';
+                                                    const surahInfo = SURAH_DATA.find(sr => sr.name === surahName);
+                                                    let val = e.target.value;
+                                                    if (val !== '') {
+                                                        let numVal = parseInt(val);
+                                                        if (isNaN(numVal)) numVal = 1;
+                                                        if (numVal < 1) numVal = 1;
+                                                        if (surahInfo && numVal > surahInfo.totalAyah) numVal = surahInfo.totalAyah;
+                                                        val = numVal.toString();
+                                                    }
+                                                    handleInputChange(s.id, 'manzilTarget', surahName ? `${surahName}:${val}` : '');
+                                                }}
+                                                className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none" 
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                        <div className="flex items-center bg-white border border-slate-100 rounded-lg px-0.5 lg:px-1 shadow-sm focus-within:border-emerald-300">
                                             <input 
                                                 type="number" 
                                                 value={target.manzilHal} 
                                                 onChange={e => handleInputChange(s.id, 'manzilHal', e.target.value)} 
-                                                className="w-10 text-center text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0" 
+                                                className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0" 
                                                 placeholder="0"
                                             />
-                                            <span className="text-[8px] font-extrabold text-emerald-400 uppercase mr-1">Hal</span>
+                                            <span className="text-[7.5px] lg:text-[8px] font-extrabold text-emerald-400 uppercase mr-0.5 lg:mr-1">Hal</span>
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-1 py-1.5 border-r border-slate-50 bg-emerald-50/5">
+                                <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 bg-emerald-50/5">
                                     <select 
                                         value={target.manzilKet} 
                                         onChange={e => handleInputChange(s.id, 'manzilKet', e.target.value)} 
-                                        className={`w-full h-9 text-[11px] font-black bg-white border border-slate-100 rounded-lg focus:ring-0 text-center shadow-sm appearance-none ${
+                                        className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-white border border-slate-100 rounded-lg focus:ring-0 text-center shadow-sm appearance-none ${
                                             target.manzilKet === 'A' ? 'text-amber-500' : 
                                             target.manzilKet === 'C' ? 'text-rose-500' : 
                                             'text-emerald-600'
@@ -625,26 +677,63 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                                     </select>
                                 </td>
 
-                                <td className="px-1 py-1.5 border-r border-slate-50 text-center bg-emerald-50/5 h-10">
-                                    <div className="flex items-center justify-center gap-1 animate-in zoom-in-95 duration-100">
-                                        <input type="text" value={target.sabqiTargetSurat} onChange={e => handleInputChange(s.id, 'sabqiTargetSurat', e.target.value)} className="w-[100px] px-2 text-[10px] font-bold bg-white border border-slate-100 rounded-lg h-9 shadow-sm focus:border-emerald-300" placeholder="[Surat]:[Ayat]" />
-                                        <div className="flex items-center bg-white border border-slate-100 rounded-lg px-1 shadow-sm focus-within:border-emerald-300">
+                                <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-50 bg-emerald-50/5">
+                                    <div className="flex items-center gap-0.5 animate-in zoom-in-95 duration-100">
+                                        {/* Sabqi Surah & Ayat */}
+                                        <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 shadow-sm focus-within:border-emerald-300">
+                                            <select 
+                                                value={target.sabqiTargetSurat.split(':')[0] || ''} 
+                                                onChange={e => {
+                                                    const surahName = e.target.value;
+                                                    // Set ayah to 1 automatically when surah is selected
+                                                    const ayah = surahName ? '1' : '';
+                                                    handleInputChange(s.id, 'sabqiTargetSurat', surahName ? `${surahName}:${ayah}` : '');
+                                                }}
+                                                className="w-[75px] lg:w-[100px] bg-transparent border-none focus:ring-0 text-[9px] lg:text-[10px] font-bold text-slate-700 outline-none appearance-none px-1 text-center"
+                                            >
+                                                <option value="">- Surat -</option>
+                                                {SURAH_DATA.map(surah => (
+                                                    <option key={surah.name} value={surah.name}>{surah.name}</option>
+                                                ))}
+                                            </select>
+                                            <span className="text-slate-600 font-bold">:</span>
+                                            <input 
+                                                type="number" 
+                                                value={target.sabqiTargetSurat.split(':')[1] || ''} 
+                                                onChange={e => {
+                                                    const surahName = target.sabqiTargetSurat.split(':')[0] || '';
+                                                    const surahInfo = SURAH_DATA.find(sr => sr.name === surahName);
+                                                    let val = e.target.value;
+                                                    if (val !== '') {
+                                                        let numVal = parseInt(val);
+                                                        if (isNaN(numVal)) numVal = 1;
+                                                        if (numVal < 1) numVal = 1;
+                                                        if (surahInfo && numVal > surahInfo.totalAyah) numVal = surahInfo.totalAyah;
+                                                        val = numVal.toString();
+                                                    }
+                                                    handleInputChange(s.id, 'sabqiTargetSurat', surahName ? `${surahName}:${val}` : '');
+                                                }}
+                                                className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none" 
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                        <div className="flex items-center bg-white border border-slate-100 rounded-lg px-0.5 lg:px-1 shadow-sm focus-within:border-emerald-300">
                                             <input 
                                                 type="number" 
                                                 value={target.sabqiTarget} 
                                                 onChange={e => handleInputChange(s.id, 'sabqiTarget', e.target.value)} 
-                                                className="w-10 text-center text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0" 
+                                                className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none" 
                                                 placeholder="0"
                                             />
-                                            <span className="text-[8px] font-extrabold text-emerald-400 uppercase mr-1">Hal</span>
+                                            <span className="text-[7.5px] lg:text-[8px] font-extrabold text-emerald-400 uppercase mr-0.5 lg:mr-1">Hal</span>
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-1 py-1.5 border-r border-slate-50 bg-emerald-50/5">
+                                <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 bg-emerald-50/5">
                                     <select 
                                         value={target.sabqiKet} 
                                         onChange={e => handleInputChange(s.id, 'sabqiKet', e.target.value)} 
-                                        className={`w-full h-9 text-[11px] font-black bg-white border border-slate-100 rounded-lg focus:ring-0 text-center shadow-sm appearance-none ${
+                                        className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-white border border-slate-100 rounded-lg focus:ring-0 text-center shadow-sm appearance-none ${
                                             target.sabqiKet === 'A' ? 'text-amber-500' : 
                                             target.sabqiKet === 'C' ? 'text-rose-500' : 
                                             'text-emerald-600'
@@ -655,26 +744,63 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                                     </select>
                                 </td>
 
-                                <td className="px-1 py-1.5 border-r border-slate-50 text-center bg-emerald-50/5 h-10">
-                                    <div className="flex items-center justify-center gap-1 animate-in zoom-in-95 duration-100">
-                                        <input type="text" value={target.sabaqTargetSurat} onChange={e => handleInputChange(s.id, 'sabaqTargetSurat', e.target.value)} className="w-[100px] px-2 text-[10px] font-bold bg-white border border-slate-100 rounded-lg h-9 shadow-sm focus:border-emerald-300" placeholder="[Surat]:[Ayat]" />
-                                        <div className="flex items-center bg-white border border-slate-100 rounded-lg px-1 shadow-sm focus-within:border-emerald-300">
+                                <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-50 bg-emerald-50/5">
+                                    <div className="flex items-center justify-center gap-0.5 animate-in zoom-in-95 duration-100 text-left">
+                                        {/* Sabaq Surah & Ayat */}
+                                        <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 shadow-sm focus-within:border-emerald-300">
+                                            <select 
+                                                value={target.sabaqTargetSurat.split(':')[0] || ''} 
+                                                onChange={e => {
+                                                    const surahName = e.target.value;
+                                                    // Set ayah to 1 automatically when surah is selected
+                                                    const ayah = surahName ? '1' : '';
+                                                    handleInputChange(s.id, 'sabaqTargetSurat', surahName ? `${surahName}:${ayah}` : '');
+                                                }}
+                                                className="w-[75px] lg:w-[100px] bg-transparent border-none focus:ring-0 text-[9px] lg:text-[10px] font-bold text-slate-700 outline-none appearance-none px-1 text-center"
+                                            >
+                                                <option value="">- Surat -</option>
+                                                {SURAH_DATA.map(surah => (
+                                                    <option key={surah.name} value={surah.name}>{surah.name}</option>
+                                                ))}
+                                            </select>
+                                            <span className="text-slate-600 font-bold">:</span>
+                                            <input 
+                                                type="number" 
+                                                value={target.sabaqTargetSurat.split(':')[1] || ''} 
+                                                onChange={e => {
+                                                    const surahName = target.sabaqTargetSurat.split(':')[0] || '';
+                                                    const surahInfo = SURAH_DATA.find(sr => sr.name === surahName);
+                                                    let val = e.target.value;
+                                                    if (val !== '') {
+                                                        let numVal = parseInt(val);
+                                                        if (isNaN(numVal)) numVal = 1;
+                                                        if (numVal < 1) numVal = 1;
+                                                        if (surahInfo && numVal > surahInfo.totalAyah) numVal = surahInfo.totalAyah;
+                                                        val = numVal.toString();
+                                                    }
+                                                    handleInputChange(s.id, 'sabaqTargetSurat', surahName ? `${surahName}:${val}` : '');
+                                                }}
+                                                className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none" 
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                        <div className="flex items-center bg-white border border-slate-100 rounded-lg px-0.5 lg:px-1 shadow-sm focus-within:border-emerald-300">
                                             <input 
                                                 type="number" 
                                                 value={target.sabaqTarget} 
                                                 onChange={e => handleInputChange(s.id, 'sabaqTarget', e.target.value)} 
-                                                className="w-10 text-center text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0" 
+                                                className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none" 
                                                 placeholder="0"
                                             />
-                                            <span className="text-[8px] font-extrabold text-emerald-400 uppercase mr-1">Baris</span>
+                                            <span className="text-[7.5px] lg:text-[8px] font-extrabold text-emerald-400 uppercase mr-0.5 lg:mr-1">Baris</span>
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-1 py-1.5 bg-emerald-50/5">
+                                <td className="px-0.5 lg:px-1 py-1.5 bg-emerald-50/5">
                                     <select 
                                         value={target.sabaqKet} 
                                         onChange={e => handleInputChange(s.id, 'sabaqKet', e.target.value)} 
-                                        className={`w-full h-9 text-[11px] font-black bg-white border border-slate-100 rounded-lg focus:ring-0 text-center shadow-sm appearance-none ${
+                                        className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-white border border-slate-100 rounded-lg focus:ring-0 text-center shadow-sm appearance-none ${
                                             target.sabaqKet === 'A' ? 'text-amber-500' : 
                                             target.sabaqKet === 'C' ? 'text-rose-500' : 
                                             'text-emerald-600'
@@ -692,16 +818,17 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
           </div>
           
           <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex flex-col md:flex-row justify-between lg:items-center gap-6">
-              <div className="flex flex-wrap gap-x-8 gap-y-4 text-[10px] font-bold text-slate-400">
-                  <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></div> Manzil ideal rotasi 15 hari</div>
-                  <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div> Sabqi ideal rotasi 5 hari</div>
-                  <div className="flex items-center gap-2"><Info className="w-3.5 h-3.5" /> 
-                  Format Pengisian (cukup target akhir) 
-                  = [Nama surat]:[Ayat](Keterangan)</div>
+              <div className="flex flex-col lg:flex-row lg:flex-wrap gap-x-8 gap-y-2 lg:gap-y-4 text-[9px] lg:text-[10px] font-bold text-slate-400">
+                  <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-indigo-500 rounded-full shrink-0"></div> Manzil ideal rotasi 15 hari</div>
+                  <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full shrink-0"></div> Sabqi ideal rotasi 5 hari</div>
+                  <div className="flex items-start gap-2 pt-1 lg:pt-0">
+                      <Info className="w-3.5 h-3.5 text-slate-300 shrink-0 mt-0.5" /> 
+                      <p className="leading-relaxed">
+                          Format Pengisian: [Nama surat]:[Ayat](Keterangan) 
+                          <span className="block lg:inline lg:ml-1 text-[8px] lg:text-[10px] text-slate-300 font-medium whitespace-nowrap">Contoh: Al-Baqarah:15(Lancar)</span>
+                      </p>
+                  </div>
               </div>
-              {/* <div className="flex items-center px-4 py-1.5 bg-indigo-50/50 border border-indigo-100 rounded-full">
-                <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest leading-none">Capaian Terurut Abjad</p>
-              </div> */}
           </div>
       </div>
 
@@ -733,18 +860,29 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
 
                       <div className="space-y-3.5">
                           <div className="bg-slate-50/50 rounded-2xl border border-slate-100 p-3.5 space-y-2.5">
-                              <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
-                                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Kelas 1 - 2</span>
-                                  <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-indigo-100/50">3 Baris</span>
-                              </div>
-                              <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
-                                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Kelas 3 - 4</span>
-                                  <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-indigo-100/50">5 Baris</span>
-                              </div>
-                              <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
-                                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Kelas 5 - 6</span>
-                                  <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-indigo-100/50">7 Baris</span>
-                              </div>
+                              {tenant?.curriculum_config?.target_info ? (
+                                  tenant.curriculum_config.target_info.map((item: any, idx: number) => (
+                                      <div key={idx} className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
+                                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{item.label}</span>
+                                          <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-indigo-100/50">{item.value}</span>
+                                      </div>
+                                  ))
+                              ) : (
+                                  <>
+                                      <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
+                                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Kelas 1 - 2</span>
+                                          <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-indigo-100/50">3 Baris</span>
+                                      </div>
+                                      <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
+                                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Kelas 3 - 4</span>
+                                          <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-indigo-100/50">5 Baris</span>
+                                      </div>
+                                      <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
+                                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Kelas 5 - 6</span>
+                                          <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-indigo-100/50">7 Baris</span>
+                                      </div>
+                                  </>
+                              )}
                           </div>
 
                           <div className="p-3 bg-amber-50/50 rounded-xl border border-amber-100/50 flex items-start gap-2.5">

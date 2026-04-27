@@ -1,10 +1,9 @@
-
 export const JUZ_OPTIONS = Array.from({ length: 30 }, (_, i) => i + 1);
 
 export const SURAH_DATA = [
   { name: "Al-Fatihah", juz: [1], totalAyah: 7 },
   { name: "Al-Baqarah", juz: [1, 2, 3], totalAyah: 286 },
-  { name: "Ali 'Imran", juz: [3, 4], totalAyah: 200 },
+  { name: "Ali Imran", juz: [3, 4], totalAyah: 200 },
   { name: "An-Nisa'", juz: [4, 5, 6], totalAyah: 176 },
   { name: "Al-Ma'idah", juz: [6, 7], totalAyah: 120 },
   { name: "Al-An'am", juz: [7, 8], totalAyah: 165 },

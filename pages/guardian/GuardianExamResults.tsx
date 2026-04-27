@@ -4,6 +4,7 @@ import { getExamSchedules, getStudents } from '../../services/dataService';
 import { ExamSchedule, MemorizationStatus, UserProfile } from '../../types';
 import { AlertCircle, Award, Calendar, CheckCircle, Clock, FileText, User, Search, X, ChevronRight } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
+import { EmptyState } from '../../components/ui/EmptyState';
 
 // --- Local Modal for Exam History ---
 const ExamHistoryModal: React.FC<{ isOpen: boolean; onClose: () => void; exams: ExamSchedule[] }> = ({ isOpen, onClose, exams }) => {
@@ -12,9 +13,9 @@ const ExamHistoryModal: React.FC<{ isOpen: boolean; onClose: () => void; exams: 
     const getVerdictBadge = (verdict?: MemorizationStatus) => {
         if (!verdict) return <span className="text-slate-400 text-[10px] italic">Belum dinilai</span>;
         switch(verdict) {
-            case MemorizationStatus.LANCAR: return <span className="text-[10px] font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-100">Mumtaz</span>;
-            case MemorizationStatus.PERBAIKAN: return <span className="text-[10px] font-bold text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded border border-yellow-100">Jayyid</span>;
-            case MemorizationStatus.ULANG: return <span className="text-[10px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-100">Naqish</span>;
+            case MemorizationStatus.LANCAR: return <span className="text-[10px] font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-100">Lancar</span>;
+            case MemorizationStatus.TIDAK_LANCAR: return <span className="text-[10px] font-bold text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded border border-yellow-100">Tidak Lancar</span>;
+            case MemorizationStatus.TIDAK_SETOR: return <span className="text-[10px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-100">Tidak Setor</span>;
             default: return null;
         }
     };
@@ -112,9 +113,9 @@ export const StudentExamResults: React.FC<{ user?: UserProfile }> = ({ user }) =
     const getCompactVerdict = (verdict?: MemorizationStatus) => {
         if (!verdict) return null;
         switch(verdict) {
-            case MemorizationStatus.LANCAR: return <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-100">Mumtaz</span>;
-            case MemorizationStatus.PERBAIKAN: return <span className="text-[10px] font-bold text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded border border-yellow-100">Jayyid</span>;
-            case MemorizationStatus.ULANG: return <span className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-100">Naqish</span>;
+            case MemorizationStatus.LANCAR: return <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-100">Lancar</span>;
+            case MemorizationStatus.TIDAK_LANCAR: return <span className="text-[10px] font-bold text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded border border-yellow-100">Tidak Lancar</span>;
+            case MemorizationStatus.TIDAK_SETOR: return <span className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-100">Tidak Setor</span>;
             default: return null;
         }
     };
@@ -123,8 +124,12 @@ export const StudentExamResults: React.FC<{ user?: UserProfile }> = ({ user }) =
 
     if (!studentName && !loading && exams.length === 0) {
         return (
-             <div className="p-12 text-center text-slate-500 bg-white rounded-xl border border-dashed border-slate-300">
-                <p className="text-lg font-semibold">Tidak ada santri terhubung.</p>
+             <div className="h-[calc(100vh-140px)] flex items-center justify-center animate-fade-in">
+                <EmptyState 
+                    message="Tidak ada santri terhubung." 
+                    description="Silakan hubungi admin sekolah untuk menautkan akun Anda dengan data santri."
+                    icon="user"
+                />
              </div>
         );
     }

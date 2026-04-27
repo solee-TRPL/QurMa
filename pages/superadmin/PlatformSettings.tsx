@@ -62,12 +62,12 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
   }
 
   return (
-    <div className="h-[calc(100vh-140px)] flex flex-col animate-fade-in overflow-hidden">
-      <form onSubmit={handleSave} className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 min-h-0 overflow-hidden">
+    <div className="lg:h-[calc(100vh-140px)] flex flex-col animate-fade-in lg:overflow-hidden pb-10 lg:pb-0">
+      <form onSubmit={handleSave} className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 min-h-0 lg:overflow-hidden">
         
         {/* Left Column: Essential Branding */}
-        <div className="lg:col-span-2 flex flex-col gap-5 min-h-0">
-            <div className="bg-white p-6 rounded-2xl border-2 border-slate-50 shadow-sm flex flex-col gap-5">
+        <div className="lg:col-span-2 flex flex-col gap-5 min-h-0 lg:overflow-y-auto lg:pr-2 custom-scrollbar">
+            <div className="bg-white p-5 lg:p-6 rounded-2xl border border-slate-100 lg:border-2 lg:border-slate-50 shadow-sm flex flex-col gap-5">
                 <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
                         <Monitor className="w-5 h-5" />
@@ -93,7 +93,7 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border-2 border-slate-50 shadow-sm flex-1 flex flex-col gap-5 min-h-0">
+            <div className="bg-white p-5 lg:p-6 rounded-2xl border border-slate-100 lg:border-2 lg:border-slate-50 shadow-sm flex-1 flex flex-col gap-5 min-h-0">
                 <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
                         <Globe className="w-5 h-5" />
@@ -132,17 +132,12 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                     </div>
                 </div>
 
-                <div className="mt-auto p-4 bg-amber-50 rounded-xl border border-amber-100">
-                    <p className="text-[10px] font-bold text-amber-700 leading-relaxed text-center">
-                        Konfigurasi ini memengaruhi parameter perizinan login di seluruh ekosistem QurMa.
-                    </p>
-                </div>
             </div>
         </div>
 
         {/* Right Column: Actions */}
         <div className="flex flex-col gap-5">
-            <div className="bg-white p-6 rounded-2xl border-2 border-slate-50 shadow-sm flex flex-col gap-6">
+            <div className="bg-white p-5 lg:p-6 rounded-2xl border border-slate-100 lg:border-2 lg:border-slate-50 shadow-sm flex flex-col gap-6">
                 <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
                         <ShieldCheck className="w-5 h-5" />

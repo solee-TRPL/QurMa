@@ -41,8 +41,8 @@ export const StudentProgressChart: React.FC<Props> = ({ records }) => {
         acc[date] = { date, lancar: 0, perbaikan: 0, ulang: 0 };
       }
       if (curr.status === MemorizationStatus.LANCAR) acc[date].lancar += 1;
-      if (curr.status === MemorizationStatus.PERBAIKAN) acc[date].perbaikan += 1;
-      if (curr.status === MemorizationStatus.ULANG) acc[date].ulang += 1;
+      if (curr.status === MemorizationStatus.TIDAK_LANCAR) acc[date].perbaikan += 1;
+      if (curr.status === MemorizationStatus.TIDAK_SETOR) acc[date].ulang += 1;
       return acc;
     }, {} as Record<string, any>);
     
@@ -71,15 +71,15 @@ export const StudentProgressChart: React.FC<Props> = ({ records }) => {
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
-              <linearGradient id="colorMumtaz" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="colorLancar" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
                 <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
               </linearGradient>
-              <linearGradient id="colorJayyid" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="colorTidakLancar" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
                 <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
               </linearGradient>
-              <linearGradient id="colorNaqish" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="colorTidakSetor" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
                 <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
               </linearGradient>
@@ -111,29 +111,29 @@ export const StudentProgressChart: React.FC<Props> = ({ records }) => {
             <Area 
               type="monotone" 
               dataKey="lancar" 
-              name="Mumtaz (Lancar)" 
+              name="Lancar" 
               stackId="1" 
               stroke="#10b981" 
               strokeWidth={2}
-              fill="url(#colorMumtaz)" 
+              fill="url(#colorLancar)" 
             />
             <Area 
               type="monotone" 
               dataKey="perbaikan" 
-              name="Jayyid (Perbaikan)" 
+              name="Tidak Lancar" 
               stackId="1" 
               stroke="#f59e0b" 
               strokeWidth={2}
-              fill="url(#colorJayyid)" 
+              fill="url(#colorTidakLancar)" 
             />
             <Area 
               type="monotone" 
               dataKey="ulang" 
-              name="Naqish (Ulang)" 
+              name="Tidak Setor" 
               stackId="1" 
               stroke="#ef4444" 
               strokeWidth={2}
-              fill="url(#colorNaqish)" 
+              fill="url(#colorTidakSetor)" 
             />
           </AreaChart>
         </ResponsiveContainer>

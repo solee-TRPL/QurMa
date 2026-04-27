@@ -4,7 +4,7 @@ import { getStudentsByHalaqah, createStudent, getHalaqahs, createUser, createStu
 import { Student, Halaqah, UserProfile, UserRole, Achievement, TeacherNote, Class } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
-import { Search, Plus, X, Save, MessageSquare, ChevronRight, User, Trash2, Edit3, Phone, Trophy, Calendar, Check, Trash, FileText, Quote, ChevronDown, Filter, AlertTriangle } from 'lucide-react';
+import { Search, Plus, X, Save, MessageSquare, ChevronRight, User, Trash2, Edit3, Phone, Trophy, Calendar, Check, Trash, FileText, Quote, ChevronDown, Filter, AlertTriangle, RotateCcw, Eye, EyeOff } from 'lucide-react';
 import { useLoading } from '../../lib/LoadingContext';
 import { useNotification } from '../../lib/NotificationContext';
 
@@ -19,7 +19,22 @@ interface StudentDetailModalProps {
 }
 
 const StudentDetailModal: React.FC<StudentDetailModalProps> = ({ isOpen, onClose, student, onUpdate, onDelete, tenantId }) => {
-    const [formData, setFormData] = useState({ full_name: '', current_juz: 30, guardian_name: '', guardian_whatsapp: '', guardian_email: '' });
+    const [formData, setFormData] = useState({ 
+        full_name: '', 
+        current_juz: 0, 
+        guardian_name: '', 
+        guardian_whatsapp: '', 
+        guardian_email: '',
+        father_name: '',
+        mother_name: '',
+        father_phone: '',
+        mother_phone: '',
+        address: '',
+        rt_rw: '',
+        village: '',
+        district: '',
+        city: ''
+    });
     
     useEffect(() => {
         if (student && isOpen) {
@@ -28,7 +43,16 @@ const StudentDetailModal: React.FC<StudentDetailModalProps> = ({ isOpen, onClose
                 current_juz: student.current_juz || 30,
                 guardian_name: '', 
                 guardian_whatsapp: '',
-                guardian_email: '' 
+                guardian_email: '',
+                father_name: student.father_name || '',
+                mother_name: student.mother_name || '',
+                father_phone: student.father_phone || '',
+                mother_phone: student.mother_phone || '',
+                address: student.address || '',
+                rt_rw: student.rt_rw || '',
+                village: student.village || '',
+                district: student.district || '',
+                city: student.city || ''
             });
             
             if (student.parent_id) {
@@ -115,6 +139,52 @@ const StudentDetailModal: React.FC<StudentDetailModalProps> = ({ isOpen, onClose
                             <div className="space-y-1.5 md:col-span-2">
                                 <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Orang Tua / Wali</label>
                                 <input readOnly type="email" value={formData.guardian_email} className="w-full px-4 py-2.5 border-2 border-slate-50 bg-slate-50 rounded-xl transition-all text-xs font-bold text-slate-500 outline-none cursor-default" />
+                            </div>
+                            <div className="md:col-span-2 grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Ayah / Ibu</label>
+                                    <div className="w-full px-4 py-2.5 border-2 border-slate-50 bg-slate-50 rounded-xl text-xs font-bold text-slate-500">
+                                        {formData.father_name || '-'} / {formData.mother_name || '-'}
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Kontak Ayah / Ibu</label>
+                                    <div className="w-full px-4 py-2.5 border-2 border-slate-50 bg-slate-50 rounded-xl text-xs font-bold text-slate-500">
+                                        {formData.father_phone || '-'} / {formData.mother_phone || '-'}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="space-y-1.5 md:col-span-2">
+                                <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Alamat Lengkap</label>
+                                <div className="w-full px-4 py-2 border-2 border-slate-50 bg-slate-50 rounded-xl text-xs font-bold text-slate-500 italic">
+                                    {formData.address || '-'}
+                                </div>
+                            </div>
+                            <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">RT / RW</label>
+                                    <div className="w-full px-4 py-2 border-2 border-slate-50 bg-slate-50 rounded-xl text-xs font-bold text-slate-500">
+                                        {formData.rt_rw || '-'}
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Kel / Desa</label>
+                                    <div className="w-full px-4 py-2 border-2 border-slate-50 bg-slate-50 rounded-xl text-xs font-bold text-slate-500">
+                                        {formData.village || '-'}
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Kecamatan</label>
+                                    <div className="w-full px-4 py-2 border-2 border-slate-50 bg-slate-50 rounded-xl text-xs font-bold text-slate-500">
+                                        {formData.district || '-'}
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Kab / Kota</label>
+                                    <div className="w-full px-4 py-2 border-2 border-slate-50 bg-slate-50 rounded-xl text-xs font-bold text-slate-500">
+                                        {formData.city || '-'}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -450,34 +520,34 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
   const itemsPerPage = 3;
   const { setLoading: setGlobalLoading } = useLoading();
   const { addNotification } = useNotification();
+  const [showNIS, setShowNIS] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('qurma_show_nis');
+        return saved === null ? true : saved === 'true';
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('qurma_show_nis', showNIS.toString());
+  }, [showNIS]);
 
   // Modal states
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isAchievementModalOpen, setIsAchievementModalOpen] = useState(false);
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [classes, setClasses] = useState<Record<string, string>>({});
   
   // New Filters
   const [genderFilter, setGenderFilter] = useState<'ALL' | 'L' | 'P'>('ALL');
-  const [classFilter, setClassFilter] = useState<'ALL' | string>('ALL');
-  const [classList, setClassList] = useState<Class[]>([]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [allHalaqahs, allClasses] = await Promise.all([
-        getHalaqahs(tenantId),
-        getClasses(tenantId)
-      ]);
+      const allHalaqahs = await getHalaqahs(tenantId);
       
       const myHalaqah = allHalaqahs.find(h => h.teacher_id === user.id);
       setHalaqah(myHalaqah || null);
-
-      const classMap: Record<string, string> = {};
-      allClasses.forEach(c => { classMap[c.id] = c.name; });
-      setClasses(classMap);
-      setClassList(allClasses);
 
       if (myHalaqah) {
         const studentData = await getStudentsByHalaqah(myHalaqah.id);
@@ -501,10 +571,9 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
     return students.filter(s => {
       const matchSearch = s.full_name.toLowerCase().includes(search.toLowerCase());
       const matchGender = genderFilter === 'ALL' || s.gender === genderFilter;
-      const matchClass = classFilter === 'ALL' || s.class_id === classFilter;
-      return matchSearch && matchGender && matchClass;
+      return matchSearch && matchGender;
     });
-  }, [students, search, genderFilter, classFilter]);
+  }, [students, search, genderFilter]);
 
   const paginatedStudents = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -561,55 +630,52 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
 
   return (
     <div className="space-y-6">
-      {/* Top Utility Strip - Synced with WeeklyTarget style */}
-      <div className="flex flex-col lg:flex-row justify-between items-center gap-4 bg-white/20 p-2 rounded-[24px] border border-white/20 backdrop-blur-md">
-          <div className="flex flex-col md:flex-row items-center gap-3 flex-1 w-full lg:w-auto">
-              <div className="relative flex-1 w-full max-w-sm group">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-4 h-4 group-focus-within:text-indigo-500 transition-colors" />
-                  <input 
-                      type="text" 
-                      value={search} 
-                      onChange={e => setSearch(e.target.value)} 
-                      placeholder="Cari nama santri..." 
-                      className="w-full pl-11 pr-4 py-2.5 text-xs font-black border-2 border-slate-50 rounded-2xl focus:ring-4 focus:ring-indigo-50/50 focus:border-indigo-500 focus:outline-none bg-white text-slate-900 transition-all placeholder:font-bold placeholder:text-slate-400 shadow-sm"
-                  />
-              </div>
+      {/* Top Utility Strip - High Density Single Row for Mobile */}
+      <div className="flex flex-row items-center gap-1.5 lg:gap-4 bg-white/40 p-1.5 lg:p-2 rounded-2xl lg:rounded-[24px] border border-white/20 backdrop-blur-md">
+          {/* Search Area */}
+          <div className="relative flex-1 group">
+              <Search className="absolute left-3 lg:left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3 lg:w-4 h-3 lg:h-4 group-focus-within:text-indigo-500 transition-colors" />
+              <input 
+                  type="text" 
+                  value={search} 
+                  onChange={e => setSearch(e.target.value)} 
+                  placeholder="Cari..." 
+                  className="w-full pl-8 lg:pl-11 pr-2 lg:pr-4 py-1.5 lg:py-2.5 text-[10px] lg:text-xs font-black border border-slate-100 lg:border-2 lg:border-slate-50 rounded-xl lg:rounded-2xl focus:ring-4 focus:ring-indigo-50/50 focus:border-indigo-500 focus:outline-none bg-white text-slate-900 transition-all placeholder:font-bold placeholder:text-slate-400 shadow-sm h-8 lg:h-11"
+              />
           </div>
           
-          <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 w-full lg:w-auto">
-              {/* Filters Group */}
-              <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border-2 border-slate-50 shadow-sm h-10 ring-1 ring-slate-100">
-                  <Filter className="w-3.5 h-3.5 text-slate-400" />
-                  <select 
-                      value={classFilter} 
-                      onChange={e => setClassFilter(e.target.value)}
-                      className="text-[10px] font-black text-slate-600 uppercase tracking-widest bg-transparent outline-none cursor-pointer pr-2 border-none ring-0"
-                  >
-                      <option value="ALL">SEMUA KELAS</option>
-                      {classList.map(c => (
-                          <option key={c.id} value={c.id}>{c.name.toUpperCase()}</option>
-                      ))}
-                  </select>
-              </div>
-
-              <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border-2 border-slate-50 shadow-sm h-10 ring-1 ring-slate-100">
-                  <User className="w-3.5 h-3.5 text-slate-400" />
+          <div className="flex items-center gap-1.5 lg:gap-2">
+              {/* Gender Filter */}
+              <div className="flex items-center gap-1 bg-white px-2 lg:px-4 py-1 rounded-xl lg:rounded-2xl border border-slate-100 lg:border-2 lg:border-slate-50 shadow-sm h-8 lg:h-11 ring-1 ring-slate-100/50">
+                  <User className="w-3 lg:w-3.5 h-3 lg:h-3.5 text-slate-400 shrink-0" />
                   <select 
                       value={genderFilter} 
                       onChange={e => setGenderFilter(e.target.value as any)}
-                      className="text-[10px] font-black text-slate-600 uppercase tracking-widest bg-transparent outline-none cursor-pointer pr-2 border-none ring-0"
+                      className="text-[8.5px] lg:text-[10px] font-black text-slate-600 uppercase tracking-tighter lg:tracking-widest bg-transparent outline-none cursor-pointer pr-1 lg:pr-2 border-none ring-0 min-w-[70px] lg:min-w-[100px]"
                   >
-                       <option value="ALL">SEMUA GENDER</option>
-                       <option value="L">PUTRA (L)</option>
-                       <option value="P">PUTRI (P)</option>
+                       <option value="ALL">SEMUA</option>
+                       <option value="L">PUTRA</option>
+                       <option value="P">PUTRI</option>
                    </select>
-              </div>
+               </div>
 
+               {/* Toggle NIS Visibility */}
+               <button 
+                  onClick={() => setShowNIS(!showNIS)}
+                  className="p-2 lg:px-4 lg:py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-slate-100 lg:border-2 lg:border-slate-50 bg-white text-slate-500 hover:bg-slate-50 transition-all active:scale-95 shadow-sm h-8 lg:h-11 flex items-center justify-center shrink-0"
+                  title={showNIS ? "Sembunyikan NIS" : "Tampilkan NIS"}
+               >
+                  {showNIS ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+               </button>
+
+               {/* Refresh Action */}
               <button 
                   onClick={() => fetchData()}
-                  className="px-6 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-slate-100 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all active:scale-95 shadow-sm h-10"
+                  className="p-2 lg:px-6 lg:py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-slate-100 lg:border-2 lg:border-slate-50 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all active:scale-95 shadow-sm h-8 lg:h-11 flex items-center justify-center shrink-0"
+                  title="Refresh Data"
               >
-                  REFRESH
+                  <RotateCcw className="w-3.5 h-3.5 lg:hidden" />
+                  <span className="hidden lg:inline">REFRESH</span>
               </button>
           </div>
       </div>
@@ -619,13 +685,12 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
             <table className="w-full border-separate border-spacing-0">
                 <thead className="sticky top-0 z-40">
                     <tr className="bg-white">
-                        <th className="w-[50px] min-w-[50px] sticky left-0 bg-white z-50 px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">No</th>
-                        <th className="w-[100px] min-w-[100px] sticky left-[50px] bg-white z-50 px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">NIS</th>
-                        <th className={`w-[300px] min-w-[300px] sticky left-[150px] bg-white z-50 px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.02)]`}>Nama Santri</th>
-                        <th className="w-[110px] min-w-[110px] px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100 bg-white">Jenis Kelamin</th>
-                        <th className="w-[100px] min-w-[100px] px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100 bg-white">Kelas</th>
-                        <th className="w-[140px] min-w-[140px] px-3 py-4 text-[10px] font-bold text-indigo-600 uppercase tracking-widest text-center border-b border-r border-slate-100 bg-indigo-50/30 whitespace-nowrap">Hafalan Saat Ini</th>
-                        <th className="px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 bg-slate-50/30">Aksi</th>
+                        <th className="w-[35px] min-w-[35px] lg:w-[50px] lg:min-w-[50px] sticky left-0 bg-white z-50 px-2 lg:px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">No</th>
+                        {showNIS && <th className="w-[80px] min-w-[80px] lg:w-[100px] lg:min-w-[100px] sticky left-[35px] lg:left-[50px] bg-white z-50 px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">NIS</th>}
+                        <th className={`w-[130px] min-w-[130px] lg:w-[300px] lg:min-w-[300px] sticky ${showNIS ? 'left-[115px] lg:left-[150px]' : 'left-[35px] lg:left-[50px]'} bg-white z-50 px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.02)]`}>Nama Santri</th>
+                        <th className="px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100 bg-white">Jenis Kelamin</th>
+                        <th className="px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center border-b border-r border-slate-100 bg-indigo-50/30 whitespace-nowrap">Hafalan Saat Ini</th>
+                        <th className="w-[140px] min-w-[140px] px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 bg-slate-50/30">Aksi</th>
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-100">
@@ -637,20 +702,19 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                         </tr>
                     ) : paginatedStudents.map((student, idx) => (
                         <tr key={student.id} className="group transition-colors hover:bg-slate-50/50 cursor-pointer" onClick={() => openModal('detail', student)}>
-                            <td className="sticky left-0 bg-white group-hover:bg-slate-50/50 px-3 py-3 text-[11px] font-bold text-slate-400 text-center border-r border-slate-50 z-20">{(currentPage - 1) * itemsPerPage + idx + 1}</td>
-                            <td className="sticky left-[50px] bg-white group-hover:bg-slate-50/50 px-3 py-3 text-[11px] font-bold text-slate-600 text-center border-r border-slate-50 z-20">{student.nis || '-'}</td>
-                             <td className="sticky left-[150px] bg-white group-hover:bg-slate-50/50 px-4 py-3 text-xs font-bold text-slate-800 border-r border-slate-100 z-20 truncate">
+                            <td className="sticky left-0 bg-white group-hover:bg-[#F8FAFC] px-2 lg:px-3 py-3 text-[11px] font-bold text-slate-400 text-center border-r border-slate-50 z-20 transition-colors">{(currentPage - 1) * itemsPerPage + idx + 1}</td>
+                            {showNIS && <td className="sticky left-[35px] lg:left-[50px] bg-white group-hover:bg-[#F8FAFC] px-3 py-3 text-[11px] font-bold text-slate-600 text-center border-r border-slate-50 z-20 transition-colors">{student.nis || '-'}</td>}
+                             <td className={`sticky ${showNIS ? 'left-[115px] lg:left-[150px]' : 'left-[35px] lg:left-[50px]'} bg-white group-hover:bg-[#F8FAFC] px-4 py-3 text-xs font-bold text-slate-800 border-r border-slate-100 z-20 truncate transition-colors`}>
                                 <div className="flex items-center gap-2">
-                                    {student.full_name}
-                                    <Edit3 className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <span className="truncate">{student.full_name}</span>
+                                    <Edit3 className="w-2.5 h-2.5 text-indigo-300 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                                 </div>
                             </td>
                              <td className="px-3 py-3 text-[11px] font-bold text-slate-600 text-center border-r border-slate-100">
-                                 <span className={`px-2 py-0.5 rounded-full text-[9px] ${student.gender === 'L' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600'}`}>
+                                 <span className={`px-6 py-2 rounded-lg text-[9px] ${student.gender === 'L' ? 'bg-blue-50 border border-blue-100 text-blue-600' : 'bg-pink-50 border border-pink-100 text-pink-600'}`}>
                                      {student.gender === 'L' ? 'PUTRA' : student.gender === 'P' ? 'PUTRI' : '-'}
                                  </span>
                              </td>
-                            <td className="px-3 py-3 text-[11px] font-bold text-slate-600 text-center border-r border-slate-100">{student.class_id ? classes[student.class_id] || '-' : '-'}</td>
                             
                             <td className="px-4 py-3 text-center border-r border-slate-50 bg-indigo-50/5">
                                 <span className="text-[11px] font-black text-slate-800">
@@ -662,14 +726,14 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                                 <div className="flex justify-center gap-1">
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); openModal('notes', student); }} 
-                                        className="p-2 text-indigo-600 hover:bg-white rounded-lg transition-all border border-slate-100 shadow-sm" 
+                                        className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-200 hover:border-indigo-100 transition-all bg-white shadow-sm" 
                                         title="Catatan"
                                     >
                                         <MessageSquare className="w-3.5 h-3.5" />
                                     </button>
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); openModal('achievement', student); }} 
-                                        className="p-2 text-amber-600 hover:bg-white rounded-lg transition-all border border-slate-100 shadow-sm" 
+                                        className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-200 hover:border-indigo-100 transition-all bg-white shadow-sm" 
                                         title="Pencapaian"
                                     >
                                         <Trophy className="w-3.5 h-3.5" />

@@ -4,6 +4,7 @@ import { UserProfile, Student } from '../../types';
 import { getStudents, supabase } from '../../services/dataService';
 import { TrendingUp, School, Target, PieChart as PieIcon, LineChart as ChartIcon, Activity, GraduationCap, ChevronRight, FileText } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { EmptyState } from '../../components/ui/EmptyState';
 
 interface ProgressRow {
     kelas: number;
@@ -120,9 +121,12 @@ export const StudentProgress: React.FC<{ user: UserProfile }> = ({ user }) => {
     );
 
     if (!student) return (
-        <div className="p-20 text-center">
-            <Activity className="w-12 h-12 text-slate-200 mx-auto mb-4" />
-            <p className="text-sm font-black text-slate-400 uppercase tracking-widest">Data santri tidak ditemukan.</p>
+        <div className="h-[calc(100vh-140px)] flex items-center justify-center animate-fade-in">
+            <EmptyState 
+                message="Data santri tidak ditemukan." 
+                description="Akun ini belum terhubung dengan data santri manapun. Silakan hubungi admin sekolah untuk penautan data."
+                icon="user"
+            />
         </div>
     );
 

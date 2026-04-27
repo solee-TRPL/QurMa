@@ -2,22 +2,33 @@
 import { supabase } from '../lib/supabase';
 import { UserRole, UserProfile } from '../types';
 
-export const getCurrentProfile = async (userId: string): Promise<UserProfile | null> => {
+ export const getCurrentProfile = async (userId: string, authUser?: any): Promise<UserProfile | null> => {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) return null;
+    let user = authUser;
+    
+    // Fallback to network getUser only if user not provided
+    if (!user) {
+        const { data: { user: netUser }, error: authError } = await supabase.auth.getUser();
+        if (authError || !netUser) return null;
+        user = netUser;
+    }
+
+    // Double check specific ID if provided
+    if (userId && user.id !== userId) {
+        const { data: { user: netUser } } = await supabase.auth.getUser();
+        if (!netUser) return null;
+        user = netUser;
+    }
 
     // Fetch from profiles table for persistence (avatar_url, etc)
-    const { data: dbProfile, error: dbError } = await supabase
+    const { data: dbProfile } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
-    const metadata = user.user_metadata;
+    const metadata = user.user_metadata || {};
     
-    // Merge Auth Metadata with Database Profile
-    // database takes priority for dynamic fields
     return {
         id: user.id,
         email: user.email || '',
@@ -33,8 +44,8 @@ export const getCurrentProfile = async (userId: string): Promise<UserProfile | n
   }
 };
 
-export const getProfileWithRetry = async (userId: string): Promise<UserProfile | null> => {
-    return await getCurrentProfile(userId);
+export const getProfileWithRetry = async (userId: string, authUser?: any): Promise<UserProfile | null> => {
+    return await getCurrentProfile(userId, authUser);
 };
 
 export const signUp = async (email: string, password: string, fullName: string, whatsapp: string): Promise<UserProfile> => {
@@ -56,7 +67,7 @@ export const signUp = async (email: string, password: string, fullName: string, 
   if (error) throw error;
   if (!data.user) throw new Error("Registrasi berhasil.");
 
-  const profile = await getCurrentProfile(data.user.id);
+  const profile = await getCurrentProfile(data.user.id, data.user);
   if (!profile) throw new Error("Gagal memuat profil.");
   return profile;
 };
@@ -66,7 +77,7 @@ export const signIn = async (email: string, password: string): Promise<UserProfi
     if (error) throw error;
     if (!data.user) throw new Error("Login gagal.");
 
-    const profile = await getProfileWithRetry(data.user.id);
+    const profile = await getProfileWithRetry(data.user.id, data.user);
     if (!profile) throw new Error("Profil tidak ditemukan.");
     return profile;
 };

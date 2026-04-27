@@ -66,12 +66,12 @@ export const EmailSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
   }
 
   return (
-    <div className="h-[calc(100vh-140px)] flex flex-col animate-fade-in overflow-hidden">
-      <form onSubmit={handleSave} className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 min-h-0 overflow-hidden">
+    <div className="lg:h-[calc(100vh-140px)] flex flex-col animate-fade-in lg:overflow-hidden pb-10 lg:pb-0">
+      <form onSubmit={handleSave} className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 min-h-0 lg:overflow-hidden">
         
         {/* Left Column: Template Editor */}
-        <div className="lg:col-span-2 flex flex-col gap-5 min-h-0">
-            <div className="bg-white rounded-3xl border-2 border-slate-50 shadow-sm flex flex-col min-h-0 overflow-hidden flex-1">
+        <div className="lg:col-span-2 flex flex-col gap-5 min-h-0 lg:overflow-hidden">
+            <div className="bg-white rounded-3xl border border-slate-100 lg:border-2 lg:border-slate-50 shadow-sm flex flex-col min-h-0 lg:overflow-hidden flex-1">
                 {/* Navigation Tabs */}
                 <div className="flex bg-[#F8FAFC] border-b border-slate-100 p-1.5 gap-1.5 shrink-0">
                     <button 
@@ -113,7 +113,7 @@ export const EmailSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                             placeholder="Tuliskan format email di sini..."
                             value={activeTab === 'welcome' ? (settings.welcome_email_body || '') : (settings.reset_password_body || '')}
                             onChange={e => handleInputChange(activeTab === 'welcome' ? 'welcome_email_body' : 'reset_password_body', e.target.value)}
-                            className="w-full flex-1 px-6 py-5 bg-slate-50/50 border-2 border-transparent rounded-[24px] text-slate-700 font-medium text-[13px] focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/30 outline-none transition-all font-mono leading-relaxed shadow-inner scrollbar-thin scrollbar-thumb-slate-200"
+                            className="w-full flex-1 min-h-[200px] lg:min-h-0 px-5 lg:px-6 py-4 lg:py-5 bg-slate-50/50 border-2 border-transparent rounded-[24px] text-slate-700 font-medium text-[12px] lg:text-[13px] focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/30 outline-none transition-all font-mono leading-relaxed shadow-inner lg:scrollbar-thin lg:scrollbar-thumb-slate-200"
                         />
                     </div>
                 </div>
@@ -121,8 +121,8 @@ export const EmailSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
         </div>
 
         {/* Right Column: Actions & Variable Selection */}
-        <div className="flex flex-col gap-5 min-h-0">
-            <div className="bg-white p-6 rounded-3xl border-2 border-slate-50 shadow-sm flex flex-col gap-5 shrink-0">
+        <div className="flex flex-col gap-5 min-h-0 lg:overflow-y-auto lg:pr-2 custom-scrollbar">
+            <div className="bg-white p-5 lg:p-6 rounded-3xl border border-slate-100 lg:border-2 lg:border-slate-50 shadow-sm flex flex-col gap-5 shrink-0">
                 <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
                         <Sparkles className="w-5 h-5" />
@@ -157,7 +157,7 @@ export const EmailSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-3xl border-2 border-slate-50 shadow-sm flex flex-col gap-4 mt-auto">
+            <div className="bg-white p-5 lg:p-6 rounded-3xl border border-slate-100 lg:border-2 lg:border-slate-50 shadow-sm flex flex-col gap-4 lg:mt-auto">
                  <button 
                     type="button" 
                     onClick={handleTestSimulation}

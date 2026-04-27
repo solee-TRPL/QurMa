@@ -12,6 +12,7 @@ import {
   Award,
   BookOpen,
   TrendingUp,
+  Activity,
   School,
   LogOut as LogoutIcon,
   UserCheck,
@@ -28,10 +29,18 @@ import {
   Trash2,
   AlertTriangle,
   LogOut,
-  Target
+  Target,
+  Calendar,
+  MessageSquare,
+  Bell,
+  Clock,
+  Info,
+  ChevronRight
 } from 'lucide-react';
 import { useNotification } from '../../lib/NotificationContext';
 import { ConfirmModal } from './ConfirmModal';
+import { supabase } from '../../lib/supabase';
+import { AppNotification, getMyNotifications, markNotificationsAsRead, getGuardianStats } from '../../services/dataService';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -43,6 +52,8 @@ interface LayoutProps {
   onLogout: () => void;
   onAddAccount?: () => void;
   onSwitchAccount?: (account: any) => void;
+  onRemoveAccount?: (id: string, name: string) => void;
+  onSyncAccounts?: () => Promise<void>;
   isImpersonating?: boolean;
   onStopImpersonating?: () => void;
   subtitle?: string;
@@ -58,45 +69,128 @@ export const Layout: React.FC<LayoutProps> = ({
   onLogout,
   onAddAccount,
   onSwitchAccount,
+  onRemoveAccount,
+  onSyncAccounts,
   isImpersonating = false,
   onStopImpersonating,
   subtitle
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [totalHafalan, setTotalHafalan] = useState<string | null>(null);
   const [savedAccounts, setSavedAccounts] = useState<any[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string, name: string } | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
   const { addNotification } = useNotification();
 
-  // Load saved accounts from localStorage
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+
+  const fetchMyNotifications = async () => {
+    try {
+        const data = await getMyNotifications(user.id);
+        setNotifications(data);
+    } catch (err) {}
+  };
+
   useEffect(() => {
+    if (user.role === UserRole.SANTRI) {
+        getGuardianStats(user.id).then(stats => {
+            if (stats) setTotalHafalan(stats.totalJuz.toString());
+        });
+    }
+  }, [user.id, user.role]);
+
+  useEffect(() => {
+    fetchMyNotifications();
+    
+    const channel = supabase
+        .channel(`user-notifications-${user.id}`)
+        .on('postgres_changes', { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`
+        }, (payload) => {
+            setNotifications(prev => [payload.new as AppNotification, ...prev]);
+        })
+        .subscribe();
+
+    const interval = setInterval(fetchMyNotifications, 60000);
+    
+    return () => {
+        clearInterval(interval);
+        supabase.removeChannel(channel);
+    };
+  }, [user.id]);
+
+  // Load saved accounts from localStorage
+  const refreshLocalAccounts = async () => {
+    // 1. Sync from server to get freshest DB state
+    if (onSyncAccounts) {
+        await onSyncAccounts();
+    }
+
     const accounts = localStorage.getItem('otherAccounts');
     if (accounts) {
       try {
         const parsed = JSON.parse(accounts) as any[];
-        // Filter out current user and normalize old vs new structures
         const normalized = parsed
             .filter(a => a && (a.id || a.profile?.id) !== user.id)
             .map(a => {
-                // Return new structure if it exists, otherwise wrap old one
                 if (a.profile) return a;
                 return { id: a.id, profile: a, session: null };
             })
-            .filter(a => a.profile && a.profile.full_name); // Final safety to ensure profile exists
+            .filter(a => a.profile && a.profile.full_name);
         setSavedAccounts(normalized);
       } catch (e) {
-        console.error("Failed to parse accounts", e);
         setSavedAccounts([]);
       }
+    } else {
+        setSavedAccounts([]);
     }
+  };
+
+  useEffect(() => {
+    refreshLocalAccounts();
   }, [user.id, isProfileOpen]);
+
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'Baru saja';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m lalu`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}j lalu`;
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+  };
+
+  const renderFormattedMessage = (msg: string) => {
+    return msg.split(' ').map((word, i) => {
+        const lower = word.toLowerCase();
+        const highlight = ['sabaq', 'sabqi', 'manzil', 'juz', 'halaman', 'santri', 'ananda', 'telah', 'update'].some(term => lower.includes(term));
+        return highlight ? <span key={i} className="font-extrabold text-slate-800">{word} </span> : word + ' ';
+    });
+  };
+
+  const handleNotificationClick = (notif: AppNotification) => {
+    if (user.role === UserRole.SANTRI && notif.title === "Update Hafalan Baru") {
+        onNavigate('reports');
+    }
+    setIsNotificationsOpen(false);
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsProfileOpen(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setIsNotificationsOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -151,18 +245,9 @@ export const Layout: React.FC<LayoutProps> = ({
   const paddingTopClass = isImpersonating ? 'pt-10' : '';
 
   const handleSwitchAccount = (targetAccount: any) => {
-      if (onSwitchAccount && targetAccount.session) {
+      if (onSwitchAccount) {
           onSwitchAccount(targetAccount);
           setIsProfileOpen(false);
-      } else {
-          // If no session, show notification and logout
-          addNotification({
-              type: 'error',
-              title: 'Sesi Habis',
-              message: 'Silakan login ulang manual untuk ini.',
-              duration: 6000
-          });
-          onLogout();
       }
   };
 
@@ -171,17 +256,21 @@ export const Layout: React.FC<LayoutProps> = ({
       setDeleteConfirm({ id, name });
   };
 
-  const executeRemoveAccount = () => {
+  const executeRemoveAccount = async () => {
     if (!deleteConfirm) return;
-    const accounts = localStorage.getItem('otherAccounts');
-    if (accounts) {
-        try {
-            const parsed = JSON.parse(accounts) as any[];
-            const filtered = parsed.filter(a => (a.id || a.profile?.id) !== deleteConfirm.id);
-            localStorage.setItem('otherAccounts', JSON.stringify(filtered));
-            setSavedAccounts(filtered.filter(a => (a.id || a.profile?.id) !== user.id));
-        } catch(e) {}
+    if (onRemoveAccount) {
+        await (onRemoveAccount as any)(deleteConfirm.id, deleteConfirm.name);
+    } else {
+        const accounts = localStorage.getItem('otherAccounts');
+        if (accounts) {
+            try {
+                const parsed = JSON.parse(accounts) as any[];
+                const filtered = parsed.filter(a => (a.id || a.profile?.id) !== deleteConfirm.id);
+                localStorage.setItem('otherAccounts', JSON.stringify(filtered));
+            } catch(e) {}
+        }
     }
+    refreshLocalAccounts();
     setDeleteConfirm(null);
   };
   
@@ -264,7 +353,7 @@ export const Layout: React.FC<LayoutProps> = ({
                         <>
                             <NavItem icon={BookOpen} label="Input Hafalan" page="input-hafalan" active={currentPage === 'input-hafalan'}/>
                             <NavItem icon={Target} label="Target Pekanan" page="weekly-target" active={currentPage === 'weekly-target'}/>
-                            <NavItem icon={TrendingUp} label="Kelola Perkembangan" page="student-progress-manage" active={currentPage === 'student-progress-manage'}/>
+                            {/* <NavItem icon={TrendingUp} label="Kelola Perkembangan" page="student-progress-manage" active={currentPage === 'student-progress-manage'}/> */}
                             <NavItem icon={Users} label="Data Santri" page="data-santri" active={currentPage === 'data-santri'}/>
                         </>
                     )}
@@ -272,18 +361,21 @@ export const Layout: React.FC<LayoutProps> = ({
                         <>
                             <NavItem icon={Users} label="Manajemen User" page="users" active={currentPage === 'users'}/>
                             <NavItem icon={UserCheck} label="Manajemen Santri" page="student-management" active={currentPage === 'student-management'}/>
-                            <NavItem icon={School} label="Manajemen Kelas" page="classes" active={currentPage === 'classes'}/>
+                            {/* <NavItem icon={School} label="Manajemen Kelas" page="classes" active={currentPage === 'classes'}/> */}
                             <NavItem icon={GraduationCap} label="Manajemen Halaqah" page="halaqah-management" active={currentPage === 'halaqah-management'}/>
-                            <NavItem icon={Target} label="Manajemen Target" page="target-management" active={currentPage === 'target-management'}/>
+                            {/* <NavItem icon={Target} label="Manajemen Target" page="target-management" active={currentPage === 'target-management'}/> */}
+                            <NavItem icon={Activity} label="Monitor Hafalan Santri" page="monitor-hafalan" active={currentPage === 'monitor-hafalan'}/>
                             <NavItem icon={ClipboardCheck} label="Monitor Target Pekanan" page="weekly-target-monitor" active={currentPage === 'weekly-target-monitor'}/>
                             <NavItem icon={ShieldCheck} label="Audit Logs" page="audit-logs" active={currentPage === 'audit-logs'}/>
                         </>
                     )}
                     {user.role === UserRole.SANTRI && (
                         <>
-                            <NavItem icon={BookOpen} label="Laporan Hafalan" page="reports" active={currentPage === 'reports'}/>
-                            <NavItem icon={TrendingUp} label="Perkembangan" page="student-progress" active={currentPage === 'student-progress'}/>
-                            <NavItem icon={Award} label="Nilai Ujian" page="guardian-exams" active={currentPage === 'guardian-exams'}/>
+                            <NavItem icon={BookOpen} label="Mutaba'ah Hafalan" page="reports" active={currentPage === 'reports'}/>
+                            <NavItem icon={Award} label="Pencapaian" page="pencapaian" active={currentPage === 'pencapaian'}/>
+                            <NavItem icon={MessageSquare} label="Catatan Santri" page="teacher-notes" active={currentPage === 'teacher-notes'}/>
+                            {/* <NavItem icon={TrendingUp} label="Perkembangan" page="student-progress" active={currentPage === 'student-progress'}/>
+                            <NavItem icon={ShieldCheck} label="Nilai Ujian" page="guardian-exams" active={currentPage === 'guardian-exams'}/> */}
                         </>
                     )}
                 </>
@@ -314,20 +406,134 @@ export const Layout: React.FC<LayoutProps> = ({
                 </div>
             </div>
 
-            <div className="flex items-center gap-3 ml-auto relative" ref={dropdownRef}>
-                 <button 
+            <div className="flex items-center gap-3 ml-auto relative">
+                {/* TOTAL HAFALAN FOR SANTRI - MINIMALIST STYLE */}
+                {user.role === UserRole.SANTRI && (
+                    <div className="hidden sm:flex items-center gap-2 px-2 animate-in fade-in slide-in-from-right-4 duration-500">
+                        <span className="text-[14px] font-black text-slate-700 tracking-tight leading-none">
+                            {totalHafalan || '0'} <span className="text-[9px] text-slate-400 font-black uppercase tracking-[0.1em] ml-0.5">Juz</span>
+                        </span>
+                    </div>
+                )}
+
+                 {/* NOTIFICATION BELL */}
+                 <div className="relative" ref={notifRef}>
+                     <button 
+                        onClick={() => {
+                            setIsNotificationsOpen(!isNotificationsOpen);
+                            if (!isNotificationsOpen && unreadCount > 0) {
+                                markNotificationsAsRead(user.id);
+                                // Optimistically clear unread locally
+                                setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+                            }
+                        }}
+                        className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all border ${
+                            isNotificationsOpen 
+                            ? 'bg-indigo-50 text-indigo-600 border-indigo-100 shadow-inner' 
+                            : 'bg-white text-slate-400 border-slate-100 hover:bg-slate-50 hover:text-indigo-500 shadow-sm'
+                        }`}
+                     >
+                        <Bell className={`w-5 h-5 ${unreadCount > 0 ? 'animate-bounce' : ''}`} />
+                        {unreadCount > 0 && (
+                            <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-black rounded-full flex items-center justify-center ring-2 ring-white">
+                                {unreadCount > 9 ? '9+' : unreadCount}
+                            </span>
+                        )}
+                     </button>
+
+                     {/* Notification Dropdown */}
+                     {isNotificationsOpen && (
+                         <div className="absolute right-0 top-full mt-4 w-72 sm:w-80 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 ring-1 ring-slate-900/5 z-[110] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
+                             <div className="p-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                                 <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Pemberitahuan</h4>
+                                 <span className="text-[9px] font-black bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">Terbaru</span>
+                             </div>
+
+                             <div className="max-h-[350px] overflow-y-auto no-scrollbar">
+                                 {notifications.length > 0 ? (
+                                     notifications.map((notif) => (
+                                         <div 
+                                            key={notif.id} 
+                                            onClick={() => handleNotificationClick(notif)}
+                                            className={`p-4 border-b border-slate-50 hover:bg-slate-50/80 transition-all flex gap-3.5 group cursor-pointer relative ${!notif.is_read ? 'bg-indigo-50/20' : ''}`}
+                                         >
+                                             {!notif.is_read && (
+                                                 <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
+                                             )}
+                                             <div className={`w-10 h-10 rounded-2xl shrink-0 flex items-center justify-center transition-transform group-hover:scale-105 duration-300 ${
+                                                 notif.type === 'success' ? 'bg-emerald-50 text-emerald-600 shadow-sm shadow-emerald-100' :
+                                                 notif.type === 'error' ? 'bg-rose-50 text-rose-600 shadow-sm shadow-rose-100' :
+                                                 'bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100'
+                                             }`}>
+                                                 {notif.title.includes('Hafalan') ? <BookOpen className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
+                                             </div>
+                                             <div className="flex-1 min-w-0">
+                                                 <div className="flex items-center justify-between gap-2 mb-1">
+                                                     <p className="text-[11px] font-black text-slate-900 leading-none truncate">{notif.title}</p>
+                                                     <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter shrink-0">{formatTime(notif.created_at)}</span>
+                                                 </div>
+                                                 <p className="text-[10.5px] font-medium text-slate-500 leading-relaxed line-clamp-2">
+                                                     {renderFormattedMessage(notif.message)}
+                                                 </p>
+                                             </div>
+                                             <div className="self-center opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
+                                                <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+                                             </div>
+                                         </div>
+                                     ))
+                                 ) : (
+                                     <div className="py-12 px-6 text-center">
+                                         <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                             <Bell className="w-6 h-6 text-slate-300" />
+                                         </div>
+                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Belum ada pemberitahuan</p>
+                                     </div>
+                                 )}
+                             </div>
+                         </div>
+                     )}
+                 </div>
+
+                 {/* WEEKLY DATE FOR SANTRI ROLE - TIERED STYLE */}
+                 {user.role === UserRole.SANTRI && (
+                    <div className="hidden xl:flex bg-white p-1 rounded-[20px] border border-slate-200 shadow-sm ring-1 ring-white animate-in fade-in slide-in-from-right-4 duration-500">
+                        <div className="px-5 py-1.5 text-[10px] font-black uppercase tracking-widest text-indigo-600 flex flex-col items-center justify-center">
+                            <span className="text-[7px] text-indigo-300 mt-0.5 opacity-80 uppercase tracking-widest font-black leading-none mb-1">
+                                Pekan Ini
+                            </span>
+                            <span className="flex items-center gap-1.5 whitespace-nowrap leading-none">
+                                {/* <Calendar className="w-3.5 h-3.5 text-indigo-400" /> */}
+                                {(() => {
+                                    const today = new Date();
+                                    const day = today.getDay();
+                                    const diffToMonday = (day === 0 ? -6 : 1) - day;
+                                    const monday = new Date(today);
+                                    monday.setDate(today.getDate() + diffToMonday);
+                                    const friday = new Date(monday);
+                                    friday.setDate(monday.getDate() + 4);
+                                    const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short' };
+                                    return `${monday.toLocaleDateString('id-ID', options)} - ${friday.toLocaleDateString('id-ID', options)}`;
+                                })()}
+                            </span>
+                        </div>
+                    </div>
+                 )}
+
+                  <button 
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center gap-3 hover:bg-slate-50 p-1.5 rounded-2xl transition-all border border-transparent hover:border-slate-100"
                  >
-                    <div className="flex flex-col items-end hidden sm:flex">
-                        <span className="text-xs font-black text-slate-900 uppercase tracking-tighter">{user.full_name || 'User'}</span>
-                        <span className="text-[10px] text-indigo-600 font-black uppercase tracking-widest opacity-70">{(user.role || '').replace('_', ' ')}</span>
+                    <div className="flex flex-col items-end max-w-[80px] sm:max-w-[120px] lg:max-w-none">
+                        <span className="text-[9.5px] lg:text-xs font-black text-slate-900 uppercase tracking-tighter truncate w-full text-right">
+                            {(user.role === UserRole.SANTRI && user.student_name) ? user.student_name : (user.full_name || 'User')}
+                        </span>
+                        <span className="text-[8px] lg:text-[10px] text-indigo-600 font-black uppercase tracking-widest opacity-70">{(user.role || '').replace('_', ' ')}</span>
                     </div>
                     <div className="w-9 h-9 bg-slate-200 rounded-2xl overflow-hidden border-2 border-white shadow-sm ring-1 ring-slate-100">
                         {user.avatar_url ? (
                             <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
                         ) : (
-                            <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name || 'User')}&background=${isSuperAdmin ? '1e293b' : '4f46e5'}&color=fff`} alt="" />
+                            <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent((user.role === UserRole.SANTRI && user.student_name) ? user.student_name : (user.full_name || 'User'))}&background=${isSuperAdmin ? '1e293b' : '4f46e5'}&color=fff`} alt="" />
                         )}
                     </div>
                     <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
@@ -358,7 +564,7 @@ export const Layout: React.FC<LayoutProps> = ({
                                                             <div className={`w-7 h-7 flex-shrink-0 rounded-full ${avatarColor} text-white flex items-center justify-center text-[10px] font-bold shadow-sm`}>
                                                                 {(acc.profile.full_name || 'U').charAt(0).toUpperCase()}
                                                             </div>
-                                                            <div className="min-w-0 flex-1">
+                                                            <div className="min-w-0 flex-1 pb-1">
                                                                 <p className="text-[11px] font-bold text-slate-700 truncate pr-1" title={acc.profile.full_name}>
                                                                     {acc.profile.full_name}
                                                                 </p>

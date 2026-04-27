@@ -258,35 +258,35 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
   };
 
   return (
-    <div className="space-y-4 animate-fade-in max-w-4xl mx-auto pb-4">
+    <div className="h-full flex flex-col animate-fade-in max-w-4xl mx-auto pb-2 overflow-hidden">
       {/* Control Strip TABS */}
-      <div className="flex justify-start mb-6">
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100/50 border border-slate-200/50 rounded-[20px] w-fit shadow-sm">
+      <div className="flex justify-start mb-5 lg:mb-6 shrink-0">
+        <div className="flex items-center gap-1 p-0.5 lg:p-1 bg-slate-100/50 border border-slate-200/50 rounded-xl lg:rounded-[20px] w-full lg:w-fit shadow-sm">
           <button 
             onClick={() => handleTabChange('profile')}
-            className={`px-6 py-2 text-[11px] font-black uppercase tracking-tight rounded-2xl border-2 transition-all ${activeTab === 'profile' ? 'border-white bg-white text-indigo-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
+            className={`flex-1 lg:flex-none px-3 lg:px-6 py-1.5 lg:py-2 text-[9.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-lg lg:rounded-2xl border-2 transition-all ${activeTab === 'profile' ? 'border-white bg-white text-indigo-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
           >
-            <div className="flex items-center gap-2">
-                <User className="w-3.5 h-3.5" />
-                Profil Saya
+            <div className="flex items-center justify-center gap-1.5">
+                <User className="w-3 lg:w-3.5 h-3 lg:h-3.5" />
+                Profil
             </div>
           </button>
           <button 
             onClick={() => handleTabChange('security')}
-            className={`px-6 py-2 text-[11px] font-black uppercase tracking-tight rounded-2xl border-2 transition-all ${activeTab === 'security' ? 'border-white bg-white text-indigo-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
+            className={`flex-1 lg:flex-none px-3 lg:px-6 py-1.5 lg:py-2 text-[9.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-lg lg:rounded-2xl border-2 transition-all ${activeTab === 'security' ? 'border-white bg-white text-indigo-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
           >
-            <div className="flex items-center gap-2">
-                <Shield className="w-3.5 h-3.5" />
+            <div className="flex items-center justify-center gap-1.5">
+                <Shield className="w-3 lg:w-3.5 h-3 lg:h-3.5" />
                 Keamanan
             </div>
           </button>
           {(user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) && (
             <button 
               onClick={() => handleTabChange('tenant')}
-              className={`px-6 py-2 text-[11px] font-black uppercase tracking-tight rounded-2xl border-2 transition-all ${activeTab === 'tenant' ? 'border-white bg-white text-indigo-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
+              className={`flex-1 lg:flex-none px-3 lg:px-6 py-1.5 lg:py-2 text-[9.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-lg lg:rounded-2xl border-2 transition-all ${activeTab === 'tenant' ? 'border-white bg-white text-indigo-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
             >
-              <div className="flex items-center gap-2">
-                  <Building className="w-3.5 h-3.5" />
+              <div className="flex items-center justify-center gap-1.5">
+                  <Building className="w-3 lg:w-3.5 h-3 lg:h-3.5" />
                   Sekolah
               </div>
             </button>
@@ -296,10 +296,10 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
 
       <div className="px-4 md:px-0">
             {activeTab === 'profile' && (
-                <form onSubmit={handleSaveProfile} className="space-y-6">
-                    <div className="flex flex-col md:flex-row items-center gap-6 mb-2">
-                        <div className="relative group">
-                            <div className="w-20 h-20 bg-white rounded-[24px] flex items-center justify-center text-slate-300 text-2xl font-black border-2 border-white shadow-xl overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                <form onSubmit={handleSaveProfile} className="flex-1 flex flex-col min-h-0 space-y-3 lg:space-y-6">
+                    <div className="flex flex-row items-center gap-4 lg:gap-6 shrink-0">
+                        <div className="relative group shrink-0">
+                            <div className="w-14 h-14 lg:w-20 lg:h-20 bg-white rounded-2xl lg:rounded-[24px] flex items-center justify-center text-slate-300 text-xl lg:text-2xl font-black border border-slate-100 lg:border-2 lg:border-white shadow-lg overflow-hidden group-hover:scale-105 transition-transform duration-500">
                                 {user.avatar_url ? (
                                     <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover" />
                                 ) : (
@@ -309,17 +309,17 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                             <button 
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="absolute -bottom-1 -right-1 p-2 bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-90"
+                                className="absolute -bottom-1 -right-1 p-1.5 lg:p-2 bg-indigo-600 text-white rounded-lg lg:rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-90"
                             >
-                                <Upload className="w-3.5 h-3.5" />
+                                <Upload className="w-2.5 lg:w-3.5 h-2.5 lg:h-3.5" />
                             </button>
                         </div>
-                        <div className="text-center md:text-left">
+                        <div className="text-left py-1 flex-1">
                             <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} accept="image/png, image/jpeg" style={{ display: 'none' }} />
-                            <h3 className="text-2xl font-black text-slate-800 tracking-tight">{user.full_name}</h3>
-                            <p className="text-[11px] font-black text-indigo-600 mt-1.5 uppercase tracking-widest leading-none px-3 py-1.5 bg-indigo-50 rounded-xl w-fit mx-auto md:mx-0 border border-indigo-100">
-                                {user.role === UserRole.ADMIN ? 'Admin Sekolah' : 
-                                 user.role === UserRole.TEACHER ? 'Ustadz / Guru' :
+                            <h3 className="text-lg lg:text-2xl font-black text-slate-800 tracking-tight leading-tight truncate max-w-[200px] lg:max-w-none">{user.full_name}</h3>
+                            <p className="text-[9px] lg:text-[11px] font-black text-indigo-600 mt-1 uppercase tracking-widest leading-none px-2 lg:py-1.5 bg-indigo-50 border border-indigo-100/50 rounded-lg lg:rounded-xl w-fit">
+                                {user.role === UserRole.ADMIN ? 'Admin' : 
+                                 user.role === UserRole.TEACHER ? 'Ustadz' :
                                  user.role === UserRole.SANTRI ? 'Santri' :
                                  user.role === UserRole.SUPERVISOR ? 'Supervisor' :
                                  user.role === UserRole.SUPERADMIN ? 'Superadmin' : user.role}
@@ -327,126 +327,128 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 pt-4 border-t border-slate-200/60">
-                        <div className="space-y-2">
-                            <label className="text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Lengkap</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 lg:gap-y-4 pt-3 lg:pt-4 border-t border-slate-100 overflow-y-auto lg:overflow-visible pr-1 custom-scrollbar">
+                        <div className="space-y-1.5">
+                            <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Lengkap</label>
                             <input 
                                 type="text" 
                                 value={profileForm.fullName} 
                                 onChange={e => setProfileForm({...profileForm, fullName: e.target.value})} 
-                                className="w-full px-5 py-2 border-2 border-slate-100 bg-white rounded-2xl focus:ring-0 focus:border-indigo-400 shadow-sm transition-all text-sm font-bold text-slate-800 outline-none" 
+                                className="w-full px-4 lg:px-5 py-1.5 lg:py-2 border-2 border-slate-100 bg-white rounded-xl lg:rounded-2xl focus:ring-0 focus:border-indigo-400 shadow-sm transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none" 
                             />
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Email (Akun)</label>
+                        <div className="space-y-1.5">
+                            <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Email (Locked)</label>
                             <input 
                                 type="email" 
                                 disabled 
                                 value={user.email} 
-                                className="w-full px-5 py-2 border-2 border-slate-100 bg-slate-50/50 text-slate-400 rounded-2xl cursor-not-allowed text-sm font-bold opacity-70 outline-none" 
+                                className="w-full px-4 lg:px-5 py-1.5 lg:py-2 border-2 border-slate-100 bg-slate-50/50 text-slate-400 rounded-xl lg:rounded-2xl cursor-not-allowed text-xs lg:text-sm font-bold opacity-70 outline-none" 
                             />
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Nomor WhatsApp</label>
+                        <div className="space-y-1.5">
+                            <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Nomor WhatsApp</label>
                             <input 
                                 type="tel" 
                                 value={profileForm.phone} 
                                 onChange={e => setProfileForm({...profileForm, phone: e.target.value})} 
-                                className="w-full px-5 py-2 border-2 border-slate-100 bg-white rounded-2xl focus:ring-0 focus:border-indigo-400 shadow-sm transition-all text-sm font-bold text-slate-800 outline-none" 
+                                className="w-full px-4 lg:px-5 py-1.5 lg:py-2 border-2 border-slate-100 bg-white rounded-xl lg:rounded-2xl focus:ring-0 focus:border-indigo-400 shadow-sm transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none" 
                             />
                         </div>
-                        <div className="space-y-2">
-                             <label className="text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Role / Hak Akses</label>
-                             <div className="relative">
-                                <select 
-                                    value={profileForm.role}
-                                    onChange={e => setProfileForm({...profileForm, role: e.target.value as UserRole})}
-                                    className="w-full px-5 py-2 border-2 border-slate-100 bg-slate-50 text-slate-400 rounded-2xl cursor-not-allowed text-sm font-bold outline-none appearance-none"
-                                    disabled
-                                >
-                                    <option value={UserRole.ADMIN}>Admin Sekolah</option>
-                                    <option value={UserRole.TEACHER}>Ustadz / Guru</option>
-                                    <option value={UserRole.SANTRI}>Santri</option>
-                                    <option value={UserRole.SUPERVISOR}>Supervisor</option>
-                                    <option value={UserRole.SUPERADMIN}>Superadmin</option>
-                                </select>
-                                <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300" />
-                             </div>
-                        </div>
+                        {user.role !== UserRole.SANTRI && (
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Role Utama</label>
+                                <div className="relative">
+                                    <select 
+                                        value={profileForm.role}
+                                        onChange={e => setProfileForm({...profileForm, role: e.target.value as UserRole})}
+                                        className="w-full px-4 lg:px-5 py-1.5 lg:py-2 border-2 border-slate-100 bg-slate-50 text-slate-400 rounded-xl lg:rounded-2xl cursor-not-allowed text-xs lg:text-sm font-bold outline-none appearance-none"
+                                        disabled
+                                    >
+                                        <option value={UserRole.ADMIN}>Admin</option>
+                                        <option value={UserRole.TEACHER}>Ustadz</option>
+                                        <option value={UserRole.SANTRI}>Santri</option>
+                                        <option value={UserRole.SUPERVISOR}>Supervisor</option>
+                                        <option value={UserRole.SUPERADMIN}>Superadmin</option>
+                                    </select>
+                                    <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-3 h-3 lg:w-3.5 lg:h-3.5 text-slate-300" />
+                                </div>
+                            </div>
+                        )}
                     </div>
 
-                    <div className="pt-2 flex justify-start">
+                    <div className="pt-2 lg:pt-2 flex justify-start shrink-0">
                         <button 
                           type="submit"
-                          className="flex items-center px-10 py-3 font-black text-xs uppercase tracking-tight rounded-2xl border-2 border-indigo-600 bg-indigo-600 text-white shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
+                          className="w-full lg:w-auto flex items-center justify-center px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest lg:tracking-tight rounded-xl lg:rounded-2xl border-2 border-indigo-600 bg-indigo-600 text-white shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
                         >
-                            Simpan Perubahan
+                            Update Profil
                         </button>
                     </div>
                 </form>
             )}
 
             {activeTab === 'security' && (
-                <form onSubmit={handleSaveSecurity} className="space-y-6">
-                    <div className="max-w-2xl space-y-6">
-                        <div className="space-y-2 max-w-md">
-                            <label className="text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Password Saat Ini</label>
+                <form onSubmit={handleSaveSecurity} className="flex-1 flex flex-col min-h-0 space-y-4 lg:space-y-6">
+                    <div className="max-w-2xl space-y-4 lg:space-y-6 overflow-y-auto lg:overflow-visible pr-1 custom-scrollbar">
+                        <div className="space-y-1.5 max-w-md">
+                            <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Password Saat Ini</label>
                             <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Lock className="absolute left-3 lg:left-4 top-1/2 -translate-y-1/2 w-3.5 lg:w-4 h-3.5 lg:h-4 text-slate-400" />
                                 <input 
                                     type="password" 
                                     required 
                                     value={passwordForm.oldPassword} 
                                     onChange={e => setPasswordForm({...passwordForm, oldPassword: e.target.value})} 
-                                    className="w-full pl-12 pr-5 py-2 border-2 border-slate-100 bg-white rounded-2xl focus:ring-0 focus:border-indigo-400 shadow-sm transition-all text-sm font-bold text-slate-800 outline-none" 
+                                    className="w-full pl-10 lg:pl-12 pr-4 lg:pr-5 py-1.5 lg:py-2 border-2 border-slate-100 bg-white rounded-xl lg:rounded-2xl focus:ring-0 focus:border-indigo-400 shadow-sm transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none" 
                                     placeholder="••••••••"
                                 />
                             </div>
                         </div>
 
-                        <div className="w-full h-px bg-slate-200/60"></div>
+                        <div className="w-full h-px bg-slate-100"></div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Password Baru</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Password Baru</label>
                                 <input 
                                     type="password" 
                                     required 
                                     minLength={6} 
                                     value={passwordForm.newPassword} 
                                     onChange={e => setPasswordForm({...passwordForm, newPassword: e.target.value})} 
-                                    className="w-full px-5 py-2 border-2 border-slate-100 bg-white rounded-2xl focus:ring-0 focus:border-indigo-400 shadow-sm transition-all text-sm font-bold text-slate-800 outline-none" 
+                                    className="w-full px-4 lg:px-5 py-1.5 lg:py-2 border-2 border-slate-100 bg-white rounded-xl lg:rounded-2xl focus:ring-0 focus:border-indigo-400 shadow-sm transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none" 
                                     placeholder="Min 6 karakter"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Konfirmasi</label>
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Konfirmasi</label>
                                 <input 
                                     type="password" 
                                     required 
                                     minLength={6} 
                                     value={passwordForm.confirmPassword} 
                                     onChange={e => setPasswordForm({...passwordForm, confirmPassword: e.target.value})} 
-                                    className="w-full px-5 py-2 border-2 border-slate-100 bg-white rounded-2xl focus:ring-0 focus:border-indigo-400 shadow-sm transition-all text-sm font-bold text-slate-800 outline-none" 
+                                    className="w-full px-4 lg:px-5 py-1.5 lg:py-2 border-2 border-slate-100 bg-white rounded-xl lg:rounded-2xl focus:ring-0 focus:border-indigo-400 shadow-sm transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none" 
                                 />
                             </div>
                         </div>
                         
-                        <div className="bg-indigo-50 p-4 rounded-[20px] border border-indigo-100 flex gap-4">
-                             <div className="p-2 bg-white rounded-xl shadow-sm h-fit">
-                                <Shield className="w-4 h-4 text-indigo-500" />
+                        <div className="bg-indigo-50/50 p-3 lg:p-4 rounded-xl lg:rounded-[20px] border border-indigo-100/50 flex gap-3 lg:gap-4">
+                             <div className="p-1.5 lg:p-2 bg-white rounded-lg lg:rounded-xl shadow-sm h-fit shrink-0">
+                                <Shield className="w-3 lg:w-4 h-3 lg:h-4 text-indigo-500" />
                              </div>
                              <div>
-                                <h4 className="text-[10px] font-black text-indigo-900 tracking-tight uppercase">Keamanan Akun</h4>
-                                <p className="text-[10px] font-bold text-indigo-700/70 mt-1 leading-relaxed">Gunakan kombinasi simbol, angka, dan huruf kapital agar akun Anda selalu terlindungi secara maksimal.</p>
+                                <h4 className="text-[9px] lg:text-[10px] font-black text-indigo-900 tracking-tight uppercase">Proteksi Maksimal</h4>
+                                <p className="text-[8.5px] lg:text-[10px] font-bold text-indigo-700/70 mt-0.5 leading-relaxed">Kombinasikan simbol, angka, dan huruf kapital.</p>
                              </div>
                         </div>
                     </div>
 
-                    <div className="pt-2 flex justify-start">
+                    <div className="pt-2 lg:pt-2 flex justify-start shrink-0">
                         <button 
                           type="submit"
-                          className="flex items-center px-10 py-3 font-black text-xs uppercase tracking-tight rounded-2xl border-2 border-indigo-600 bg-indigo-600 text-white shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
+                          className="w-full lg:w-auto flex items-center justify-center px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest lg:tracking-tight rounded-xl lg:rounded-2xl border-2 border-indigo-600 bg-indigo-600 text-white shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
                         >
                             Update Password
                         </button>
@@ -455,57 +457,57 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
             )}
 
             {activeTab === 'tenant' && (
-                <form onSubmit={handleSaveTenant} className="space-y-8">
-                    <section className="space-y-6">
-                        <div className="space-y-1">
-                             <h3 className="text-xl font-black text-slate-800 tracking-tight">Pengaturan Sekolah</h3>
-                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-2">Identitas lembaga pendidikan</p>
+                <form onSubmit={handleSaveTenant} className="flex-1 flex flex-col min-h-0 space-y-4 lg:space-y-8">
+                    <section className="space-y-4 lg:space-y-6 overflow-y-auto lg:overflow-visible pr-1 custom-scrollbar">
+                        <div className="space-y-1 shrink-0">
+                             <h3 className="text-lg lg:text-xl font-black text-slate-800 tracking-tight leading-tight">Sekolah</h3>
+                             <p className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1.5 lg:pb-2">Identitas lembaga pendidikan</p>
                         </div>
                         
-                        <div className="flex flex-col md:flex-row items-center gap-6">
-                            <div className="relative group">
-                                <div className="w-24 h-24 bg-white rounded-[32px] flex items-center justify-center text-slate-300 text-3xl font-black border-2 border-white shadow-xl overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                        <div className="flex flex-row items-center gap-4 lg:gap-6 shrink-0">
+                            <div className="relative group shrink-0">
+                                <div className="w-16 h-16 lg:w-24 lg:h-24 bg-white rounded-2xl lg:rounded-[32px] flex items-center justify-center text-slate-300 text-xl lg:text-3xl font-black border border-slate-100 lg:border-2 lg:border-white shadow-lg lg:shadow-xl overflow-hidden group-hover:scale-105 transition-transform duration-500">
                                     {tenant?.logo_url ? (
-                                        <img src={tenant.logo_url} alt="Logo Sekolah" className="w-full h-full object-contain p-2" />
+                                        <img src={tenant.logo_url} alt="Logo" className="w-full h-full object-contain p-2" />
                                     ) : (
-                                        <Building className="w-12 h-12 text-slate-200" />
+                                        <Building className="w-8 lg:w-12 h-8 lg:h-12 text-slate-200" />
                                     )}
                                 </div>
                                  {!isReadOnly && (
                                     <button 
                                         type="button"
                                         onClick={() => logoInputRef.current?.click()}
-                                        className="absolute -bottom-1 -right-1 p-2 bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-90"
+                                        className="absolute -bottom-1 -right-1 p-1.5 lg:p-2 bg-emerald-600 text-white rounded-lg lg:rounded-xl shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-90"
                                     >
-                                        <Upload className="w-3.5 h-3.5" />
+                                        <Upload className="w-2.5 lg:w-3.5 h-2.5 lg:h-3.5" />
                                     </button>
                                  )}
                                 <input type="file" ref={logoInputRef} onChange={handleLogoUpload} accept="image/png, image/jpeg, image/x-icon" style={{ display: 'none' }} />
                             </div>
-                            <div className="space-y-1 max-w-sm text-center md:text-left">
-                                <h4 className="text-base font-black text-slate-800">Logo Institusi</h4>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">Logo ini akan menjadi wajah sekolah Anda di sidebar dan favicon browser.</p>
+                            <div className="space-y-1 flex-1 py-1">
+                                <h4 className="text-sm lg:text-base font-black text-slate-800 leading-tight">Logo Institusi</h4>
+                                <p className="text-[8.5px] lg:text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">Muncul di sidebar & favicon.</p>
                             </div>
                         </div>
 
-                        <div className="max-w-xl space-y-2 pt-4 border-t border-slate-200/60">
-                            <label className="text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Sekolah / Pesantren</label>
+                        <div className="space-y-1.5 pt-3 lg:pt-4 border-t border-slate-100">
+                            <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Sekolah</label>
                             <input 
                                 type="text" 
                                 disabled={isReadOnly}
                                 value={tenantForm.name} 
                                 onChange={e => setTenantForm({...tenantForm, name: e.target.value})} 
-                                className={`w-full px-5 py-2 border-2 border-slate-100 ${isReadOnly ? 'bg-slate-50 text-slate-400' : 'bg-white text-slate-800'} rounded-2xl focus:ring-0 focus:border-indigo-400 shadow-sm transition-all text-sm font-bold outline-none`} 
+                                className={`w-full px-4 lg:px-5 py-1.5 lg:py-2 border-2 border-slate-100 ${isReadOnly ? 'bg-slate-50 text-slate-400' : 'bg-white text-slate-800'} rounded-xl lg:rounded-2xl focus:ring-0 focus:border-indigo-400 shadow-sm transition-all text-xs lg:text-sm font-bold outline-none`} 
                             />
                         </div>
                     </section>
                     {!isReadOnly && (
-                        <div className="pt-2 flex justify-start">
+                        <div className="pt-2 lg:pt-2 flex justify-start shrink-0">
                             <button 
                               type="submit"
-                              className="flex items-center px-10 py-3 font-black text-xs uppercase tracking-tight rounded-2xl border-2 border-emerald-600 bg-emerald-600 text-white shadow-xl shadow-emerald-100 hover:bg-emerald-700 transition-all active:scale-95"
+                              className="w-full lg:w-auto flex items-center justify-center px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest lg:tracking-tight rounded-xl lg:rounded-2xl border-2 border-emerald-600 bg-emerald-600 text-white shadow-xl shadow-emerald-100 hover:bg-emerald-700 transition-all active:scale-95"
                             >
-                                Simpan Pengaturan
+                                Simpan Setting
                             </button>
                         </div>
                     )}

@@ -69,6 +69,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSubmit
         
         <div className="overflow-y-auto px-6 py-5 flex-1 custom-scrollbar">
             <form id="editUserForm" onSubmit={handleSubmit} className="space-y-5">
+
+
                 <div className="group">
                     <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1 group-focus-within:text-indigo-600 transition-colors">Nama Lengkap Pengguna</label>
                     <div className="relative">
@@ -259,95 +261,91 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
 
   return (
     <div className="space-y-4 animate-fade-in pb-10">
-      {/* Filter Bar - Modernized & Transparent */}
-      <div className="flex flex-wrap items-center gap-4 mb-2">
-          {/* ... Search ... */}
-          <div className="flex-1 min-w-[300px] relative group">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-emerald-600 transition-colors" />
+      {/* Top Utility Strip - Optimized for Mobile Density */}
+      <div className="flex flex-row items-center gap-1.5 lg:gap-4 bg-white/40 p-1.5 lg:p-2 rounded-2xl lg:rounded-[24px] border border-white/20 backdrop-blur-md">
+          {/* Search Area */}
+          <div className="relative flex-1 group">
+              <Search className="absolute left-3 lg:left-5 top-1/2 -translate-y-1/2 w-3.5 lg:w-4 h-3.5 lg:h-4 text-slate-300 group-focus-within:text-emerald-600 transition-colors" />
               <input 
-                type="text" 
-                placeholder="Cari nama atau email pengguna global..." 
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-12 pr-5 py-3 text-[13px] font-bold border-2 border-slate-100 rounded-2xl focus:border-emerald-400 bg-white transition-all outline-none"
+                  type="text" 
+                  placeholder="Cari..." 
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-8 lg:pl-12 pr-2 lg:pr-5 py-1.5 lg:py-3 text-[10px] lg:text-[13px] font-bold border border-slate-100 lg:border-2 lg:border-slate-50 rounded-xl lg:rounded-2xl focus:border-emerald-400 bg-white transition-all outline-none h-8 lg:h-12 shadow-sm"
               />
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-              <div className="relative group">
-                  <Filter className="absolute left-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-emerald-600" />
+          
+          <div className="flex items-center gap-1.5 lg:gap-3">
+              {/* Role Filter */}
+              <div className="relative group shrink-0">
                   <select 
                     value={selectedRole}
                     onChange={(e) => setSelectedRole(e.target.value)}
-                    className="pl-12 pr-11 py-3 bg-white border-2 border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none"
+                    className="pl-3 lg:pl-6 pr-6 lg:pr-10 py-1.5 lg:py-3 bg-white border border-slate-100 lg:border-2 lg:border-slate-50 rounded-xl lg:rounded-2xl text-[8.5px] lg:text-[10px] font-black uppercase tracking-tighter lg:tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none min-w-[70px] lg:min-w-[120px] h-8 lg:h-12 shadow-sm"
                   >
-                      <option value="all">Semua Role</option>
+                      <option value="all">SEMUA ROLE</option>
                       {Object.values(UserRole).map(role => (
-                          <option key={role} value={role}>
-                              {role === UserRole.ADMIN ? 'Admin Sekolah' : 
-                               role === UserRole.TEACHER ? 'Ustadz / Guru' :
-                               role === UserRole.SANTRI ? 'Santri' :
-                               role === UserRole.SUPERVISOR ? 'Supervisor' :
-                               role === UserRole.SUPERADMIN ? 'Superadmin' : (role as string).replace('_', ' ')}
-                          </option>
+                          <option key={role} value={role}>{role.toUpperCase().replace('_', ' ')}</option>
                       ))}
                   </select>
-                  <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 pointer-events-none" />
+                  <ChevronDown className="absolute right-2 lg:right-4 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" />
               </div>
 
-              <div className="relative group">
-                  <Building className="absolute left-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-emerald-600" />
+              {/* Tenant Filter (Hidden on very small mobile, visible on lg or sm) */}
+              <div className="relative group shrink-0 hidden sm:block">
                   <select 
                     value={selectedTenant}
                     onChange={(e) => setSelectedTenant(e.target.value)}
-                    className="pl-12 pr-11 py-3 bg-white border-2 border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none max-w-[220px]"
+                    className="pl-3 lg:pl-6 pr-6 lg:pr-10 py-1.5 lg:py-3 bg-white border border-slate-100 lg:border-2 lg:border-slate-50 rounded-xl lg:rounded-2xl text-[8.5px] lg:text-[10px] font-black uppercase tracking-tighter lg:tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none min-w-[80px] lg:min-w-[180px] h-8 lg:h-12 shadow-sm max-w-[200px] truncate"
                   >
-                      <option value="all">Seluruh Sekolah</option>
-                      <option value="platform">Sistem Platform</option>
+                      <option value="all">SEMUA SEKOLAH</option>
+                      <option value="platform">SYSTEM</option>
                       {tenants.map(t => (
-                          <option key={t.id} value={t.id}>{t.name}</option>
+                          <option key={t.id} value={t.id}>{t.name.toUpperCase()}</option>
                       ))}
                   </select>
-                  <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 pointer-events-none" />
+                  <ChevronDown className="absolute right-2 lg:right-4 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" />
               </div>
-              
+
               <button 
                 onClick={resetFilters} 
-                className="p-3 rounded-2xl border-2 border-slate-100 bg-white text-slate-400 hover:bg-slate-50 hover:text-emerald-600 transition-all active:scale-95 shadow-sm"
+                className="p-2 lg:p-3 rounded-xl border border-slate-100 lg:border-2 lg:border-slate-50 bg-white text-slate-400 hover:text-emerald-600 transition-all active:scale-95 shadow-sm h-8 lg:h-12 flex items-center justify-center shrink-0"
                 title="Reset Filter"
               >
-                  <RefreshCcw className="w-4 h-4" />
+                  <RefreshCcw className="w-3.5 h-3.5" />
               </button>
           </div>
       </div>
 
-      <div className="bg-white rounded-[24px] border-2 border-slate-50 shadow-sm overflow-hidden flex flex-col">
-        <div className="overflow-x-auto">
-            <table className="w-full table-fixed divide-y divide-slate-100">
-            <thead className="bg-[#F8FAFC] border-b border-slate-200">
-                <tr className="text-slate-400 font-black uppercase text-[10px] tracking-widest">
-                <th className="w-[5%] px-6 py-4 text-left border-r border-slate-200/60">No.</th>
-                <th className="w-[25%] px-6 py-4 text-left border-r border-slate-200/60">Nama Pengguna</th>
-                <th className="w-[15%] px-6 py-4 text-center border-r border-slate-200/60">Peran / Role</th>
-                <th className="w-[20%] px-6 py-4 text-left border-r border-slate-200/60">Afiliasi</th>
-                <th className="w-[20%] px-6 py-4 text-left border-r border-slate-200/60">Kontak Email</th>
-                <th className="w-[15%] px-6 py-4 text-right">Aksi</th>
+      <div className="bg-white shadow-sm border-2 border-slate-200 overflow-hidden flex flex-col">
+        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+            <table className="w-full table-fixed divide-y divide-slate-100 border-separate border-spacing-0">
+            <thead>
+                <tr className="bg-white">
+                <th className="w-[35px] min-w-[35px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-white z-[30] px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100">NO</th>
+                <th className="w-[150px] min-w-[150px] lg:w-[250px] lg:min-w-[250px] sticky left-[35px] lg:left-[45px] bg-white z-[30] px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">PENGGUNA</th>
+                <th className="w-[120px] min-w-[120px] px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">LEVEL / ROLE</th>
+                <th className="w-[180px] min-w-[180px] px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">INSTITUSI</th>
+                <th className="w-[200px] min-w-[200px] px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">EMAIL ADDRESS</th>
+                <th className="w-[100px] min-w-[100px] px-4 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-slate-100 bg-white">AKSI</th>
                 </tr>
             </thead>
             <tbody key={currentPage} className="bg-white divide-y divide-slate-50 animate-fade-in">
                 {paginatedUsers.map((u, index) => (
-                <tr key={u.id} className="hover:bg-slate-50/80 transition-colors group">
-                    <td className="px-6 py-4 border-r border-slate-50/50">
-                        <span className="text-[11px] font-black text-slate-300">{(index + 1 + (currentPage - 1) * itemsPerPage).toString().padStart(2, '0')}</span>
+                <tr key={u.id} className="group transition-colors hover:bg-slate-50/30">
+                    <td className="sticky left-0 bg-white px-2 py-4 text-[10.5px] font-black text-slate-400 text-center border-r-2 border-b border-slate-100 z-10 transition-colors uppercase">
+                        {String(index + 1 + (currentPage - 1) * itemsPerPage)}
                     </td>
-                    <td className="px-6 py-4 border-r border-slate-50/50">
-                        <span className="text-[13px] font-bold text-slate-800 group-hover:text-emerald-600 transition-colors break-words capitalize leading-tight block">
-                            {u.full_name}
-                        </span>
+                    <td className="sticky left-[35px] lg:left-[45px] bg-white px-4 py-4 border-r-2 border-b border-slate-100 z-10 transition-colors">
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                            <span className="text-[11px] font-bold text-slate-800 group-hover:text-indigo-600 transition-colors truncate max-w-[120px] lg:max-w-none capitalize">{u.full_name}</span>
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter truncate max-w-[120px] lg:max-w-none opacity-60 sm:hidden">{u.email}</span>
+                        </div>
                     </td>
-                    <td className="px-6 py-4 text-center border-r border-slate-50/50">
-                        <span className={`px-2.5 py-1 text-[9px] font-black uppercase tracking-tight rounded-full border shadow-sm
-                            ${u.role === UserRole.SUPERADMIN ? 'bg-slate-100 text-slate-600 border-slate-200' :
-                            u.role === UserRole.ADMIN ? 'bg-purple-50 text-purple-600 border-purple-100' : 
+                    <td className="px-4 py-4 border-r-2 border-b border-slate-100">
+                        <span className={`px-2.5 py-1 text-[9px] font-black uppercase tracking-tight rounded-md border shadow-sm whitespace-nowrap
+                            ${u.role === UserRole.SUPERADMIN ? 'bg-slate-50 text-slate-600 border-slate-100' :
+                            u.role === UserRole.ADMIN ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 
                             u.role === UserRole.TEACHER ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
                             'bg-blue-50 text-blue-600 border-blue-100'}`}>
                             {u.role === UserRole.ADMIN ? 'Admin Sekolah' : 
@@ -357,55 +355,51 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                              u.role === UserRole.SUPERADMIN ? 'Superadmin' : (u.role as string).replace('_', ' ')}
                         </span>
                     </td>
-                    <td className="px-6 py-4 border-r border-slate-50/50">
-                        <span className="text-[12px] font-bold text-slate-600 overflow-hidden text-ellipsis whitespace-nowrap block">
+                    <td className="px-4 py-4 border-r-2 border-b border-slate-100">
+                        <span className="text-[11px] font-black text-slate-700 tracking-tight truncate block">
                             {u.tenant_name || 'System Platform'}
                         </span>
                     </td>
-                    <td className="px-6 py-4 border-r border-slate-50/50">
-                        <div className="flex flex-col gap-0.5 max-w-full overflow-hidden">
-                            <span className="text-[11px] font-bold text-slate-500 truncate">{u.email}</span>
-                            <span className="text-[9px] font-black uppercase text-slate-300 tracking-tight">Verified Primary ID</span>
+                    <td className="px-4 py-4 border-r-2 border-b border-slate-100">
+                        <div className="flex flex-col gap-0.5 truncate">
+                            <span className="text-[11.5px] font-black text-slate-700 tracking-tight">{u.email}</span>
                         </div>
                     </td>
-                    <td className="px-6 py-4">
-                        <div className="flex justify-end gap-2">
-                            <button 
+                    <td className="px-4 py-4 border-b border-slate-100">
+                        <div className="flex justify-center gap-2">
+                             <button 
                                 onClick={() => handleEdit(u)}
-                                className="p-2 rounded-xl bg-slate-50 text-slate-400 border border-slate-100 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all active:scale-90"
+                                className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-200 hover:border-indigo-100 transition-all bg-white shadow-sm"
+                                title="Edit"
                             >
                                 <Edit className="w-4 h-4"/>
                             </button>
                         </div>
                     </td>
                 </tr>
-                ))}
+              ))}
             </tbody>
             </table>
         </div>
 
         {/* PAGINATION CONTROLS */}
         {!loading && filteredUsers.length > 0 && (
-            <div className="bg-white border-t border-slate-100 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="bg-[#F8FAFC] border-t border-slate-100 px-6 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Tampilkan</span>
                         <select 
                             value={itemsPerPage}
                             onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                            className="bg-white border-2 border-slate-50 rounded-xl px-3 py-1.5 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-emerald-50/50 cursor-pointer shadow-sm transition-all"
+                            className="bg-white border-2 border-slate-100 rounded-xl px-3 py-1.5 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-emerald-50/50 cursor-pointer shadow-sm transition-all"
                         >
-                            {[5, 10, 20].map(val => (
+                            {[10, 25, 50, 100].map(val => (
                                 <option key={val} value={val}>{val}</option>
                             ))}
                         </select>
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Data / Hal</span>
                     </div>
-                    <div className="w-px h-6 bg-slate-200" />
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                        <span className="text-slate-500">{(currentPage - 1) * itemsPerPage + 1}</span>-
-                        <span className="text-slate-500">{Math.min(currentPage * itemsPerPage, filteredUsers.length)}</span> Dari 
-                        <span className="text-emerald-600 ml-1">{filteredUsers.length}</span>
+                    <div className="hidden sm:block w-px h-6 bg-slate-200" />
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-tight leading-none whitespace-nowrap">
+                        <span className="hidden sm:inline">DATA</span> {((currentPage - 1) * itemsPerPage + 1)}-{Math.min(currentPage * itemsPerPage, filteredUsers.length)} <span className="hidden sm:inline text-slate-300">/</span> <span className="text-emerald-600 ml-0.5">{filteredUsers.length}</span>
                     </p>
                 </div>
 
@@ -423,7 +417,7 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                             const pNum = i + 1;
                             if (totalPages > 5) {
                                 if (pNum !== 1 && pNum !== totalPages && Math.abs(pNum - currentPage) > 1) {
-                                    if (pNum === 2 || pNum === totalPages - 1) return <span key={pNum} className="text-slate-300 text-[10px] font-black">...</span>;
+                                    if (pNum === 2 || pNum === totalPages - 1) return <span key={pNum} className="text-slate-300 text-[10px] font-black">..</span>;
                                     return null;
                                 }
                             }

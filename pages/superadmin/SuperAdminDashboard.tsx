@@ -74,6 +74,11 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onNavi
     }, [tenants]);
 
     const [activeSlice, setActiveSlice] = useState<any>(null);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const StatCard = ({ icon: Icon, label, value, color }: any) => {
         const colorMap: any = {
@@ -85,29 +90,29 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onNavi
         const c = colorMap[color] || color;
 
         return (
-            <div className="bg-white rounded-[20px] border-2 border-slate-50 p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
-                <div className="absolute top-0 right-0 p-1 opacity-[0.03] group-hover:scale-110 transition-transform">
+            <div className="bg-white rounded-[20px] border-2 border-slate-50 p-3 lg:p-4 flex items-center gap-2 lg:gap-3 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                <div className="absolute top-0 right-0 p-1 opacity-[0.03] group-hover:scale-110 transition-transform hidden sm:block">
                     <Icon className="w-12 h-12 rotate-12" />
                 </div>
-                <div className={`w-10 h-10 rounded-[16px] bg-${c}-50 flex items-center justify-center text-${c}-600 shrink-0 border border-${c}-100/50`}>
-                    <Icon className="w-5 h-5" />
+                <div className={`w-8 h-8 lg:w-10 lg:h-10 rounded-xl lg:rounded-[16px] bg-${c}-50 flex items-center justify-center text-${c}-600 shrink-0 border border-${c}-100/50`}>
+                    <Icon className="w-4 h-4 lg:w-5 lg:h-5" />
                 </div>
                 <div className="min-w-0">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5 group-hover:text-indigo-600 transition-colors">{label}</p>
-                    <p className="text-xl font-black text-slate-800 tracking-tight leading-none">
+                    <p className="text-[8px] lg:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5 group-hover:text-indigo-600 transition-colors truncate">{label}</p>
+                    <div className="text-base lg:text-xl font-black text-slate-800 tracking-tight leading-none">
                         {loading ? (
-                            <div className="h-5 w-12 bg-slate-100 animate-pulse rounded" />
+                            <div className="h-4 lg:h-5 w-8 lg:w-12 bg-slate-100 animate-pulse rounded" />
                         ) : value}
-                    </p>
+                    </div>
                 </div>
             </div>
         );
     };
 
     return (
-        <div className="h-[calc(100vh-140px)] flex flex-col gap-4 animate-fade-in overflow-hidden">
+        <div className="lg:h-[calc(100vh-140px)] flex flex-col gap-4 animate-fade-in lg:overflow-hidden pb-10 lg:pb-0">
             {/* Top Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 shrink-0 px-2 lg:px-0">
                 <StatCard icon={Building} label="Total Sekolah" value={stats?.totalTenants} color="primary" />
                 <StatCard icon={Users} label="Total Pengguna" value={stats?.totalUsers} color="blue" />
                 <StatCard icon={GraduationCap} label="Total Santri" value={stats?.totalStudents} color="orange" />
@@ -131,9 +136,10 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onNavi
                             </div>
                         </div>
                     </div>
-                    <div className="flex-1 min-h-0 w-full overflow-hidden">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={growthData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
+                    <div className="h-[250px] lg:h-[300px] w-full overflow-hidden">
+                        {isMounted && (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={growthData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
                                 <defs>
                                     <linearGradient id="colorGrowth" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.15}/>
@@ -160,10 +166,10 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onNavi
                                 />
                             </AreaChart>
                         </ResponsiveContainer>
-                    </div>
+                    )}
                 </div>
-
             </div>
         </div>
-    );
+    </div>
+);
 };

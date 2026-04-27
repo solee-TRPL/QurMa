@@ -883,7 +883,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
           return (
             <div 
               key={groupKey} 
-              className={`bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col hover:shadow-md transition-all border-b-4 ${allSelected ? 'border-primary-500 shadow-primary-50' : 'border-slate-200 border-b-primary-500/20'}`}
+              className={`bg-white rounded-2xl shadow-sm border-2 overflow-hidden flex flex-col hover:shadow-md transition-all border-b-4 ${allSelected ? 'border-primary-500 shadow-primary-50' : 'border-slate-100 border-b-primary-500/20'}`}
             >
               {/* Group Header */}
               <div className="px-5 py-4 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
@@ -1111,20 +1111,20 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
           </div>
 
           {/* Alumni Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50/50">
+          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+            <table className="w-full border-separate border-spacing-0">
+              <thead className="bg-[#FCFDFE] sticky top-0 z-10">
                 <tr>
-                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-left border-b border-slate-100 w-10">No</th>
-                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-left border-b border-slate-100">Nama Santri</th>
-                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 w-24">NIS</th>
-                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 w-20">JK</th>
-                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 w-24">Kelas Akhir</th>
-                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 w-28">Tgl Lulus</th>
-                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 w-24">Angkatan</th>
+                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100 w-[50px]">NO</th>
+                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-left border-b-2 border-r-2 border-slate-100">NAMA SANTRI</th>
+                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100 w-24">NIS</th>
+                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100 w-20">JK</th>
+                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100 w-24">KELAS AKHIR</th>
+                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100 w-28">TGL LULUS</th>
+                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-slate-100 w-24">ANGKATAN</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="bg-white">
                 {(() => {
                   const filtered = alumniList
                     .filter(a => {
@@ -1142,56 +1142,57 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
 
                   if (filtered.length === 0) return (
                     <tr>
-                      <td colSpan={7} className="py-20 text-center">
-                        <GraduationCap className="w-12 h-12 mx-auto mb-3 text-slate-200" />
-                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
-                          {alumniList.length === 0 ? 'Belum ada data alumni' : 'Tidak ditemukan'}
-                        </p>
-                        {alumniList.length === 0 && (
-                          <p className="text-[9px] text-slate-300 mt-1">Data alumni akan muncul otomatis setelah siklus kenaikan kelas dijalankan</p>
-                        )}
+                      <td colSpan={7} className="py-24 text-center border-b border-slate-100">
+                        <div className="opacity-20">
+                            <GraduationCap className="w-16 h-16 mx-auto mb-4 text-slate-400" />
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                            {alumniList.length === 0 ? 'Belum ada data alumni' : 'Tidak ditemukan'}
+                            </p>
+                        </div>
                       </td>
                     </tr>
                   );
 
                   return paginated.map((alumni, idx) => (
-                    <tr key={alumni.id + idx} className="hover:bg-amber-50/20 transition-colors group">
-                      <td className="px-4 py-3 text-[10px] font-black text-slate-300">{String((safePage - 1) * ALUMNI_PER_PAGE + idx + 1).padStart(2,'0')}</td>
-                      <td className="px-4 py-3">
+                    <tr key={alumni.id + idx} className="group transition-colors hover:bg-slate-50/30">
+                      <td className="px-4 py-4 text-[10.5px] font-black text-slate-400 text-center border-r-2 border-b border-slate-100 uppercase tracking-tighter">
+                          {String((safePage - 1) * ALUMNI_PER_PAGE + idx + 1).padStart(2,'0')}
+                      </td>
+                      <td className="px-4 py-4 border-r-2 border-b border-slate-100">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center shrink-0">
-                            <span className="text-[10px] font-black text-amber-600">
+                          <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 shadow-sm group-hover:bg-amber-50 group-hover:border-amber-100 transition-colors">
+                            <span className="text-[11px] font-black text-slate-400 group-hover:text-amber-600 transition-colors">
                               {alumni.full_name?.charAt(0)?.toUpperCase() || '?'}
                             </span>
                           </div>
                           <div>
-                            <p className="text-[11px] font-black text-slate-800 leading-tight capitalize">{alumni.full_name}</p>
-                            <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">ID: {alumni.id?.slice(-6) || '-'}</p>
+                            <p className="text-[11px] font-black text-slate-800 leading-tight capitalize tracking-tight">{alumni.full_name}</p>
+                            <p className="text-[8.5px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 opacity-60">ID: {alumni.id?.slice(-6) || '-'}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="text-[10px] font-black text-slate-600">{alumni.nis || '-'}</span>
+                      <td className="px-4 py-4 text-center border-r-2 border-b border-slate-100">
+                        <span className="text-[10.5px] font-mono font-black text-slate-600 bg-slate-50 px-2.5 py-1 rounded tracking-tight">{alumni.nis || '-'}</span>
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${
-                          alumni.gender === 'L' ? 'bg-indigo-50 text-indigo-600' : 'bg-pink-50 text-pink-600'
+                      <td className="px-4 py-4 text-center border-r-2 border-b border-slate-100">
+                        <span className={`px-2.5 py-1 rounded-lg text-[8.5px] font-black uppercase tracking-tight border ${
+                          alumni.gender === 'L' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-pink-50 text-pink-600 border-pink-100'
                         }`}>
                           {alumni.gender === 'L' ? 'Putra' : alumni.gender === 'P' ? 'Putri' : '-'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-[9px] font-black border border-amber-100">
+                      <td className="px-4 py-4 text-center border-r-2 border-b border-slate-100">
+                        <span className="px-3 py-1 bg-amber-50/50 text-amber-700 rounded-lg text-[10px] font-black border border-amber-100/50">
                           {alumni.last_class || '-'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="text-[10px] font-bold text-slate-500">
+                      <td className="px-4 py-4 text-center border-r-2 border-b border-slate-100">
+                        <span className="text-[10.5px] font-bold text-slate-500">
                           {alumni.graduated_at ? new Date(alumni.graduated_at).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' }) : '-'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="px-2 py-1 bg-slate-50 text-slate-600 rounded-lg text-[10px] font-black border border-slate-100">
+                      <td className="px-4 py-4 text-center border-b border-slate-100">
+                        <span className="px-3 py-1 bg-slate-50 text-slate-600 rounded-lg text-[10.5px] font-black border border-slate-100 shadow-sm">
                           {alumni.graduated_year || '-'}
                         </span>
                       </td>

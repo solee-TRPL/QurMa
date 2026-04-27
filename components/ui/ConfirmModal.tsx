@@ -67,6 +67,13 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
   const currentVariant = colorClasses[variant] || colorClasses.danger;
 
+  const renderIcon = () => {
+    if (!IconProp) return variant === 'danger' ? <AlertTriangle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />;
+    if (React.isValidElement(IconProp)) return IconProp;
+    const IconComp = IconProp as any;
+    return <IconComp className="w-6 h-6" />;
+  };
+
   return (
     <div className={`fixed inset-0 z-[999999] flex items-center justify-center p-4 sm:p-6 text-slate-800 ${!centerOnScreen ? 'lg:pl-64 lg:pt-20' : ''}`}>
       {/* Cinematic Overlay */}
@@ -79,12 +86,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
       <div className="relative w-full max-w-sm bg-white rounded-[32px] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden animate-in zoom-in-95 fade-in duration-300">
         {/* Header/Ikon */}
         <div className="p-5 pb-2 flex flex-col items-center text-center">
-          <div className={`w-12 h-12 ${currentVariant.icon} rounded-[18px] flex items-center justify-center mb-4 ring-6 ${currentVariant.ring} transition-all`}>
-            {IconProp ? (
-              typeof IconProp === 'function' ? React.createElement(IconProp as LucideIcon, { className: "w-6 h-6" }) : IconProp
-            ) : (
-              variant === 'danger' ? <AlertTriangle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />
-            )}
+          <div className={`w-12 h-12 ${currentVariant.icon} rounded-[18px] flex items-center justify-center mb-4 ring-2 ${currentVariant.ring} transition-all`}>
+            {renderIcon()}
           </div>
           
           <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight mb-1">
