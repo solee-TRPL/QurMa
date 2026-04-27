@@ -28,5 +28,9 @@
     "quran-qcf4": "^1.0.3",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
+  },
+  "overrides": {
+    "rimraf": "^5.0.5",
+    "glob": "^8.0.3"
   }
 }
