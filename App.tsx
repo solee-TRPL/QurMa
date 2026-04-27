@@ -82,9 +82,10 @@ const AppContent: React.FC = () => {
     let id = localStorage.getItem('qurma_device_id');
     if (!id) {
         // Fallback for insecure contexts (HTTP via IP)
-        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-            id = crypto.randomUUID();
+        if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+            id = window.crypto.randomUUID();
         } else {
+            console.log("[Auth] Using fallback UUID generator");
             // Simple UUID v4 fallback
             id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 const r = Math.random() * 16 | 0;
