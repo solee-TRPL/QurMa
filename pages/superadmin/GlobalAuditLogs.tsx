@@ -143,17 +143,16 @@ export const GlobalAuditLogs: React.FC = () => {
                   placeholder="Cari..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-8 lg:pl-12 pr-2 py-1.5 lg:py-3 bg-white border border-slate-100 lg:border-2 lg:border-slate-50 rounded-xl lg:rounded-2xl text-[10px] lg:text-[13px] font-bold outline-none h-8 lg:h-12 shadow-sm"
+                  className="w-full pl-8 lg:pl-12 pr-4 py-1.5 lg:py-3 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-emerald-50/50 focus:border-emerald-500 focus:bg-white transition-all text-[10px] lg:text-[12px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none h-8 lg:h-12 shadow-inner"
               />
           </div>
 
           {/* School Filter */}
           <div className="relative flex-1 min-w-[100px] group">
-              <Building className="absolute left-2.5 lg:left-4 top-1/2 -translate-y-1/2 w-3 lg:w-4 h-3 lg:h-4 text-emerald-500" />
               <select 
                 value={selectedTenantId}
                 onChange={(e) => setSelectedTenantId(e.target.value)}
-                className="w-full pl-7 lg:pl-11 pr-7 lg:pr-10 py-1.5 lg:py-3 bg-white border border-slate-100 lg:border-2 lg:border-slate-50 rounded-xl lg:rounded-2xl text-[9px] lg:text-[12px] font-bold text-slate-700 shadow-sm outline-none cursor-pointer appearance-none truncate h-8 lg:h-12"
+                className="pl-3 lg:pl-6 pr-6 lg:pr-10 py-1.5 lg:py-3 bg-white border border-slate-100 lg:border-2 lg:border-slate-50 rounded-xl lg:rounded-2xl text-[8.5px] lg:text-[10px] font-black uppercase tracking-tighter lg:tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none min-w-[70px] lg:min-w-[120px] h-8 lg:h-12 shadow-sm"
               >
                   <option value="all">SEMUA</option>
                   <option value="null">SISTEM</option>
@@ -165,16 +164,6 @@ export const GlobalAuditLogs: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-1.5 lg:gap-3 shrink-0">
-              {/* Sort */}
-              <button 
-                  onClick={() => setIsSortMenuOpen(!isSortMenuOpen)}
-                  className="flex items-center justify-center h-8 lg:h-12 px-2 lg:px-5 bg-white border border-slate-100 lg:border-2 lg:border-slate-50 rounded-xl lg:rounded-2xl text-[9px] font-black uppercase tracking-widest text-slate-600 shadow-sm hover:border-emerald-100 transition-all active:scale-95"
-                  title="Urutkan"
-              >
-                  <Filter className="w-3.5 h-3.5 sm:mr-2" /> 
-                  <span className="hidden sm:inline">{sortOrder === 'newest' ? 'Terbaru' : 'Terlama'}</span>
-              </button>
-
               {/* Export */}
               <button 
                   onClick={handleExportCSV}
@@ -239,14 +228,14 @@ export const GlobalAuditLogs: React.FC = () => {
 
                     <td className="sticky left-[135px] lg:left-[195px] bg-white px-4 py-4 border-r-2 border-b border-slate-200 z-10 transition-colors shadow-sm">
                         <div className="flex flex-col gap-1 truncate">
-                            <div className="text-[11.5px] font-black text-indigo-600 truncate leading-tight capitalize">{log.actor_name}</div>
+                            <div className="text-[11.5px] font-black text-jade-600 truncate leading-tight capitalize">{log.actor_name}</div>
                             <div className="text-[7.5px] font-black uppercase tracking-widest text-slate-400 leading-none">{log.actor_role.replace('_', ' ')}</div>
                         </div>
                     </td>
 
                     <td className="px-4 py-4 border-r-2 border-b border-slate-100 uppercase">
                         <div className="min-w-0">
-                            <p className="text-[11px] font-black text-slate-700 truncate leading-tight group-hover:text-indigo-600 transition-colors">
+                            <p className="text-[11px] font-black text-slate-700 truncate leading-tight group-hover:text-jade-600 transition-colors">
                                 {log.tenant_name || 'System Internal'}
                             </p>
                             {!log.tenant_id && <span className="text-[7px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-100 mt-1 inline-block">CORE ACCOUNT</span>}
@@ -261,7 +250,7 @@ export const GlobalAuditLogs: React.FC = () => {
 
                     <td className="px-4 py-4 border-b border-slate-100">
                         <div className="flex flex-col gap-1">
-                            <span className="text-[11px] font-black text-slate-800 truncate capitalize leading-tight group-hover:text-indigo-600 transition-colors">{log.entity}</span>
+                            <span className="text-[11px] font-black text-slate-800 truncate capitalize leading-tight group-hover:text-jade-600 transition-colors">{log.entity}</span>
                             <p className="text-[10.5px] font-bold text-slate-500 leading-snug break-words" title={log.details}>
                                 {log.details}
                             </p>

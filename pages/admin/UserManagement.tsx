@@ -96,32 +96,32 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
         <form onSubmit={handleSubmit} className="p-4 space-y-2.5 overflow-y-auto scrollbar-hide" autoComplete="off">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-2 pt-2">
                 <div className="group/field">
-                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-indigo-600">Nama Lengkap</label>
+                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">Nama Lengkap</label>
                     <div className="relative">
-                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-indigo-600" />
-                        <input required type="text" value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-indigo-400 outline-none transition-all" placeholder="Nama lengkap..." />
+                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-jade-600" />
+                        <input required type="text" value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 outline-none transition-all" placeholder="Nama lengkap..." />
                     </div>
                 </div>
                 <div className="group/field">
-                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-indigo-600">WhatsApp</label>
+                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">WhatsApp</label>
                     <div className="relative">
-                        <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-indigo-600" />
-                        <input type="tel" value={formData.whatsapp_number} onChange={e => setFormData({ ...formData, whatsapp_number: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-indigo-400 outline-none transition-all placeholder:text-slate-300" placeholder="08..." />
+                        <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-jade-600" />
+                        <input type="tel" value={formData.whatsapp_number} onChange={e => setFormData({ ...formData, whatsapp_number: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 outline-none transition-all placeholder:text-slate-300" placeholder="08..." />
                     </div>
                 </div>
             </div>
 
           <div className="group/field">
-                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-indigo-600">Email</label>
+                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">Email</label>
                 <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-indigo-600" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-jade-600" />
                     <input 
                         required
                         type="email" 
                         value={formData.email}
                         onChange={e => setFormData({...formData, email: e.target.value})}
                         autoComplete="off"
-                        className={`w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl font-bold text-[13px] outline-none transition-all placeholder:text-slate-300 ${initialData ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-800 focus:border-indigo-400'}`}
+                        className={`w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl font-bold text-[13px] outline-none transition-all placeholder:text-slate-300 ${initialData ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-800 focus:border-jade-400'}`}
                         placeholder="email@sekolah.com"
                         disabled={!!initialData}
                     />
@@ -129,12 +129,12 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
             </div>
 
           <div className="group/field">
-             <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-indigo-600">Role / Hak Akses</label>
+             <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">Role / Hak Akses</label>
              <div className="relative">
                 <select
                     value={formData.role}
                     onChange={e => setFormData({...formData, role: e.target.value as UserRole})}
-                    className="w-full pl-3.5 pr-9 py-2 border border-slate-200 bg-white rounded-xl focus:border-indigo-400 text-[13px] font-bold text-slate-800 appearance-none cursor-pointer transition-all outline-none"
+                    className="w-full pl-3.5 pr-9 py-2 border border-slate-200 bg-white rounded-xl focus:border-jade-400 text-[13px] font-bold text-slate-800 appearance-none cursor-pointer transition-all outline-none"
                 >
                     <option value={UserRole.TEACHER}>Ustadz / Guru</option>
                     <option value={UserRole.ADMIN}>Admin Sekolah</option>
@@ -146,16 +146,16 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
 
           {!initialData && (
             <div className="group/field">
-                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-indigo-600">Password</label>
+                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">Password</label>
                 <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-indigo-600" />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-jade-600" />
                     <input 
                     required
                     type="password" 
                     value={formData.password}
                     onChange={e => setFormData({...formData, password: e.target.value})}
                     autoComplete="new-password"
-                    className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-indigo-400 outline-none transition-all placeholder:text-slate-300"
+                    className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 outline-none transition-all placeholder:text-slate-300"
                     placeholder="Minimal 6 karakter"
                     />
                 </div>
@@ -186,7 +186,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
             </button>
             <button 
                 type="submit"
-                className="flex-[2] flex items-center justify-center px-4 py-2 font-black text-[9px] uppercase tracking-tight rounded-xl border-2 border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
+                className="flex-[2] flex items-center justify-center px-4 py-2 font-black text-[9px] uppercase tracking-tight rounded-xl border-2 border-jade-600 bg-jade-600 text-white shadow-lg shadow-primary-100 hover:bg-jade-700 transition-all active:scale-95"
             >
               <Save className="w-3.5 h-3.5 mr-1.5" />
               {initialData ? 'SIMPAN' : 'BUAT USER'}
@@ -360,17 +360,17 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
     return (
         <div className="space-y-6">
             {/* Unified Control Bar */}
-            <div className="flex flex-col lg:flex-row w-full gap-2 p-2 bg-white rounded-[28px] lg:rounded-[40px] border border-slate-100 shadow-sm backdrop-blur-sm shrink-0 relative z-[70] sticky top-0">
+            <div className="flex flex-col lg:flex-row w-full gap-2 py-2 bg-white shrink-0 relative z-[70] sticky top-0">
                 <div className="flex flex-row items-center gap-2 w-full lg:contents">
                     {/* 1. SEARCH BAR */}
                     <div className="relative flex-1 group h-10 min-w-0">
-                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-indigo-500 transition-colors" />
+                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-jade-500 transition-colors" />
                         <input 
                             type="text" 
                             value={search} 
                             onChange={e => setSearch(e.target.value)} 
                             placeholder="Cari User..." 
-                            className="w-full h-full pl-10 pr-4 bg-slate-50/50 border border-slate-100/50 rounded-full focus:ring-4 focus:ring-indigo-50/50 focus:border-indigo-500 focus:bg-white transition-all text-[10px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-inner"
+                            className="w-full h-full pl-10 pr-4 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 focus:bg-white transition-all text-[10px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-inner"
                         />
                     </div>
 
@@ -378,7 +378,7 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                     {!isReadOnly && (
                         <button 
                             onClick={openCreateModal}
-                            className="h-10 flex items-center justify-center gap-2 px-6 font-black text-[10px] uppercase tracking-widest rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-100/50 hover:bg-indigo-700 hover:scale-[1.02] transition-all active:scale-95 shrink-0 whitespace-nowrap"
+                            className="h-10 flex items-center justify-center gap-2 px-6 font-black text-[10px] uppercase tracking-widest rounded-full bg-jade-600 text-white shadow-lg shadow-primary-100/50 hover:bg-jade-700 hover:scale-[1.02] transition-all active:scale-95 shrink-0 whitespace-nowrap"
                         >
                             <UserPlus className="w-3.5 h-3.5" />
                             <span className="hidden lg:inline">TAMBAH USER</span>
@@ -408,7 +408,7 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                         <button 
                             onClick={() => fetchData()}
                             disabled={loading}
-                            className="h-10 w-10 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-indigo-600 hover:bg-slate-50 transition-all active:scale-95 rounded-full shadow-sm disabled:opacity-50"
+                            className="h-10 w-10 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 hover:bg-slate-50 transition-all active:scale-95 rounded-full shadow-sm disabled:opacity-50"
                         >
                             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                         </button>
@@ -462,7 +462,7 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                                     {!isReadOnly && (
                                         <td className="px-4 py-4 whitespace-nowrap text-center border-b border-slate-100">
                                             <div className="flex justify-center gap-2">
-                                                <button onClick={() => openEditModal(u)} className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-200 hover:border-indigo-100 transition-all bg-white shadow-sm" title="Edit">
+                                                <button onClick={() => openEditModal(u)} className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm" title="Edit">
                                                     <Edit className="w-4 h-4" />
                                                 </button>
                                                 <button onClick={() => setUserToDelete(u)} className="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl border border-slate-200 hover:border-red-100 transition-all bg-white shadow-sm" title="Hapus">

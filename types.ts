@@ -75,6 +75,7 @@ export interface Student {
   village?: string;
   district?: string;
   city?: string;
+  province?: string;
 }
 
 export interface Class {
@@ -146,6 +147,8 @@ export interface TeacherNote {
   date: string;
   category: "Motivasi" | "Evaluasi" | "Perilaku" | "Lainnya";
   content: string;
+  reply_content?: string;
+  replied_at?: string;
 }
 
 export interface AuditLogEntry {
@@ -246,6 +249,7 @@ export interface WeeklyTarget {
     sabaq_ket?: "A" | "B" | "C" | "";
     current_juz?: number;
     current_page?: number;
+    teacher_note?: string;
   };
   created_at?: string;
   updated_at?: string;
@@ -269,8 +273,10 @@ export type PageView =
   | "settings"
   | "target-management"
   | "weekly-target"
+  | "weekly-target-notes"
   | "student-progress"
   | "weekly-target-monitor"
+  | "weekly-target-monitor-notes"
   | "monitor-hafalan"
   | "student-progress-manage"
   | "pencapaian"
@@ -281,4 +287,6 @@ export type PageView =
   | "sa-users"
   | "sa-platform-settings"
   | "sa-email-settings"
-  | "sa-audit-logs";
+  | "sa-audit-logs"
+  | "login"
+  | "landing";

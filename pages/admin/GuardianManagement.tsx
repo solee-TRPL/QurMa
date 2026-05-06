@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { 
   getUsers, 
   getStudents, 
@@ -65,6 +66,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import { getStudentAssignmentHistory, getAssignmentsByDateRange, AssignmentHistory } from '../../services/dataService';
+import { CustomDatePicker } from '../../components/ui/CustomDatePicker';
 
 // --- Types for Joined Data ---
 interface StudentRekap extends Student {
@@ -161,7 +163,7 @@ const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, st
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Belum ada pencapaian</p>
                         </div>
                     ) : achievements.map(ach => (
-                        <div key={ach.id} className="group relative flex justify-between items-center bg-slate-50/30 p-2.5 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-md hover:border-indigo-100 ring-1 ring-transparent hover:ring-indigo-50/50">
+                        <div key={ach.id} className="group relative flex justify-between items-center bg-slate-50/30 p-2.5 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-md hover:border-jade-100 ring-1 ring-transparent hover:ring-jade-50/50">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-amber-50 rounded-xl border border-amber-100/50 shadow-sm transition-transform group-hover:scale-110">
                                     <Trophy className="w-3 h-3 text-amber-500" />
@@ -185,9 +187,9 @@ const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, st
                         value={title} 
                         onChange={e => setTitle(e.target.value)} 
                         placeholder="Tulis pencapaian baru..." 
-                        className="w-full px-5 py-2.5 border-2 border-slate-50 bg-white rounded-2xl focus:ring-0 focus:border-indigo-400 shadow-sm transition-all text-sm font-bold text-slate-800 outline-none" 
+                        className="w-full px-5 py-2.5 border-2 border-slate-50 bg-white rounded-2xl focus:ring-0 focus:border-jade-400 shadow-sm transition-all text-sm font-bold text-slate-800 outline-none" 
                     />
-                    <button type="submit" className="p-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95">
+                    <button type="submit" className="p-3 bg-jade-600 text-white rounded-2xl hover:bg-jade-700 shadow-lg shadow-primary-100 transition-all active:scale-95">
                         <Plus className="w-5 h-5"/>
                     </button>
                 </form>
@@ -234,7 +236,7 @@ const HistoryModal = ({ isOpen, onClose, student }: { isOpen: boolean, onClose: 
                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.1em] mt-0.5">{student.full_name}</p>
                     </div>
                 </div>
-                <div className="p-5 overflow-y-auto space-y-4 max-h-[400px] custom-scrollbar bg-slate-50/20">
+                <div className="p-5 overflow-y-auto space-y-4 max-h-[290px] custom-scrollbar bg-slate-50/20">
                     {loading ? (
                         <div className="py-20 flex flex-col items-center justify-center opacity-30">
                             <RefreshCw className="w-10 h-10 animate-spin mb-3" />
@@ -247,27 +249,35 @@ const HistoryModal = ({ isOpen, onClose, student }: { isOpen: boolean, onClose: 
                         </div>
                     ) : history.map((h, idx) => (
                         <div key={h.id} className="relative pl-6 pb-2 last:pb-0 border-l-2 border-slate-100 ml-2">
-                             <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-indigo-400 z-10" />
-                             <div>
-                                <p className="text-[12px] font-black text-indigo-700 tracking-tight uppercase leading-none">{h.teacher_name}</p>
-                                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">{h.halaqah_name}</p>
-                                <div className="flex items-center gap-3 mt-3">
-                                    <div className="flex items-center gap-1.5 opacity-60">
-                                        <Calendar className="w-2.5 h-2.5 text-emerald-500" />
-                                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.1em]">{new Date(h.start_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}</span>
+                             <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-jade-400 z-10" />
+                             <div className="flex justify-between items-start">
+                                 <div>
+                                    <p className="text-[12px] font-black text-jade-700 tracking-tight uppercase leading-none">{h.teacher_name}</p>
+                                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">{h.halaqah_name}</p>
+                                    <div className="flex items-center gap-3 mt-3">
+                                        <div className="flex items-center gap-1.5 opacity-60">
+                                            <Calendar className="w-2.5 h-2.5 text-emerald-500" />
+                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.1em]">{new Date(h.start_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}</span>
+                                        </div>
+                                        <span className="text-[8px] font-black text-slate-300">S/D</span>
+                                        <div className="flex items-center gap-1.5 opacity-60">
+                                            <Calendar className="w-2.5 h-2.5 text-rose-500" />
+                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.1em]">{h.end_date ? new Date(h.end_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : 'SAAT INI'}</span>
+                                        </div>
                                     </div>
-                                    <span className="text-[8px] font-black text-slate-300">S/D</span>
-                                    <div className="flex items-center gap-1.5 opacity-60">
-                                        <Calendar className="w-2.5 h-2.5 text-rose-500" />
-                                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.1em]">{h.end_date ? new Date(h.end_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : 'SAAT INI'}</span>
-                                    </div>
-                                </div>
+                                 </div>
+                                 <div className="flex flex-col items-end gap-1">
+                                     <div className="bg-jade-50 px-2.5 py-1.5 rounded-xl border border-jade-100 flex flex-col items-center justify-center min-w-[50px] shadow-sm">
+                                         <span className="text-[14px] font-black text-jade-700 leading-none">{h.total_sabaq_lines || 0}</span>
+                                         <span className="text-[6px] font-black text-jade-400 uppercase tracking-widest mt-0.5">Baris Sabaq</span>
+                                     </div>
+                                 </div>
                              </div>
                         </div>
                     ))}
                 </div>
                 <div className="p-4 border-t border-slate-50 text-center">
-                    <button onClick={onClose} className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline decoration-2 underline-offset-4">Tutup Riwayat</button>
+                    <button onClick={onClose} className="text-[10px] font-black text-jade-600 uppercase tracking-widest hover:underline decoration-2 underline-offset-4">Tutup Riwayat</button>
                 </div>
             </div>
         </div>
@@ -278,6 +288,7 @@ const GlobalTrackingModal = ({ isOpen, onClose, tenantId }: { isOpen: boolean, o
     const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]);
     const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
     const [results, setResults] = useState<any[]>([]);
+    const [trackingSearch, setTrackingSearch] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleSearch = async () => {
@@ -292,32 +303,63 @@ const GlobalTrackingModal = ({ isOpen, onClose, tenantId }: { isOpen: boolean, o
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800 lg:pl-64" onClick={onClose}>
-            <div className="bg-white rounded-[40px] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 relative max-h-[85vh]" onClick={e => e.stopPropagation()}>
-                <button onClick={onClose} className="absolute top-6 right-6 p-2 text-slate-300 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition-all z-20">
-                  <X className="w-5 h-5" />
+        <div className="fixed inset-0 z-[120] flex items-center justify-center lg:pl-64 lg:pt-16 p-4 md:p-6 bg-slate-900/60 backdrop-blur-md animate-fade-in text-slate-800" onClick={onClose}>
+            <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white relative max-h-[80vh]" onClick={e => e.stopPropagation()}>
+                <button onClick={onClose} className="absolute top-4 right-4 p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all z-20 group">
+                  <X className="w-5 h-5 group-hover:rotate-90 transition-transform" />
                 </button>
-                <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-[#FCFDFE]">
+                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
                     <div>
-                        <h3 className="text-xl font-black text-slate-800 tracking-tighter uppercase">Tracking Pengampu Global</h3>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Audit Riwayat Pembimbing Berdasarkan Periode</p>
+                        <h3 className="text-sm md:text-base font-black text-slate-800 tracking-tight leading-none mb-1 uppercase">Tracking Pengampu Global</h3>
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Audit Riwayat Pembimbing Berdasarkan Periode</p>
                     </div>
                 </div>
-                <div className="p-8 bg-slate-50/30 border-b border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                    <div className="space-y-1.5">
-                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Mulai Dari</label>
-                        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full h-11 px-4 border-2 border-slate-100 rounded-2xl text-[11px] font-black uppercase tracking-widest focus:border-indigo-500 focus:ring-0 transition-all outline-none" />
+                <div className="p-4 bg-slate-50/30 border-b border-slate-100 flex flex-row items-end gap-2">
+                    <div className="flex-none space-y-1">
+                        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Mulai</label>
+                        <div className="h-9 min-w-[100px] lg:min-w-[125px] px-3 flex items-center bg-white border-2 border-slate-100 rounded-xl focus-within:border-jade-400 transition-all">
+                            <CustomDatePicker 
+                                value={startDate} 
+                                align="left"
+                                onChange={setStartDate} 
+                            />
+                        </div>
                     </div>
-                    <div className="space-y-1.5">
-                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Hingga</label>
-                        <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full h-11 px-4 border-2 border-slate-100 rounded-2xl text-[11px] font-black uppercase tracking-widest focus:border-indigo-500 focus:ring-0 transition-all outline-none" />
+                    <div className="flex-none space-y-1">
+                        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Hingga</label>
+                        <div className="h-9 min-w-[100px] lg:min-w-[125px] px-3 flex items-center bg-white border-2 border-slate-100 rounded-xl focus-within:border-jade-400 transition-all">
+                            <CustomDatePicker 
+                                value={endDate} 
+                                align="left"
+                                onChange={setEndDate} 
+                            />
+                        </div>
                     </div>
-                    <button onClick={handleSearch} disabled={loading} className="h-11 bg-indigo-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <div className="flex-1 space-y-1">
+                        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Cari Nama / NIS</label>
+                        <div className="relative group h-9">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 group-focus-within:text-jade-500 transition-colors" />
+                            <input 
+                                type="text"
+                                placeholder="NAMA / NIS..."
+                                value={trackingSearch}
+                                onChange={(e) => setTrackingSearch(e.target.value)}
+                                className="w-full h-full pl-8 pr-3 bg-slate-50/80 border border-slate-200/60 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-[9px] font-black uppercase tracking-widest placeholder:text-slate-300 outline-none shadow-inner"
+                            />
+                        </div>
+                    </div>
+
+                    <button 
+                        onClick={handleSearch} 
+                        disabled={loading} 
+                        className="h-9 w-9 bg-jade-600 text-white rounded-xl shadow-lg shadow-jade-100/50 hover:bg-jade-700 transition-all active:scale-95 flex items-center justify-center shrink-0"
+                        title="Lacak Data"
+                    >
                         {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                        LACAK DATA
                     </button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+
+                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar scrollbar-hide">
                     {results.length === 0 ? (
                         <div className="py-20 flex flex-col items-center justify-center opacity-30">
                             <Timer className="w-16 h-16 mb-4 text-slate-200" />
@@ -325,11 +367,16 @@ const GlobalTrackingModal = ({ isOpen, onClose, tenantId }: { isOpen: boolean, o
                         </div>
                     ) : (
                         <div className="space-y-3">
-                             {results.map((res, i) => (
+                             {results
+                                .filter(res => 
+                                    res.student_name.toLowerCase().includes(trackingSearch.toLowerCase()) || 
+                                    (res.student_nis && res.student_nis.includes(trackingSearch))
+                                )
+                                .map((res, i) => (
                                  <div key={i} className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 bg-white border border-slate-100 rounded-[24px] shadow-sm hover:shadow-md transition-all gap-4">
                                      <div className="flex items-center gap-4">
-                                         <div className="w-10 h-10 bg-indigo-50 rounded-2xl flex items-center justify-center border border-indigo-100/50">
-                                             <User className="w-5 h-5 text-indigo-600" />
+                                         <div className="w-10 h-10 bg-jade-50 rounded-2xl flex items-center justify-center border border-jade-100/50">
+                                             <User className="w-5 h-5 text-jade-600" />
                                          </div>
                                          <div>
                                              <p className="text-xs font-black text-slate-800 uppercase tracking-tight leading-none mb-1.5">{res.student_name}</p>
@@ -338,13 +385,13 @@ const GlobalTrackingModal = ({ isOpen, onClose, tenantId }: { isOpen: boolean, o
                                      </div>
                                      <div className="flex items-center gap-6">
                                          <div className="text-right">
-                                             <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest leading-none mb-1">{res.teacher_name || '-'}</p>
+                                             <p className="text-[10px] font-black text-jade-600 uppercase tracking-widest leading-none mb-1">{res.teacher_name || '-'}</p>
                                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{res.halaqah_name}</p>
                                          </div>
                                          <div className="w-px h-6 bg-slate-100 hidden md:block" />
                                          <div className="flex flex-col items-end whitespace-nowrap">
                                              <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{new Date(res.start_date).toLocaleDateString('id-ID', {day:'numeric', month:'short'})} - {res.end_date ? new Date(res.end_date).toLocaleDateString('id-ID', {day:'numeric', month:'short'}) : 'SAAT INI'}</p>
-                                             <span className="text-[7px] font-black text-indigo-300 uppercase tracking-widest mt-1">Rentang Tugas</span>
+                                             <span className="text-[7px] font-black text-jade-300 uppercase tracking-widest mt-1">Rentang Tugas</span>
                                          </div>
                                      </div>
                                  </div>
@@ -439,10 +486,10 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Belum ada catatan</p>
                         </div>
                     ) : notes.map(note => (
-                        <div key={note.id} className="group relative flex flex-col bg-slate-50/30 p-2.5 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-md hover:border-indigo-100 ring-1 ring-transparent hover:ring-indigo-50/50">
+                        <div key={note.id} className="group relative flex flex-col bg-slate-50/30 p-2.5 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-md hover:border-jade-100 ring-1 ring-transparent hover:ring-jade-50/50">
                             <div className="flex justify-between items-center">
                                 <span className={`px-2 py-0.5 text-[7.5px] font-black uppercase tracking-[0.1em] rounded-lg border shadow-sm ${
-                                    note.category === 'Motivasi' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+                                    note.category === 'Motivasi' ? 'bg-jade-50 text-jade-600 border-jade-100' :
                                     note.category === 'Evaluasi' ? 'bg-amber-50 text-amber-600 border-amber-100' :
                                     note.category === 'Perilaku' ? 'bg-rose-50 text-rose-600 border-rose-100' :
                                     'bg-slate-100 text-slate-600 border-slate-200'
@@ -465,19 +512,19 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
                 </div>
                 <form onSubmit={handleAdd} className="p-3 border-t border-slate-100 bg-slate-50/30 space-y-2.5">
                     <div className="flex items-center gap-3">
-                        <label className="text-[7.5px] font-black text-indigo-400 uppercase tracking-[0.2em] w-12 shrink-0 ml-1">Catatan</label>
+                        <label className="text-[7.5px] font-black text-jade-400 uppercase tracking-[0.2em] w-12 shrink-0 ml-1">Catatan</label>
                         <input 
                             type="text"
                             value={content} 
                             onChange={e => setContent(e.target.value)} 
                             placeholder="Tulis catatan baru..." 
-                            className="flex-1 px-3.5 py-1.5 border border-slate-200 bg-white rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 shadow-sm transition-all text-xs font-bold text-slate-800 outline-none h-9 placeholder:text-slate-300 placeholder:font-black placeholder:uppercase placeholder:text-[9px]" 
+                            className="flex-1 px-3.5 py-1.5 border border-slate-200 bg-white rounded-xl focus:ring-2 focus:ring-jade-100 focus:border-jade-400 shadow-sm transition-all text-xs font-bold text-slate-800 outline-none h-9 placeholder:text-slate-300 placeholder:font-black placeholder:uppercase placeholder:text-[9px]" 
                         />
                     </div>
                     
                     <div className="flex items-center gap-3">
-                        <label className="text-[7.5px] font-black text-indigo-400 uppercase tracking-[0.2em] w-12 shrink-0 ml-1">Kategori</label>
-                        <div className="flex-1 flex bg-indigo-50/40 p-0.5 rounded-xl border border-indigo-100/30 overflow-x-auto no-scrollbar shadow-inner">
+                        <label className="text-[7.5px] font-black text-jade-400 uppercase tracking-[0.2em] w-12 shrink-0 ml-1">Kategori</label>
+                        <div className="flex-1 flex bg-jade-50/40 p-0.5 rounded-xl border border-jade-100/30 overflow-x-auto no-scrollbar shadow-inner">
                             {categories.map((cat) => (
                                 <button
                                     type="button"
@@ -485,8 +532,8 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
                                     onClick={() => setCategory(cat)}
                                     className={`flex-1 px-2.5 py-1.5 text-[8px] font-black uppercase tracking-tight rounded-lg transition-all whitespace-nowrap ${
                                         category === cat
-                                            ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-indigo-100'
-                                            : 'text-slate-400 hover:text-indigo-400'
+                                            ? 'bg-white text-jade-600 shadow-sm ring-1 ring-jade-100'
+                                            : 'text-slate-400 hover:text-jade-400'
                                     }`}
                                 >
                                     {cat}
@@ -494,7 +541,7 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
                             ))}
                         </div>
                     </div>
-                    <button type="submit" className="w-full py-2.5 bg-indigo-600 text-white rounded-xl font-black text-[9px] uppercase tracking-[0.3em] hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group">
+                    <button type="submit" className="w-full py-2.5 bg-jade-600 text-white rounded-xl font-black text-[9px] uppercase tracking-[0.3em] hover:bg-jade-700 shadow-lg shadow-primary-100 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group">
                         <Save className="w-4 h-4 transition-transform group-hover:scale-110"/>
                         SIMPAN DATA
                     </button>
@@ -539,12 +586,31 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
   const [isGlobalTrackingOpen, setIsGlobalTrackingOpen] = useState(false);
   const [selectedModalStudent, setSelectedModalStudent] = useState<Student | null>(null);
 
-  const handleForceReset = async () => {
+  const confirmResetPassword = async () => {
     if (!selectedStudent || !selectedStudent.parent_id || !selectedStudent.nis) {
-        addNotification({ type: 'warning', title: 'Gagal', message: 'Data NIS atau ID Akun tidak lengkap untuk melakukan reset.' });
+        addNotification({ type: 'warning', title: 'Gagal', message: 'Data tidak lengkap.' });
         return;
     }
-    setShowResetConfirm(true);
+    
+    setIsResetting(true);
+    try {
+        await forceResetPassword(selectedStudent.parent_id, selectedStudent.nis, currentUser);
+        addNotification({ 
+            type: 'success', 
+            title: 'Berhasil Reset', 
+            message: `Password akun ${selectedStudent.full_name} telah di-reset ke NIS: ${selectedStudent.nis}` 
+        });
+        setShowResetConfirm(false);
+    } catch (error: any) {
+        console.error("Reset failed:", error);
+        addNotification({ 
+            type: 'error', 
+            title: 'Gagal Reset', 
+            message: error.message || 'Terjadi kesalahan sistem saat me-reset password.' 
+        });
+    } finally {
+        setIsResetting(false);
+    }
   };
   
   // Filter States
@@ -559,7 +625,6 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { addNotification } = useNotification();
 
-  // Form State
   const [formData, setFormData] = useState({
     studentName: '',
     nis: '',
@@ -577,15 +642,80 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
     rtRw: '',
     village: '',
     district: '',
-    city: ''
+    city: '',
+    provinceId: '',
+    regencyId: '',
+    districtId: '',
+    villageId: ''
   });
+
+  // Regional Data States
+  const [regions, setRegions] = useState<{
+    provinces: {id: string, name: string}[],
+    regencies: {id: string, name: string}[],
+    districts: {id: string, name: string}[],
+    villages: {id: string, name: string}[]
+  }>({ provinces: [], regencies: [], districts: [], villages: [] });
+
+  const fetchProvinces = async () => {
+    try {
+        const res = await fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
+        const data = await res.json();
+        setRegions(prev => ({ ...prev, provinces: data }));
+    } catch (e) { console.error(e); }
+  };
+
+  const fetchAllRegencies = async () => {
+    // If we want ALL cities at once, it's better to fetch by province or a flat list if available.
+    // emsifa doesn't have a direct /api/regencies.json but we can iterate provinces or use a different source.
+    // For now, let's stick to Province -> Regency to keep it efficient, but we can combine them.
+    if (regions.provinces.length === 0) await fetchProvinces();
+  };
+
+  const onProvinceChange = async (provId: string) => {
+    setFormData(prev => ({ ...prev, provinceId: provId, regencyId: '', districtId: '', villageId: '', city: '', district: '', village: '' }));
+    try {
+        const res = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provId}.json`);
+        const data = await res.json();
+        setRegions(prev => ({ ...prev, regencies: data, districts: [], villages: [] }));
+    } catch (e) { console.error(e); }
+  };
+
+  const onRegencyChange = async (regId: string, regName: string) => {
+    setFormData(prev => ({ ...prev, regencyId: regId, districtId: '', villageId: '', city: regName, district: '', village: '' }));
+    try {
+        const res = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${regId}.json`);
+        const data = await res.json();
+        setRegions(prev => ({ ...prev, districts: data, villages: [] }));
+    } catch (e) { console.error(e); }
+  };
+
+  const onDistrictChange = async (distId: string, distName: string) => {
+    setFormData(prev => ({ ...prev, districtId: distId, villageId: '', district: distName, village: '' }));
+    try {
+        const res = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${distId}.json`);
+        const data = await res.json();
+        setRegions(prev => ({ ...prev, villages: data }));
+    } catch (e) { console.error(e); }
+  };
+
+  useEffect(() => {
+    if (showAddModal) {
+        fetchProvinces();
+        // If editing, we might need to pre-fetch some data, but for now we focus on new registration
+    }
+  }, [showAddModal]);
 
   const resetForm = () => {
     setFormData({
         studentName: '', nis: '', gender: 'L', classId: '', halaqahId: '',
         parentName: '', parentEmail: '', parentWhatsapp: '',
         fatherName: '', motherName: '', fatherPhone: '', motherPhone: '', 
-        address: '', rtRw: '', village: '', district: '', city: ''
+        address: '', rtRw: '', village: '', district: '', city: '',
+        provinceId: '',
+        regencyId: '',
+        districtId: '',
+        villageId: ''
     });
     setFormErrors({});
     setIsEditMode(false);
@@ -611,7 +741,11 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
             rtRw: selectedStudent.rt_rw || '',
             village: selectedStudent.village || '',
             district: selectedStudent.district || '',
-            city: selectedStudent.city || ''
+            city: selectedStudent.city || '',
+            provinceId: '',
+            regencyId: '',
+            districtId: '',
+            villageId: ''
         });
     } else {
         resetForm();
@@ -644,13 +778,13 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                 </div>
                 <div className="p-5 space-y-2.5">
                     {/* STUDENT INFO BOXES */}
-                    <div className="flex items-center gap-3 p-3 bg-indigo-50/50 rounded-[18px] border border-indigo-100/50 transition-all hover:bg-white hover:shadow-sm">
-                        <div className="p-2 bg-white rounded-xl shadow-sm border border-indigo-100">
-                            <GraduationCap className="w-3.5 h-3.5 text-indigo-600" />
+                    <div className="flex items-center gap-3 p-3 bg-jade-50/50 rounded-[18px] border border-jade-100/50 transition-all hover:bg-white hover:shadow-sm">
+                        <div className="p-2 bg-white rounded-xl shadow-sm border border-jade-100">
+                            <GraduationCap className="w-3.5 h-3.5 text-jade-600" />
                         </div>
                         <div>
-                            <p className="text-[8.5px] font-black text-indigo-400 uppercase tracking-widest mb-0.5 leading-none">Nama Santri</p>
-                            <p className="text-[13px] font-bold text-indigo-900 leading-none mt-1">{student.full_name || '-'}</p>
+                            <p className="text-[8.5px] font-black text-jade-400 uppercase tracking-widest mb-0.5 leading-none">Nama Santri</p>
+                            <p className="text-[13px] font-bold text-jade-900 leading-none mt-1">{student.full_name || '-'}</p>
                         </div>
                     </div>
 
@@ -707,8 +841,8 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                             <p className="text-[8.5px] font-black text-slate-400 uppercase tracking-widest mb-0.5 leading-none">Alamat Lengkap</p>
                             <p className="text-[10px] font-bold text-slate-600 leading-relaxed mt-2 break-words">
                                 {[
-                                    student.address, 
-                                    student.rt_rw ? `RT/RW ${student.rt_rw}` : '', 
+                                    student.address,
+                                    student.rt_rw ? (student.rt_rw.includes('/') ? `RT ${student.rt_rw.split('/')[0].trim()} / RW ${student.rt_rw.split('/')[1].trim()}` : `RT/RW ${student.rt_rw}`) : '', 
                                     student.village ? `Kel. ${student.village}` : '', 
                                     student.district ? `Kec. ${student.district}` : '', 
                                     student.city
@@ -1063,121 +1197,371 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
 
   // --- EXCEL LOGIC ---
 
-  const downloadTemplate = () => {
-    // 1. Prepare Main Template Headers
-    const headers = [
-      'Nama Lengkap Santri', 
-      'NIS', 
-      'Jenis Kelamin (L/P)', 
-      'Halaqah', 
-      'Email Akses Santri', 
-      'Nama Ayah',
-      'Nama Ibu',
-      'No. HP Ayah',
-      'No. HP Ibu',
-      'Alamat Lengkap',
-      'RT/RW',
-      'Kel/Desa',
-      'Kecamatan',
-      'Kab/Kota',
-      '', // Gap
-      '', // Gap
-      'DATA REFERENSI (SALIN DARI SINI)'
+  const downloadTemplate = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const ws = workbook.addWorksheet("Template Import Santri");
+
+    // Define styles
+    const borderStyle: Partial<ExcelJS.Borders> = {
+        top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }
+    };
+    const headerFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4472C4' } };
+    const yellowFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFE1' } };
+    const greenFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } };
+
+    // Columns
+    ws.columns = [
+        { header: 'Nama Lengkap Santri', key: 'name', width: 30 },
+        { header: 'NIS', key: 'nis', width: 15 },
+        { header: 'Jenis Kelamin (L/P)', key: 'gender', width: 18 },
+        { header: 'Halaqah', key: 'halaqah', width: 25 },
+        { header: 'Email Akses', key: 'email', width: 25 },
+        { header: 'Nama Ayah', key: 'father_name', width: 20 },
+        { header: 'Nama Ibu', key: 'mother_name', width: 20 },
+        { header: 'No. HP Ayah', key: 'father_phone', width: 15 },
+        { header: 'No. HP Ibu', key: 'mother_phone', width: 15 },
+        { header: 'Provinsi', key: 'province', width: 25 },
+        { header: 'Kab/Kota', key: 'city', width: 25 },
+        { header: 'Kecamatan', key: 'district', width: 25 },
+        { header: 'Kel/Desa', key: 'village', width: 25 },
+        { header: 'RT/RW', key: 'rt_rw', width: 15 },
+        { header: 'Alamat Lengkap', key: 'address', width: 35 }
     ];
 
+    // Style Header
+    const headerRow = ws.getRow(1);
+    headerRow.eachCell(cell => {
+        cell.fill = headerFill;
+        cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.border = borderStyle;
+    });
+
+    // --- SHEET 2: Data Referensi (Hidden) ---
+    const wsRef = workbook.addWorksheet("Referensi_Sistem");
+    wsRef.columns = [
+        { header: "Halaqah", key: "halaqah", width: 30 },
+        { header: "Prov_ID", key: "prov_id", width: 10 },
+        { header: "Prov_Nama", key: "prov_name", width: 30 },
+        { header: "Kota_Prov_Nama", key: "city_prov", width: 30 },
+        { header: "Kota_Nama", key: "city_name", width: 30 }
+    ];
+    
+    // Fill Halaqah
+    halaqahs.forEach((h, idx) => {
+        wsRef.getCell(idx + 2, 1).value = h.name;
+    });
+
+    // Fetch Provinces & Regencies for Dependent Dropdown
+    let provList: {id: string, name: string}[] = regions.provinces;
+    let cityList: {id: string, province_id: string, name: string}[] = [];
+
+    try {
+        if (provList.length === 0) {
+            const res = await fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
+            provList = await res.json();
+        }
+        
+        // Fetch all regencies (Iterate provinces)
+        // Note: For performance and rate limits, we'll try to get them in parallel but limited
+        const regencyPromises = provList.map(p => 
+            fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${p.id}.json`)
+            .then(res => res.json())
+            .then(data => data.map((d: any) => ({ ...d, province_id: p.id, province_name: p.name })))
+        );
+        const regencyResults = await Promise.all(regencyPromises);
+        cityList = regencyResults.flat();
+    } catch (e) { console.error("Failed to fetch regions for template:", e); }
+
+    // Fill Provinces in Reference Sheet (Col 3)
+    provList.forEach((p, idx) => {
+        wsRef.getCell(idx + 2, 3).value = p.name;
+    });
+
+    // Fill Cities in Reference Sheet (Col 4 & 5)
+    // IMPORTANT: Must be sorted by province name for OFFSET/MATCH to work
+    const sortedCities = cityList.sort((a: any, b: any) => a.province_name.localeCompare(b.province_name));
+    sortedCities.forEach((c: any, idx) => {
+        wsRef.getCell(idx + 2, 4).value = c.province_name;
+        wsRef.getCell(idx + 2, 5).value = c.name;
+    });
+
+    wsRef.state = 'hidden';
+
+    // Formulas for Data Validation
+    const halaqahDropdownFormula = `Referensi_Sistem!$A$2:$A$${halaqahs.length + 1}`;
+    const provinceDropdownFormula = `Referensi_Sistem!$C$2:$C$${provList.length + 1}`;
+    
+    // City Formula (OFFSET based on Province matching)
+    // Column J is Province in the main sheet.
+    // We look up J2 in Referensi_Sistem!$D (Col 4) and return values from Col 5
+    const getCityFormula = (rowNum: number) => {
+        const provCell = `J${rowNum}`;
+        return `OFFSET(Referensi_Sistem!$E$2, MATCH(${provCell}, Referensi_Sistem!$D$2:$D$2000, 0)-1, 0, COUNTIF(Referensi_Sistem!$D$2:$D$2000, ${provCell}), 1)`;
+    };
+
+    // Add Example Row
     const exampleNis = '20240001';
-    // 2. Initial Data Row (Example)
-    const exampleRow: any[] = [
-      'Ahmad Abdullah',
-      { v: exampleNis, t: 's' },       // NIS as text
-      'L',
-      halaqahs[0]?.name || '-',
-      `${exampleNis}@qurma.com`,
-      'Abdullah Syukri',
-      'Aminah',
-      { v: '08123456789', t: 's' },    // HP Ayah
-      { v: '08987654321', t: 's' },    // HP Ibu
-      'Jl. Bunga Melati No. 12',
-      '001/005',
-      'Tegal Sari',
-      'Karang Barat',
-      'Jakarta Timur',
-      '', // Gap
-      '', // Gap
-      halaqahs[0]?.name || '-'
-    ];
+    const exampleRow = ws.addRow({
+        name: 'Ahmad Abdullah',
+        nis: exampleNis,
+        gender: 'L',
+        halaqah: halaqahs[0]?.name || '-',
+        email: { formula: `IF(B2<>"", B2 & "@qurma.com", "")` },
+        father_name: 'Abdullah Syukri',
+        mother_name: 'Aminah',
+        father_phone: '08123456789',
+        mother_phone: '08987654321',
+        province: 'DKI JAKARTA',
+        city: 'KOTA JAKARTA TIMUR',
+        district: 'PULOGADUNG',
+        village: 'PULOGADUNG',
+        rt_rw: '001 / 005',
+        address: 'Jl. Bunga Melati No. 12'
+    });
 
-    const rows: any[][] = [headers, exampleRow];
+    // Style Example Row and set validation
+    exampleRow.eachCell((cell, colNumber) => {
+        cell.border = borderStyle;
+        if (colNumber === 3) { // Jenis Kelamin
+            cell.fill = greenFill;
+            cell.dataValidation = { type: 'list', allowBlank: true, formulae: ['"L,P"'] };
+        } else if (colNumber === 4) { // Halaqah
+            cell.fill = greenFill;
+            cell.dataValidation = { type: 'list', allowBlank: true, formulae: [halaqahDropdownFormula] };
+        } else if (colNumber === 10) { // Provinsi
+            cell.fill = greenFill;
+            cell.dataValidation = { type: 'list', allowBlank: true, formulae: [provinceDropdownFormula] };
+        } else if (colNumber === 11) { // Kab/Kota
+            cell.fill = greenFill;
+            cell.dataValidation = { type: 'list', allowBlank: true, formulae: [getCityFormula(2)] };
+        } else {
+            cell.fill = yellowFill;
+        }
+    });
 
-    // 3. Fill Reference Lists (Rows 3 and onwards)
-    const maxReferenceRows = Math.max(halaqahs.length, classes.length);
-    for (let i = 1; i < maxReferenceRows; i++) {
-        const row = new Array(17).fill('');
-        row[16] = halaqahs[i]?.name || (classes[i-halaqahs.length]?.name ? `Kelas: ${classes[i-halaqahs.length].name}` : '');
-        rows.push(row);
-    }
-
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-
-    // Force NIS (col B = index 1) and WhatsApp (col G = index 6) columns to text format '@'
-    const textColIndices = [1, 7, 8, 10]; // NIS, HP Ayah, HP Ibu, RT/RW
-    const totalRows = rows.length;
-    for (const colIdx of textColIndices) {
-        for (let rowIdx = 0; rowIdx < totalRows; rowIdx++) {
-            const cellAddr = XLSX.utils.encode_cell({ r: rowIdx, c: colIdx });
-            if (!ws[cellAddr]) {
-                ws[cellAddr] = { v: '', t: 's' };
+    // Add 100 empty styled rows for easy filling
+    for (let i = 0; i < 100; i++) {
+        const row = ws.addRow({});
+        const rowNum = row.number;
+        // Explicitly format all 15 columns to ensure formulas and styles are applied
+        for (let colNumber = 1; colNumber <= 15; colNumber++) {
+            const cell = row.getCell(colNumber);
+            cell.border = borderStyle;
+            if (colNumber === 3) { // Jenis Kelamin
+                cell.fill = greenFill;
+                cell.dataValidation = { type: 'list', allowBlank: true, formulae: ['"L,P"'] };
+            } else if (colNumber === 4) { // Kolom Halaqah
+                cell.fill = greenFill;
+                cell.dataValidation = { type: 'list', allowBlank: true, formulae: [halaqahDropdownFormula] };
+            } else if (colNumber === 10) { // Provinsi
+                cell.fill = greenFill;
+                cell.dataValidation = { type: 'list', allowBlank: true, formulae: [provinceDropdownFormula] };
+            } else if (colNumber === 11) { // Kab/Kota
+                cell.fill = greenFill;
+                cell.dataValidation = { type: 'list', allowBlank: true, formulae: [getCityFormula(rowNum)] };
+            } else if (colNumber === 5) { // Email Akses
+                cell.fill = yellowFill;
+                cell.value = { formula: `IF(B${rowNum}<>"", B${rowNum} & "@qurma.com", "")` };
             } else {
-                ws[cellAddr].t = 's';
+                cell.fill = yellowFill;
             }
-            ws[cellAddr].z = '@'; 
         }
     }
 
-    // Set Column Widths for readability
-    ws['!cols'] = [
-        { wch: 25 }, { wch: 12 }, { wch: 18 }, { wch: 20 }, 
-        { wch: 25 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
-        { wch: 30 }, { wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
-        { wch: 5 }, { wch: 5 }, { wch: 35 }
-    ];
+    // Set columns as text format
+    const textCols = [2, 8, 9, 11]; // NIS, Phones, RT/RW
+    textCols.forEach(col => {
+        ws.getColumn(col).numFmt = '@';
+    });
 
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Template Import");
-    XLSX.writeFile(wb, "Template_Import_Santri.xlsx");
-    
+    // Save
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = "Template_Import_Santri_Styled.xlsx";
+    anchor.click();
+    window.URL.revokeObjectURL(url);
+
     addNotification({ 
         type: 'success', 
-        title: 'Unduh Selesai', 
-        message: 'Silakan gunakan kolom DATA REFERENSI di sebelah kanan sebagai acuan.' 
+        title: 'Template Siap', 
+        message: 'Gunakan template ini untuk import massal dengan gaya premium.' 
     });
   };
 
-  const downloadFullExport = () => {
-    const data = filteredData.map((s, idx) => ({
-        'No': idx + 1,
-        'NIS': s.nis || '-',
-        'Nama': s.full_name,
-        'Jenis Kelamin': s.gender === 'L' ? 'Laki-laki' : 'Perempuan',
-        'Pengampu': s.halaqah_teacher_name || '-',
-        'Halaqoh': s.halaqah_name || '-',
-        'Email Akses': s.parent_email || '-',
-        'Nama Ayah': s.father_name || '-',
-        'Nama Ibu': s.mother_name || '-',
-        'HP Ayah': s.father_phone || '-',
-        'HP Ibu': s.mother_phone || '-',
-        'Alamat': s.address || '-',
-        'RT/RW': s.rt_rw || '-',
-        'Kel/Desa': s.village || '-',
-        'Kecamatan': s.district || '-',
-        'Kab/Kota': s.city || '-'
-    }));
+  const downloadFullExport = async () => {
+    const workbook = new ExcelJS.Workbook();
+    
+    // Define common styles
+    const borderStyle: Partial<ExcelJS.Borders> = {
+        top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }
+    };
+    const headerFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4472C4' } };
+    const yellowFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFE1' } };
+    const greenFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } };
 
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Data Santri");
-    XLSX.writeFile(wb, `Data_Santri_${new Date().toISOString().split('T')[0]}.xlsx`);
-    addNotification({ type: 'success', title: 'Export Berhasil', message: 'Seluruh data santri telah diexport ke Excel.' });
+    // --- SHEET 1: Data Santri ---
+    const ws1 = workbook.addWorksheet("Data Santri");
+    ws1.columns = [
+        { header: "No.", key: "no", width: 8 },
+        { header: "NIS", key: "nis", width: 15 },
+        { header: "Nama Santri", key: "name", width: 40 },
+        { header: "Jenis Kelamin", key: "gender", width: 15 },
+        { header: "Pengampu", key: "teacher", width: 25 },
+        { header: "Halaqah", key: "halaqah", width: 25 },
+        { header: "Email Akses", key: "email", width: 25 },
+        { header: "Nama Ayah", key: "father", width: 25 },
+        { header: "Nama Ibu", key: "mother", width: 25 },
+        { header: "HP Ayah", key: "hp_father", width: 20 },
+        { header: "HP Ibu", key: "hp_mother", width: 20 },
+        { header: "Alamat", key: "address", width: 40 },
+        { header: "RT/RW", key: "rt_rw", width: 10 },
+        { header: "Kel/Desa", key: "village", width: 20 },
+        { header: "Kecamatan", key: "district", width: 20 },
+        { header: "Kab/Kota", key: "city", width: 20 }
+    ];
+
+    // Style Header Row
+    const headerRow = ws1.getRow(1);
+    headerRow.eachCell(cell => {
+        cell.fill = headerFill;
+        cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.border = borderStyle;
+    });
+
+    filteredData.forEach((s, idx) => {
+        const r = ws1.addRow({
+            no: idx + 1,
+            nis: s.nis || '-',
+            name: s.full_name,
+            gender: s.gender === 'L' ? 'Laki-laki' : 'Perempuan',
+            teacher: s.halaqah_teacher_name || '-',
+            halaqah: s.halaqah_name || '-',
+            email: s.parent_email || '-',
+            father: s.father_name || '-',
+            mother: s.mother_name || '-',
+            hp_father: s.father_phone || '-',
+            hp_mother: s.mother_phone || '-',
+            address: s.address || '-',
+            rt_rw: s.rt_rw || '-',
+            village: s.village || '-',
+            district: s.district || '-',
+            city: s.city || '-'
+        });
+
+        // Style data cells
+        r.eachCell((cell, colNumber) => {
+            cell.border = borderStyle;
+            if (colNumber <= 3) {
+                cell.fill = yellowFill;
+            } else if (colNumber === 6) {
+                cell.fill = greenFill;
+            }
+        });
+    });
+
+    // --- SHEET 2: Rangkuman Per Halaqah (Grid Style) ---
+    const ws2 = workbook.addWorksheet("Rangkuman Halaqah");
+    const BLOCKS_PER_ROW = 3;
+    const COLUMNS_PER_BLOCK = 4;
+    const FIXED_SLOTS = 15; // Adjusted for student list
+
+    const sortedHalaqahs = [...halaqahs].sort((a, b) => a.name.localeCompare(b.name));
+
+    let currentBaseRow = 1;
+    for (let i = 0; i < sortedHalaqahs.length; i += BLOCKS_PER_ROW) {
+        const rowHalaqahs = sortedHalaqahs.slice(i, i + BLOCKS_PER_ROW);
+
+        // Header Labels
+        rowHalaqahs.forEach((h, idx) => {
+            const colStart = idx * COLUMNS_PER_BLOCK;
+            
+            // Halaqah Name
+            const cH = ws2.getCell(currentBaseRow, colStart + 2);
+            cH.value = "Halaqah :";
+            cH.font = { bold: true };
+            cH.border = borderStyle;
+            
+            const cHN = ws2.getCell(currentBaseRow, colStart + 3);
+            cHN.value = h.name;
+            cHN.fill = greenFill;
+            cHN.font = { bold: true };
+            cHN.border = borderStyle;
+
+            // Teacher Name
+            const cT = ws2.getCell(currentBaseRow + 1, colStart + 2);
+            cT.value = "Pengampu :";
+            cT.font = { bold: true };
+            cT.border = borderStyle;
+            
+            const cTN = ws2.getCell(currentBaseRow + 1, colStart + 3);
+            cTN.value = h.teacher_name || '-';
+            cTN.fill = greenFill;
+            cTN.font = { bold: true };
+            cTN.border = borderStyle;
+
+            // Table Headers
+            ["No.", "NIS", "Nama Santri"].forEach((text, tIdx) => {
+                const c = ws2.getCell(currentBaseRow + 2, colStart + 1 + tIdx);
+                c.value = text;
+                c.fill = headerFill;
+                c.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+                c.border = borderStyle;
+                c.alignment = { horizontal: 'center' };
+            });
+        });
+
+        // Student Slots
+        for (let r = 0; r < FIXED_SLOTS; r++) {
+            const excelRowIdx = currentBaseRow + 3 + r;
+            rowHalaqahs.forEach((h, idx) => {
+                const colStart = idx * COLUMNS_PER_BLOCK;
+                const hStudents = rekapData.filter(s => s.halaqah_id === h.id).sort((a, b) => a.full_name.localeCompare(b.full_name));
+                const s = hStudents[r];
+
+                const cellNo = ws2.getCell(excelRowIdx, colStart + 1);
+                cellNo.value = s ? r + 1 : "";
+                cellNo.border = borderStyle;
+                cellNo.alignment = { horizontal: 'center' };
+
+                const cellNis = ws2.getCell(excelRowIdx, colStart + 2);
+                cellNis.value = s ? s.nis : "";
+                cellNis.border = borderStyle;
+
+                const cellName = ws2.getCell(excelRowIdx, colStart + 3);
+                cellName.value = s ? s.full_name : "";
+                cellName.border = borderStyle;
+            });
+        }
+        currentBaseRow += (FIXED_SLOTS + 5);
+    }
+
+    // Set column widths for WS2
+    for (let j = 1; j <= BLOCKS_PER_ROW * COLUMNS_PER_BLOCK; j++) {
+        const mod = (j - 1) % COLUMNS_PER_BLOCK;
+        if (mod === 0) ws2.getColumn(j).width = 6;
+        else if (mod === 1) ws2.getColumn(j).width = 15;
+        else if (mod === 2) ws2.getColumn(j).width = 40;
+        else ws2.getColumn(j).width = 4;
+    }
+
+    // Generate and Save File
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const fileName = `Data_Santri_${new Date().toISOString().split('T')[0]}.xlsx`;
+    
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = fileName;
+    anchor.click();
+    window.URL.revokeObjectURL(url);
+
+    addNotification({ type: 'success', title: 'Export Berhasil', message: 'Data santri dengan style premium telah siap.' });
   };
 
   const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1196,7 +1580,10 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
             const ws = wb.Sheets[wsname];
             const rawData = XLSX.utils.sheet_to_json(ws) as any[];
             // Filter only rows that have a student name (ignore reference columns)
-            const data = rawData.filter(row => row['Nama Lengkap Santri'] && row['Nama Lengkap Santri'].toString().trim() !== '');
+            const data = rawData.filter(row => {
+                const name = row['Nama Lengkap Santri'] || row['Nama Santri'];
+                return name && name.toString().trim() !== '';
+            });
 
             if (data.length === 0) {
                 setImportProgress(prev => ({ ...prev, errors: ['File Excel kosong atau tidak ditemukan data santri yang valid.'] }));
@@ -1205,7 +1592,11 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
 
             setImportProgress(prev => ({ ...prev, total: data.length }));
             
-            // 1. Fetch latest users to check for existing parents (siblings support)
+            // 1. Prepare sets for duplicate detection
+            const existingNis = new Set(rekapData.filter(s => s.nis).map(s => String(s.nis).trim()));
+            const seenNisInExcel = new Set<string>();
+
+            // 2. Fetch latest users to check for existing parents (siblings support)
             const latestUsers = await getUsers(tenantId);
             const userMap = new Map(latestUsers.map(u => [u.email.toLowerCase(), u.id]));
             
@@ -1217,13 +1608,35 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
 
             for (let i = 0; i < data.length; i++) {
                 const row = data[i];
-                const studentName = row['Nama Lengkap Santri']?.toString().trim();
-                const parentEmail = row['Email Akses Santri']?.toString().trim().toLowerCase();
+                const studentName = (row['Nama Lengkap Santri'] || row['Nama Santri'])?.toString().trim();
+                const parentEmail = (row['Email Akses'] || row['Email Akses Santri'])?.toString().trim().toLowerCase();
                 const fatherName = row['Nama Ayah']?.toString().trim();
                 const motherName = row['Nama Ibu']?.toString().trim();
+                const nis = String(row['NIS'] || '').trim();
 
                 // Skip empty rows or reference rows
                 if (!studentName) continue;
+
+                if (!nis) {
+                    errors.push(`Baris ${i + 2} (${studentName}): NIS wajib diisi.`);
+                    setImportProgress(prev => ({ ...prev, current: i + 1, errors: [...errors] }));
+                    continue;
+                }
+
+                // Check for duplicate NIS in current Excel
+                if (seenNisInExcel.has(nis)) {
+                    errors.push(`Baris ${i + 2} (${studentName}): NIS "${nis}" muncul ganda di file Excel.`);
+                    setImportProgress(prev => ({ ...prev, current: i + 1, errors: [...errors] }));
+                    continue;
+                }
+                seenNisInExcel.add(nis);
+
+                // Check for duplicate NIS in system
+                if (existingNis.has(nis)) {
+                    errors.push(`Baris ${i + 2} (${studentName}): NIS "${nis}" sudah terdaftar di sistem.`);
+                    setImportProgress(prev => ({ ...prev, current: i + 1, errors: [...errors] }));
+                    continue;
+                }
 
                 if (!parentEmail) {
                     errors.push(`Baris ${i + 2} (${studentName}): Email Santri wajib diisi.`);
@@ -1232,7 +1645,6 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                 }
 
                 // --- STRICT NIS-EMAIL VALIDATION ---
-                const nis = String(row['NIS'] || '').trim();
                 const expectedEmail = `${nis}@qurma.com`.toLowerCase();
                 if (parentEmail !== expectedEmail) {
                     errors.push(`Baris ${i + 2} (${studentName}): Email Santri (${parentEmail}) tidak sesuai dengan format NIS (${expectedEmail}).`);
@@ -1254,7 +1666,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                             password: String(row['NIS'] || 'santri123'),
                             full_name: studentName, // Default to student name as updated in UI
                             role: UserRole.SANTRI,
-                            whatsapp_number: String(row['No. HP Ayah'] || row['No. HP Ibu'] || '-'),
+                            whatsapp_number: String(row['No. HP Ayah'] || row['HP Ayah'] || row['No. HP Ibu'] || row['HP Ibu'] || '-'),
                             tenant_id: tenantId
                         }, currentUser);
                         parentId = parentUser.id;
@@ -1265,18 +1677,19 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                     const halaqahId = halaqahMap.get(String(row['Halaqah'] || '').toLowerCase());
 
                     // 3. Create Student
+                    const genderVal = row['Jenis Kelamin (L/P)'] || row['Jenis Kelamin'];
                     await createStudent({
                         full_name: studentName,
                         nis: String(row['NIS'] || ''),
-                        gender: (row['Jenis Kelamin (L/P)'] === 'P' || row['Jenis Kelamin (L/P)'] === 'p') ? 'P' : 'L',
+                        gender: (genderVal === 'P' || genderVal === 'p' || genderVal === 'Perempuan') ? 'P' : 'L',
                         halaqah_id: halaqahId,
                         parent_id: parentId,
                         tenant_id: tenantId,
                         father_name: fatherName,
                         mother_name: motherName,
-                        father_phone: String(row['No. HP Ayah'] || ''),
-                        mother_phone: String(row['No. HP Ibu'] || ''),
-                        address: String(row['Alamat Lengkap'] || ''),
+                        father_phone: String(row['No. HP Ayah'] || row['HP Ayah'] || ''),
+                        mother_phone: String(row['No. HP Ibu'] || row['HP Ibu'] || ''),
+                        address: String(row['Alamat Lengkap'] || row['Alamat'] || ''),
                         rt_rw: String(row['RT/RW'] || ''),
                         village: String(row['Kel/Desa'] || ''),
                         district: String(row['Kecamatan'] || ''),
@@ -1343,16 +1756,16 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
 
               <div 
                 key={stat.id} 
-                className={`min-w-[180px] md:min-w-[200px] flex-none p-4 rounded-[28px] border transition-all group overflow-hidden relative cursor-pointer snap-start ${filterHalaqah === stat.id ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-100 scale-[1.02]' : 'bg-white border-slate-100 shadow-sm hover:shadow-md hover:border-indigo-100'}`}
+                className={`min-w-[180px] md:min-w-[200px] flex-none p-4 rounded-[28px] border transition-all group overflow-hidden relative cursor-pointer snap-start ${filterHalaqah === stat.id ? 'bg-jade-600 border-jade-600 shadow-lg shadow-primary-100 scale-[1.02]' : 'bg-white border-slate-100 shadow-sm hover:shadow-md hover:border-jade-100'}`}
                 onClick={() => setFilterHalaqah(prev => prev === stat.id ? 'all' : stat.id)}
               >
                 <div className={`absolute top-0 right-0 w-16 h-16 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-110 ${filterHalaqah === stat.id ? 'bg-white/10' : 'bg-slate-50'}`}></div>
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-3">
-                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center shadow-sm ${filterHalaqah === stat.id ? 'bg-white/20 text-white' : 'bg-indigo-50 text-indigo-600'}`}>
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center shadow-sm ${filterHalaqah === stat.id ? 'bg-white/20 text-white' : 'bg-jade-50 text-jade-600'}`}>
                       <Users className="w-4 h-4" />
                     </div>
-                    <span className={`text-[15px] font-black tracking-tight ${filterHalaqah === stat.id ? 'text-white' : 'text-indigo-600'}`}>{stat.count}</span>
+                    <span className={`text-[15px] font-black tracking-tight ${filterHalaqah === stat.id ? 'text-white' : 'text-jade-600'}`}>{stat.count}</span>
                   </div>
                   <h4 className={`text-[10px] font-black uppercase tracking-tighter truncate leading-tight ${filterHalaqah === stat.id ? 'text-white' : 'text-slate-800'}`} title={stat.name}>{stat.name}</h4>
                   <p className={`text-[8px] font-bold mt-1 uppercase tracking-widest truncate ${filterHalaqah === stat.id ? 'text-white/70' : 'text-slate-400'}`}>{stat.teacher_name}</p>
@@ -1370,22 +1783,57 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
         )}
       </div>
 
-      <div className="flex flex-col w-full gap-3 p-3 bg-white rounded-[28px] lg:rounded-[40px] border border-slate-100 shadow-sm backdrop-blur-sm shrink-0 relative z-[70] sticky top-0">
-        {/* ROW 1: Search & Action Buttons */}
+      <div className="flex flex-col w-full gap-3 py-4 bg-white shrink-0 relative z-[70] sticky top-0">
+        {/* ROW 1: Search & Action Buttons / Combined Row for Supervisor */}
         <div className="flex flex-row items-center gap-2 w-full overflow-x-auto no-scrollbar pb-1 lg:pb-0">
           {/* 1. SEARCH BAR */}
-          <div className="relative flex-1 group h-10 min-w-[200px]">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-indigo-500 transition-colors" />
+          <div className={`relative group h-10 min-w-[200px] ${isReadOnly ? 'flex-1' : 'flex-1'}`}>
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-jade-500 transition-colors" />
             <input 
               type="text" 
               value={search} 
               onChange={e => setSearch(e.target.value)} 
               placeholder="Cari NIS atau Nama Santri..." 
-              className="w-full h-full pl-10 pr-4 bg-slate-50/50 border border-slate-100/50 rounded-full focus:ring-4 focus:ring-indigo-50/50 focus:border-indigo-500 focus:bg-white transition-all text-[10px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-inner"
+              className="w-full h-full pl-10 pr-4 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 focus:bg-white transition-all text-[10px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-inner"
             />
           </div>
 
-          {!isReadOnly && (
+          {isReadOnly ? (
+            /* CONSOLIDATED FILTERS FOR SUPERVISOR */
+            <div className="flex items-center gap-2 flex-none">
+              <select 
+                  value={filterGender}
+                  onChange={(e) => setFilterGender(e.target.value)}
+                  className="h-10 text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-100 px-4 pr-8 outline-none focus:ring-4 focus:ring-slate-50 bg-slate-50/50 cursor-pointer hover:bg-white transition-all min-w-[100px] rounded-full shadow-inner appearance-none"
+                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.75rem' }}
+              >
+                  <option value="all">GENDER</option>
+                  <option value="L">PUTRA</option>
+                  <option value="P">PUTRI</option>
+              </select>
+
+              <select 
+                  value={filterHalaqah}
+                  onChange={(e) => setFilterHalaqah(e.target.value)}
+                  className="h-10 text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-100 px-4 pr-8 outline-none focus:ring-4 focus:ring-slate-50 bg-slate-50/50 cursor-pointer hover:bg-white transition-all min-w-[120px] rounded-full shadow-inner appearance-none"
+                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.75rem' }}
+              >
+                  <option value="all">HALAQAH</option>
+                  {halaqahs.map(h => (
+                      <option key={h.id} value={h.id}>{h.name.toUpperCase()}</option>
+                  ))}
+              </select>
+
+              <button 
+                  onClick={() => fetchData()}
+                  disabled={loading}
+                  className="h-10 w-10 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 hover:bg-slate-50 transition-all active:scale-95 rounded-full shadow-sm disabled:opacity-50"
+              >
+                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+          ) : (
+            /* ADMIN ACTION BUTTONS */
             <div className="flex items-center gap-2 flex-none">
               {/* 2. TEMPLATE */}
               <button 
@@ -1422,7 +1870,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
               {/* 6. AUDIT TRACKING */}
               <button 
                   onClick={() => setIsGlobalTrackingOpen(true)}
-                  className="h-10 flex items-center justify-center gap-1.5 px-4 font-black text-[9px] uppercase tracking-widest rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-100/50 hover:bg-indigo-700 hover:scale-[1.02] transition-all active:scale-95 whitespace-nowrap border-none"
+                  className="h-10 flex items-center justify-center gap-1.5 px-4 font-black text-[9px] uppercase tracking-widest rounded-full bg-jade-600 text-white shadow-lg shadow-primary-100/50 hover:bg-jade-700 hover:scale-[1.02] transition-all active:scale-95 whitespace-nowrap border-none"
               >
                   <Timer className="w-3.5 h-3.5" /> <span className="hidden xl:inline">AUDIT TRACKING</span><span className="xl:hidden">TRACK</span>
               </button>
@@ -1430,53 +1878,55 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
           )}
         </div>
 
-        {/* ROW 2: Filters & Common Tools */}
-        <div className="flex flex-row items-center gap-2 w-full pt-2 border-t border-slate-50 shrink-0">
-          <div className="flex flex-row items-center gap-2 flex-1">
-            {/* 7. GENDER FILTER */}
-            <select 
-                value={filterGender}
-                onChange={(e) => setFilterGender(e.target.value)}
-                className="h-9 flex-1 lg:flex-none text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-100 px-4 pr-8 outline-none focus:ring-4 focus:ring-slate-50 bg-slate-50/50 cursor-pointer hover:bg-white transition-all lg:min-w-[120px] rounded-full shadow-inner appearance-none"
-                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.75rem' }}
-            >
-                <option value="all">GENDER</option>
-                <option value="L">PUTRA</option>
-                <option value="P">PUTRI</option>
-            </select>
+        {/* ROW 2: Filters & Common Tools (Only for Admin) */}
+        {!isReadOnly && (
+          <div className="flex flex-row items-center gap-2 w-full pt-2 border-t border-slate-50 shrink-0">
+            <div className="flex flex-row items-center gap-2 flex-1">
+              {/* 7. GENDER FILTER */}
+              <select 
+                  value={filterGender}
+                  onChange={(e) => setFilterGender(e.target.value)}
+                  className="h-9 flex-1 lg:flex-none text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-100 px-4 pr-8 outline-none focus:ring-4 focus:ring-slate-50 bg-slate-50/50 cursor-pointer hover:bg-white transition-all lg:min-w-[120px] rounded-full shadow-inner appearance-none"
+                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.75rem' }}
+              >
+                  <option value="all">GENDER</option>
+                  <option value="L">PUTRA</option>
+                  <option value="P">PUTRI</option>
+              </select>
 
-            {/* 8. HALAQAH FILTER */}
-            <select 
-                value={filterHalaqah}
-                onChange={(e) => setFilterHalaqah(e.target.value)}
-                className="h-9 flex-1 lg:flex-none text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-100 px-4 pr-8 outline-none focus:ring-4 focus:ring-slate-50 bg-slate-50/50 cursor-pointer hover:bg-white transition-all lg:min-w-[140px] rounded-full shadow-inner appearance-none"
-                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.75rem' }}
-            >
-                <option value="all">HALAQAH</option>
-                {halaqahs.map(h => (
-                    <option key={h.id} value={h.id}>{h.name.toUpperCase()}</option>
-                ))}
-            </select>
-          </div>
+              {/* 8. HALAQAH FILTER */}
+              <select 
+                  value={filterHalaqah}
+                  onChange={(e) => setFilterHalaqah(e.target.value)}
+                  className="h-9 flex-1 lg:flex-none text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-100 px-4 pr-8 outline-none focus:ring-4 focus:ring-slate-50 bg-slate-50/50 cursor-pointer hover:bg-white transition-all lg:min-w-[140px] rounded-full shadow-inner appearance-none"
+                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.75rem' }}
+              >
+                  <option value="all">HALAQAH</option>
+                  {halaqahs.map(h => (
+                      <option key={h.id} value={h.id}>{h.name.toUpperCase()}</option>
+                  ))}
+              </select>
+            </div>
 
-          {/* 9, 10. REFRESH & MOBILE TOOLS */}
-          <div className="flex items-center gap-2 ml-auto">
-            <button 
-                onClick={() => fetchData()}
-                disabled={loading}
-                className="h-9 w-9 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-indigo-600 hover:bg-slate-50 transition-all active:scale-95 rounded-full shadow-sm disabled:opacity-50"
-            >
-                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            </button>
-            <button 
-                onClick={() => setShowNisMobile(!showNisMobile)}
-                className={`lg:hidden h-9 w-9 shrink-0 flex items-center justify-center border transition-all active:scale-95 rounded-full shadow-sm ${showNisMobile ? 'bg-indigo-600 border-indigo-600 text-white shadow-indigo-100' : 'bg-white border-slate-100 text-slate-400'}`}
-                title={showNisMobile ? "Sembunyikan NIS" : "Tampilkan NIS"}
-            >
-                {showNisMobile ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-            </button>
+            {/* 9, 10. REFRESH & MOBILE TOOLS */}
+            <div className="flex items-center gap-2 ml-auto">
+              <button 
+                  onClick={() => fetchData()}
+                  disabled={loading}
+                  className="h-9 w-9 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 hover:bg-slate-50 transition-all active:scale-95 rounded-full shadow-sm disabled:opacity-50"
+              >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              </button>
+              <button 
+                  onClick={() => setShowNisMobile(!showNisMobile)}
+                  className={`lg:hidden h-9 w-9 shrink-0 flex items-center justify-center border transition-all active:scale-95 rounded-full shadow-sm ${showNisMobile ? 'bg-jade-600 border-jade-600 text-white shadow-primary-100' : 'bg-white border-slate-100 text-slate-400'}`}
+                  title={showNisMobile ? "Sembunyikan NIS" : "Tampilkan NIS"}
+              >
+                  {showNisMobile ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
         <input type="file" ref={fileInputRef} onChange={handleImportExcel} className="hidden" accept=".xlsx, .xls" />
       </div>
 
@@ -1559,35 +2009,35 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                         <div className="flex justify-center gap-2">
                              <button 
                                  onClick={() => setInfoStudent(s)}
-                                 className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-200 hover:border-indigo-100 transition-all bg-white shadow-sm"
+                                 className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm"
                                  title="Detail Informasi Ortu"
                              >
                                  <Info className="w-4 h-4" />
                              </button>
                              <button 
                                  onClick={() => { setSelectedModalStudent(s); setIsNotesModalOpen(true); }} 
-                                 className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-200 hover:border-indigo-100 transition-all bg-white shadow-sm" 
+                                 className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm" 
                                  title="Catatan Admin untuk Santri"
                              >
                                  <MessageSquare className="w-4 h-4" />
                              </button>
                              <button 
                                  onClick={() => { setSelectedModalStudent(s); setIsAchievementModalOpen(true); }} 
-                                 className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-200 hover:border-indigo-100 transition-all bg-white shadow-sm" 
+                                 className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm" 
                                  title="Pencapaian Santri"
                              >
                                  <Trophy className="w-4 h-4" />
                              </button>
                              <button 
                                  onClick={() => { setSelectedModalStudent(s); setIsHistoryModalOpen(true); }} 
-                                 className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-200 hover:border-indigo-100 transition-all bg-white shadow-sm" 
+                                 className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm" 
                                  title="Riwayat Pengampu"
                              >
                                  <History className="w-4 h-4" />
                              </button>
                              <button 
                                  onClick={() => handleEdit(s)}
-                                 className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-200 hover:border-indigo-100 transition-all bg-white shadow-sm"
+                                 className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm"
                                  title="Edit Data Santri"
                              >
                                  <Edit className="w-4 h-4" />
@@ -1605,7 +2055,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                     <td className="px-6 py-4 whitespace-nowrap text-center border-b border-slate-100 transition-colors">
                         <button 
                             onClick={() => setInfoStudent(s)}
-                            className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-200 hover:border-indigo-100 transition-all bg-white shadow-sm"
+                            className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm"
                             title="Detail Informasi Ortu"
                         >
                             <Info className="w-4 h-4" />
@@ -1712,7 +2162,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                       <div className="space-y-4">
                           <div className="flex items-center gap-3">
                               <div className="h-px bg-slate-100 flex-1"></div>
-                              <h4 className="text-[9px] font-black text-indigo-600 uppercase tracking-widest shrink-0">1. Data Santri</h4>
+                              <h4 className="text-[9px] font-black text-jade-600 uppercase tracking-widest shrink-0">1. Data Santri</h4>
                               <div className="h-px bg-slate-100 flex-1"></div>
                           </div>
                           
@@ -1725,7 +2175,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                     setFormData({...formData, studentName: e.target.value});
                                     if (formErrors.studentName) setFormErrors({...formErrors, studentName: ''});
                                 }}
-                                className={`w-full px-4 py-2 border-2 rounded-2xl text-xs font-bold transition-all outline-none ${formErrors.studentName ? 'border-red-500 bg-red-50 focus:bg-white' : 'bg-slate-50/30 border-slate-100 focus:border-indigo-400 focus:bg-white text-slate-800'}`}
+                                className={`w-full px-4 py-2 border-2 rounded-2xl text-xs font-bold transition-all outline-none ${formErrors.studentName ? 'border-red-500 bg-red-50 focus:bg-white' : 'bg-slate-50/30 border-slate-100 focus:border-jade-400 focus:bg-white text-slate-800'}`}
                               />
                               {formErrors.studentName && <p className="text-[8px] text-red-500 font-bold mt-0.5 ml-1">{formErrors.studentName}</p>}
                           </div>
@@ -1744,7 +2194,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                         });
                                         if (formErrors.nis) setFormErrors({...formErrors, nis: ''});
                                     }}
-                                    className={`w-full px-4 py-2 border-2 rounded-2xl text-xs font-bold transition-all outline-none ${formErrors.nis ? 'border-red-500 bg-red-50 focus:bg-white' : 'bg-slate-50/30 border-slate-100 focus:border-indigo-400 focus:bg-white text-slate-800'}`}
+                                    className={`w-full px-4 py-2 border-2 rounded-2xl text-xs font-bold transition-all outline-none ${formErrors.nis ? 'border-red-500 bg-red-50 focus:bg-white' : 'bg-slate-50/30 border-slate-100 focus:border-jade-400 focus:bg-white text-slate-800'}`}
                                   />
                                   {formErrors.nis && <p className="text-[8px] text-red-500 font-bold mt-0.5 ml-1">{formErrors.nis}</p>}
                               </div>
@@ -1754,7 +2204,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                     <select 
                                         value={formData.gender}
                                         onChange={e => setFormData({...formData, gender: e.target.value as 'L' | 'P'})}
-                                        className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-black text-slate-800 outline-none appearance-none cursor-pointer focus:border-indigo-400 focus:bg-white transition-all"
+                                        className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-black text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 focus:bg-white transition-all"
                                     >
                                         <option value="L">PUTRA (L)</option>
                                         <option value="P">PUTRI (P)</option>
@@ -1770,7 +2220,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                 <select 
                                     value={formData.halaqahId}
                                     onChange={e => setFormData({...formData, halaqahId: e.target.value})}
-                                    className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-black text-slate-800 outline-none appearance-none cursor-pointer focus:border-indigo-400 focus:bg-white transition-all"
+                                    className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-black text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 focus:bg-white transition-all"
                                 >
                                     <option value="">-</option>
                                     {halaqahs.map(h => (
@@ -1796,17 +2246,14 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                   <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300" />
                                     <input 
-                                        required
+                                        readOnly
                                         type="email"
-                                        readOnly={!isEditMode}
                                         value={formData.parentEmail}
-                                        onChange={e => {
-                                            setFormData({...formData, parentEmail: e.target.value});
-                                            if (formErrors.parentEmail) setFormErrors({...formErrors, parentEmail: ''});
-                                        }}
-                                        className={`w-full pl-9 pr-3 py-2 border-2 rounded-2xl text-xs font-bold transition-all outline-none ${formErrors.parentEmail ? 'border-red-500 bg-red-50 focus:bg-white' : 'bg-slate-50/30 border-slate-100 focus:border-emerald-400 focus:bg-white text-slate-800'} ${!isEditMode ? '' : 'opacity-50 border-transparent cursor-not-allowed'}`}
+                                        className={`w-full pl-9 pr-3 py-2 border-2 rounded-2xl text-xs font-bold transition-all outline-none bg-slate-50/50 border-slate-100 text-slate-200 cursor-not-allowed`}
+                                        placeholder="Otomatis dari NIS"
                                     />
                                   </div>
+                                  <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mt-1 ml-1">Email otomatis: NIS@qurma.com</p>
                               </div>
                               <div className="space-y-1">
                                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Password Sementara</label>
@@ -1850,7 +2297,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                       <div className="space-y-4 pt-2">
                           <div className="flex items-center gap-3">
                               <div className="h-px bg-slate-100 flex-1"></div>
-                              <h4 className="text-[9px] font-black text-indigo-600 uppercase tracking-widest shrink-0">3. Data Orang Tua dan Alamat</h4>
+                              <h4 className="text-[9px] font-black text-jade-600 uppercase tracking-widest shrink-0">3. Data Orang Tua dan Alamat</h4>
                               <div className="h-px bg-slate-100 flex-1"></div>
                           </div>
 
@@ -1861,7 +2308,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                       value={formData.fatherName}
                                       onChange={e => setFormData({...formData, fatherName: e.target.value})}
                                       placeholder="Nama Ayah"
-                                      className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-bold focus:border-indigo-400 focus:bg-white transition-all outline-none"
+                                      className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-bold focus:border-jade-400 focus:bg-white transition-all outline-none"
                                   />
                               </div>
                               <div className="space-y-1">
@@ -1870,7 +2317,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                       value={formData.motherName}
                                       onChange={e => setFormData({...formData, motherName: e.target.value})}
                                       placeholder="Nama Ibu"
-                                      className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-bold focus:border-indigo-400 focus:bg-white transition-all outline-none"
+                                      className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-bold focus:border-jade-400 focus:bg-white transition-all outline-none"
                                   />
                               </div>
                           </div>
@@ -1882,7 +2329,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                       value={formData.fatherPhone}
                                       onChange={e => setFormData({...formData, fatherPhone: e.target.value})}
                                       placeholder="08..."
-                                      className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-bold focus:border-indigo-400 focus:bg-white transition-all outline-none"
+                                      className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-bold focus:border-jade-400 focus:bg-white transition-all outline-none"
                                   />
                               </div>
                               <div className="space-y-1">
@@ -1891,19 +2338,83 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                       value={formData.motherPhone}
                                       onChange={e => setFormData({...formData, motherPhone: e.target.value})}
                                       placeholder="08..."
-                                      className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-bold focus:border-indigo-400 focus:bg-white transition-all outline-none"
+                                      className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-bold focus:border-jade-400 focus:bg-white transition-all outline-none"
                                   />
                               </div>
                           </div>
 
-                          <div className="space-y-1">
-                              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Alamat (Jl, No, dsb)</label>
-                              <textarea 
-                                  value={formData.address}
-                                  onChange={e => setFormData({...formData, address: e.target.value})}
-                                  rows={2}
-                                  className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-bold focus:border-indigo-400 focus:bg-white transition-all outline-none resize-none"
-                              />
+                          <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Provinsi</label>
+                                  <div className="relative">
+                                    <select 
+                                        value={formData.provinceId}
+                                        onChange={e => onProvinceChange(e.target.value)}
+                                        className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-black text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 focus:bg-white transition-all"
+                                    >
+                                        <option value="">Pilih Provinsi</option>
+                                        {regions.provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                    </select>
+                                    <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 rotate-90 pointer-events-none" />
+                                  </div>
+                              </div>
+                              <div className="space-y-1">
+                                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Kab / Kota</label>
+                                  <div className="relative">
+                                    <select 
+                                        disabled={!formData.provinceId}
+                                        value={formData.regencyId}
+                                        onChange={e => {
+                                            const name = regions.regencies.find(r => r.id === e.target.value)?.name || '';
+                                            onRegencyChange(e.target.value, name);
+                                        }}
+                                        className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-black text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 focus:bg-white transition-all disabled:opacity-50"
+                                    >
+                                        <option value="">Pilih Kota</option>
+                                        {regions.regencies.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                                    </select>
+                                    <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 rotate-90 pointer-events-none" />
+                                  </div>
+                              </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Kecamatan</label>
+                                  <div className="relative">
+                                    <select 
+                                        disabled={!formData.regencyId}
+                                        value={formData.districtId}
+                                        onChange={e => {
+                                            const name = regions.districts.find(d => d.id === e.target.value)?.name || '';
+                                            onDistrictChange(e.target.value, name);
+                                        }}
+                                        className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-black text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 focus:bg-white transition-all disabled:opacity-50"
+                                    >
+                                        <option value="">Pilih Kecamatan</option>
+                                        {regions.districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                                    </select>
+                                    <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 rotate-90 pointer-events-none" />
+                                  </div>
+                              </div>
+                              <div className="space-y-1">
+                                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Kel / Desa</label>
+                                  <div className="relative">
+                                    <select 
+                                        disabled={!formData.districtId}
+                                        value={formData.villageId}
+                                        onChange={e => {
+                                            const name = regions.villages.find(v => v.id === e.target.value)?.name || '';
+                                            setFormData({...formData, villageId: e.target.value, village: name});
+                                        }}
+                                        className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-black text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 focus:bg-white transition-all disabled:opacity-50"
+                                    >
+                                        <option value="">Pilih Desa</option>
+                                        {regions.villages.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+                                    </select>
+                                    <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 rotate-90 pointer-events-none" />
+                                  </div>
+                              </div>
                           </div>
 
                           <div className="grid grid-cols-2 gap-4">
@@ -1912,34 +2423,17 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                   <input 
                                       value={formData.rtRw}
                                       onChange={e => setFormData({...formData, rtRw: e.target.value})}
-                                      className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-bold focus:border-indigo-400 focus:bg-white transition-all outline-none"
+                                      placeholder="00 / 00"
+                                      className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-bold focus:border-jade-400 focus:bg-white transition-all outline-none"
                                   />
                               </div>
                               <div className="space-y-1">
-                                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Kel / Desa</label>
-                                  <input 
-                                      value={formData.village}
-                                      onChange={e => setFormData({...formData, village: e.target.value})}
-                                      className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-bold focus:border-indigo-400 focus:bg-white transition-all outline-none"
-                                  />
-                              </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-1">
-                                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Kecamatan</label>
-                                  <input 
-                                      value={formData.district}
-                                      onChange={e => setFormData({...formData, district: e.target.value})}
-                                      className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-bold focus:border-indigo-400 focus:bg-white transition-all outline-none"
-                                  />
-                              </div>
-                              <div className="space-y-1">
-                                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Kab / Kota</label>
-                                  <input 
-                                      value={formData.city}
-                                      onChange={e => setFormData({...formData, city: e.target.value})}
-                                      className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-bold focus:border-indigo-400 focus:bg-white transition-all outline-none"
+                                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Alamat (Jl, No, dsb)</label>
+                                  <textarea 
+                                      value={formData.address}
+                                      onChange={e => setFormData({...formData, address: e.target.value})}
+                                      rows={1}
+                                      className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-bold focus:border-jade-400 focus:bg-white transition-all outline-none resize-none"
                                   />
                               </div>
                           </div>
@@ -1957,7 +2451,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                       <button 
                         onClick={() => (document.querySelector('form') as HTMLFormElement).requestSubmit()}
                         disabled={isSubmitting}
-                        className="flex-[2] flex items-center justify-center px-4 py-3 font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl border-2 border-indigo-600 bg-indigo-600 text-white shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
+                        className="flex-[2] flex items-center justify-center px-4 py-3 font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl border-2 border-jade-600 bg-jade-600 text-white shadow-xl shadow-primary-100 hover:bg-jade-700 transition-all active:scale-95 disabled:opacity-50"
                       >
                           {isSubmitting ? 'MEMPROSES...' : (isEditMode ? 'SIMPAN PERUBAHAN' : 'DAFTARKAN SANTRI')}
                       </button>
@@ -2069,6 +2563,24 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
             onClose={() => setInfoStudent(null)} 
           />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        onConfirm={confirmResetPassword}
+        title="Reset Password ke NIS?"
+        variant="warning"
+        confirmLabel="YA, RESET PASSWORD"
+        message={
+            <span>
+                Paksa reset password akun <strong>{selectedStudent?.full_name}</strong> kembali ke NIS default (<strong>{selectedStudent?.nis}</strong>)?
+                <span className="text-amber-600 font-bold text-[10px] block mt-2 uppercase tracking-wide">
+                    Siswa/Orang tua akan login menggunakan NIS sebagai password.
+                </span>
+            </span>
+        }
+      />
 
       {/* Delete Confirmation Modal */}
       <ConfirmModal

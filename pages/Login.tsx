@@ -3,7 +3,7 @@ import { Button } from '../components/ui/Button';
 import { signIn, signUp } from '../services/authService';
 import { supabase } from '../lib/supabase';
 import { useNotification } from '../lib/NotificationContext';
-import { GraduationCap, Mail, Lock, ArrowRight, Zap } from 'lucide-react';
+import { GraduationCap, Mail, Lock, ArrowRight, Zap, ArrowLeft } from 'lucide-react';
 import { getSuperAdminStats } from '../services/dataService';
 import { SuperAdminStats, UserRole } from '../types';
 
@@ -101,14 +101,14 @@ export const Login: React.FC<LoginProps> = ({ onSwitchAccount }) => {
   };
 
   return (
-    <div className="h-screen w-screen bg-[#F8F9FB] flex overflow-hidden font-sans">
+    <div className="h-screen w-screen bg-white flex overflow-hidden font-sans">
       
       {/* --- LEFT SIDE: PREMIUM BRANDING (INFORMATIVE & DENSE) --- */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-600 to-indigo-700 relative items-center justify-center p-20 overflow-hidden border-r-4 border-indigo-800/20">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#2a7f5e] to-[#1e6348] relative items-center justify-center p-20 overflow-hidden border-r-4 border-black/5">
         
         {/* Subtle Background Accents */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-indigo-400/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#f2c14e]/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
 
         <div className="relative z-20 w-full max-w-md animate-in slide-in-from-left duration-700">
            <div className="text-left">
@@ -119,7 +119,7 @@ export const Login: React.FC<LoginProps> = ({ onSwitchAccount }) => {
                <h2 className="text-2xl font-black text-white uppercase tracking-tight leading-none mb-3">
                   Sistem Tahfidz Terpadu
                </h2>
-               <p className="text-[10px] font-black text-indigo-200 uppercase tracking-[0.2em] opacity-90 mb-6">
+               <p className="text-[10px] font-black text-[#f2c14e] uppercase tracking-[0.2em] opacity-90 mb-6">
                   Monitoring & Penilaian Real-time
                </p>
 
@@ -137,7 +137,7 @@ export const Login: React.FC<LoginProps> = ({ onSwitchAccount }) => {
                    ].map((item, i) => (
                        <div key={item.title} className="group">
                            <div className="flex items-center gap-2 mb-2 text-white">
-                               <div className="w-1 h-1 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
+                               <div className="w-1.5 h-1.5 rounded-full bg-[#f2c14e] shadow-[0_0_8px_rgba(242,193,78,0.5)]"></div>
                                <span className="text-[9px] font-black uppercase tracking-widest">{item.title}</span>
                            </div>
                            <p className="text-[8px] font-bold text-white/40 uppercase tracking-wide leading-tight group-hover:text-white/60 transition-colors">
@@ -163,10 +163,10 @@ export const Login: React.FC<LoginProps> = ({ onSwitchAccount }) => {
                            lab: 'Santri' 
                        }
                    ].map(stat => (
-                       <div key={stat.lab}>
-                            <h4 className="text-sm font-black text-white leading-none mb-1">{stat.val}</h4>
-                            <p className="text-[8px] font-black text-indigo-300 uppercase tracking-widest">{stat.lab}</p>
-                       </div>
+                        <div key={stat.lab}>
+                             <h4 className="text-sm font-black text-white leading-none mb-1">{stat.val}</h4>
+                             <p className="text-[8px] font-black text-[#a5d1bd] uppercase tracking-widest">{stat.lab}</p>
+                        </div>
                    ))}
                </div>
            </div>
@@ -174,22 +174,25 @@ export const Login: React.FC<LoginProps> = ({ onSwitchAccount }) => {
       </div>
 
       {/* --- RIGHT SIDE: THE ORIGINAL LOGIN FORM (50% WIDTH) --- */}
-      <div className="flex-1 lg:w-1/2 flex items-center justify-center p-8 bg-[#F8F9FB] relative">
-        <div className="bg-white w-full max-w-[400px] p-8 rounded-[32px] shadow-2xl shadow-slate-200/50 border-2 border-slate-50 relative overflow-hidden transform animate-in zoom-in duration-500">
-          
-          {/* Modern Glassmorphic Background Accents */}
-          <div className="absolute top-0 right-0 -mt-20 -mr-20 w-48 h-48 bg-indigo-50/40 rounded-full blur-3xl pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-48 h-48 bg-emerald-50/40 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="flex-1 lg:w-1/2 flex items-center justify-center p-8 bg-white relative">
+        <button 
+            onClick={() => { window.history.pushState({}, '', '/'); window.dispatchEvent(new PopStateEvent('popstate')); }} 
+            className="absolute top-6 right-6 lg:left-6 lg:right-auto p-2.5 text-slate-400 hover:bg-slate-50 hover:text-[#2a7f5e] rounded-full transition-all group flex items-center gap-2 z-50 border border-transparent hover:border-slate-100"
+            title="Kembali ke Beranda"
+        >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="text-[10px] font-black uppercase tracking-widest hidden group-hover:block transition-all">Kembali</span>
+        </button>
 
-          <div className="text-center mb-8 relative z-10">
-            <div className="w-16 h-16 bg-white border-2 border-slate-100 shadow-xl shadow-indigo-50 rounded-[22px] flex items-center justify-center mx-auto mb-5 transition-all hover:scale-105 active:scale-95 group">
-              <GraduationCap className="w-8 h-8 text-indigo-600 transition-transform duration-300 group-hover:rotate-12" />
-            </div>
+        <div className="w-full max-w-[360px] p-2 relative transform animate-in fade-in slide-in-from-bottom-4 duration-700">
+
+          <div className="text-center mb-16 relative z-10">
+
             
             <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">
               {isSignUp ? 'Daftar Superadmin' : 'Masuk QurMa'}
             </h1>
-            <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] mt-3 opacity-80">
+            <p className="text-[10px] font-black text-[#2a7f5e] uppercase tracking-[0.2em] mt-3 opacity-80">
               {isSignUp ? 'Inisialisasi Platform Pertama' : 'Tahfidz System Platform'}
             </p>
           </div>
@@ -204,49 +207,49 @@ export const Login: React.FC<LoginProps> = ({ onSwitchAccount }) => {
             >
               {isSignUp && (
                 <div className="group">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5 block group-focus-within:text-indigo-600 transition-colors">Nama Lengkap</label>
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5 block group-focus-within:text-[#2a7f5e] transition-colors">Nama Lengkap</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Zap className="h-3.5 w-3.5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                        <Zap className="h-3.5 w-3.5 text-slate-400 group-focus-within:text-[#2a7f5e] transition-colors" />
                     </div>
                     <input 
                         name="full_name"
                         type="text" 
                         placeholder="Nama Superadmin"
-                        className="w-full pl-10 pr-4 py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl text-slate-800 font-bold text-xs focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100/20 outline-none transition-all placeholder:text-slate-300 shadow-sm"
+                        className="w-full pl-10 pr-4 py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl text-slate-800 font-bold text-xs focus:bg-white focus:border-[#2a7f5e] focus:ring-4 focus:ring-[#2a7f5e]/10 outline-none transition-all placeholder:text-slate-300 shadow-sm"
                     />
                   </div>
                 </div>
               )}
 
               <div className="group">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5 block group-focus-within:text-indigo-600 transition-colors">Email Pengguna</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5 block group-focus-within:text-[#2a7f5e] transition-colors">Email Pengguna</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Mail className="h-3.5 w-3.5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                      <Mail className="h-3.5 w-3.5 text-slate-400 group-focus-within:text-[#2a7f5e] transition-colors" />
                   </div>
                   <input 
                       name="email"
                       type="email" 
                       placeholder="email@sekolah.com"
                       autoComplete="off"
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl text-slate-800 font-bold text-xs focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100/20 outline-none transition-all placeholder:text-slate-300 shadow-sm"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl text-slate-800 font-bold text-xs focus:bg-white focus:border-[#f2c14e] focus:ring-4 focus:ring-jade-100/20 outline-none transition-all placeholder:text-slate-300 shadow-sm"
                   />
                 </div>
               </div>
 
               <div className="group">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5 block group-focus-within:text-indigo-600 transition-colors">Kata Sandi</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5 block group-focus-within:text-[#2a7f5e] transition-colors">Kata Sandi</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Lock className="h-3.5 w-3.5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                      <Lock className="h-3.5 w-3.5 text-slate-400 group-focus-within:text-[#2a7f5e] transition-colors" />
                   </div>
                   <input 
                       name="password"
                       type="password" 
                       placeholder="••••••••••••"
                       autoComplete="new-password"
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl text-slate-800 font-bold text-xs focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100/20 outline-none transition-all placeholder:text-slate-300 shadow-sm"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl text-slate-800 font-bold text-xs focus:bg-white focus:border-[#f2c14e] focus:ring-4 focus:ring-jade-100/20 outline-none transition-all placeholder:text-slate-300 shadow-sm"
                   />
                 </div>
               </div>
@@ -254,10 +257,10 @@ export const Login: React.FC<LoginProps> = ({ onSwitchAccount }) => {
               <button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="w-full py-3.5 px-6 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-indigo-500 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white shadow-xl shadow-indigo-100/50 transition-all active:scale-95 flex items-center justify-center gap-2 mt-4" 
+                  className="w-full py-3.5 px-6 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-[#f2c14e] bg-[#fff9e6] text-[#b3862e] hover:bg-[#f2c14e] hover:text-slate-900 shadow-xl shadow-black/5 transition-all active:scale-95 flex items-center justify-center gap-2 mt-4" 
               >
                 {isSubmitting ? (
-                  <div className="w-4 h-4 border-2 border-indigo-700/20 border-t-indigo-700 rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-[#f2c14e]/20 border-t-[#f2c14e] rounded-full animate-spin"></div>
                 ) : (
                   <>
                     {isSignUp ? 'Daftar Sekarang' : 'Masuk Aplikasi'}
@@ -274,12 +277,6 @@ export const Login: React.FC<LoginProps> = ({ onSwitchAccount }) => {
                     : 'Silakan hubungi administrator sekolah untuk mendapatkan kredensial akses'}
               </p>
             </div>
-          </div>
-          
-          <div className="mt-8 text-center border-t border-slate-50 pt-6">
-               <p className="text-[8px] font-black text-slate-300 uppercase tracking-[0.25em]">
-                  &copy; 2026 QurMa SaaS • Production v1.4
-              </p>
           </div>
         </div>
       </div>

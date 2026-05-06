@@ -59,7 +59,7 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSu
         {/* Header */}
         <div className="px-6 py-3 border-b border-slate-100 flex justify-between items-center bg-[#FCFDFE] sticky top-0 z-10 transition-all">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-jade-50 flex items-center justify-center text-jade-600 border border-jade-100 shadow-sm">
                 <Building className="w-4 h-4" />
             </div>
             <div>
@@ -67,7 +67,7 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSu
                     {initialData ? 'Perbarui Institusi' : 'Registrasi Sekolah Baru'}
                 </h3>
                 <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1 flex items-center gap-2 opacity-70">
-                    <Shield className="w-2.5 h-2.5 text-indigo-400" />
+                    <Shield className="w-2.5 h-2.5 text-jade-400" />
                     Multi-Tenant System
                 </p>
             </div>
@@ -88,13 +88,13 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSu
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div className="md:col-span-2 group">
-                            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-indigo-600">Nama Lengkap Sekolah</label>
+                            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-jade-600">Nama Lengkap Sekolah</label>
                             <input 
                                 required 
                                 type="text" 
                                 value={formData.name} 
                                 onChange={e => setFormData({ ...formData, name: e.target.value })} 
-                                className="w-full px-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50/20 outline-none transition-all placeholder:text-slate-300 shadow-sm" 
+                                className="w-full px-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:bg-white focus:border-jade-400 focus:ring-4 focus:ring-jade-50/20 outline-none transition-all placeholder:text-slate-300 shadow-sm" 
                                 placeholder="Nama resmi..." 
                             />
                         </div>
@@ -118,39 +118,39 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSu
                 {!initialData && (
                     <div className="space-y-3 relative pt-2">
                         <div className="flex items-center gap-2">
-                            <User className="w-3 h-3 text-indigo-400" />
-                            <h4 className="text-[9px] font-black text-indigo-500 uppercase tracking-[0.2em]">Otoritas Admin</h4>
+                            <User className="w-3 h-3 text-jade-400" />
+                            <h4 className="text-[9px] font-black text-jade-500 uppercase tracking-[0.2em]">Otoritas Admin</h4>
                         </div>
 
-                        <div className="bg-gradient-to-br from-indigo-50/30 to-slate-50/30 p-4 rounded-2xl border border-indigo-100/50 space-y-3">
+                        <div className="bg-gradient-to-br from-jade-50/30 to-slate-50/30 p-4 rounded-2xl border border-jade-100/50 space-y-3">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div className="group/field">
-                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-indigo-600">Administrator</label>
+                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">Administrator</label>
                                     <div className="relative">
-                                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-indigo-600" />
-                                        <input required type="text" value={adminData.full_name} onChange={e => setAdminData({ ...adminData, full_name: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50/20 outline-none transition-all" placeholder="Nama Admin" />
+                                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-jade-600" />
+                                        <input required type="text" value={adminData.full_name} onChange={e => setAdminData({ ...adminData, full_name: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 focus:ring-4 focus:ring-jade-50/20 outline-none transition-all" placeholder="Nama Admin" />
                                     </div>
                                 </div>
                                 <div className="group/field">
-                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-indigo-600">WhatsApp</label>
+                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">WhatsApp</label>
                                     <div className="relative">
-                                        <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-indigo-600" />
-                                        <input required type="tel" value={adminData.whatsapp_number} onChange={e => setAdminData({ ...adminData, whatsapp_number: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50/20 outline-none transition-all placeholder:text-slate-300" placeholder="08123456789" />
+                                        <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-jade-600" />
+                                        <input required type="tel" value={adminData.whatsapp_number} onChange={e => setAdminData({ ...adminData, whatsapp_number: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 focus:ring-4 focus:ring-jade-50/20 outline-none transition-all placeholder:text-slate-300" placeholder="08123456789" />
                                     </div>
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div className="group/field">
-                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-indigo-600">Email</label>
+                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">Email</label>
                                     <div className="relative">
-                                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-indigo-600" />
-                                        <input required type="email" value={adminData.email} onChange={e => setAdminData({ ...adminData, email: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-indigo-400 outline-none transition-all" placeholder="email@gmail.com" />
+                                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-jade-600" />
+                                        <input required type="email" value={adminData.email} onChange={e => setAdminData({ ...adminData, email: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 outline-none transition-all" placeholder="email@gmail.com" />
                                     </div>
                                 </div>
                                 <div className="group/field">
-                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-indigo-600">Password</label>
+                                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">Password</label>
                                     <div className="relative">
-                                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-indigo-600" />
+                                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-jade-600" />
                                         <input required minLength={6} type="text" value={adminData.password} onChange={e => setAdminData({ ...adminData, password: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-black text-[13px] outline-none font-mono" placeholder="••••••••" />
                                     </div>
                                 </div>
@@ -173,7 +173,7 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSu
             <button 
                 form="tenantForm"
                 type="submit" 
-                className="px-8 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 flex items-center justify-center gap-3 flex-1"
+                className="px-8 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl bg-jade-600 text-white hover:bg-jade-700 shadow-lg shadow-primary-100 transition-all active:scale-95 flex items-center justify-center gap-3 flex-1"
             >
                 <Save className="w-4 h-4" />
                 {initialData ? 'PERBARUI DATA' : 'BUAT SEKOLAH'}
@@ -295,13 +295,13 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
                 {/* Header */}
                 <div className="px-6 py-3 border-b border-slate-100 flex justify-between items-center bg-[#FCFDFE] sticky top-0 z-10">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shadow-sm">
+                        <div className="w-8 h-8 rounded-xl bg-jade-50 flex items-center justify-center text-jade-600 border border-jade-100 shadow-sm">
                             <UserCog className="w-4 h-4" />
                         </div>
                         <div>
                             <h3 className="font-black text-slate-900 uppercase text-xs tracking-tight leading-none">Otoritas Admin</h3>
                             <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1 flex items-center gap-2">
-                                <Building className="w-2.5 h-2.5 text-indigo-400" />
+                                <Building className="w-2.5 h-2.5 text-jade-400" />
                                 {tenant?.name}
                             </p>
                         </div>
@@ -314,7 +314,7 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
                 <div className="overflow-y-auto custom-scrollbar flex-1">
                     {isLoading ? (
                         <div className="p-20 text-center flex flex-col items-center justify-center">
-                            <div className="w-12 h-12 border-4 border-slate-100 border-t-indigo-500 rounded-full animate-spin mb-6 shadow-sm"></div>
+                            <div className="w-12 h-12 border-4 border-slate-100 border-t-jade-500 rounded-full animate-spin mb-6 shadow-sm"></div>
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] animate-pulse">Sinkronisasi Data...</p>
                         </div>
                     ) : adminProfile ? (
@@ -322,34 +322,34 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
                             {/* Profile Section */}
                             <form id="adminForm" onSubmit={handleUpdateProfile} className="space-y-4">
                                 <div className="flex items-center gap-2">
-                                    <User className="w-3 h-3 text-indigo-600" />
+                                    <User className="w-3 h-3 text-jade-600" />
                                     <h4 className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Profil Administrator</h4>
                                 </div>
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <div className="group">
-                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-indigo-600">Nama Lengkap</label>
+                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-jade-600">Nama Lengkap</label>
                                         <div className="relative">
-                                            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-indigo-600" />
+                                            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-jade-600" />
                                             <input 
                                                 type="text" 
                                                 required 
                                                 value={form.full_name} 
                                                 onChange={e => setForm({...form, full_name: e.target.value})} 
-                                                className="w-full pl-9 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50/20 outline-none transition-all" 
+                                                className="w-full pl-9 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:bg-white focus:border-jade-400 focus:ring-4 focus:ring-jade-50/20 outline-none transition-all" 
                                                 placeholder="Nama Admin"
                                             />
                                         </div>
                                     </div>
                                     <div className="group">
-                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-indigo-600">WhatsApp</label>
+                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-jade-600">WhatsApp</label>
                                         <div className="relative">
-                                            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-indigo-600" />
+                                            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-jade-600" />
                                             <input 
                                                 type="tel" 
                                                 value={form.whatsapp_number} 
                                                 onChange={e => setForm({...form, whatsapp_number: e.target.value})} 
-                                                className="w-full pl-9 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:bg-white focus:border-indigo-400 outline-none transition-all" 
+                                                className="w-full pl-9 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:bg-white focus:border-jade-400 outline-none transition-all" 
                                                 placeholder="0812..." 
                                             />
                                         </div>
@@ -440,13 +440,13 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
 
                             <form id="adminForm" onSubmit={handleUpdateProfile} className="space-y-4">
                                 <div className="flex items-center gap-2">
-                                    <Plus className="w-3 h-3 text-indigo-600" />
+                                    <Plus className="w-3 h-3 text-jade-600" />
                                     <h4 className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">Daftarkan Admin Baru</h4>
                                 </div>
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <div className="group">
-                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-indigo-600">Nama Lengkap</label>
+                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-jade-600">Nama Lengkap</label>
                                         <input 
                                             type="text" required value={form.full_name} 
                                             onChange={e => setForm({...form, full_name: e.target.value})} 
@@ -455,7 +455,7 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
                                         />
                                     </div>
                                     <div className="group">
-                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-indigo-600">WhatsApp</label>
+                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-jade-600">WhatsApp</label>
                                         <input 
                                             type="tel" value={form.whatsapp_number} 
                                             onChange={e => setForm({...form, whatsapp_number: e.target.value})} 
@@ -464,7 +464,7 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
                                         />
                                     </div>
                                     <div className="group">
-                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-indigo-600">Email</label>
+                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-jade-600">Email</label>
                                         <input 
                                             type="email" required value={form.email} 
                                             onChange={e => setForm({...form, email: e.target.value})} 
@@ -473,7 +473,7 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
                                         />
                                     </div>
                                     <div className="group">
-                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-indigo-600">Password</label>
+                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-jade-600">Password</label>
                                         <input 
                                             type="text" required value={form.password} 
                                             onChange={e => setForm({...form, password: e.target.value})} 
@@ -500,7 +500,7 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
                         form="adminForm"
                         type="submit" 
                         disabled={isLoading}
-                        className="px-8 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 flex items-center justify-center gap-3 flex-1 disabled:opacity-50"
+                        className="px-8 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl bg-jade-600 text-white hover:bg-jade-700 shadow-lg shadow-primary-100 transition-all active:scale-95 flex items-center justify-center gap-3 flex-1 disabled:opacity-50"
                     >
                         <Save className="w-4 h-4" />
                         {adminProfile ? 'SIMPAN PROFIL' : 'BUAT ADMIN BARU'}
@@ -695,13 +695,13 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
       {/* Action Bar - Optimized for Mobile Density */}
       <div className="flex flex-row items-center gap-1.5 lg:gap-4 bg-white/40 p-1.5 lg:p-2 rounded-2xl lg:rounded-[24px] border border-white/20 backdrop-blur-md">
           <div className="relative flex-1 group">
-              <Search className="absolute left-3 lg:left-5 top-1/2 -translate-y-1/2 w-3.5 lg:w-4 h-3.5 lg:h-4 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
+              <Search className="absolute left-3 lg:left-5 top-1/2 -translate-y-1/2 w-3.5 lg:w-4 h-3.5 lg:h-4 text-slate-300 group-focus-within:text-jade-600 transition-colors" />
               <input 
                   type="text"
                   placeholder="Cari sekolah..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 lg:pl-12 pr-2 lg:pr-5 py-1.5 lg:py-3 text-[10px] lg:text-[13px] font-bold border border-slate-100 lg:border-2 lg:border-slate-50 rounded-xl lg:rounded-2xl focus:border-indigo-400 bg-white transition-all outline-none h-8 lg:h-12 shadow-sm"
+                  className="w-full pl-8 lg:pl-12 pr-4 py-1.5 lg:py-3 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 focus:bg-white transition-all text-[10px] lg:text-[12px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none h-8 lg:h-12 shadow-inner"
               />
           </div>
 
@@ -709,7 +709,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
               {/* Toggle Kode Column - Mobile Only */}
               <button 
                   onClick={() => setShowCode(!showCode)}
-                  className={`flex items-center justify-center h-8 w-8 lg:hidden rounded-xl border transition-all active:scale-90 ${showCode ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-100 text-slate-400'}`}
+                  className={`flex items-center justify-center h-8 w-8 lg:hidden rounded-xl border transition-all active:scale-90 ${showCode ? 'bg-jade-600 border-jade-600 text-white' : 'bg-white border-slate-100 text-slate-400'}`}
                   title="Toggle Kolom Kode"
               >
                   <Tag className="w-3.5 h-3.5" />
@@ -717,7 +717,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
 
               <button 
                   onClick={openCreateModal}
-                  className="px-3 lg:px-6 h-8 lg:h-12 font-black text-[9px] lg:text-[11px] uppercase tracking-tighter lg:tracking-widest rounded-xl lg:rounded-2xl border-2 border-indigo-400 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 shadow-xl shadow-indigo-100/30 transition-all active:scale-95 flex items-center justify-center gap-1.5 lg:gap-2"
+                  className="px-3 lg:px-6 h-8 lg:h-12 font-black text-[9px] lg:text-[11px] uppercase tracking-tighter lg:tracking-widest rounded-xl lg:rounded-2xl border-2 border-jade-400 bg-jade-50 text-jade-700 hover:bg-jade-100 shadow-xl shadow-primary-100/30 transition-all active:scale-95 flex items-center justify-center gap-1.5 lg:gap-2"
               >
                   <Plus className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Tambah Sekolah</span>
@@ -756,7 +756,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                   </td>
                   
                   <td className={`sticky ${showCode ? 'left-[120px]' : 'left-[40px]'} lg:left-[195px] bg-white px-4 py-4 border-r-2 border-b border-slate-100 z-10 transition-all`}>
-                      <span className="text-[11px] font-bold text-slate-800 group-hover:text-indigo-600 transition-colors block break-words leading-tight">{tenant.name}</span>
+                      <span className="text-[11px] font-bold text-slate-800 group-hover:text-jade-600 transition-colors block break-words leading-tight">{tenant.name}</span>
                   </td>
                   <td className="px-6 py-4 border-r-2 border-b border-slate-100">
                     <span className="text-[11px] font-black text-slate-700 tracking-tight whitespace-nowrap">
@@ -775,7 +775,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                         <button 
                             onClick={() => openEditModal(tenant)} 
                             title="Edit Sekolah"
-                            className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50 transition-all active:scale-90 shadow-sm"
+                            className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-jade-600 hover:border-jade-100 hover:bg-jade-50 transition-all active:scale-90 shadow-sm"
                         >
                             <Edit className="w-4 h-4" />
                         </button>
@@ -814,7 +814,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                         <select 
                             value={itemsPerPage}
                             onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                            className="bg-white border-2 border-slate-100 rounded-xl px-2 md:px-3 py-1 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-indigo-50/50 cursor-pointer shadow-sm transition-all"
+                            className="bg-white border-2 border-slate-100 rounded-xl px-2 md:px-3 py-1 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-jade-50/50 cursor-pointer shadow-sm transition-all"
                         >
                             {[10, 25, 50, 100].map(val => (
                                 <option key={val} value={val}>{val}</option>
@@ -826,7 +826,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                         <span className="hidden sm:inline">DATA</span> 
                         <span className="text-slate-600 ml-1">{(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, filteredTenants.length)}</span> 
                         <span className="hidden sm:inline text-slate-300 mx-1">/</span> 
-                        <span className="text-indigo-600 font-bold ml-0.5">{filteredTenants.length}</span> <span className="hidden sm:inline">Sekolah</span>
+                        <span className="text-jade-600 font-bold ml-0.5">{filteredTenants.length}</span> <span className="hidden sm:inline">Sekolah</span>
                     </p>
                 </div>
 
@@ -853,7 +853,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                                 <button 
                                     key={pNum}
                                     onClick={() => setCurrentPage(pNum)}
-                                    className={`w-9 h-9 rounded-xl text-[10px] font-black transition-all active:scale-95 ${currentPage === pNum ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100 border-2 border-indigo-600' : 'text-slate-400 hover:bg-slate-50 border-2 border-transparent'}`}
+                                    className={`w-9 h-9 rounded-xl text-[10px] font-black transition-all active:scale-95 ${currentPage === pNum ? 'bg-jade-600 text-white shadow-lg shadow-primary-100 border-2 border-jade-600' : 'text-slate-400 hover:bg-slate-50 border-2 border-transparent'}`}
                                 >
                                     {pNum}
                                 </button>

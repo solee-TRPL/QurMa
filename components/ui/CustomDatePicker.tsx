@@ -128,7 +128,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
       const [y, m, d] = value.split('-');
       const monthIdx = parseInt(m) - 1;
       const shortMonth = monthNames[monthIdx].substring(0, 3);
-      return `${parseInt(d)} ${shortMonth} ${y.substring(2)}`;
+      return `${parseInt(d)} ${shortMonth} ${y}`;
   })() : "";
 
 
@@ -149,7 +149,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex flex-col">
-                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest leading-none mb-1">
+                <span className="text-[10px] font-black text-jade-600 uppercase tracking-widest leading-none mb-1">
                     {monthNames[viewDate.getMonth()]}
                 </span>
                 <span className="text-[11px] font-black text-slate-400 tracking-wider leading-none">
@@ -192,8 +192,8 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
                   onClick={() => handleDateSelect(d.fullDate)}
                   className={`
                     h-7 flex items-center justify-center rounded-lg text-[9px] font-bold transition-all
-                    ${selected ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100 ring-2 ring-indigo-50' : 
-                      today ? 'text-indigo-600 bg-indigo-50/50' : 
+                    ${selected ? 'bg-jade-600 text-white shadow-md shadow-primary-100 ring-2 ring-jade-50' : 
+                      today ? 'text-jade-600 bg-jade-50/50' : 
                       currentMonth ? 'text-slate-600 hover:bg-slate-50' : 'text-slate-200'}
                   `}
                 >
@@ -213,7 +213,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
             </button>
             <button 
                 onClick={() => handleDateSelect(new Date())}
-                className="text-[8px] font-black text-indigo-600 uppercase tracking-widest hover:text-indigo-800 transition-colors"
+                className="text-[8px] font-black text-jade-600 uppercase tracking-widest hover:text-jade-800 transition-colors"
             >
                 Hari Ini
             </button>

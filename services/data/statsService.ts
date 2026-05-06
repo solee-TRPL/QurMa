@@ -149,19 +149,51 @@ export const getTeacherStats = async (studentsInHalaqah: Student[]): Promise<Tea
     return stats;
 };
 
-export const getGuardianStats = async (studentId: string): Promise<GuardianDashboardStats> => { 
-    const { data: student } = await supabase.from('students').select('current_juz, daily_target').eq('id', studentId).maybeSingle();
+export const getGuardianStats = async (id: string): Promise<GuardianDashboardStats> => { 
+    // Try finding by student ID first
+    let { data: student } = await supabase.from('students').select('id, current_juz, daily_target').eq('id', id).maybeSingle();
+    
+    // If not found, try finding by parent_id (common for student users whose ID is the user ID)
+    if (!student) {
+        const { data: linkedStudent } = await supabase.from('students').select('id, current_juz, daily_target').eq('parent_id', id).maybeSingle();
+        student = linkedStudent;
+    }
+
+    const studentId = student?.id || id; // Fallback to original id if still not found
+
     const { data: lastRecord } = await supabase.from('memorization_records').select('surah_name, ayat_end, status').eq('student_id', studentId).order('created_at', { ascending: false }).limit(1).maybeSingle();
     const { data: lastNote } = await supabase.from('teacher_notes').select('content, date').eq('student_id', studentId).order('date', { ascending: false }).limit(1).maybeSingle();
+
+    // Fetch current weekly target for the student
+    const now = new Date();
+    const day = now.getDay();
+    const diff = (day === 0 ? -6 : 1) - day; // Monday is 1, Sunday is 0
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diff);
+    
+    // Use local date string to avoid timezone issues with toISOString()
+    const weekStart = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+
+    const { data: weeklyTarget } = await supabase
+        .from('weekly_targets')
+        .select('target_data')
+        .eq('student_id', studentId)
+        .eq('week_start', weekStart)
+        .maybeSingle();
+
+    const targetJuz = (weeklyTarget?.target_data as any)?.current_juz;
+    const currentJuz = (targetJuz !== undefined && targetJuz !== null && targetJuz !== 0) 
+        ? targetJuz 
+        : (student?.current_juz || 0);
 
     return { 
         currentSurah: lastRecord?.surah_name || '-', 
         currentAyat: lastRecord?.ayat_end ? String(lastRecord.ayat_end) : '-', 
-        totalJuz: student?.current_juz || 0, 
+        totalJuz: currentJuz, 
         lastStatus: lastRecord?.status || MemorizationStatus.LANCAR, 
         teacherNote: lastNote?.content || 'Belum ada catatan', 
         teacherNoteDate: lastNote?.date || '', 
-        juzProgress: ((student?.current_juz || 0) / 30) * 100, 
+        juzProgress: (currentJuz / 30) * 100, 
         dailyTarget: student?.daily_target || '-'
     }; 
 };

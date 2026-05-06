@@ -70,7 +70,7 @@ const HalaqahFormModal: React.FC<HalaqahFormModalProps> = ({ isOpen, onClose, on
               type="text" 
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-xl text-xs font-black text-slate-800 outline-none focus:border-indigo-400 focus:bg-white transition-all"
+              className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-xl text-xs font-black text-slate-800 outline-none focus:border-jade-400 focus:bg-white transition-all"
               placeholder="Contoh: Abu Bakar"
             />
           </div>
@@ -81,7 +81,7 @@ const HalaqahFormModal: React.FC<HalaqahFormModalProps> = ({ isOpen, onClose, on
                <select
                   value={teacherId}
                   onChange={e => setTeacherId(e.target.value)}
-                  className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-xl text-xs font-black text-slate-800 outline-none appearance-none cursor-pointer focus:border-indigo-400 focus:bg-white transition-all capitalize"
+                  className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-xl text-xs font-black text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 focus:bg-white transition-all capitalize"
                >
                   <option value="">PILIH USTADZ</option>
                   {teachers.map(t => (
@@ -104,7 +104,7 @@ const HalaqahFormModal: React.FC<HalaqahFormModalProps> = ({ isOpen, onClose, on
             </button>
             <button 
                 type="submit"
-                className="flex-[2] flex items-center justify-center px-4 py-2.5 font-black text-[9px] uppercase tracking-tight rounded-xl border-2 border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
+                className="flex-[2] flex items-center justify-center px-4 py-2.5 font-black text-[9px] uppercase tracking-tight rounded-xl border-2 border-jade-600 bg-jade-600 text-white shadow-lg shadow-primary-100 hover:bg-jade-700 transition-all active:scale-95"
             >
               <Save className="w-4 h-4 mr-2" />
               {initialData ? 'SIMPAN' : 'BUAT HALAQAH'}
@@ -154,11 +154,11 @@ const HalaqahDetailModal: React.FC<HalaqahDetailModalProps> = ({ isOpen, onClose
         <div className="px-6 pt-8 pb-5 bg-[#FCFDFE] border-b border-slate-100 flex justify-between items-center shrink-0">
           <div>
             <h3 className="text-sm font-black text-slate-800 tracking-tight leading-none mb-2 flex items-center gap-2 uppercase">
-              <span className="p-1.5 bg-indigo-50 rounded-lg"><BookOpen className="w-4 h-4 text-indigo-600" /></span>
+              <span className="p-1.5 bg-jade-50 rounded-lg"><BookOpen className="w-4 h-4 text-jade-600" /></span>
               Daftar Santri {halaqah.name}
             </h3>
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none ml-10">
-                Ustadz: <span className="text-indigo-600 font-black">{halaqah.teacher_name}</span>
+                Ustadz: <span className="text-jade-600 font-black">{halaqah.teacher_name}</span>
             </p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 -mt-6">
@@ -171,22 +171,22 @@ const HalaqahDetailModal: React.FC<HalaqahDetailModalProps> = ({ isOpen, onClose
           <div className="space-y-2.5 w-full">
             {isLoading ? (
                 <div className="py-16 flex flex-col items-center justify-center text-slate-400">
-                    <div className="w-10 h-10 border-4 border-slate-100 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
+                    <div className="w-10 h-10 border-4 border-slate-100 border-t-jade-500 rounded-full animate-spin mb-4"></div>
                     <p className="text-[9px] font-black uppercase tracking-widest animate-pulse">Sinkronisasi Data...</p>
                 </div>
             ) : students.length > 0 ? (
                 students.map((student, idx) => (
-                    <div key={student.id} className="flex items-center justify-between p-3.5 rounded-[20px] border border-slate-100 bg-[#FBFDFE] hover:bg-white hover:border-indigo-100 hover:shadow-md transition-all group">
+                    <div key={student.id} className="flex items-center justify-between p-3.5 rounded-[20px] border border-slate-100 bg-[#FBFDFE] hover:bg-white hover:border-jade-100 hover:shadow-md transition-all group">
                         <div className="flex items-center gap-4">
-                            <div className="w-9 h-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-900 text-[11px] font-black shadow-sm group-hover:border-indigo-200 group-hover:bg-indigo-50/30 transition-all">
+                            <div className="w-9 h-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-900 text-[11px] font-black shadow-sm group-hover:border-jade-200 group-hover:bg-jade-50/30 transition-all">
                                 {String(idx + 1).padStart(2, '0')}
                             </div>
                             <div>
-                                <p className="text-[11px] font-black text-slate-800 tracking-tight leading-none mb-1 capitalize group-hover:text-indigo-600 transition-all">{student.full_name}</p>
+                                <p className="text-[11px] font-black text-slate-800 tracking-tight leading-none mb-1 capitalize group-hover:text-jade-600 transition-all">{student.full_name}</p>
                                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">NIS: {student.nis || '-'}</p>
                             </div>
                         </div>
-                        <div className="px-2.5 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[8px] font-black text-slate-400 uppercase tracking-widest group-hover:bg-indigo-50 group-hover:border-indigo-100 group-hover:text-indigo-600 transition-all shadow-sm">
+                        <div className="px-2.5 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[8px] font-black text-slate-400 uppercase tracking-widest group-hover:bg-jade-50 group-hover:border-jade-100 group-hover:text-jade-600 transition-all shadow-sm">
                             SANTRI
                         </div>
                     </div>
@@ -226,7 +226,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, progress }) 
                 <div className="px-6 py-4 border-b border-slate-50 flex justify-between items-center bg-[#FCFDFE]">
                     <div>
                         <h3 className="text-sm font-black text-slate-800 tracking-tight flex items-center gap-2">
-                            <Database className="w-4 h-4 text-indigo-500" />
+                            <Database className="w-4 h-4 text-jade-500" />
                             Sinkronisasi Halaqah
                         </h3>
                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Memproses Perpindahan Santri</p>
@@ -247,7 +247,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, progress }) 
                         </div>
                         <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
                             <div 
-                                className="bg-indigo-500 h-full rounded-full transition-all duration-500 ease-out" 
+                                className="bg-primary-500 h-full rounded-full transition-all duration-500 ease-out" 
                                 style={{ width: `${(progress.current / (progress.total || 1)) * 100}%` }}
                             />
                         </div>
@@ -350,6 +350,8 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
             { header: "No.", key: "no", width: 8 },
             { header: "NIS", key: "nis", width: 15 },
             { header: "Nama Santri", key: "name", width: 40 },
+            { header: "Jumlah Hafalan", key: "hafalan", width: 20 },
+            { header: "Pengampu", key: "teacher", width: 25 },
             { header: "Halaqah", key: "halaqah", width: 25 },
             { header: "SyncKey", key: "sync", width: 5 }
         ];
@@ -375,32 +377,50 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
         const halaqahNames = classes.map(h => h.name);
         const halaqahDropdown = `"${halaqahNames.join(',')}"`;
 
+        // --- SHEET 3: Referensi Data (Hidden) ---
+        const wsRef = workbook.addWorksheet("Referensi_Data");
+        wsRef.columns = [
+            { header: "Halaqah", key: "halaqah", width: 25 },
+            { header: "Pengampu", key: "teacher", width: 25 }
+        ];
+        classes.forEach(h => {
+            wsRef.addRow({ halaqah: h.name, teacher: h.teacher_name || '-' });
+        });
+        wsRef.state = 'hidden';
+
         sortedStudents.forEach((s, idx) => {
-            const hName = classes.find(h => h.id === s.halaqah_id)?.name || '-';
+            const halaqahObj = classes.find(h => h.id === s.halaqah_id);
+            const hName = halaqahObj?.name || '-';
             const rowIdx = idx + 2;
             const r = ws1.addRow({
                 no: idx + 1,
                 nis: s.nis || '-',
                 name: s.full_name,
+                hafalan: `${s.current_juz || 0} Juz`,
                 halaqah: hName,
-                sync: { formula: `D${rowIdx}&"_"&COUNTIF($D$2:D${rowIdx}, D${rowIdx})` }
+                sync: { formula: `F${rowIdx}&"_"&COUNTIF($F$2:F${rowIdx}, F${rowIdx})` }
             });
+
+            // Set Teacher as VLOOKUP Formula based on Halaqah (Column F)
+            r.getCell(5).value = { formula: `IFERROR(VLOOKUP(F${rowIdx}, Referensi_Data!$A:$B, 2, FALSE), "-")` };
 
             // Style data cells
             r.getCell(1).fill = yellowFill; r.getCell(1).border = borderStyle;
             r.getCell(2).fill = yellowFill; r.getCell(2).border = borderStyle;
             r.getCell(3).fill = yellowFill; r.getCell(3).border = borderStyle;
-            r.getCell(4).fill = greenFill;  r.getCell(4).border = borderStyle;
-            r.getCell(5).border = borderStyle;
+            r.getCell(4).fill = yellowFill; r.getCell(4).border = borderStyle; // Hafalan
+            r.getCell(5).border = borderStyle; // Teacher
+            r.getCell(6).fill = greenFill;  r.getCell(6).border = borderStyle; // Halaqah
+            r.getCell(7).border = borderStyle; // Sync
 
             // Add Data Validation (Dropdown) to Halaqah Column
-            r.getCell(4).dataValidation = {
+            r.getCell(6).dataValidation = {
                 type: 'list',
                 allowBlank: true,
                 formulae: [halaqahDropdown]
             };
         });
-        ws1.getColumn(5).hidden = true;
+        ws1.getColumn(7).hidden = true;
 
         // --- SHEET 2: Rangkuman Manajemen Halaqah ---
         const ws2 = workbook.addWorksheet("Rangkuman Halaqah");
@@ -420,7 +440,7 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
         for (let i = 0; i < sortedHalaqahs.length; i += BLOCKS_PER_ROW) {
             const rowHalaqahs = sortedHalaqahs.slice(i, i + BLOCKS_PER_ROW);
 
-            // Row 0: Labels
+            // Row 0: Labels (Halaqah)
             rowHalaqahs.forEach((h, idx) => {
                 const colStart = idx * COLUMNS_PER_BLOCK;
                 const c1 = ws2.getCell(currentBaseRow, colStart + 1);
@@ -437,13 +457,33 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
                 c3.value = h.name;
                 c3.fill = greenFill;
                 c3.border = borderStyle;
+                c3.font = { bold: true };
             });
 
-            // Row 1: Headers
+            // Row 1: Labels (Pengampu)
+            rowHalaqahs.forEach((h, idx) => {
+                const colStart = idx * COLUMNS_PER_BLOCK;
+                const c1 = ws2.getCell(currentBaseRow + 1, colStart + 1);
+                c1.value = "";
+                c1.border = borderStyle;
+
+                const c2 = ws2.getCell(currentBaseRow + 1, colStart + 2);
+                c2.value = "Pengampu :";
+                c2.font = { bold: true };
+                c2.border = borderStyle;
+
+                const c3 = ws2.getCell(currentBaseRow + 1, colStart + 3);
+                c3.value = h.teacher_name || '-';
+                c3.fill = greenFill;
+                c3.font = { bold: true };
+                c3.border = borderStyle;
+            });
+
+            // Row 2: Headers
             rowHalaqahs.forEach((h, idx) => {
                 const colStart = idx * COLUMNS_PER_BLOCK;
                 ["No.", "NIS", "Nama Santri"].forEach((text, tIdx) => {
-                    const c = ws2.getCell(currentBaseRow + 1, colStart + 1 + tIdx);
+                    const c = ws2.getCell(currentBaseRow + 2, colStart + 1 + tIdx);
                     c.value = text;
                     c.fill = headerFill;
                     c.font = { color: { argb: 'FFFFFFFF' }, bold: true };
@@ -454,7 +494,7 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
 
             // Student Rows (12 Slots)
             for (let r = 0; r < FIXED_SLOTS; r++) {
-                const excelRowIdx = currentBaseRow + 2 + r;
+                const excelRowIdx = currentBaseRow + 3 + r;
                 rowHalaqahs.forEach((h, idx) => {
                     const colStart = idx * COLUMNS_PER_BLOCK;
                     const hNameEscaped = h.name.replace(/"/g, '""');
@@ -472,7 +512,7 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
                     // NIS
                     const cellNis = ws2.getCell(excelRowIdx, colStart + 2);
                     cellNis.value = { 
-                        formula: `IFERROR(INDEX('Manajemen Halaqah'!$B:$B, MATCH(${targetKey}, 'Manajemen Halaqah'!$E:$E, 0)), "")`,
+                        formula: `IFERROR(INDEX('Manajemen Halaqah'!$B:$B, MATCH(${targetKey}, 'Manajemen Halaqah'!$F:$F, 0)), "")`,
                         result: s ? (s.nis || "-") : undefined
                     };
                     cellNis.border = borderStyle;
@@ -480,13 +520,13 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
                     // Nama
                     const cellName = ws2.getCell(excelRowIdx, colStart + 3);
                     cellName.value = { 
-                        formula: `IFERROR(INDEX('Manajemen Halaqah'!$C:$C, MATCH(${targetKey}, 'Manajemen Halaqah'!$E:$E, 0)), "")`,
+                        formula: `IFERROR(INDEX('Manajemen Halaqah'!$C:$C, MATCH(${targetKey}, 'Manajemen Halaqah'!$F:$F, 0)), "")`,
                         result: s ? s.full_name : undefined
                     };
                     cellName.border = borderStyle;
                 });
             }
-            currentBaseRow += (FIXED_SLOTS + 4);
+            currentBaseRow += (FIXED_SLOTS + 5);
         }
 
         // Set column widths for WS2
@@ -540,18 +580,27 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
             }
 
             const students = await getStudents(tenantId);
-            const studentMap = new Map(students.filter(s => s.nis).map(s => [s.nis, s]));
+            // Normalize NIS: ensure it is a trimmed string for reliable matching
+            const studentMap = new Map(students.filter(s => s.nis).map(s => [String(s.nis).trim(), s]));
             const halaqahMap = new Map(classes.map(h => [h.name.toLowerCase().trim(), h.id]));
 
             const nisAssignments = new Map<string, string>(); 
             const updateLogs: { student: Student, newHalaqahId: string | null }[] = [];
             const errors: string[] = [];
+            const seenNisInExcel = new Set<string>();
 
             // Detect Format: 
-            // Flat Format (Image 1): Header has "Halaqah" at Column index 3 (D)
-            const isFlatFormat = String(aoa[0]?.[3] || '').toLowerCase().includes('halaqah');
+            // Flat Format (Image 1): Header has "Halaqah" at Column index 3 (D), 4 (E) or 5 (F) after "Hafalan" & "Pengampu" added
+            const isFlatFormat = String(aoa[0]?.[3] || '').toLowerCase().includes('halaqah') || 
+                                 String(aoa[0]?.[4] || '').toLowerCase().includes('halaqah') ||
+                                 String(aoa[0]?.[5] || '').toLowerCase().includes('halaqah');
 
             if (isFlatFormat) {
+                // Determine column index for Halaqah
+                let hColIdx = 3;
+                if (String(aoa[0]?.[5] || '').toLowerCase().includes('halaqah')) hColIdx = 5;
+                else if (String(aoa[0]?.[4] || '').toLowerCase().includes('halaqah')) hColIdx = 4;
+
                 // --- STRATEGY A: Flat List (Sheet 1 style) ---
                 for (let r = 1; r < aoa.length; r++) {
                     const row = aoa[r];
@@ -559,9 +608,16 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
 
                     const nisInput = String(row[1] || '').trim();
                     const sNameInput = String(row[2] || '').trim();
-                    const hNameInput = String(row[3] || '').trim();
+                    const hNameInput = String(row[hColIdx] || '').trim();
 
                     if (!nisInput || nisInput === '-' || nisInput.toLowerCase() === 'nis') continue;
+
+                    // Check for duplicate NIS in Excel
+                    if (seenNisInExcel.has(nisInput)) {
+                        errors.push(`Baris ${r+1}: NIS "${nisInput}" muncul lebih dari satu kali di file Excel. Setiap santri harus memiliki NIS unik.`);
+                        continue;
+                    }
+                    seenNisInExcel.add(nisInput);
 
                     const halaqahId = halaqahMap.get(hNameInput.toLowerCase());
                     if (!halaqahId && hNameInput !== '-') {
@@ -571,6 +627,13 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
 
                     const student = studentMap.get(nisInput);
                     if (student) {
+                        // Optional: Name mismatch check to help user debug
+                        const dbName = student.full_name.toLowerCase().trim();
+                        const excelName = sNameInput.toLowerCase().trim();
+                        if (dbName !== excelName && excelName !== "" && excelName !== "-") {
+                            errors.push(`Baris ${r+1}: NIS "${nisInput}" di sistem adalah "${student.full_name}", tapi di Excel adalah "${sNameInput}".`);
+                        }
+
                         if (student.halaqah_id !== halaqahId) {
                             updateLogs.push({ student, newHalaqahId: halaqahId || null });
                         }
@@ -603,17 +666,32 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
                                 const sNameInput = String(aoa[studentRowIdx][c + 2] || '').trim();
 
                                 if (nisInput && nisInput !== '-' && nisInput !== 'NIS') {
+                                    // Check for duplicate NIS in Excel
+                                    if (seenNisInExcel.has(nisInput)) {
+                                        errors.push(`Baris ${studentRowIdx+1}: NIS "${nisInput}" muncul ganda di file Excel.`);
+                                        studentRowIdx++;
+                                        continue;
+                                    }
+                                    seenNisInExcel.add(nisInput);
+
                                     if (nisAssignments.has(nisInput) && nisAssignments.get(nisInput) !== hName) {
                                         errors.push(`Santri "${sNameInput}" (NIS: ${nisInput}) terdaftar ganda: ${nisAssignments.get(nisInput)} dan ${hName}.`);
                                     } else {
                                         nisAssignments.set(nisInput, hName);
                                         const student = studentMap.get(nisInput);
                                         if (student) {
+                                            // Name mismatch check
+                                            const dbName = student.full_name.toLowerCase().trim();
+                                            const excelName = sNameInput.toLowerCase().trim();
+                                            if (dbName !== excelName && excelName !== "" && excelName !== "-") {
+                                                errors.push(`Baris ${studentRowIdx+1}: NIS "${nisInput}" di sistem adalah "${student.full_name}", tapi di Excel "${sNameInput}".`);
+                                            }
+
                                             if (student.halaqah_id !== halaqahId) {
                                                 updateLogs.push({ student, newHalaqahId: halaqahId });
                                             }
                                         } else {
-                                            errors.push(`Santri "${sNameInput}" (NIS: ${nisInput}) tidak ditemukan.`);
+                                            errors.push(`Santri "${sNameInput}" (NIS: ${nisInput}) tidak ditemukan di sistem.`);
                                         }
                                     }
                                 }
@@ -767,77 +845,74 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
   return (
     <div className="space-y-6">
       {/* Unified Control Bar */}
-      <div className="flex flex-col lg:flex-row w-full gap-2 p-2 bg-white rounded-[28px] lg:rounded-[40px] border border-slate-100 shadow-sm backdrop-blur-sm shrink-0 relative z-[70] sticky top-0">
-        {/* ROW 1 (Mobile): TAMBAH + STATS */}
-        <div className="flex flex-row items-center gap-2 w-full lg:w-auto lg:contents">
-            {/* 1. ADD HALAQAH */}
-            {!isReadOnly ? (
-                <div className="flex items-center gap-2 lg:order-1">
-                    <button 
-                        onClick={openCreateModal}
-                        className="h-10 flex items-center px-6 font-black text-[10px] uppercase tracking-widest rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-100/50 hover:bg-indigo-700 hover:scale-[1.02] transition-all active:scale-95 gap-2 whitespace-nowrap"
-                    >
-                        <Plus className="w-4 h-4" /> <span className="hidden sm:inline">TAMBAH HALAQAH</span><span className="sm:hidden">TAMBAH</span>
-                    </button>
-                    
-                    <div className="h-10 flex bg-white border border-slate-100 rounded-full p-1 gap-1 shadow-sm px-2">
-                        <button 
-                            onClick={handleExport}
-                            className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-all"
-                            title="Ekspor Data Halaqah"
-                        >
-                            <Download className="w-4 h-4" />
-                        </button>
-                        <div className="w-px h-4 bg-slate-100 self-center" />
-                        <label className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all cursor-pointer" title="Impor Data Halaqah">
-                            <Upload className="w-4 h-4" />
-                            <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleImportExcel} />
-                        </label>
-                    </div>
-                </div>
-            ) : (
-                <div className="h-10 flex items-center px-6 font-black text-[10px] uppercase tracking-widest rounded-full bg-slate-100 text-slate-400 gap-2 whitespace-nowrap lg:order-1">
-                    <Users className="w-4 h-4" /> VIEW ONLY MODE
-                </div>
-            )}
-
-            {/* 4. STATS (INTEGRATED) */}
-            <div className="bg-slate-50/50 h-10 px-4 border border-slate-100/50 flex flex-1 lg:flex-none items-center justify-between lg:justify-start gap-4 rounded-full shadow-inner lg:order-4">
-                <div className="flex items-center gap-1.5">
-                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">HALAQAH</p>
-                    <p className="text-[11px] font-black text-slate-800 leading-none">{classes.length}</p>
-                </div>
-                <div className="w-px h-3 bg-slate-200" />
-                <div className="flex items-center gap-1.5">
-                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">SANTRI</p>
-                    <p className="text-[11px] font-black text-slate-800 leading-none">{classes.reduce((acc, curr) => acc + (curr.student_count || 0), 0)}</p>
-                </div>
+      <div className="flex flex-col lg:flex-row w-full gap-4 py-2 bg-white shrink-0 relative z-[70] sticky top-0 items-center">
+        {/* 1. STATS (HALAQAH & SANTRI) - PALING KIRI */}
+        <div className="bg-slate-50/50 h-10 px-4 border border-slate-100/50 flex items-center gap-4 rounded-full shadow-inner shrink-0 order-1">
+            <div className="flex items-center gap-1.5">
+                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">HALAQAH</p>
+                <p className="text-[11px] font-black text-slate-800 leading-none">{classes.length}</p>
+            </div>
+            <div className="w-px h-3 bg-slate-200" />
+            <div className="flex items-center gap-1.5">
+                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">SANTRI</p>
+                <p className="text-[11px] font-black text-slate-800 leading-none">{classes.reduce((acc, curr) => acc + (curr.student_count || 0), 0)}</p>
             </div>
         </div>
 
-        {/* ROW 2 (Mobile): SEARCH + REFRESH */}
-        <div className="flex flex-row items-center gap-2 w-full lg:flex-1 lg:contents">
-            {/* 2. SEARCH BAR */}
-            <div className="relative flex-1 group h-10 min-w-0 lg:order-2">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-indigo-500 transition-colors" />
-                <input 
-                    type="text" 
-                    placeholder="CARI HALAQAH..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full h-full pl-10 pr-4 bg-slate-50/50 border border-slate-100/50 rounded-full focus:ring-4 focus:ring-indigo-50/50 focus:border-indigo-500 focus:bg-white transition-all text-[10px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-inner"
-                />
-            </div>
+        {/* 2. SEARCH BAR */}
+        <div className="relative flex-1 group h-10 min-w-0 order-2 w-full lg:w-auto">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-jade-500 transition-colors" />
+            <input 
+                type="text" 
+                placeholder="CARI HALAQAH..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full h-full pl-10 pr-4 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 focus:bg-white transition-all text-[10px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-inner"
+            />
+        </div>
 
-            {/* 3. REFRESH */}
+        <div className="flex flex-row items-center gap-2 order-3 shrink-0">
+            {/* 3. REFRESH BUTTON */}
             <button 
                 onClick={fetchData}
                 disabled={loading}
-                className="h-10 w-10 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-indigo-600 hover:bg-slate-50 transition-all active:scale-95 rounded-full shadow-sm disabled:opacity-50 lg:order-3"
+                className="h-10 w-10 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 hover:bg-slate-50 transition-all active:scale-95 rounded-full shadow-sm disabled:opacity-50"
             >
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             </button>
+
+            {/* 4. IMPORT & EXPORT BUTTONS */}
+            {!isReadOnly && (
+                <div className="h-10 flex bg-white border border-slate-100 rounded-full p-1 gap-1 shadow-sm px-2">
+                    <button 
+                        onClick={handleExport}
+                        className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-all"
+                        title="Ekspor Data Halaqah"
+                    >
+                        <Download className="w-4 h-4" />
+                    </button>
+                    <div className="w-px h-4 bg-slate-100 self-center" />
+                    <label className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all cursor-pointer" title="Impor Data Halaqah">
+                        <Upload className="w-4 h-4" />
+                        <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleImportExcel} />
+                    </label>
+                </div>
+            )}
         </div>
+
+        {/* 5. TAMBAH HALAQAH - PALING KANAN */}
+        {!isReadOnly ? (
+            <button 
+                onClick={openCreateModal}
+                className="h-10 flex items-center px-6 font-black text-[10px] uppercase tracking-widest rounded-full bg-jade-600 text-white shadow-lg shadow-primary-100/50 hover:bg-jade-700 hover:scale-[1.02] transition-all active:scale-95 gap-2 whitespace-nowrap order-4"
+            >
+                <Plus className="w-4 h-4" /> <span className="hidden sm:inline">TAMBAH HALAQAH</span><span className="sm:hidden">TAMBAH</span>
+            </button>
+        ) : (
+            <div className="h-10 flex items-center px-6 font-black text-[10px] uppercase tracking-widest rounded-full bg-slate-100 text-slate-400 gap-2 whitespace-nowrap order-4">
+                <Users className="w-4 h-4" /> VIEW ONLY
+            </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -845,14 +920,14 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
           <div 
             key={cls.id} 
             onClick={() => handleCardClick(cls)}
-            className="group relative bg-white border-2 border-slate-200 rounded-[24px] p-5 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-50/50 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col h-full"
+            className="group relative bg-white border-2 border-slate-200 rounded-[24px] p-5 hover:border-jade-400 hover:shadow-xl hover:shadow-jade-50/50 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col h-full"
           >
             <div className="flex items-center gap-3 md:gap-4 md:mb-4">
               <div className="min-w-0 flex-1 pb-1">
                 <p className="text-[9.5px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Halaqah</p>
                 <h3 className="text-base font-black text-slate-800 truncate tracking-tight uppercase leading-none">{cls.name}</h3>
                 
-                <div className="flex items-center gap-1.5 mt-2 bg-slate-50 w-fit px-2.5 py-1 rounded-lg border border-slate-100 group-hover:bg-indigo-50/50 group-hover:border-indigo-100 transition-colors">
+                <div className="flex items-center gap-1.5 mt-2 bg-slate-50 w-fit px-2.5 py-1 rounded-lg border border-slate-100 group-hover:bg-jade-50/50 group-hover:border-jade-100 transition-colors">
                     <span className="text-[10.5px] font-black text-slate-600 tracking-tight capitalize truncate max-w-[200px]">
                         {cls.teacher_name}
                     </span>
@@ -872,7 +947,7 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
                                 setIsFormModalOpen(true); 
                                 setIsDetailModalOpen(false);
                             }}
-                            className="p-1.5 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                            className="p-1.5 text-slate-300 hover:text-jade-600 hover:bg-jade-50 rounded-lg transition-all"
                         >
                             <Edit className="w-3.5 h-3.5" />
                         </button>
@@ -912,7 +987,7 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
                           setIsFormModalOpen(true); 
                           setIsDetailModalOpen(false);
                         }}
-                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all border border-transparent hover:border-indigo-100"
+                        className="p-2 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl transition-all border border-transparent hover:border-jade-100"
                         title="Edit Halaqah"
                       >
                         <Edit className="w-4 h-4" />
@@ -938,7 +1013,7 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
             </div>
 
             {/* Accent Decoration */}
-            <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50/50 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-500 -z-0" />
+            <div className="absolute top-0 right-0 w-24 h-24 bg-jade-50/50 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-500 -z-0" />
           </div>
         ))}
         
@@ -948,7 +1023,7 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
                     <BookOpen className="w-8 h-8 text-slate-200" />
                 </div>
                 <p className="text-sm font-black text-slate-400 uppercase tracking-widest">Belum ada data halaqah</p>
-                <button onClick={openCreateModal} className="mt-4 text-xs font-black text-indigo-600 hover:text-indigo-700">Tambah Sekarang</button>
+                <button onClick={openCreateModal} className="mt-4 text-xs font-black text-jade-600 hover:text-jade-700">Tambah Sekarang</button>
             </div>
         )}
       </div>

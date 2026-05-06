@@ -238,3 +238,28 @@ export const getTenantRecords = async (studentIds: string[], startDate: string, 
     
     return allRecords;
 };
+export const getLatestMemorizationBaselines = async (studentIds: string[]): Promise<Record<string, Record<string, MemorizationRecord>>> => {
+    if (studentIds.length === 0) return {};
+
+    const { data, error } = await supabase
+        .from('memorization_records')
+        .select('*')
+        .in('student_id', studentIds)
+        .order('student_id')
+        .order('record_date', { ascending: false })
+        .order('created_at', { ascending: false });
+
+    if (error || !data) return {};
+
+    const baselines: Record<string, Record<string, MemorizationRecord>> = {};
+    data.forEach(rec => {
+        if (!baselines[rec.student_id]) {
+            baselines[rec.student_id] = {};
+        }
+        if (!baselines[rec.student_id][rec.type]) {
+            baselines[rec.student_id][rec.type] = rec;
+        }
+    });
+
+    return baselines;
+};

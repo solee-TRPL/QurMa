@@ -178,19 +178,19 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
         <div className="flex items-center gap-1.5 p-1 bg-slate-50/50 border border-slate-100/50 rounded-[20px] w-fit shadow-sm">
           <button 
             onClick={() => handleTabChange('sabaq')}
-            className={`px-6 py-2 text-[11px] font-black uppercase tracking-tight rounded-2xl border-2 transition-all ${activeTab === 'sabaq' ? 'border-white bg-white text-indigo-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
+            className={`px-6 py-2 text-[11px] font-black uppercase tracking-tight rounded-2xl border-2 transition-all ${activeTab === 'sabaq' ? 'border-white bg-white text-jade-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
           >
             Acuan Sabaq
           </button>
           <button 
             onClick={() => handleTabChange('manzil')}
-            className={`px-6 py-2 text-[11px] font-black uppercase tracking-tight rounded-2xl border-2 transition-all ${activeTab === 'manzil' ? 'border-white bg-white text-indigo-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
+            className={`px-6 py-2 text-[11px] font-black uppercase tracking-tight rounded-2xl border-2 transition-all ${activeTab === 'manzil' ? 'border-white bg-white text-jade-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
           >
             Acuan Manzil
           </button>
           <button 
             onClick={() => handleTabChange('sabqi')}
-            className={`px-6 py-2 text-[11px] font-black uppercase tracking-tight rounded-2xl border-2 transition-all ${activeTab === 'sabqi' ? 'border-white bg-white text-indigo-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
+            className={`px-6 py-2 text-[11px] font-black uppercase tracking-tight rounded-2xl border-2 transition-all ${activeTab === 'sabqi' ? 'border-white bg-white text-jade-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
           >
             Acuan Sabqi
           </button>
@@ -200,7 +200,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
             <button 
               onClick={handleSave} 
               disabled={isSaving}
-              className="flex items-center px-6 py-2.5 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-indigo-400 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 shadow-lg shadow-indigo-100/50 transition-all active:scale-95 gap-2"
+              className="flex items-center px-6 py-2.5 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-jade-400 bg-jade-50 text-jade-700 hover:bg-jade-100 shadow-lg shadow-primary-100/50 transition-all active:scale-95 gap-2"
             >
                 {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 Simpan Konfigurasi
@@ -219,7 +219,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                       <tr>
                                           <th className="px-6 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-20">KELAS</th>
                                           <th className="px-4 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-24">SEMESTER</th>
-                                          <th className="px-6 py-4 text-center text-[9.5px] font-black text-indigo-600 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-indigo-50/30 w-1/3">TARGET SABAQ (SEMESTER)</th>
+                                          <th className="px-6 py-4 text-center text-[9.5px] font-black text-jade-600 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-jade-50/30 w-1/3">TARGET SABAQ (SEMESTER)</th>
                                           <th className="px-6 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-slate-100 w-1/3">TARGET TOTAL</th>
                                       </tr>
                                   </thead>
@@ -245,7 +245,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                           
                                                           setSabaqTargets(recalculateSabaqTotals(NewD));
                                                       }}
-                                                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1 bg-white shadow-sm border border-slate-200 rounded-md text-slate-300 hover:text-indigo-600 opacity-0 group-hover/sem:opacity-100 transition-all z-10"
+                                                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1 bg-white shadow-sm border border-slate-200 rounded-md text-slate-300 hover:text-jade-600 opacity-0 group-hover/sem:opacity-100 transition-all z-10"
                                                       title={st.total === null ? "Ganti ke Mode Target" : "Ganti ke Mode Teks"}
                                                     >
                                                         <RefreshCw className={`w-2.5 h-2.5 ${st.total === null ? 'rotate-90' : ''} transition-transform`} />
@@ -267,7 +267,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                           }}
                                                           onBlur={() => setEditingCell(null)}
                                                           onKeyDown={(e) => { if (e.key === 'Enter') setEditingCell(null); }}
-                                                          className="w-full bg-white border-2 border-indigo-200 rounded-xl px-4 py-1.5 text-center font-black text-indigo-600 outline-none text-[10.5px] uppercase tracking-widest shadow-lg shadow-indigo-100"
+                                                          className="w-full bg-white border-2 border-jade-200 rounded-xl px-4 py-1.5 text-center font-black text-jade-600 outline-none text-[10.5px] uppercase tracking-widest shadow-lg shadow-primary-100"
                                                       />
                                                     ) : (
                                                       st.target
@@ -275,7 +275,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                 </td>
                                             ) : (
                                                 <>
-                                                    <td className={`px-6 py-4 text-[13px] text-indigo-700 font-black text-center ${!isReadOnly && 'cursor-pointer hover:bg-indigo-50/30'} transition-all border-r-2 border-b border-slate-100 bg-indigo-50/5`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'sabaq-target' })}>
+                                                    <td className={`px-6 py-4 text-[13px] text-jade-700 font-black text-center ${!isReadOnly && 'cursor-pointer hover:bg-jade-50/30'} transition-all border-r-2 border-b border-slate-100 bg-jade-50/5`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'sabaq-target' })}>
                                                         {editingCell?.row === i && editingCell?.field === 'sabaq-target' ? (
                                                             <div className="flex items-center justify-center gap-1 animate-in zoom-in-95 duration-100">
                                                               <input 
@@ -301,14 +301,14 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                                           setEditingCell(null);
                                                                       }}
                                                                   onKeyDown={(e) => { if (e.key === 'Enter') setEditingCell(null); }}
-                                                                  className="w-16 bg-white rounded-lg border-2 border-indigo-200 px-2 py-1 focus:ring-4 focus:ring-indigo-50 text-center font-black text-indigo-600 shadow-sm text-[13px] outline-none"
+                                                                  className="w-16 bg-white rounded-lg border-2 border-jade-200 px-2 py-1 focus:ring-4 focus:ring-jade-50 text-center font-black text-jade-600 shadow-sm text-[13px] outline-none"
                                                               />
-                                                              <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Juz</span>
+                                                              <span className="text-[10px] font-black text-jade-400 uppercase tracking-widest ml-1">Juz</span>
                                                             </div>
                                                         ) : (
                                                             <div className="flex items-center justify-center gap-1.5 group">
-                                                                <span className="font-black text-indigo-700">{st.target}</span>
-                                                                <span className="text-[10px] font-black text-indigo-300 uppercase tracking-widest">JUZ</span>
+                                                                <span className="font-black text-jade-700">{st.target}</span>
+                                                                <span className="text-[10px] font-black text-jade-300 uppercase tracking-widest">JUZ</span>
                                                             </div>
                                                         )}
                                                     </td>
@@ -336,7 +336,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                     <tr>
                                         <th className="px-4 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-24">LEVEL</th>
                                         <th className="px-6 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100">JUMLAH HAFALAN</th>
-                                        <th className="px-6 py-4 text-center text-[9.5px] font-black text-indigo-600 uppercase tracking-widest border-b-2 border-slate-100 bg-indigo-50/30">ACUAN TARGET MURAJA'AH (ATM/HARI)</th>
+                                        <th className="px-6 py-4 text-center text-[9.5px] font-black text-jade-600 uppercase tracking-widest border-b-2 border-slate-100 bg-jade-50/30">ACUAN TARGET MURAJA'AH (ATM/HARI)</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white">
@@ -406,7 +406,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                                 setEditingCell(null);
                                                             }
                                                         }}
-                                                        className="w-12 bg-white rounded-lg border-2 border-indigo-200 px-1 py-1 focus:ring-4 focus:ring-indigo-50 text-center font-black text-indigo-600 shadow-sm text-[13px] outline-none"
+                                                        className="w-12 bg-white rounded-lg border-2 border-jade-200 px-1 py-1 focus:ring-4 focus:ring-jade-50 text-center font-black text-jade-600 shadow-sm text-[13px] outline-none"
                                                     />
                                                     <span className="text-slate-300 font-black">-</span>
                                                     <input 
@@ -441,9 +441,9 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                                 setEditingCell(null);
                                                             }
                                                         }}
-                                                        className="w-12 bg-white rounded-lg border-2 border-indigo-200 px-1 py-1 focus:ring-4 focus:ring-indigo-50 text-center font-black text-indigo-600 shadow-sm text-[13px] outline-none"
+                                                        className="w-12 bg-white rounded-lg border-2 border-jade-200 px-1 py-1 focus:ring-4 focus:ring-jade-50 text-center font-black text-jade-600 shadow-sm text-[13px] outline-none"
                                                     />
-                                                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">JUZ</span>
+                                                    <span className="text-[10px] font-black text-jade-400 uppercase tracking-widest ml-1">JUZ</span>
                                                   </div>
                                                 ) : (
                                                   <div className="flex items-center justify-center gap-1.5 group">
@@ -452,7 +452,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                   </div>
                                                 )}
                                             </td>
-                                            <td className={`px-6 py-4 text-[13px] text-indigo-700 font-black text-center transition-all border-b border-slate-100 bg-indigo-50/5 ${!isReadOnly && 'cursor-pointer hover:bg-indigo-50/30'}`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'manzil-atm' })}>
+                                            <td className={`px-6 py-4 text-[13px] text-jade-700 font-black text-center transition-all border-b border-slate-100 bg-jade-50/5 ${!isReadOnly && 'cursor-pointer hover:bg-jade-50/30'}`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'manzil-atm' })}>
                                                 {editingCell?.row === i && editingCell?.field === 'manzil-atm' ? (
                                                   <div className="flex items-center justify-center gap-1.5 animate-in zoom-in-95 duration-100" onClick={e => e.stopPropagation()}>
                                                     <input 
@@ -466,14 +466,14 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                         }}
                                                         onBlur={() => setEditingCell(null)}
                                                         onKeyDown={(e) => { if (e.key === 'Enter') setEditingCell(null); }}
-                                                        className="w-16 bg-white rounded-lg border-2 border-indigo-200 px-2 py-1 focus:ring-4 focus:ring-indigo-50 text-center font-black text-indigo-600 shadow-sm text-[13px] outline-none"
+                                                        className="w-16 bg-white rounded-lg border-2 border-jade-200 px-2 py-1 focus:ring-4 focus:ring-jade-50 text-center font-black text-jade-600 shadow-sm text-[13px] outline-none"
                                                     />
-                                                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">HLM</span>
+                                                    <span className="text-[10px] font-black text-jade-400 uppercase tracking-widest ml-1">HLM</span>
                                                   </div>
                                                 ) : (
                                                   <div className="flex items-center justify-center gap-2">
-                                                      <span className="font-black text-indigo-700">{m.atm}</span>
-                                                      <span className="text-[10px] text-indigo-300 font-black uppercase tracking-widest">HALAMAN</span>
+                                                      <span className="font-black text-jade-700">{m.atm}</span>
+                                                      <span className="text-[10px] text-jade-300 font-black uppercase tracking-widest">HALAMAN</span>
                                                   </div>
                                                 )}
                                             </td>
@@ -492,7 +492,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                 <thead className="sticky top-0 z-40 bg-white">
                                     <tr>
                                         <th className="px-6 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100">JUMLAH HAFALAN BARU</th>
-                                        <th className="px-6 py-4 text-center text-[9.5px] font-black text-indigo-600 uppercase tracking-widest border-b-2 border-slate-100 bg-indigo-50/30">TARGET MURAJA'AH SABQI</th>
+                                        <th className="px-6 py-4 text-center text-[9.5px] font-black text-jade-600 uppercase tracking-widest border-b-2 border-slate-100 bg-jade-50/30">TARGET MURAJA'AH SABQI</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white">
@@ -558,7 +558,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                                 setEditingCell(null);
                                                             }
                                                         }}
-                                                        className="w-12 bg-white rounded-lg border-2 border-indigo-200 px-1 py-1 focus:ring-4 focus:ring-indigo-50 text-center font-black text-indigo-600 shadow-sm text-[13px] outline-none"
+                                                        className="w-12 bg-white rounded-lg border-2 border-jade-200 px-1 py-1 focus:ring-4 focus:ring-jade-50 text-center font-black text-jade-600 shadow-sm text-[13px] outline-none"
                                                     />
                                                     <span className="text-slate-300 font-black">-</span>
                                                     <input 
@@ -592,9 +592,9 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                                 setEditingCell(null);
                                                             }
                                                         }}
-                                                        className="w-12 bg-white rounded-lg border-2 border-indigo-200 px-1 py-1 focus:ring-4 focus:ring-indigo-50 text-center font-black text-indigo-600 shadow-sm text-[13px] outline-none"
+                                                        className="w-12 bg-white rounded-lg border-2 border-jade-200 px-1 py-1 focus:ring-4 focus:ring-jade-50 text-center font-black text-jade-600 shadow-sm text-[13px] outline-none"
                                                     />
-                                                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">HLM</span>
+                                                    <span className="text-[10px] font-black text-jade-400 uppercase tracking-widest ml-1">HLM</span>
                                                   </div>
                                                 ) : (
                                                   <div className="flex items-center justify-center gap-1.5 group">
@@ -604,7 +604,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                 )}
                                              </td>
                                              <td 
-                                                 className={`px-6 py-4 font-black text-center transition-all border-b border-slate-100 bg-indigo-50/5 ${!isReadOnly && 'cursor-pointer hover:bg-indigo-50/30'}`} 
+                                                 className={`px-6 py-4 font-black text-center transition-all border-b border-slate-100 bg-jade-50/5 ${!isReadOnly && 'cursor-pointer hover:bg-jade-50/30'}`} 
                                                  onClick={() => {
                                                      if (isReadOnly) return;
                                                      setEditingCell({ row: i, field: 'sabqi-murajaah' });
@@ -621,11 +621,11 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                  {editingCell?.row === i && editingCell?.field === 'sabqi-murajaah' ? (
                                                    <div onClick={e => e.stopPropagation()} className="flex items-center justify-center gap-2">
                                                      {sabqiEditMode === 'type' || tempSabqiType === 'Rabth' ? (
-                                                       <div className="flex items-center gap-2 p-1 bg-white rounded-full shadow-lg border-2 border-indigo-100 animate-in zoom-in-95 duration-100 w-fit mx-auto">
+                                                       <div className="flex items-center gap-2 p-1 bg-white rounded-full shadow-lg border-2 border-jade-100 animate-in zoom-in-95 duration-100 w-fit mx-auto">
                                                           <div className="flex p-0.5 bg-slate-100 rounded-full">
                                                               <button 
                                                                   onClick={() => setTempSabqiType('Rabth')}
-                                                                  className={`px-3 py-1.5 text-[10px] font-black rounded-full transition-all ${tempSabqiType === 'Rabth' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                                                  className={`px-3 py-1.5 text-[10px] font-black rounded-full transition-all ${tempSabqiType === 'Rabth' ? 'bg-white text-jade-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                                                               >
                                                                   RABTH
                                                               </button>
@@ -635,7 +635,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                                           setTempSabqiType('1');
                                                                       }
                                                                   }}
-                                                                  className={`px-3 py-1.5 text-[10px] font-black rounded-full transition-all ${tempSabqiType && tempSabqiType !== 'Rabth' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                                                  className={`px-3 py-1.5 text-[10px] font-black rounded-full transition-all ${tempSabqiType && tempSabqiType !== 'Rabth' ? 'bg-white text-jade-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                                                               >
                                                                   HALAMAN
                                                               </button>
@@ -647,7 +647,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                                   setSabqiAcuan(newVal);
                                                                   setEditingCell(null);
                                                               }}
-                                                              className="px-4 py-2 text-[10px] font-black bg-indigo-600 text-white rounded-full hover:bg-indigo-700 shadow-md whitespace-nowrap active:scale-95 transition-all"
+                                                              className="px-4 py-2 text-[10px] font-black bg-jade-600 text-white rounded-full hover:bg-jade-700 shadow-md whitespace-nowrap active:scale-95 transition-all"
                                                           >
                                                               OK
                                                           </button>
@@ -666,17 +666,17 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                               }}
                                                               onBlur={() => setEditingCell(null)}
                                                               onKeyDown={(e) => { if (e.key === 'Enter') setEditingCell(null); }}
-                                                              className="w-16 bg-white rounded-lg border-2 border-indigo-200 px-2 py-1 focus:ring-4 focus:ring-indigo-50 text-center font-black text-indigo-600 shadow-sm text-[13px] outline-none"
+                                                              className="w-16 bg-white rounded-lg border-2 border-jade-200 px-2 py-1 focus:ring-4 focus:ring-jade-50 text-center font-black text-jade-600 shadow-sm text-[13px] outline-none"
                                                           />
-                                                          <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">HLM</span>
+                                                          <span className="text-[10px] font-black text-jade-400 uppercase tracking-widest ml-1">HLM</span>
                                                       </div>
                                                      )}
                                                    </div>
                                                  ) : (
-                                                  <div className="flex items-center justify-center text-indigo-700 font-extrabold text-[13px] tracking-tight">
-                                                      <ChevronRight className="w-4 h-4 mr-1.5 text-indigo-300" />
+                                                  <div className="flex items-center justify-center text-jade-700 font-extrabold text-[13px] tracking-tight">
+                                                      <ChevronRight className="w-4 h-4 mr-1.5 text-jade-300" />
                                                       {s.murajaah}
-                                                      {s.murajaah !== 'Rabth' && <span className="text-[10px] font-black text-indigo-300 uppercase tracking-widest ml-1.5">HALAMAN</span>}
+                                                      {s.murajaah !== 'Rabth' && <span className="text-[10px] font-black text-jade-300 uppercase tracking-widest ml-1.5">HALAMAN</span>}
                                                   </div>
                                                  )}
                                              </td>
@@ -692,7 +692,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
 
         {/* Sidebar Info - Important Box (Right) */}
         <div className="lg:col-span-1 space-y-4 sticky top-6">
-            <div className="bg-indigo-600 rounded-[28px] p-6 shadow-xl shadow-indigo-100 border border-indigo-500 relative overflow-hidden group">
+            <div className="bg-jade-600 rounded-[28px] p-6 shadow-xl shadow-primary-100 border border-jade-500 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16 blur-2xl group-hover:scale-150 transition-transform duration-700" />
                 
                 <div className="relative z-10 space-y-4">
@@ -702,7 +702,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                     
                     <div className="space-y-1">
                         <h4 className="text-sm font-black text-white uppercase tracking-tight leading-tight">Penting</h4>
-                        <p className="text-[10px] font-black text-indigo-100 uppercase tracking-[0.2em] opacity-80">Penyesuaian Kurikulum</p>
+                        <p className="text-[10px] font-black text-jade-100 uppercase tracking-[0.2em] opacity-80">Penyesuaian Kurikulum</p>
                     </div>
 
                     <p className="text-[11px] text-white/90 font-bold leading-relaxed">
@@ -727,7 +727,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                          <p className="text-[10px] font-bold text-slate-600">Pilih tab acuan di bagian kiri atas halaman.</p>
                      </div>
                      <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors bg-slate-50/50 border border-slate-100">
-                         <div className="w-6 h-6 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center shrink-0">
+                         <div className="w-6 h-6 bg-jade-50 text-jade-600 rounded-lg flex items-center justify-center shrink-0">
                              <Save className="w-3 h-3" />
                          </div>
                          <p className="text-[10px] font-bold text-slate-600">Jangan lupa klik "Simpan Konfigurasi" untuk menerapkan perubahan permanen.</p>

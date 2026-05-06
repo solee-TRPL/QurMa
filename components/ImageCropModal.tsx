@@ -124,7 +124,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({ image, onCropCom
                   max={3}
                   step={0.1}
                   onChange={(e) => onZoomChange(Number(e.target.value))}
-                  className="w-full h-1 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600 hover:accent-indigo-700 transition-all"
+                  className="w-full h-1 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-jade-600 hover:accent-jade-700 transition-all"
                 />
             </div>
             <ZoomIn className="w-3.5 h-3.5 text-slate-300" />
@@ -140,7 +140,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({ image, onCropCom
              </button>
              <button
                 onClick={handleDone}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95"
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-jade-600 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-jade-700 shadow-lg shadow-primary-100 transition-all active:scale-95"
              >
                 <Check className="w-3.5 h-3.5" />
                 Simpan & Unggah

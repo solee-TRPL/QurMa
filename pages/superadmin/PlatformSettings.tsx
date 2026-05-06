@@ -55,7 +55,7 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
   if (loading) {
     return (
         <div className="h-[calc(100vh-140px)] flex flex-col items-center justify-center animate-pulse">
-            <div className="w-10 h-10 border-4 border-slate-100 border-t-indigo-600 rounded-full animate-spin mb-4" />
+            <div className="w-10 h-10 border-4 border-slate-100 border-t-jade-600 rounded-full animate-spin mb-4" />
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Synchronizing Core Engine...</p>
         </div>
     );
@@ -69,7 +69,7 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
         <div className="lg:col-span-2 flex flex-col gap-5 min-h-0 lg:overflow-y-auto lg:pr-2 custom-scrollbar">
             <div className="bg-white p-5 lg:p-6 rounded-2xl border border-slate-100 lg:border-2 lg:border-slate-50 shadow-sm flex flex-col gap-5">
                 <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
+                    <div className="w-10 h-10 rounded-xl bg-jade-50 flex items-center justify-center text-jade-600 border border-jade-100">
                         <Monitor className="w-5 h-5" />
                     </div>
                     <div>
@@ -85,7 +85,7 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                         placeholder="Contoh: QurMa - Management Tahfidz Digital"
                         value={settings.platform_name || ''}
                         onChange={e => handleInputChange('platform_name', e.target.value)}
-                        className="w-full px-5 py-3 bg-slate-50/50 border-2 border-transparent rounded-2xl text-slate-800 font-bold text-sm focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/30 outline-none transition-all shadow-sm shadow-slate-200/50"
+                        className="w-full px-5 py-3 bg-slate-50/50 border-2 border-transparent rounded-2xl text-slate-800 font-bold text-sm focus:bg-white focus:border-jade-100 focus:ring-4 focus:ring-jade-50/30 outline-none transition-all shadow-sm shadow-slate-200/50"
                     />
                     <p className="text-[10px] text-slate-400 font-bold mt-3 leading-relaxed px-1">
                         Nama ini akan muncul sebagai judul aplikasi, footer laporan, dan subject otomatis pada notifikasi email.
@@ -122,7 +122,7 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                                 value={settings.default_tenant_id || ''}
                                 onChange={e => handleInputChange('default_tenant_id', e.target.value)}
                                 disabled={!settings.public_registration_enabled}
-                                className="w-full pl-5 pr-12 py-3.5 bg-slate-50/50 border-2 border-transparent rounded-2xl text-slate-800 font-bold text-sm focus:bg-white focus:border-indigo-100 focus:ring-4 focus:ring-indigo-50/30 outline-none transition-all appearance-none cursor-pointer shadow-sm shadow-slate-200/50"
+                                className="w-full pl-5 pr-12 py-3.5 bg-slate-50/50 border-2 border-transparent rounded-2xl text-slate-800 font-bold text-sm focus:bg-white focus:border-jade-100 focus:ring-4 focus:ring-jade-50/30 outline-none transition-all appearance-none cursor-pointer shadow-sm shadow-slate-200/50"
                             >
                                 <option value="">-- PILIH INSTITUSI TUJUAN REGISTRASI --</option>
                                 {tenants.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -149,7 +149,7 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                 </div>
 
                 <div className="py-12 flex flex-col items-center justify-center text-center">
-                    <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 mb-6 border-2 border-indigo-100 border-dashed animate-pulse">
+                    <div className="w-20 h-20 bg-jade-50 rounded-full flex items-center justify-center text-jade-600 mb-6 border-2 border-jade-100 border-dashed animate-pulse">
                         <Settings className="w-10 h-10" />
                     </div>
                     <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest max-w-[180px]">Platform Sync Ready</p>
@@ -157,7 +157,7 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
 
                 <button 
                     type="submit"
-                    className="w-full py-3.5 px-6 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-indigo-400 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 shadow-lg shadow-indigo-100/50 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    className="w-full py-3.5 px-6 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-jade-400 bg-jade-50 text-jade-700 hover:bg-jade-100 shadow-lg shadow-primary-100/50 transition-all active:scale-95 flex items-center justify-center gap-2"
                 >
                     <Settings className="w-4 h-4" />
                     Simpan Perubahan

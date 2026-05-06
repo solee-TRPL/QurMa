@@ -32,7 +32,7 @@ export const updatePlatformSettings = async (settingsToUpdate: Partial<PlatformS
 export const uploadLogo = async (tenantId: string, file: File): Promise<string | null> => {
     const fileExt = file.name.split('.').pop();
     const fileName = `${tenantId}.${fileExt}`;
-    const filePath = `logos/${fileName}`;
+    const filePath = `public/logo_${fileName}`;
     const { error } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
     if (error) throw error;
     const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);

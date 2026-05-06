@@ -91,28 +91,25 @@ export const calculatePages = (
     if (!sId1 || !sId2) return 0;
 
     const startInfo = QURAN_MAPPING[sId1]?.[startAyah];
-    if (!startInfo) return 0;
+    const endInfo = QURAN_MAPPING[sId2]?.[endAyah];
+    if (!startInfo || !endInfo) return 0;
 
     const [page1] = startInfo;
-
+    
+    // To count COMPLETED pages, we check where the NEXT ayah would be.
+    // If the next ayah is on a new page, it means the current page was finished.
     const next = getNextAyah(endSurah, endAyah);
     let pageBoundary: number;
-
     if (next) {
         const nId = QURAN_NAME_TO_ID[next.surah];
         const nextInfo = QURAN_MAPPING[nId]?.[next.ayah];
-        if (nextInfo) {
-            [pageBoundary] = nextInfo;
-        } else {
-            pageBoundary = 605;
-        }
+        pageBoundary = nextInfo ? nextInfo[0] : 605; // 605 is past the end
     } else {
-        pageBoundary = 605;
+        pageBoundary = 605; // Finished the whole Quran
     }
 
-    // Full pages = difference in page index
-    const pages = pageBoundary - page1;
-    return Math.max(0, pages);
+    // Number of completed pages = pageBoundary - pageStart
+    return Math.max(0, pageBoundary - page1);
 };
 
 /**

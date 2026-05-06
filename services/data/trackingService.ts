@@ -11,13 +11,15 @@ export interface AssignmentHistory {
     teacher_name?: string;
     start_date: string;
     end_date: string | null;
+    total_sabaq_lines?: number;
 }
 
 /**
  * Fetches the teacher/halaqah assignment history for a specific student.
  */
 export const getStudentAssignmentHistory = async (studentId: string): Promise<AssignmentHistory[]> => {
-    const { data, error } = await supabase
+    // 1. Fetch History
+    const { data: historyData, error: historyError } = await supabase
         .from('student_halaqah_history')
         .select(`
             *,
@@ -27,16 +29,52 @@ export const getStudentAssignmentHistory = async (studentId: string): Promise<As
         .eq('student_id', studentId)
         .order('start_date', { ascending: false });
 
-    if (error) {
-        console.error("Error fetching assignment history:", error);
-        throw error;
+    if (historyError) {
+        console.error("Error fetching assignment history:", historyError);
+        throw historyError;
     }
 
-    return (data || []).map(item => ({
-        ...item,
-        halaqah_name: item.halaqah_classes?.name || 'Halaqah Dihapus',
-        teacher_name: item.profiles?.full_name || 'Ustadz Dihapus'
-    }));
+    // 2. Fetch all sabaq records for this student to calculate totals per teacher
+    const { data: sabaqRecords, error: sabaqError } = await supabase
+        .from('memorization_records')
+        .select('teacher_id, record_date, ayat_end')
+        .eq('student_id', studentId)
+        .eq('type', 'sabaq');
+
+    if (sabaqError) {
+        console.error("Error fetching sabaq records for history:", sabaqError);
+    }
+
+    const records = sabaqRecords || [];
+
+    return (historyData || [])
+        .sort((a, b) => {
+            // Sort by end_date NULL first (current assignment), then by start_date DESC
+            if (!a.end_date && b.end_date) return -1;
+            if (a.end_date && !b.end_date) return 1;
+            return new Date(b.start_date).getTime() - new Date(a.start_date).getTime();
+        })
+        .map(item => {
+            // Calculate total sabaq lines for this specific assignment period
+            const periodStart = new Date(item.start_date);
+            const periodEnd = item.end_date ? new Date(item.end_date) : new Date('2099-12-31');
+            
+            const totalSabaq = records
+                .filter(r => {
+                    const recordDate = new Date(r.record_date);
+                    return r.teacher_id === item.teacher_id && 
+                           recordDate >= periodStart && 
+                           recordDate <= periodEnd;
+                })
+                .reduce((sum, r) => sum + (Number(r.ayat_end) || 0), 0);
+
+            return {
+                ...item,
+                halaqah_name: item.halaqah_classes?.name || 'Halaqah Dihapus',
+                teacher_name: item.profiles?.full_name || 'Ustadz Dihapus',
+                total_sabaq_lines: totalSabaq
+            };
+        });
 };
 
 /**

@@ -79,7 +79,7 @@ const ClassFormModal: React.FC<ClassFormModalProps> = ({ isOpen, onClose, onSubm
                     type="text" 
                     value={className}
                     onChange={e => setClassName(e.target.value)}
-                    className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-xl text-xs font-black text-slate-800 outline-none uppercase focus:border-indigo-400 focus:bg-white transition-all"
+                    className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-xl text-xs font-black text-slate-800 outline-none uppercase focus:border-jade-400 focus:bg-white transition-all"
                     placeholder="7"
                 />
             </div>
@@ -102,7 +102,7 @@ const ClassFormModal: React.FC<ClassFormModalProps> = ({ isOpen, onClose, onSubm
                 <button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="flex-[2] flex items-center justify-center px-4 py-2.5 font-black text-[9px] uppercase tracking-tight rounded-xl border-2 border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
+                    className="flex-[2] flex items-center justify-center px-4 py-2.5 font-black text-[9px] uppercase tracking-tight rounded-xl border-2 border-jade-600 bg-jade-600 text-white shadow-lg shadow-primary-100 hover:bg-jade-700 transition-all active:scale-95 disabled:opacity-50"
                 >
                     {isSubmitting ? '...' : (initialData ? 'SIMPAN' : 'BUAT KELAS')}
                 </button>
@@ -703,7 +703,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
       <div className="transition-all">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div className="flex items-center gap-4 bg-slate-50/50 p-2 pr-6 rounded-2xl border-2 border-slate-100">
-                  <div className="w-12 h-12 bg-white border-2 border-slate-100 shadow-sm rounded-xl flex items-center justify-center text-indigo-600">
+                  <div className="w-12 h-12 bg-white border-2 border-slate-100 shadow-sm rounded-xl flex items-center justify-center text-jade-600">
                       <RefreshCw className="w-6 h-6" />
                   </div>
                   <div>
@@ -721,12 +721,12 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
                                   type="number" 
                                   min={1}
                                   max={systemConfig.max - 1}
-                                  className="w-8 h-6 text-center text-xs font-black bg-indigo-50 text-indigo-600 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+                                  className="w-8 h-6 text-center text-xs font-black bg-jade-50 text-jade-600 rounded-lg outline-none focus:ring-2 focus:ring-jade-500"
                                   value={systemConfig.min}
                                   onChange={e => setSystemConfig({...systemConfig, min: parseInt(e.target.value) || 0})}
                               />
                           ) : (
-                              <p className="text-xs font-black text-indigo-600">KELAS {systemConfig.min}</p>
+                              <p className="text-xs font-black text-jade-600">KELAS {systemConfig.min}</p>
                           )}
                       </div>
 
@@ -774,7 +774,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
                                 }}
                                 className={`flex items-center px-4 py-2 font-black text-xs rounded-xl border-2 transition-all active:scale-95 ${
                                     isEditingConfig 
-                                    ? 'border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-200' 
+                                    ? 'border-jade-600 bg-jade-600 text-white shadow-lg shadow-primary-200' 
                                     : 'border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-100'
                                 }`}
                             >
@@ -783,7 +783,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
 
                             <button 
                                 onClick={() => setIsGenerateModalOpen(true)}
-                                className="flex items-center px-4 py-2 font-black text-xs rounded-xl border-2 border-indigo-400 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 shadow-lg shadow-indigo-100 transition-all active:scale-95 flex items-center gap-1.5"
+                                className="flex items-center px-4 py-2 font-black text-xs rounded-xl border-2 border-jade-400 bg-jade-50 text-jade-700 hover:bg-jade-100 shadow-lg shadow-primary-100 transition-all active:scale-95 flex items-center gap-1.5"
                             >
                                 <Wand2 className="w-3.5 h-3.5" />
                                 GENERATE STRUKTUR
@@ -1176,7 +1176,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
                       </td>
                       <td className="px-4 py-4 text-center border-r-2 border-b border-slate-100">
                         <span className={`px-2.5 py-1 rounded-lg text-[8.5px] font-black uppercase tracking-tight border ${
-                          alumni.gender === 'L' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-pink-50 text-pink-600 border-pink-100'
+                          alumni.gender === 'L' ? 'bg-jade-50 text-jade-600 border-jade-100' : 'bg-pink-50 text-pink-600 border-pink-100'
                         }`}>
                           {alumni.gender === 'L' ? 'Putra' : alumni.gender === 'P' ? 'Putri' : '-'}
                         </span>
@@ -1398,7 +1398,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
                                       <div className="flex items-center gap-2">
                                           <p className="text-[8px] text-slate-400 font-black tracking-[0.1em]">{student.nis || 'TANPA NIS'}</p>
                                           <div className="w-1 h-1 bg-slate-200 rounded-full" />
-                                          <div className={`text-[8px] font-black uppercase tracking-widest ${student.gender === 'L' ? 'text-indigo-400' : 'text-pink-400'}`}>
+                                          <div className={`text-[8px] font-black uppercase tracking-widest ${student.gender === 'L' ? 'text-jade-400' : 'text-pink-400'}`}>
                                               {student.gender === 'L' ? 'Putra' : 'Putri'}
                                           </div>
                                       </div>
@@ -1504,7 +1504,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
                           <div className="flex items-start gap-2.5 p-3 bg-amber-50 rounded-[14px] border border-amber-100">
                               <span className="text-[9px] font-black text-amber-600 bg-amber-100 rounded-md px-1.5 py-0.5 shrink-0 mt-0.5">02</span>
                               <p className="text-[10px] font-bold text-amber-800 leading-snug">
-                                  <span className="font-black">Kelulusan:</span> Jika mencapai Kelas <span className="font-black text-slate-800">{systemConfig.max}</span>, kelas dihapus dan terlahir kembali sebagai Kelas <span className="font-black text-indigo-600">{systemConfig.min}</span>
+                                  <span className="font-black">Kelulusan:</span> Jika mencapai Kelas <span className="font-black text-slate-800">{systemConfig.max}</span>, kelas dihapus dan terlahir kembali sebagai Kelas <span className="font-black text-jade-600">{systemConfig.min}</span>
                               </p>
                           </div>
                       </div>

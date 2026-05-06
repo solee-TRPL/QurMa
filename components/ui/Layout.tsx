@@ -35,12 +35,13 @@ import {
   Bell,
   Clock,
   Info,
-  ChevronRight
+  ChevronRight,
+  Crosshair
 } from 'lucide-react';
 import { useNotification } from '../../lib/NotificationContext';
 import { ConfirmModal } from './ConfirmModal';
 import { supabase } from '../../lib/supabase';
-import { AppNotification, getMyNotifications, markNotificationsAsRead, getGuardianStats } from '../../services/dataService';
+import { AppNotification, getMyNotifications, markNotificationsAsRead, getGuardianStats, getHalaqahs } from '../../services/dataService';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -81,6 +82,7 @@ export const Layout: React.FC<LayoutProps> = ({
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [totalHafalan, setTotalHafalan] = useState<string | null>(null);
   const [savedAccounts, setSavedAccounts] = useState<any[]>([]);
+  const [halaqahName, setHalaqahName] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string, name: string } | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -96,12 +98,21 @@ export const Layout: React.FC<LayoutProps> = ({
   };
 
   useEffect(() => {
-    if (user.role === UserRole.SANTRI) {
-        getGuardianStats(user.id).then(stats => {
+    const loadStats = async () => {
+        if (user.role === UserRole.SANTRI) {
+            const stats = await getGuardianStats(user.id);
             if (stats) setTotalHafalan(stats.totalJuz.toString());
-        });
-    }
-  }, [user.id, user.role]);
+        }
+
+        if (user.role === UserRole.TEACHER && user.tenant_id) {
+            const res = await getHalaqahs(user.tenant_id);
+            const mine = res.find(h => h.teacher_id === user.id);
+            if (mine) setHalaqahName(mine.name);
+        }
+    };
+
+    loadStats();
+  }, [user.id, user.role, currentPage, user.tenant_id]);
 
   useEffect(() => {
     fetchMyNotifications();
@@ -227,14 +238,14 @@ export const Layout: React.FC<LayoutProps> = ({
         }}
         className={`w-full flex items-center px-4 py-2.5 text-sm transition-all duration-200 rounded-xl border-2 group
           ${active 
-            ? 'bg-indigo-50 border-indigo-100 text-indigo-700 shadow-sm shadow-indigo-50' 
-            : 'bg-transparent border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-800'}
+            ? 'bg-[#f2c14e] border-[#d4a017] text-slate-900 shadow-lg shadow-black/10' 
+            : 'bg-transparent border-transparent text-[#e2f3eb] hover:bg-white/10 hover:text-white'}
         `}
       >
-        <Icon className={`w-4 h-4 mr-3 transition-colors ${active ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
+        <Icon className={`w-4 h-4 mr-3 transition-colors ${active ? 'text-slate-800' : 'text-[#a5d1bd] group-hover:text-white'}`} />
         <span className={`tracking-tight ${active ? 'font-black' : 'font-bold'} text-[11px] uppercase`}>{label}</span>
         {active && (
-            <div className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" />
+            <div className="ml-auto w-1.5 h-1.5 rounded-full bg-slate-900 animate-pulse" />
         )}
       </button>
     </div>
@@ -277,7 +288,7 @@ export const Layout: React.FC<LayoutProps> = ({
   const getAvatarColor = (name: string) => {
     const colors = [
         'bg-emerald-500', 'bg-blue-500', 'bg-purple-500', 
-        'bg-amber-500', 'bg-rose-500', 'bg-indigo-500', 'bg-cyan-500'
+        'bg-amber-500', 'bg-rose-500', 'bg-primary-500', 'bg-cyan-500'
     ];
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
@@ -287,7 +298,7 @@ export const Layout: React.FC<LayoutProps> = ({
   };
 
   return (
-    <div className={`min-h-screen bg-[#F8F9FB] font-sans text-slate-800 ${paddingTopClass}`}>
+    <div className={`min-h-screen bg-white font-sans text-slate-800 ${paddingTopClass}`}>
       
       {isImpersonating && (
         <div className="fixed top-0 left-0 right-0 h-10 bg-slate-800 text-white z-[70] flex items-center justify-between px-4 shadow-md">
@@ -311,34 +322,34 @@ export const Layout: React.FC<LayoutProps> = ({
       )}
 
       <aside 
-        className={`fixed inset-y-0 left-0 z-[60] w-64 bg-white border-r border-slate-100 flex flex-col h-[calc(100vh)] transition-transform duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${isImpersonating ? 'mt-10 h-[calc(100vh-40px)]' : ''}`}
+        className={`fixed inset-y-0 left-0 z-[60] w-64 bg-[#2a7f5e] border-r border-[#1e6348] flex flex-col h-[calc(100vh)] transition-transform duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${isImpersonating ? 'mt-10 h-[calc(100vh-40px)]' : ''}`}
       >
-        <div className="px-5 py-8 flex items-center gap-4 shrink-0 border-b border-slate-50/50 mb-2">
-            <div className={`w-14 h-14 rounded-[20px] flex items-center justify-center overflow-hidden shadow-sm border border-slate-100 transition-all bg-white shrink-0`}>
+        <div className="px-5 py-8 flex items-center gap-4 shrink-0 border-b border-white/5 mb-2">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center overflow-hidden shadow-lg border border-white/10 transition-all bg-white shrink-0`}>
                 {isSuperAdmin ? (
-                    <Globe className="w-7 h-7 text-slate-800" />
+                    <img src="/public/images/qurma-logo.png" alt="Logo" className="w-full h-full object-contain p-1" />
                 ) : (
                     tenant?.logo_url ? (
                         <img src={tenant.logo_url} alt="Logo" className="w-full h-full object-contain p-1" />
                     ) : (
-                        <School className="w-7 h-7 text-indigo-600" />
+                        <School className="w-7 h-7 text-jade-600" />
                     )
                 )}
             </div>
             <div className="overflow-hidden">
-                <h1 className="text-sm font-black text-slate-900 tracking-tight leading-none truncate">
+                <h1 className="text-sm font-black text-white tracking-tight leading-none truncate">
                     {isSuperAdmin ? 'PLATFORM HQ' : (tenant?.name?.toUpperCase() || 'QURMA')}
                 </h1>
-                <p className={`text-[9px] font-black uppercase tracking-widest mt-1 opacity-60 ${isSuperAdmin ? 'text-slate-500' : 'text-indigo-600'}`}>
+                <p className={`text-[9px] font-black uppercase tracking-widest mt-1 opacity-60 ${isSuperAdmin ? 'text-[#a5d1bd]' : 'text-[#f2c14e]'}`}>
                     {isSuperAdmin ? 'Super Control' : 'Tahfidz System'}
                 </p>
             </div>
-            <button className="lg:hidden ml-auto text-slate-400" onClick={() => setIsSidebarOpen(false)}>
+            <button className="lg:hidden ml-auto text-slate-500 hover:text-white" onClick={() => setIsSidebarOpen(false)}>
                 <X className="w-5 h-5" />
             </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-4 space-y-1 overscroll-contain">
+        <div className="flex-1 overflow-y-auto py-4 space-y-1 overscroll-contain no-scrollbar">
             {isSuperAdmin ? (
                 <>
                     <NavItem icon={LayoutDashboard} label="Dashboard" page="sa-dashboard" active={currentPage === 'sa-dashboard'} />
@@ -352,7 +363,7 @@ export const Layout: React.FC<LayoutProps> = ({
                     {user.role === UserRole.TEACHER && (
                         <>
                             <NavItem icon={BookOpen} label="Input Hafalan" page="input-hafalan" active={currentPage === 'input-hafalan'}/>
-                            <NavItem icon={Target} label="Target Pekanan" page="weekly-target" active={currentPage === 'weekly-target'}/>
+                            <NavItem icon={Crosshair} label="Target Pekanan" page="weekly-target" active={currentPage === 'weekly-target' || currentPage === 'weekly-target-notes'}/>
                             {/* <NavItem icon={TrendingUp} label="Kelola Perkembangan" page="student-progress-manage" active={currentPage === 'student-progress-manage'}/> */}
                             <NavItem icon={Users} label="Data Santri" page="data-santri" active={currentPage === 'data-santri'}/>
                         </>
@@ -365,7 +376,7 @@ export const Layout: React.FC<LayoutProps> = ({
                             <NavItem icon={GraduationCap} label="Manajemen Halaqah" page="halaqah-management" active={currentPage === 'halaqah-management'}/>
                             {/* <NavItem icon={Target} label="Manajemen Target" page="target-management" active={currentPage === 'target-management'}/> */}
                             <NavItem icon={Activity} label="Monitor Hafalan Santri" page="monitor-hafalan" active={currentPage === 'monitor-hafalan'}/>
-                            <NavItem icon={ClipboardCheck} label="Monitor Target Pekanan" page="weekly-target-monitor" active={currentPage === 'weekly-target-monitor'}/>
+                            <NavItem icon={ClipboardCheck} label="Monitor Target Pekanan" page="weekly-target-monitor" active={currentPage === 'weekly-target-monitor' || currentPage === 'weekly-target-monitor-notes'}/>
                             <NavItem icon={ShieldCheck} label="Audit Logs" page="audit-logs" active={currentPage === 'audit-logs'}/>
                         </>
                     )}
@@ -382,7 +393,7 @@ export const Layout: React.FC<LayoutProps> = ({
             )}
         </div>
 
-        <div className="py-4 border-t border-slate-100 shrink-0 bg-white space-y-1">
+        <div className="py-4 border-t border-white/5 shrink-0 bg-transparent space-y-1">
             {isSuperAdmin ? (
                 <>
                     <NavItem icon={Settings} label="Pengaturan Platform" page="sa-platform-settings" active={currentPage === 'sa-platform-settings'} />
@@ -395,11 +406,26 @@ export const Layout: React.FC<LayoutProps> = ({
       </aside>
 
       <div className={`lg:pl-64 flex flex-col min-h-screen transition-all duration-300`}>
-        <header className={`fixed right-0 left-0 lg:left-64 z-50 h-16 bg-white border-b border-slate-100 flex items-center justify-between px-4 lg:px-8 shrink-0 transition-all shadow-sm ${topOffsetClass}`}>
-            <div className="flex items-center gap-4">
+        <header className={`fixed right-0 left-0 lg:left-64 z-50 h-16 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-4 lg:px-8 shrink-0 transition-all shadow-sm ${topOffsetClass}`}>
+            <div className="flex items-center gap-2 sm:gap-4">
                 <button className="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors" onClick={() => setIsSidebarOpen(true)}>
                     <Menu className="w-6 h-6" />
                 </button>
+                
+                {/* HALAQAH NAME FOR TEACHER ROLE - MOVED TO LEFT FOR MOBILE VISIBILITY, HIDDEN ON DESKTOP HERE */}
+                {user.role === UserRole.TEACHER && halaqahName && (
+                    <div className="md:hidden flex bg-jade-50/50 px-2.5 py-1 rounded-lg border border-jade-100 shadow-sm animate-in fade-in slide-in-from-left-4 duration-500">
+                        <div className="flex flex-col items-start justify-center">
+                            <span className="text-[6px] md:text-[7px] text-jade-400 uppercase tracking-widest font-black leading-none mb-0.5 md:mb-1 opacity-70">
+                                Halaqah
+                            </span>
+                            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none">
+                                {halaqahName}
+                            </span>
+                        </div>
+                    </div>
+                )}
+
                 <div className="hidden md:block">
                     <h2 className="text-base font-black text-slate-900 uppercase tracking-tight leading-none">{title}</h2>
                     {subtitle && <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-80">{subtitle}</p>}
@@ -407,102 +433,122 @@ export const Layout: React.FC<LayoutProps> = ({
             </div>
 
             <div className="flex items-center gap-3 ml-auto relative">
+                 {/* NOTIFICATION BELL - HIDDEN FOR ADMIN & SUPERADMIN */}
+                 {user.role !== UserRole.ADMIN && user.role !== UserRole.SUPERADMIN && (
+                    <div className="relative" ref={notifRef}>
+                        <button 
+                            onClick={() => {
+                                setIsNotificationsOpen(!isNotificationsOpen);
+                                if (!isNotificationsOpen && unreadCount > 0) {
+                                    markNotificationsAsRead(user.id);
+                                    // Optimistically clear unread locally
+                                    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+                                }
+                            }}
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all border ${
+                                isNotificationsOpen 
+                                ? 'bg-jade-50 text-jade-600 border-jade-100 shadow-inner' 
+                                : 'bg-white text-jade-600 border-slate-100 hover:bg-jade-50 hover:text-jade-700 shadow-sm'
+                            }`}
+                        >
+                            <Bell className={`w-5 h-5 ${unreadCount > 0 ? 'animate-bounce' : ''}`} />
+                            {unreadCount > 0 && (
+                                <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-black rounded-full flex items-center justify-center ring-2 ring-white">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
+                            )}
+                        </button>
+
+                        {/* Notification Dropdown */}
+                        {isNotificationsOpen && (
+                            <div className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-20 sm:top-full mt-0 sm:mt-4 w-auto sm:w-80 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 ring-1 ring-slate-900/5 z-[110] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top sm:origin-top-right">
+                                <div className="p-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                                    <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Pemberitahuan</h4>
+                                    <span className="text-[9px] font-black bg-jade-50 text-jade-600 px-2 py-0.5 rounded-full">Terbaru</span>
+                                </div>
+
+                                <div className="max-h-[255px] overflow-y-auto no-scrollbar">
+                                    {notifications.length > 0 ? (
+                                        notifications.slice(0, 10).map((notif) => (
+                                            <div 
+                                                key={notif.id} 
+                                                onClick={() => handleNotificationClick(notif)}
+                                                className={`p-4 border-b border-slate-50 hover:bg-slate-50/80 transition-all flex gap-3.5 group cursor-pointer relative ${!notif.is_read ? 'bg-jade-50/20' : ''}`}
+                                            >
+                                                {!notif.is_read && (
+                                                    <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
+                                                )}
+                                                <div className={`w-10 h-10 rounded-2xl shrink-0 flex items-center justify-center transition-transform group-hover:scale-105 duration-300 ${
+                                                    notif.type === 'success' ? 'bg-emerald-50 text-emerald-600 shadow-sm shadow-emerald-100' :
+                                                    notif.type === 'error' ? 'bg-rose-50 text-rose-600 shadow-sm shadow-rose-100' :
+                                                    'bg-jade-50 text-jade-600 shadow-sm shadow-primary-100'
+                                                }`}>
+                                                    {notif.title.includes('Hafalan') ? <BookOpen className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between gap-2 mb-1">
+                                                        <p className="text-[11px] font-black text-slate-900 leading-none truncate">{notif.title}</p>
+                                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter shrink-0">{formatTime(notif.created_at)}</span>
+                                                    </div>
+                                                    <p className="text-[10.5px] font-medium text-slate-500 leading-relaxed line-clamp-2">
+                                                        {renderFormattedMessage(notif.message)}
+                                                    </p>
+                                                </div>
+                                                <div className="self-center opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
+                                                    <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="py-12 px-6 text-center">
+                                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                                <Bell className="w-6 h-6 text-slate-300" />
+                                            </div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Belum ada pemberitahuan</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                 )}
+
                 {/* TOTAL HAFALAN FOR SANTRI - MINIMALIST STYLE */}
                 {user.role === UserRole.SANTRI && (
-                    <div className="hidden sm:flex items-center gap-2 px-2 animate-in fade-in slide-in-from-right-4 duration-500">
-                        <span className="text-[14px] font-black text-slate-700 tracking-tight leading-none">
-                            {totalHafalan || '0'} <span className="text-[9px] text-slate-400 font-black uppercase tracking-[0.1em] ml-0.5">Juz</span>
-                        </span>
+                    <div className="hidden sm:flex bg-jade-50/50 px-3 py-1.5 rounded-xl border border-jade-100 shadow-sm animate-in fade-in slide-in-from-right-4 duration-500 mx-1">
+                        <div className="flex flex-col items-start justify-center">
+                            <span className="text-[7px] text-jade-400 uppercase tracking-widest font-black leading-none mb-1 opacity-70">
+                                Jumlah Hafalan
+                            </span>
+                            <span className="text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none">
+                                {totalHafalan || '0'} JUZ
+                            </span>
+                        </div>
                     </div>
                 )}
 
-                 {/* NOTIFICATION BELL */}
-                 <div className="relative" ref={notifRef}>
-                     <button 
-                        onClick={() => {
-                            setIsNotificationsOpen(!isNotificationsOpen);
-                            if (!isNotificationsOpen && unreadCount > 0) {
-                                markNotificationsAsRead(user.id);
-                                // Optimistically clear unread locally
-                                setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-                            }
-                        }}
-                        className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all border ${
-                            isNotificationsOpen 
-                            ? 'bg-indigo-50 text-indigo-600 border-indigo-100 shadow-inner' 
-                            : 'bg-white text-slate-400 border-slate-100 hover:bg-slate-50 hover:text-indigo-500 shadow-sm'
-                        }`}
-                     >
-                        <Bell className={`w-5 h-5 ${unreadCount > 0 ? 'animate-bounce' : ''}`} />
-                        {unreadCount > 0 && (
-                            <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-black rounded-full flex items-center justify-center ring-2 ring-white">
-                                {unreadCount > 9 ? '9+' : unreadCount}
+                  {/* HALAQAH NAME FOR TEACHER ROLE - DESKTOP VIEW (RIGHT OF NOTIFICATION) */}
+                  {user.role === UserRole.TEACHER && halaqahName && (
+                    <div className="hidden md:flex bg-jade-50/50 px-3 py-1.5 rounded-xl border border-jade-100 shadow-sm animate-in fade-in slide-in-from-right-4 duration-500 mx-1">
+                        <div className="flex flex-col items-start justify-center">
+                            <span className="text-[7px] text-jade-400 uppercase tracking-widest font-black leading-none mb-1 opacity-70">
+                                Halaqah
                             </span>
-                        )}
-                     </button>
-
-                     {/* Notification Dropdown */}
-                     {isNotificationsOpen && (
-                         <div className="absolute right-0 top-full mt-4 w-72 sm:w-80 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 ring-1 ring-slate-900/5 z-[110] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
-                             <div className="p-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                                 <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Pemberitahuan</h4>
-                                 <span className="text-[9px] font-black bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">Terbaru</span>
-                             </div>
-
-                             <div className="max-h-[350px] overflow-y-auto no-scrollbar">
-                                 {notifications.length > 0 ? (
-                                     notifications.map((notif) => (
-                                         <div 
-                                            key={notif.id} 
-                                            onClick={() => handleNotificationClick(notif)}
-                                            className={`p-4 border-b border-slate-50 hover:bg-slate-50/80 transition-all flex gap-3.5 group cursor-pointer relative ${!notif.is_read ? 'bg-indigo-50/20' : ''}`}
-                                         >
-                                             {!notif.is_read && (
-                                                 <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
-                                             )}
-                                             <div className={`w-10 h-10 rounded-2xl shrink-0 flex items-center justify-center transition-transform group-hover:scale-105 duration-300 ${
-                                                 notif.type === 'success' ? 'bg-emerald-50 text-emerald-600 shadow-sm shadow-emerald-100' :
-                                                 notif.type === 'error' ? 'bg-rose-50 text-rose-600 shadow-sm shadow-rose-100' :
-                                                 'bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100'
-                                             }`}>
-                                                 {notif.title.includes('Hafalan') ? <BookOpen className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
-                                             </div>
-                                             <div className="flex-1 min-w-0">
-                                                 <div className="flex items-center justify-between gap-2 mb-1">
-                                                     <p className="text-[11px] font-black text-slate-900 leading-none truncate">{notif.title}</p>
-                                                     <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter shrink-0">{formatTime(notif.created_at)}</span>
-                                                 </div>
-                                                 <p className="text-[10.5px] font-medium text-slate-500 leading-relaxed line-clamp-2">
-                                                     {renderFormattedMessage(notif.message)}
-                                                 </p>
-                                             </div>
-                                             <div className="self-center opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
-                                                <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
-                                             </div>
-                                         </div>
-                                     ))
-                                 ) : (
-                                     <div className="py-12 px-6 text-center">
-                                         <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                             <Bell className="w-6 h-6 text-slate-300" />
-                                         </div>
-                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Belum ada pemberitahuan</p>
-                                     </div>
-                                 )}
-                             </div>
-                         </div>
-                     )}
-                 </div>
+                            <span className="text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none">
+                                {halaqahName}
+                            </span>
+                        </div>
+                    </div>
+                  )}
 
                  {/* WEEKLY DATE FOR SANTRI ROLE - TIERED STYLE */}
                  {user.role === UserRole.SANTRI && (
-                    <div className="hidden xl:flex bg-white p-1 rounded-[20px] border border-slate-200 shadow-sm ring-1 ring-white animate-in fade-in slide-in-from-right-4 duration-500">
-                        <div className="px-5 py-1.5 text-[10px] font-black uppercase tracking-widest text-indigo-600 flex flex-col items-center justify-center">
-                            <span className="text-[7px] text-indigo-300 mt-0.5 opacity-80 uppercase tracking-widest font-black leading-none mb-1">
+                    <div className="hidden xl:flex bg-jade-50/50 px-3 py-1.5 rounded-xl border border-jade-100 shadow-sm animate-in fade-in slide-in-from-right-4 duration-500 mx-1">
+                        <div className="flex flex-col items-start justify-center">
+                            <span className="text-[7px] text-jade-400 uppercase tracking-widest font-black leading-none mb-1 opacity-70">
                                 Pekan Ini
                             </span>
-                            <span className="flex items-center gap-1.5 whitespace-nowrap leading-none">
-                                {/* <Calendar className="w-3.5 h-3.5 text-indigo-400" /> */}
+                            <span className="text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none">
                                 {(() => {
                                     const today = new Date();
                                     const day = today.getDay();
@@ -512,13 +558,15 @@ export const Layout: React.FC<LayoutProps> = ({
                                     const friday = new Date(monday);
                                     friday.setDate(monday.getDate() + 4);
                                     const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short' };
-                                    return `${monday.toLocaleDateString('id-ID', options)} - ${friday.toLocaleDateString('id-ID', options)}`;
+                                    return `${monday.toLocaleDateString('id-ID', options)} - ${friday.toLocaleDateString('id-ID', options)}`.toUpperCase();
                                 })()}
                             </span>
                         </div>
                     </div>
                  )}
 
+
+                 <div className="relative" ref={dropdownRef}>
                   <button 
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center gap-3 hover:bg-slate-50 p-1.5 rounded-2xl transition-all border border-transparent hover:border-slate-100"
@@ -527,7 +575,7 @@ export const Layout: React.FC<LayoutProps> = ({
                         <span className="text-[9.5px] lg:text-xs font-black text-slate-900 uppercase tracking-tighter truncate w-full text-right">
                             {(user.role === UserRole.SANTRI && user.student_name) ? user.student_name : (user.full_name || 'User')}
                         </span>
-                        <span className="text-[8px] lg:text-[10px] text-indigo-600 font-black uppercase tracking-widest opacity-70">{(user.role || '').replace('_', ' ')}</span>
+                        <span className="text-[8px] lg:text-[10px] text-jade-600 font-black uppercase tracking-widest opacity-70">{(user.role || '').replace('_', ' ')}</span>
                     </div>
                     <div className="w-9 h-9 bg-slate-200 rounded-2xl overflow-hidden border-2 border-white shadow-sm ring-1 ring-slate-100">
                         {user.avatar_url ? (
@@ -615,6 +663,7 @@ export const Layout: React.FC<LayoutProps> = ({
                         </div>
                     </div>
                  )}
+                </div>
             </div>
         </header>
 

@@ -82,7 +82,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onNavi
 
     const StatCard = ({ icon: Icon, label, value, color }: any) => {
         const colorMap: any = {
-            primary: 'indigo',
+            primary: 'jade',
             blue: 'blue',
             orange: 'orange',
             green: 'emerald'
@@ -98,7 +98,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onNavi
                     <Icon className="w-4 h-4 lg:w-5 lg:h-5" />
                 </div>
                 <div className="min-w-0">
-                    <p className="text-[8px] lg:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5 group-hover:text-indigo-600 transition-colors truncate">{label}</p>
+                    <p className="text-[8px] lg:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5 group-hover:text-jade-600 transition-colors truncate">{label}</p>
                     <div className="text-base lg:text-xl font-black text-slate-800 tracking-tight leading-none">
                         {loading ? (
                             <div className="h-4 lg:h-5 w-8 lg:w-12 bg-slate-100 animate-pulse rounded" />
@@ -125,9 +125,6 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onNavi
                 <div className="lg:col-span-3 bg-white p-6 rounded-2xl border-2 border-slate-50 shadow-sm relative overflow-hidden flex flex-col min-h-0">
                     <div className="flex justify-between items-center mb-6 shrink-0">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
-                                <TrendingUp className="w-5 h-5" />
-                            </div>
                             <div>
                                 <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-tight">
                                     Pertumbuhan Sekolah

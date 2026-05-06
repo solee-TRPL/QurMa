@@ -8,8 +8,10 @@ import {
     upsertWeeklyTarget, 
     getWeeklyAllTypeTotals,
     updateStudent,
-    getTenant
+    getTenant,
+    getLatestMemorizationBaselines
 } from '../../services/dataService';
+import { calculateLines, calculatePages, getNextAyah } from '../../lib/quranUtils';
 import { 
   ClipboardList, 
   Calendar, 
@@ -40,6 +42,8 @@ interface WeeklyTargetProps {
   saveTrigger?: number;
   onSaveSuccess?: () => void;
   isGlobalModalOpen?: boolean;
+  showNotesMode?: boolean;
+  onNavigate?: (page: any) => void;
 }
 
 interface TargetRow {
@@ -61,9 +65,10 @@ interface TargetRow {
   sabaqTarget: string;
   sabaqTargetSurat: string;
   sabaqKet: 'A' | 'B' | 'C' | '';
+  teacherNote: string;
 }
 
-export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedChanges, saveTrigger, onSaveSuccess, isGlobalModalOpen }) => {
+export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedChanges, saveTrigger, onSaveSuccess, isGlobalModalOpen, showNotesMode = false, onNavigate }) => {
   const [loading, setLoading] = useState(true);
   const [isDirty, setIsDirty] = useState(false);
   const { setLoading: setGlobalLoading } = useLoading();
@@ -85,9 +90,15 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
   const [students, setStudents] = useState<Student[]>([]);
   const [targets, setTargets] = useState<Record<string, TargetRow>>({});
   const [searchQuery, setSearchQuery] = useState('');
-  const [showNisKelas, setShowNisKelas] = useState(false);
+  const [showAtm, setShowAtm] = useState(false);
+  const [showNotes, setShowNotes] = useState(showNotesMode);
+
+  useEffect(() => {
+    setShowNotes(showNotesMode);
+  }, [showNotesMode]);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [weeklyActualTotals, setWeeklyActualTotals] = useState<Record<string, { sabaq: number, sabqi: number, manzil: number }>>({});
+  const [latestBaselines, setLatestBaselines] = useState<Record<string, Record<string, any>>>({});
   const [tenant, setTenant] = useState<any>(null);
   
   const [currentWeekOffset, setCurrentWeekOffset] = useState(() => {
@@ -136,7 +147,6 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
     setStartDate(weekDates[0]);
     setEndDate(weekDates[4]);
   }, [weekDates]);
-
 
   useEffect(() => { 
     // Sync URL when week offset changes
@@ -200,12 +210,14 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
             const hStudents = studentData.filter(s => s.halaqah_id === filteredHalaqah.id);
             setStudents(hStudents);
             
-            // NEW: Fetch existing targets AND actual weekly totals for this week
-            const [existingTargets, weeklyTotals] = await Promise.all([
+            // NEW: Fetch existing targets AND actual weekly totals AND latest baselines
+            const [existingTargets, weeklyTotals, baselines] = await Promise.all([
               getWeeklyTargets(hStudents.map(s => s.id), weekDates[0]),
-              getWeeklyAllTypeTotals(hStudents.map(s => s.id), weekDates[0])
+              getWeeklyAllTypeTotals(hStudents.map(s => s.id), weekDates[0]),
+              getLatestMemorizationBaselines(hStudents.map(s => s.id))
             ]);
             setWeeklyActualTotals(weeklyTotals);
+            setLatestBaselines(baselines);
             const targetMap = new Map(existingTargets.map(t => [t.student_id, t]));
 
             const initialTargets: Record<string, TargetRow> = {};
@@ -239,7 +251,8 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                     sabqiKet: calculateABCStatus(weeklyTotals[s.id]?.sabqi || 0, data.sabqi_target || 0),
                     sabaqTarget: data.sabaq_target?.toString() || '',
                     sabaqTargetSurat: data.sabaq_target_surat || '',
-                    sabaqKet: calculateABCStatus(weeklyTotals[s.id]?.sabaq || 0, data.sabaq_target || 0)
+                    sabaqKet: calculateABCStatus(weeklyTotals[s.id]?.sabaq || 0, data.sabaq_target || 0),
+                    teacherNote: data.teacher_note || ''
                 };
             });
             setTargets(initialTargets);
@@ -296,6 +309,63 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
             studentTargets.manzilKet = calculateABCStatus(achievedTotal, targetVal);
         }
 
+        // 4. Automation for Sabaq (Automatic Line Count)
+        if (field === 'sabaqTargetSurat') {
+            const [endSurah, endAyahStr] = value.split(':');
+            const endAyah = parseInt(endAyahStr || '0');
+            const baseline = latestBaselines[studentId]?.sabaq;
+            
+            if (baseline && endSurah && endAyah > 0) {
+                const nextStart = getNextAyah(baseline.surah_name, baseline.ayat_start);
+                if (nextStart) {
+                    const lineCount = calculateLines(nextStart.surah, nextStart.ayah, endSurah, endAyah);
+                    studentTargets.sabaqTarget = lineCount > 0 ? lineCount.toString() : '';
+                    const achievedTotal = weeklyActualTotals[studentId]?.sabaq || 0;
+                    studentTargets.sabaqKet = calculateABCStatus(achievedTotal, lineCount);
+                }
+            } else {
+                studentTargets.sabaqTarget = '';
+            }
+        }
+
+        // 5. Automation for Sabqi (Automatic Page Count)
+        if (field === 'sabqiTargetSurat') {
+            const [endSurah, endAyahStr] = value.split(':');
+            const endAyah = parseInt(endAyahStr || '0');
+            const baseline = latestBaselines[studentId]?.sabqi;
+            
+            if (baseline && endSurah && endAyah > 0) {
+                const nextStart = getNextAyah(baseline.surah_name, baseline.ayat_start);
+                if (nextStart) {
+                    const pageCount = calculatePages(nextStart.surah, nextStart.ayah, endSurah, endAyah);
+                    studentTargets.sabqiTarget = pageCount > 0 ? pageCount.toString() : '';
+                    const achievedTotal = weeklyActualTotals[studentId]?.sabqi || 0;
+                    studentTargets.sabqiKet = calculateABCStatus(achievedTotal, pageCount);
+                }
+            } else {
+                studentTargets.sabqiTarget = '';
+            }
+        }
+
+        // 6. Automation for Manzil (Automatic Page Count)
+        if (field === 'manzilTarget') {
+            const [endSurah, endAyahStr] = value.split(':');
+            const endAyah = parseInt(endAyahStr || '0');
+            const baseline = latestBaselines[studentId]?.manzil;
+            
+            if (baseline && endSurah && endAyah > 0) {
+                const nextStart = getNextAyah(baseline.surah_name, baseline.ayat_start);
+                if (nextStart) {
+                    const pageCount = calculatePages(nextStart.surah, nextStart.ayah, endSurah, endAyah);
+                    studentTargets.manzilHal = pageCount > 0 ? pageCount.toString() : '';
+                    const achievedTotal = weeklyActualTotals[studentId]?.manzil || 0;
+                    studentTargets.manzilKet = calculateABCStatus(achievedTotal, pageCount);
+                }
+            } else {
+                studentTargets.manzilHal = '';
+            }
+        }
+
         return { ...prev, [studentId]: studentTargets };
     });
   };
@@ -338,7 +408,8 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                     sabaq_target_surat: target.sabaqTargetSurat,
                     sabaq_ket: target.sabaqKet as any,
                     current_juz: isNaN(juzVal) ? 0 : juzVal,
-                    current_page: isNaN(halVal) ? 0 : halVal
+                    current_page: isNaN(halVal) ? 0 : halVal,
+                    teacher_note: target.teacherNote
                 }
             };
 
@@ -384,7 +455,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
     return (
       <div className="flex flex-col items-center justify-center h-[400px] bg-white rounded-[32px] border-2 border-slate-50 shadow-sm animate-fade-in">
         <div className="flex flex-col items-center justify-center space-y-4 opacity-40">
-            <div className="w-10 h-10 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-10 h-10 border-2 border-jade-600 border-t-transparent rounded-full animate-spin" />
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 ml-[0.3em]">Memuat Data Target</p>
         </div>
       </div>
@@ -394,7 +465,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
   return (
     <div className="space-y-4">
       {/* Top Utility Strip */}
-      <div className="flex flex-col gap-2 p-2 lg:flex-row lg:justify-between lg:items-center bg-slate-100/30 rounded-[28px] border border-slate-200/50 backdrop-blur-sm shadow-sm">
+      <div className="flex flex-col gap-2 py-2 lg:flex-row lg:justify-between lg:items-center rounded-[28px]">
           {/* Row 1: Week & Halaqah */}
           <div className="flex items-stretch gap-2 w-full lg:w-auto">
               {/* Week Selector */}
@@ -406,11 +477,11 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                       <ChevronLeft className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
                   </button>
                   <div className="flex-1 flex flex-col items-center justify-center px-1 lg:px-4 py-1 text-center min-w-[120px] lg:min-w-[160px]">
-                      <span className="flex items-center gap-1.5 text-[8.5px] lg:text-[10px] font-black uppercase tracking-widest text-indigo-600 whitespace-nowrap">
+                      <span className="flex items-center gap-1.5 text-[8.5px] lg:text-[10px] font-black uppercase tracking-widest text-jade-600 whitespace-nowrap">
                           <Calendar className="w-2.5 h-2.5 lg:w-3.5 lg:h-3.5" />
                           {weekDisplayRange}
                       </span>
-                      <span className="text-[6px] lg:text-[7px] text-indigo-300 mt-0.5 opacity-80 uppercase tracking-[0.2em] font-black leading-none">
+                      <span className="text-[6px] lg:text-[7px] text-jade-300 mt-0.5 opacity-80 uppercase tracking-[0.2em] font-black leading-none">
                           {currentWeekOffset === 0 ? 'Pekan Ini' : 
                            currentWeekOffset === -1 ? 'Pekan Lalu' : 
                            currentWeekOffset === 1 ? 'Pekan Depan' : 
@@ -443,13 +514,13 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
           {/* Row 2: Search & Actions */}
           <div className="flex items-stretch gap-2 w-full lg:w-auto">
               <div className="relative flex-1 group">
-                  <Search className="absolute left-3 lg:left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3 h-3 lg:w-4 lg:h-4 group-focus-within:text-indigo-500 transition-colors" />
+                  <Search className="absolute left-3 lg:left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3 h-3 lg:w-4 lg:h-4 group-focus-within:text-jade-500 transition-colors" />
                   <input 
                       type="text" 
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
                       placeholder="Cari..." 
-                      className="w-full pl-8 lg:pl-11 pr-3 lg:pr-4 py-2 lg:py-2.5 text-[10px] lg:text-xs font-black border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-50/50 focus:border-indigo-500 focus:outline-none bg-white text-slate-900 transition-all placeholder:font-bold placeholder:text-slate-300 shadow-sm"
+                      className="w-full pl-8 lg:pl-11 pr-3 lg:pr-4 py-2 lg:py-2.5 text-[10px] lg:text-xs font-black border border-slate-200 rounded-2xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 focus:outline-none bg-white text-slate-900 transition-all placeholder:font-bold placeholder:text-slate-300 shadow-sm"
                   />
               </div>
               
@@ -466,7 +537,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                   </button>
                   <button 
                     onClick={() => setIsInfoModalOpen(true)}
-                    className="h-full p-2 lg:p-2.5 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 hover:border-indigo-100 transition-all shadow-sm group"
+                    className="h-full p-2 lg:p-2.5 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-jade-600 hover:border-jade-100 transition-all shadow-sm group"
                     title="Informasi Target Harian"
                   >
                       <HelpCircle className="w-3.5 h-3.5 lg:w-4 lg:h-4 group-hover:scale-110 transition-transform" />
@@ -485,14 +556,27 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
 
       {/* Main Table Grid */}
       <div className="bg-transparent rounded-none overflow-hidden flex flex-col">
-          <div className="px-2 py-2 lg:p-4 bg-transparent flex flex-row items-center justify-between gap-2 overflow-x-auto no-scrollbar mb-1 lg:mb-0">
-              <button 
-                onClick={() => setShowNisKelas(!showNisKelas)}
-                className={`hidden sm:flex flex-none items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all text-[8.5px] lg:text-[10px] font-black uppercase tracking-tight ${showNisKelas ? 'bg-indigo-50/50 text-indigo-600 border border-indigo-100' : 'bg-white text-slate-400 border border-slate-200 hover:bg-slate-50'}`}
-              >
-                <span className="lg:hidden">{showNisKelas ? 'Pribadi' : 'Identitas'}</span>
-                <span className="hidden lg:inline">{showNisKelas ? 'Sembunyikan Identitas' : 'Tampilkan Identitas'}</span>
-              </button>
+          <div className="py-2 lg:py-4 bg-transparent flex flex-row items-center justify-between gap-2 overflow-x-auto no-scrollbar mb-1 lg:mb-0">
+              <div className="hidden sm:flex items-center gap-2">
+                <button 
+                  onClick={() => setShowAtm(!showAtm)}
+                  className={`flex-none items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all text-[8.5px] lg:text-[10px] font-black uppercase tracking-tight ${showAtm ? 'bg-jade-50/50 text-jade-600 border border-jade-100' : 'bg-white text-slate-400 border border-slate-200 hover:bg-slate-50'}`}
+                >
+                  <span>{showAtm ? 'Sembunyikan ATM' : 'Tampilkan ATM'}</span>
+                </button>
+                <button 
+                  onClick={() => {
+                    if (onNavigate) {
+                        onNavigate(showNotes ? 'weekly-target' : 'weekly-target-notes');
+                    } else {
+                        setShowNotes(!showNotes);
+                    }
+                  }}
+                  className={`flex-none items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all text-[8.5px] lg:text-[10px] font-black uppercase tracking-tight ${showNotes ? 'bg-amber-50/50 text-amber-600 border border-amber-100' : 'bg-white text-slate-400 border border-slate-200 hover:bg-slate-50'}`}
+                >
+                  <span>{showNotes ? 'Sembunyikan Catatan' : 'Catatan'}</span>
+                </button>
+              </div>
 
               <div className="flex items-center gap-2 lg:gap-4 flex-nowrap whitespace-nowrap py-1">
                   <span className="flex items-center gap-1 text-[7.5px] lg:text-[9px] font-black text-amber-500 uppercase tracking-tighter"><CheckCircle2 className="w-2.5 h-2.5" /> A: Terlampaui</span>
@@ -507,31 +591,46 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                     <tr className="bg-white">
                         {/* Frozen Headers */}
                         <th rowSpan={2} className="w-[35px] lg:w-[50px] min-w-[35px] lg:min-w-[50px] hidden sm:table-cell sticky sm:left-0 bg-white z-50 px-1 lg:px-3 py-4 text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">No</th>
-                        {showNisKelas && (
-                            <th rowSpan={2} className="w-[70px] lg:w-[100px] min-w-[70px] lg:min-w-[100px] sticky sm:left-[50px] left-0 bg-white z-50 px-1 lg:px-3 py-4 text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100 animate-in slide-in-from-left-1 duration-300">NIS</th>
-                        )}
-                        <th rowSpan={2} className={`w-[95px] lg:w-[220px] min-w-[95px] lg:min-w-[220px] sticky ${showNisKelas ? 'sm:left-[150px] left-[70px]' : 'sm:left-[50px] left-0'} bg-white z-50 px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)] transition-all duration-300`}>Nama Santri</th>
+                        <th rowSpan={2} className={`w-[95px] lg:w-[220px] min-w-[95px] lg:min-w-[220px] sticky sm:left-[50px] left-0 bg-white z-50 px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)] transition-all duration-300`}>Nama Santri</th>
                         {/* {showNisKelas && (
                             <th rowSpan={2} className="w-[80px] min-w-[80px] sticky left-[370px] bg-white z-50 px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)] animate-in slide-in-from-left-1 duration-300">Kelas</th>
                         )} */}
                         
                         {/* Scrollable Group Headers */}
-                        <th colSpan={2} className="px-4 py-3 text-[9px] lg:text-[10px] font-bold text-emerald-600 uppercase tracking-tighter lg:tracking-widest text-center border-b border-r border-slate-100 bg-indigo-50/30 whitespace-nowrap">Hafalan Saat Ini</th>
-                        <th colSpan={3} className="px-4 py-3 text-[9px] lg:text-[10px] font-bold text-blue-600 uppercase tracking-tighter lg:tracking-widest text-center border-b border-r border-slate-100 bg-blue-50/30 whitespace-nowrap">ATM</th>
-                        <th colSpan={6} className="px-4 py-3 text-[9px] lg:text-[10px] font-bold text-emerald-600 uppercase tracking-tighter lg:tracking-widest text-center border-b border-slate-100 bg-emerald-50/30 whitespace-nowrap">Target Pekanan</th>
+                        {!showNotes ? (
+                          <>
+                            <th colSpan={2} className="px-4 py-3 text-[9px] lg:text-[10px] font-bold text-emerald-600 uppercase tracking-tighter lg:tracking-widest text-center border-b border-r border-slate-100 bg-jade-50/30 whitespace-nowrap">Hafalan Saat Ini</th>
+                            {showAtm && (
+                                <th colSpan={3} className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-black uppercase tracking-tighter lg:tracking-widest text-center border-b border-r border-slate-100 bg-blue-50/30 whitespace-nowrap">ATM</th>
+                            )}
+                            <th colSpan={6} className="px-4 py-3 text-[9px] lg:text-[10px] font-bold text-emerald-600 uppercase tracking-tighter lg:tracking-widest text-center border-b border-slate-100 bg-emerald-50/30 whitespace-nowrap">Target Pekanan</th>
+                          </>
+                        ) : (
+                          <th className="px-2 py-3 text-[9px] lg:text-[10px] font-bold text-amber-600 uppercase tracking-tighter lg:tracking-widest text-start border-b border-slate-100 bg-amber-50/30 whitespace-nowrap">Catatan Ustadz</th>
+                        )}
                     </tr>
                     <tr className="bg-white">
-                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-indigo-50/10 min-w-[45px] lg:min-w-[60px]">Juz</th>
-                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-indigo-50/10 min-w-[55px] lg:min-w-[80px]">Hal</th>
-                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-blue-50/10 min-w-[55px] lg:min-w-[80px]">Manzil</th>
-                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-blue-50/10 min-w-[45px] lg:min-w-[60px]">Berputar</th>
-                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-blue-600 uppercase text-center border-b border-r border-slate-100 bg-blue-50/10 min-w-[55px] lg:min-w-[80px]">Sabqi</th>
-                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[130px] lg:min-w-[180px]">Manzil (Hal/Juz)</th>
-                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[40px] lg:min-w-[50px]">Ket</th>
-                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[130px] lg:min-w-[180px]">Sabqi (Hal)</th>
-                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[40px] lg:min-w-[50px]">Ket</th>
-                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[130px] lg:min-w-[180px]">Sabaq (Baris)</th>
-                        <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b bg-emerald-50/10 min-w-[40px] lg:min-w-[50px]">Ket</th>
+                        {!showNotes ? (
+                          <>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-jade-50/10 min-w-[45px] lg:min-w-[60px]">Juz</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-jade-50/10 min-w-[55px] lg:min-w-[80px]">Hal</th>
+                            {showAtm && (
+                                <>
+                                    <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-amber-500 uppercase text-center border-b border-r border-slate-100 bg-blue-50/10 min-w-[55px] lg:min-w-[80px]">Manzil</th>
+                                    <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-amber-500 uppercase text-center border-b border-r border-slate-100 bg-blue-50/10 min-w-[45px] lg:min-w-[60px]">Berputar</th>
+                                    <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-600 uppercase text-center border-b border-r border-slate-100 bg-blue-50/10 min-w-[55px] lg:min-w-[80px]">Sabqi</th>
+                                </>
+                            )}
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[130px] lg:min-w-[180px]">Manzil (Hal/Juz)</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[40px] lg:min-w-[50px]">Ket</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[130px] lg:min-w-[180px]">Sabqi (Hal)</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[40px] lg:min-w-[50px]">Ket</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[130px] lg:min-w-[180px]">Sabaq (Baris)</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b bg-emerald-50/10 min-w-[40px] lg:min-w-[50px]">Ket</th>
+                          </>
+                        ) : (
+                          <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-start border-b bg-amber-50/10">Input Catatan Perkembangan Santri</th>
+                        )}
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-100">
@@ -546,270 +645,279 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                         const target = targets[s.id] || {
                           studentId: s.id, nis: s.nis || '-', name: s.full_name, className: '-',
                           hafalanJuz: '', hafalanHal: '', manzilAtm: '', hariAtm: '', sabqiAtm: '',
-                          manzilTarget: '', manzilHal: '', manzilKet: '', sabqiTarget: '', sabqiTargetSurat: '', sabqiKet: '', sabaqTarget: '', sabaqTargetSurat: '', sabaqKet: ''
+                          manzilTarget: '', manzilHal: '', manzilKet: '', sabqiTarget: '', sabqiTargetSurat: '', sabqiKet: '', sabaqTarget: '', sabaqTargetSurat: '', sabaqKet: '',
+                          teacherNote: ''
                         } as TargetRow;
 
                         return (
                             <tr key={s.id} className="group transition-colors">
                                 {/* Frozen Body Cells */}
                                 <td className="hidden sm:table-cell sticky sm:left-0 bg-white px-1 lg:px-3 py-4 text-[10px] lg:text-[11px] font-bold text-slate-400 text-center border-r border-slate-50 z-20 transition-colors">{idx + 1}</td>
-                                {showNisKelas && (
-                                    <td className="sticky sm:left-[50px] left-0 bg-white px-1 lg:px-3 py-4 text-[10px] lg:text-[11px] font-bold text-slate-600 text-center border-r border-slate-50 z-20 transition-all duration-300">{target.nis}</td>
-                                )}
-                                <td className={`sticky ${showNisKelas ? 'sm:left-[150px] left-[70px]' : 'sm:left-[50px] left-0'} bg-white px-2 lg:px-4 py-4 text-[9.5px] lg:text-xs font-bold text-slate-800 border-r border-slate-100 z-20 transition-all duration-300 whitespace-normal leading-tight break-words shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-[95px] lg:w-[220px]`}>{target.name}</td>
+                                <td className={`sticky sm:left-[50px] left-0 bg-white px-2 lg:px-4 py-4 text-[9.5px] lg:text-xs font-bold text-slate-800 border-r border-slate-100 z-20 transition-all duration-300 whitespace-normal leading-tight break-words shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-[95px] lg:w-[220px]`}>{target.name}</td>
                                 {/* {showNisKelas && (
                                     <td className="sticky left-[370px] bg-white px-3 py-4 text-[11px] font-bold text-slate-600 text-center border-r border-slate-100 z-20 transition-all duration-300 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">{target.className}</td>
                                 )} */}
                                 
                                 {/* Scrollable Content */}
-                                <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-indigo-50/5">
-                                    <input 
-                                        type="number" 
-                                        min="1" 
-                                        max="30" 
-                                        value={target.hafalanJuz} 
-                                        onChange={e => {
-                                            let val = parseInt(e.target.value);
-                                            if (isNaN(val)) handleInputChange(s.id, 'hafalanJuz', '');
-                                            else {
-                                                if (val < 0) val = 0;
-                                                if (val > 30) val = 30;
-                                                handleInputChange(s.id, 'hafalanJuz', val.toString());
-                                            }
-                                        }} 
-                                        className="w-full text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-indigo-300 rounded h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
-                                        placeholder="Juz" 
+                                {!showNotes ? (
+                                  <>
+                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-jade-50/5">
+                                        <input 
+                                            type="number" 
+                                            min="1" 
+                                            max="30" 
+                                            value={target.hafalanJuz} 
+                                            onChange={e => {
+                                                let val = parseInt(e.target.value);
+                                                if (isNaN(val)) handleInputChange(s.id, 'hafalanJuz', '');
+                                                else {
+                                                    if (val < 0) val = 0;
+                                                    if (val > 30) val = 30;
+                                                    handleInputChange(s.id, 'hafalanJuz', val.toString());
+                                                }
+                                            }} 
+                                            className="w-full text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-jade-300 rounded h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                            placeholder="Juz" 
+                                        />
+                                    </td>
+                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-jade-50/5">
+                                        <input 
+                                            type="number" 
+                                            min="1" 
+                                            max="20" 
+                                            value={target.hafalanHal} 
+                                            onChange={e => {
+                                                let val = parseInt(e.target.value);
+                                                if (isNaN(val)) handleInputChange(s.id, 'hafalanHal', '');
+                                                else {
+                                                    if (val < 0) val = 0;
+                                                    if (val > 20) val = 20;
+                                                    handleInputChange(s.id, 'hafalanHal', val.toString());
+                                                }
+                                            }} 
+                                            className="w-full text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-jade-300 rounded h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                            placeholder="Hal" 
+                                        />
+                                    </td>
+                                    {showAtm && (
+                                        <>
+                                            <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
+                                                <input readOnly type="text" value={target.manzilAtm ? `${target.manzilAtm} Hlm` : ''} className="w-full text-center text-[10px] lg:text-[11px] font-black text-amber-500 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
+                                            </td>
+                                            <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
+                                                <input readOnly type="text" value={target.hariAtm ? `${target.hariAtm} Hari` : ''} className="w-full text-center text-[10px] lg:text-[11px] font-black text-amber-500 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
+                                            </td>
+                                            <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
+                                                <input readOnly type="text" value={target.sabqiAtm} className="w-full text-center text-[10px] lg:text-[11px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
+                                            </td>
+                                        </>
+                                    )}
+
+                                    <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-50 bg-emerald-50/5">
+                                        <div className="flex items-center gap-0.5">
+                                            {/* Manzil Surah & Ayat */}
+                                            <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 shadow-sm focus-within:border-emerald-300">
+                                                <select 
+                                                    value={target.manzilTarget.split(':')[0] || ''} 
+                                                    onChange={e => {
+                                                        const surahName = e.target.value;
+                                                        // Set ayah to 1 automatically when surah is selected
+                                                        const ayah = surahName ? '1' : '';
+                                                        handleInputChange(s.id, 'manzilTarget', surahName ? `${surahName}:${ayah}` : '');
+                                                    }}
+                                                    className="w-[75px] lg:w-[100px] bg-transparent border-none focus:ring-0 text-[9px] lg:text-[10px] font-bold text-slate-700 outline-none appearance-none px-1 text-center"
+                                                >
+                                                    <option value="">- Surat -</option>
+                                                    {SURAH_DATA.map(surah => (
+                                                        <option key={surah.name} value={surah.name}>{surah.name}</option>
+                                                    ))}
+                                                </select>
+                                                <span className="text-slate-600 font-bold">:</span>
+                                                <input 
+                                                    type="number" 
+                                                    value={target.manzilTarget.split(':')[1] || ''} 
+                                                    onChange={e => {
+                                                        const surahName = target.manzilTarget.split(':')[0] || '';
+                                                        const surahInfo = SURAH_DATA.find(sr => sr.name === surahName);
+                                                        let val = e.target.value;
+                                                        if (val !== '') {
+                                                            let numVal = parseInt(val);
+                                                            if (isNaN(numVal)) numVal = 1;
+                                                            if (numVal < 1) numVal = 1;
+                                                            if (surahInfo && numVal > surahInfo.totalAyah) numVal = surahInfo.totalAyah;
+                                                            val = numVal.toString();
+                                                        }
+                                                        handleInputChange(s.id, 'manzilTarget', surahName ? `${surahName}:${val}` : '');
+                                                    }}
+                                                    className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none" 
+                                                    placeholder="0"
+                                                />
+                                            </div>
+                                            <div className="flex items-center bg-slate-50 border border-slate-100 rounded-lg px-0.5 lg:px-1 shadow-sm">
+                                                <input 
+                                                    type="number" 
+                                                    readOnly
+                                                    value={target.manzilHal} 
+                                                    className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-500 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 cursor-not-allowed" 
+                                                    placeholder="0"
+                                                />
+                                                <span className="text-[7.5px] lg:text-[8px] font-extrabold text-emerald-400 uppercase mr-0.5 lg:mr-1">Hal</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 bg-emerald-50/5">
+                                        <input 
+                                            type="text"
+                                            readOnly
+                                            value={target.manzilKet || '-'} 
+                                            className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-slate-50/50 border border-slate-100 rounded-lg focus:ring-0 text-center shadow-sm cursor-default ${
+                                                target.manzilKet === 'A' ? 'text-amber-500' : 
+                                                target.manzilKet === 'C' ? 'text-rose-500' : 
+                                                target.manzilKet === 'B' ? 'text-emerald-600' : 'text-slate-300'
+                                            }`}
+                                        />
+                                    </td>
+
+                                    <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-50 bg-emerald-50/5">
+                                        <div className="flex items-center gap-0.5 animate-in zoom-in-95 duration-100">
+                                            {/* Sabqi Surah & Ayat */}
+                                            <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 shadow-sm focus-within:border-emerald-300">
+                                                <select 
+                                                    value={target.sabqiTargetSurat.split(':')[0] || ''} 
+                                                    onChange={e => {
+                                                        const surahName = e.target.value;
+                                                        // Set ayah to 1 automatically when surah is selected
+                                                        const ayah = surahName ? '1' : '';
+                                                        handleInputChange(s.id, 'sabqiTargetSurat', surahName ? `${surahName}:${ayah}` : '');
+                                                    }}
+                                                    className="w-[75px] lg:w-[100px] bg-transparent border-none focus:ring-0 text-[9px] lg:text-[10px] font-bold text-slate-700 outline-none appearance-none px-1 text-center"
+                                                >
+                                                    <option value="">- Surat -</option>
+                                                    {SURAH_DATA.map(surah => (
+                                                        <option key={surah.name} value={surah.name}>{surah.name}</option>
+                                                    ))}
+                                                </select>
+                                                <span className="text-slate-600 font-bold">:</span>
+                                                <input 
+                                                    type="number" 
+                                                    value={target.sabqiTargetSurat.split(':')[1] || ''} 
+                                                    onChange={e => {
+                                                        const surahName = target.sabqiTargetSurat.split(':')[0] || '';
+                                                        const surahInfo = SURAH_DATA.find(sr => sr.name === surahName);
+                                                        let val = e.target.value;
+                                                        if (val !== '') {
+                                                            let numVal = parseInt(val);
+                                                            if (isNaN(numVal)) numVal = 1;
+                                                            if (numVal < 1) numVal = 1;
+                                                            if (surahInfo && numVal > surahInfo.totalAyah) numVal = surahInfo.totalAyah;
+                                                            val = numVal.toString();
+                                                        }
+                                                        handleInputChange(s.id, 'sabqiTargetSurat', surahName ? `${surahName}:${val}` : '');
+                                                    }}
+                                                    className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none" 
+                                                    placeholder="0"
+                                                />
+                                            </div>
+                                            <div className="flex items-center bg-slate-50 border border-slate-100 rounded-lg px-0.5 lg:px-1 shadow-sm">
+                                                <input 
+                                                    type="number" 
+                                                    readOnly
+                                                    value={target.sabqiTarget} 
+                                                    className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-500 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none cursor-not-allowed" 
+                                                    placeholder="0"
+                                                />
+                                                <span className="text-[7.5px] lg:text-[8px] font-extrabold text-emerald-400 uppercase mr-0.5 lg:mr-1">Hal</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 bg-emerald-50/5">
+                                        <input 
+                                            type="text"
+                                            readOnly
+                                            value={target.sabqiKet || '-'} 
+                                            className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-slate-50/50 border border-slate-100 rounded-lg focus:ring-0 text-center shadow-sm cursor-default ${
+                                                target.sabqiKet === 'A' ? 'text-amber-500' : 
+                                                target.sabqiKet === 'C' ? 'text-rose-500' : 
+                                                target.sabqiKet === 'B' ? 'text-emerald-600' : 'text-slate-300'
+                                            }`}
+                                        />
+                                    </td>
+
+                                    <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-50 bg-emerald-50/5">
+                                        <div className="flex items-center justify-center gap-0.5 animate-in zoom-in-95 duration-100 text-left">
+                                            {/* Sabaq Surah & Ayat */}
+                                            <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 shadow-sm focus-within:border-emerald-300">
+                                                <select 
+                                                    value={target.sabaqTargetSurat.split(':')[0] || ''} 
+                                                    onChange={e => {
+                                                        const surahName = e.target.value;
+                                                        // Set ayah to 1 automatically when surah is selected
+                                                        const ayah = surahName ? '1' : '';
+                                                        handleInputChange(s.id, 'sabaqTargetSurat', surahName ? `${surahName}:${ayah}` : '');
+                                                    }}
+                                                    className="w-[75px] lg:w-[100px] bg-transparent border-none focus:ring-0 text-[9px] lg:text-[10px] font-bold text-slate-700 outline-none appearance-none px-1 text-center"
+                                                >
+                                                    <option value="">- Surat -</option>
+                                                    {SURAH_DATA.map(surah => (
+                                                        <option key={surah.name} value={surah.name}>{surah.name}</option>
+                                                    ))}
+                                                </select>
+                                                <span className="text-slate-600 font-bold">:</span>
+                                                <input 
+                                                    type="number" 
+                                                    value={target.sabaqTargetSurat.split(':')[1] || ''} 
+                                                    onChange={e => {
+                                                        const surahName = target.sabaqTargetSurat.split(':')[0] || '';
+                                                        const surahInfo = SURAH_DATA.find(sr => sr.name === surahName);
+                                                        let val = e.target.value;
+                                                        if (val !== '') {
+                                                            let numVal = parseInt(val);
+                                                            if (isNaN(numVal)) numVal = 1;
+                                                            if (numVal < 1) numVal = 1;
+                                                            if (surahInfo && numVal > surahInfo.totalAyah) numVal = surahInfo.totalAyah;
+                                                            val = numVal.toString();
+                                                        }
+                                                        handleInputChange(s.id, 'sabaqTargetSurat', surahName ? `${surahName}:${val}` : '');
+                                                    }}
+                                                    className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none" 
+                                                    placeholder="0"
+                                                />
+                                            </div>
+                                            <div className="flex items-center bg-slate-50 border border-slate-100 rounded-lg px-0.5 lg:px-1 shadow-sm">
+                                                <input 
+                                                    type="number" 
+                                                    readOnly
+                                                    value={target.sabaqTarget} 
+                                                    className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-500 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none cursor-not-allowed" 
+                                                    placeholder="0"
+                                                />
+                                                <span className="text-[7.5px] lg:text-[8px] font-extrabold text-emerald-400 uppercase mr-0.5 lg:mr-1">Baris</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-0.5 lg:px-1 py-1.5 bg-emerald-50/5">
+                                        <input 
+                                            type="text"
+                                            readOnly
+                                            value={target.sabaqKet || '-'} 
+                                            className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-slate-50/50 border border-slate-100 rounded-lg focus:ring-0 text-center shadow-sm cursor-default ${
+                                                target.sabaqKet === 'A' ? 'text-amber-500' : 
+                                                target.sabaqKet === 'C' ? 'text-rose-500' : 
+                                                target.sabaqKet === 'B' ? 'text-emerald-600' : 'text-slate-300'
+                                            }`}
+                                        />
+                                    </td>
+                                  </>
+                                ) : (
+                                  <td className="px-2 py-1 bg-amber-50/5">
+                                    <textarea 
+                                      value={target.teacherNote}
+                                      onChange={e => handleInputChange(s.id, 'teacherNote', e.target.value)}
+                                      placeholder="Tambahkan catatan..."
+                                      className="w-full h-9 mt-0.5 pb-1 pt-1.5 px-2 text-[10px] lg:text-[11px] font-bold text-slate-700 bg-white border border-slate-100 rounded-lg focus:ring-0 focus:border-amber-300 outline-none transition-all resize-none shadow-sm placeholder:font-bold placeholder:text-slate-300 leading-tight text-start"
                                     />
-                                </td>
-                                <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-indigo-50/5">
-                                    <input 
-                                        type="number" 
-                                        min="1" 
-                                        max="20" 
-                                        value={target.hafalanHal} 
-                                        onChange={e => {
-                                            let val = parseInt(e.target.value);
-                                            if (isNaN(val)) handleInputChange(s.id, 'hafalanHal', '');
-                                            else {
-                                                if (val < 0) val = 0;
-                                                if (val > 20) val = 20;
-                                                handleInputChange(s.id, 'hafalanHal', val.toString());
-                                            }
-                                        }} 
-                                        className="w-full text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-indigo-300 rounded h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
-                                        placeholder="Hal" 
-                                    />
-                                </td>
-                                <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
-                                    <input readOnly type="text" value={target.manzilAtm} className="w-full text-center text-[10px] lg:text-[11px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
-                                </td>
-                                <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
-                                    <input readOnly type="text" value={target.hariAtm ? `${target.hariAtm} hari` : ''} className="w-full text-center text-[10px] lg:text-[11px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
-                                </td>
-                                <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
-                                    <input readOnly type="text" value={target.sabqiAtm} className="w-full text-center text-[10px] lg:text-[11px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
-                                </td>
-
-                                <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-50 bg-emerald-50/5">
-                                    <div className="flex items-center gap-0.5">
-                                        {/* Manzil Surah & Ayat */}
-                                        <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 shadow-sm focus-within:border-emerald-300">
-                                            <select 
-                                                value={target.manzilTarget.split(':')[0] || ''} 
-                                                onChange={e => {
-                                                    const surahName = e.target.value;
-                                                    // Set ayah to 1 automatically when surah is selected
-                                                    const ayah = surahName ? '1' : '';
-                                                    handleInputChange(s.id, 'manzilTarget', surahName ? `${surahName}:${ayah}` : '');
-                                                }}
-                                                className="w-[75px] lg:w-[100px] bg-transparent border-none focus:ring-0 text-[9px] lg:text-[10px] font-bold text-slate-700 outline-none appearance-none px-1 text-center"
-                                            >
-                                                <option value="">- Surat -</option>
-                                                {SURAH_DATA.map(surah => (
-                                                    <option key={surah.name} value={surah.name}>{surah.name}</option>
-                                                ))}
-                                            </select>
-                                            <span className="text-slate-600 font-bold">:</span>
-                                            <input 
-                                                type="number" 
-                                                value={target.manzilTarget.split(':')[1] || ''} 
-                                                onChange={e => {
-                                                    const surahName = target.manzilTarget.split(':')[0] || '';
-                                                    const surahInfo = SURAH_DATA.find(sr => sr.name === surahName);
-                                                    let val = e.target.value;
-                                                    if (val !== '') {
-                                                        let numVal = parseInt(val);
-                                                        if (isNaN(numVal)) numVal = 1;
-                                                        if (numVal < 1) numVal = 1;
-                                                        if (surahInfo && numVal > surahInfo.totalAyah) numVal = surahInfo.totalAyah;
-                                                        val = numVal.toString();
-                                                    }
-                                                    handleInputChange(s.id, 'manzilTarget', surahName ? `${surahName}:${val}` : '');
-                                                }}
-                                                className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none" 
-                                                placeholder="0"
-                                            />
-                                        </div>
-                                        <div className="flex items-center bg-white border border-slate-100 rounded-lg px-0.5 lg:px-1 shadow-sm focus-within:border-emerald-300">
-                                            <input 
-                                                type="number" 
-                                                value={target.manzilHal} 
-                                                onChange={e => handleInputChange(s.id, 'manzilHal', e.target.value)} 
-                                                className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0" 
-                                                placeholder="0"
-                                            />
-                                            <span className="text-[7.5px] lg:text-[8px] font-extrabold text-emerald-400 uppercase mr-0.5 lg:mr-1">Hal</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 bg-emerald-50/5">
-                                    <select 
-                                        value={target.manzilKet} 
-                                        onChange={e => handleInputChange(s.id, 'manzilKet', e.target.value)} 
-                                        className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-white border border-slate-100 rounded-lg focus:ring-0 text-center shadow-sm appearance-none ${
-                                            target.manzilKet === 'A' ? 'text-amber-500' : 
-                                            target.manzilKet === 'C' ? 'text-rose-500' : 
-                                            'text-emerald-600'
-                                        }`}
-                                    >
-                                        <option value="">-</option>
-                                        <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-                                    </select>
-                                </td>
-
-                                <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-50 bg-emerald-50/5">
-                                    <div className="flex items-center gap-0.5 animate-in zoom-in-95 duration-100">
-                                        {/* Sabqi Surah & Ayat */}
-                                        <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 shadow-sm focus-within:border-emerald-300">
-                                            <select 
-                                                value={target.sabqiTargetSurat.split(':')[0] || ''} 
-                                                onChange={e => {
-                                                    const surahName = e.target.value;
-                                                    // Set ayah to 1 automatically when surah is selected
-                                                    const ayah = surahName ? '1' : '';
-                                                    handleInputChange(s.id, 'sabqiTargetSurat', surahName ? `${surahName}:${ayah}` : '');
-                                                }}
-                                                className="w-[75px] lg:w-[100px] bg-transparent border-none focus:ring-0 text-[9px] lg:text-[10px] font-bold text-slate-700 outline-none appearance-none px-1 text-center"
-                                            >
-                                                <option value="">- Surat -</option>
-                                                {SURAH_DATA.map(surah => (
-                                                    <option key={surah.name} value={surah.name}>{surah.name}</option>
-                                                ))}
-                                            </select>
-                                            <span className="text-slate-600 font-bold">:</span>
-                                            <input 
-                                                type="number" 
-                                                value={target.sabqiTargetSurat.split(':')[1] || ''} 
-                                                onChange={e => {
-                                                    const surahName = target.sabqiTargetSurat.split(':')[0] || '';
-                                                    const surahInfo = SURAH_DATA.find(sr => sr.name === surahName);
-                                                    let val = e.target.value;
-                                                    if (val !== '') {
-                                                        let numVal = parseInt(val);
-                                                        if (isNaN(numVal)) numVal = 1;
-                                                        if (numVal < 1) numVal = 1;
-                                                        if (surahInfo && numVal > surahInfo.totalAyah) numVal = surahInfo.totalAyah;
-                                                        val = numVal.toString();
-                                                    }
-                                                    handleInputChange(s.id, 'sabqiTargetSurat', surahName ? `${surahName}:${val}` : '');
-                                                }}
-                                                className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none" 
-                                                placeholder="0"
-                                            />
-                                        </div>
-                                        <div className="flex items-center bg-white border border-slate-100 rounded-lg px-0.5 lg:px-1 shadow-sm focus-within:border-emerald-300">
-                                            <input 
-                                                type="number" 
-                                                value={target.sabqiTarget} 
-                                                onChange={e => handleInputChange(s.id, 'sabqiTarget', e.target.value)} 
-                                                className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none" 
-                                                placeholder="0"
-                                            />
-                                            <span className="text-[7.5px] lg:text-[8px] font-extrabold text-emerald-400 uppercase mr-0.5 lg:mr-1">Hal</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 bg-emerald-50/5">
-                                    <select 
-                                        value={target.sabqiKet} 
-                                        onChange={e => handleInputChange(s.id, 'sabqiKet', e.target.value)} 
-                                        className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-white border border-slate-100 rounded-lg focus:ring-0 text-center shadow-sm appearance-none ${
-                                            target.sabqiKet === 'A' ? 'text-amber-500' : 
-                                            target.sabqiKet === 'C' ? 'text-rose-500' : 
-                                            'text-emerald-600'
-                                        }`}
-                                    >
-                                        <option value="">-</option>
-                                        <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-                                    </select>
-                                </td>
-
-                                <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-50 bg-emerald-50/5">
-                                    <div className="flex items-center justify-center gap-0.5 animate-in zoom-in-95 duration-100 text-left">
-                                        {/* Sabaq Surah & Ayat */}
-                                        <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 shadow-sm focus-within:border-emerald-300">
-                                            <select 
-                                                value={target.sabaqTargetSurat.split(':')[0] || ''} 
-                                                onChange={e => {
-                                                    const surahName = e.target.value;
-                                                    // Set ayah to 1 automatically when surah is selected
-                                                    const ayah = surahName ? '1' : '';
-                                                    handleInputChange(s.id, 'sabaqTargetSurat', surahName ? `${surahName}:${ayah}` : '');
-                                                }}
-                                                className="w-[75px] lg:w-[100px] bg-transparent border-none focus:ring-0 text-[9px] lg:text-[10px] font-bold text-slate-700 outline-none appearance-none px-1 text-center"
-                                            >
-                                                <option value="">- Surat -</option>
-                                                {SURAH_DATA.map(surah => (
-                                                    <option key={surah.name} value={surah.name}>{surah.name}</option>
-                                                ))}
-                                            </select>
-                                            <span className="text-slate-600 font-bold">:</span>
-                                            <input 
-                                                type="number" 
-                                                value={target.sabaqTargetSurat.split(':')[1] || ''} 
-                                                onChange={e => {
-                                                    const surahName = target.sabaqTargetSurat.split(':')[0] || '';
-                                                    const surahInfo = SURAH_DATA.find(sr => sr.name === surahName);
-                                                    let val = e.target.value;
-                                                    if (val !== '') {
-                                                        let numVal = parseInt(val);
-                                                        if (isNaN(numVal)) numVal = 1;
-                                                        if (numVal < 1) numVal = 1;
-                                                        if (surahInfo && numVal > surahInfo.totalAyah) numVal = surahInfo.totalAyah;
-                                                        val = numVal.toString();
-                                                    }
-                                                    handleInputChange(s.id, 'sabaqTargetSurat', surahName ? `${surahName}:${val}` : '');
-                                                }}
-                                                className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none" 
-                                                placeholder="0"
-                                            />
-                                        </div>
-                                        <div className="flex items-center bg-white border border-slate-100 rounded-lg px-0.5 lg:px-1 shadow-sm focus-within:border-emerald-300">
-                                            <input 
-                                                type="number" 
-                                                value={target.sabaqTarget} 
-                                                onChange={e => handleInputChange(s.id, 'sabaqTarget', e.target.value)} 
-                                                className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none" 
-                                                placeholder="0"
-                                            />
-                                            <span className="text-[7.5px] lg:text-[8px] font-extrabold text-emerald-400 uppercase mr-0.5 lg:mr-1">Baris</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-0.5 lg:px-1 py-1.5 bg-emerald-50/5">
-                                    <select 
-                                        value={target.sabaqKet} 
-                                        onChange={e => handleInputChange(s.id, 'sabaqKet', e.target.value)} 
-                                        className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-white border border-slate-100 rounded-lg focus:ring-0 text-center shadow-sm appearance-none ${
-                                            target.sabaqKet === 'A' ? 'text-amber-500' : 
-                                            target.sabaqKet === 'C' ? 'text-rose-500' : 
-                                            'text-emerald-600'
-                                        }`}
-                                    >
-                                        <option value="">-</option>
-                                        <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-                                    </select>
-                                </td>
+                                  </td>
+                                )}
                             </tr>
                         );
                     })}
@@ -819,7 +927,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
           
           <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex flex-col md:flex-row justify-between lg:items-center gap-6">
               <div className="flex flex-col lg:flex-row lg:flex-wrap gap-x-8 gap-y-2 lg:gap-y-4 text-[9px] lg:text-[10px] font-bold text-slate-400">
-                  <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-indigo-500 rounded-full shrink-0"></div> Manzil ideal rotasi 15 hari</div>
+                  <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-primary-500 rounded-full shrink-0"></div> Manzil ideal rotasi 15 hari</div>
                   <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full shrink-0"></div> Sabqi ideal rotasi 5 hari</div>
                   <div className="flex items-start gap-2 pt-1 lg:pt-0">
                       <Info className="w-3.5 h-3.5 text-slate-300 shrink-0 mt-0.5" /> 
@@ -845,7 +953,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                   <div className="p-6 overflow-y-auto scrollbar-hide">
                       <div className="flex items-center justify-between mb-5">
                           <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500 shadow-sm">
+                              <div className="w-8 h-8 bg-jade-50 rounded-xl flex items-center justify-center text-jade-500 shadow-sm">
                                   <HelpCircle className="w-4 h-4" />
                               </div>
                               <div>
@@ -864,22 +972,22 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                                   tenant.curriculum_config.target_info.map((item: any, idx: number) => (
                                       <div key={idx} className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
                                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{item.label}</span>
-                                          <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-indigo-100/50">{item.value}</span>
+                                          <span className="px-2 py-0.5 bg-jade-50 text-jade-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-jade-100/50">{item.value}</span>
                                       </div>
                                   ))
                               ) : (
                                   <>
                                       <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
                                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Kelas 1 - 2</span>
-                                          <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-indigo-100/50">3 Baris</span>
+                                          <span className="px-2 py-0.5 bg-jade-50 text-jade-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-jade-100/50">3 Baris</span>
                                       </div>
                                       <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
                                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Kelas 3 - 4</span>
-                                          <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-indigo-100/50">5 Baris</span>
+                                          <span className="px-2 py-0.5 bg-jade-50 text-jade-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-jade-100/50">5 Baris</span>
                                       </div>
                                       <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
                                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Kelas 5 - 6</span>
-                                          <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-indigo-100/50">7 Baris</span>
+                                          <span className="px-2 py-0.5 bg-jade-50 text-jade-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-jade-100/50">7 Baris</span>
                                       </div>
                                   </>
                               )}

@@ -4,7 +4,7 @@ import { getStudentsByHalaqah, createStudent, getHalaqahs, createUser, createStu
 import { Student, Halaqah, UserProfile, UserRole, Achievement, TeacherNote, Class } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
-import { Search, Plus, X, Save, MessageSquare, ChevronRight, User, Trash2, Edit3, Phone, Trophy, Calendar, Check, Trash, FileText, Quote, ChevronDown, Filter, AlertTriangle, RotateCcw, Eye, EyeOff } from 'lucide-react';
+import { Search, Plus, X, Save, MessageSquare, ChevronRight, User, Trash2, Edit3, Phone, Trophy, Calendar, Check, Trash, FileText, Quote, ChevronDown, Filter, AlertTriangle, RotateCcw, Eye, EyeOff, Reply, CheckCircle2 } from 'lucide-react';
 import { useLoading } from '../../lib/LoadingContext';
 import { useNotification } from '../../lib/NotificationContext';
 
@@ -93,17 +93,17 @@ const StudentDetailModal: React.FC<StudentDetailModalProps> = ({ isOpen, onClose
 
     return (
         <div 
-            className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800"
+            className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800 lg:pl-64 lg:pt-16"
             onClick={onClose}
         >
             <div 
-                className="bg-white rounded-[32px] shadow-2xl w-full max-w-xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 max-h-[90vh] relative"
+                className="bg-white rounded-[32px] shadow-2xl w-full max-w-xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 max-h-[80vh] relative"
                 onClick={e => e.stopPropagation()}
             >
                 <div className="px-5 py-3.5 border-b border-slate-100 flex justify-between items-center bg-[#FCFDFE]">
                     <div>
                         <h3 className="text-base font-black text-slate-800 tracking-tight flex items-center gap-2">
-                             <User className="w-4 h-4 text-indigo-500" />
+                             <User className="w-4 h-4 text-jade-500" />
                              Detail Santri
                         </h3>
                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Informasi lengkap profil santri</p>
@@ -113,77 +113,71 @@ const StudentDetailModal: React.FC<StudentDetailModalProps> = ({ isOpen, onClose
                     </button>
                 </div>
                 
-                <div className="p-6 space-y-6 overflow-y-auto scrollbar-hide flex-1">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                        <div className="space-y-1.5">
-                            <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Lengkap Santri</label>
-                            <input readOnly type="text" value={formData.full_name} className="w-full px-4 py-2.5 border-2 border-slate-50 bg-slate-50 rounded-xl transition-all text-xs font-bold text-slate-500 outline-none cursor-default" />
-                        </div>
-                        <div className="space-y-1.5">
-                            <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Hafalan Saat Ini (Juz)</label>
-                            <input readOnly type="number" value={formData.current_juz} className="w-full px-4 py-2.5 border-2 border-slate-50 bg-slate-50 rounded-xl transition-all text-xs font-bold text-slate-500 outline-none cursor-default" />
-                        </div>
-                    </div>
+                <div className="p-5 space-y-3 overflow-hidden">
+                    <div className="bg-slate-50/50 rounded-2xl p-4 border border-slate-100 space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <label className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Profil Santri</label>
+                                <div className="space-y-2">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[7px] font-black text-jade-500 uppercase ml-1">Nama Lengkap</span>
+                                        <div className="px-3 py-2 bg-white border-2 border-slate-50 rounded-xl text-[10px] font-bold text-slate-700 truncate shadow-sm">
+                                            {formData.full_name}
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[7px] font-black text-jade-500 uppercase ml-1">Hafalan (Juz)</span>
+                                        <div className="px-3 py-2 bg-white border-2 border-slate-50 rounded-xl text-[10px] font-bold text-slate-700 shadow-sm">
+                                            {formData.current_juz} Juz
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                    <div className="pt-4 border-t border-slate-100 space-y-4">
-                        <p className="text-[9.5px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50/50 w-fit px-3 py-1 rounded-full border border-indigo-100/50">Data Orang Tua / Wali</p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                            <div className="space-y-1.5">
-                                <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Wali</label>
-                                <input readOnly type="text" value={formData.guardian_name} className="w-full px-4 py-2.5 border-2 border-slate-50 bg-slate-50 rounded-xl transition-all text-xs font-bold text-slate-500 outline-none cursor-default" />
-                            </div>
-                            <div className="space-y-1.5">
-                                <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">No. WhatsApp Wali</label>
-                                <input readOnly type="tel" value={formData.guardian_whatsapp} className="w-full px-4 py-2.5 border-2 border-slate-50 bg-slate-50 rounded-xl transition-all text-xs font-bold text-slate-500 outline-none cursor-default" />
-                            </div>
-                            <div className="space-y-1.5 md:col-span-2">
-                                <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Orang Tua / Wali</label>
-                                <input readOnly type="email" value={formData.guardian_email} className="w-full px-4 py-2.5 border-2 border-slate-50 bg-slate-50 rounded-xl transition-all text-xs font-bold text-slate-500 outline-none cursor-default" />
-                            </div>
-                            <div className="md:col-span-2 grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                    <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Ayah / Ibu</label>
-                                    <div className="w-full px-4 py-2.5 border-2 border-slate-50 bg-slate-50 rounded-xl text-xs font-bold text-slate-500">
-                                        {formData.father_name || '-'} / {formData.mother_name || '-'}
+                            <div className="space-y-1">
+                                <label className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Kontak Wali</label>
+                                <div className="space-y-2">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[7px] font-black text-blue-500 uppercase ml-1">Nama Wali</span>
+                                        <div className="px-3 py-2 bg-white border-2 border-slate-50 rounded-xl text-[10px] font-bold text-slate-700 truncate shadow-sm">
+                                            {formData.guardian_name || '-'}
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Kontak Ayah / Ibu</label>
-                                    <div className="w-full px-4 py-2.5 border-2 border-slate-50 bg-slate-50 rounded-xl text-xs font-bold text-slate-500">
-                                        {formData.father_phone || '-'} / {formData.mother_phone || '-'}
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[7px] font-black text-blue-500 uppercase ml-1">WhatsApp / Email</span>
+                                        <div className="px-3 py-2 bg-white border-2 border-slate-50 rounded-xl text-[10px] font-bold text-slate-700 truncate shadow-sm">
+                                            {formData.guardian_whatsapp || formData.guardian_email ? `${formData.guardian_whatsapp} ${formData.guardian_email ? `| ${formData.guardian_email}` : ''}` : '-'}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div className="space-y-1.5 md:col-span-2">
-                                <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Alamat Lengkap</label>
-                                <div className="w-full px-4 py-2 border-2 border-slate-50 bg-slate-50 rounded-xl text-xs font-bold text-slate-500 italic">
-                                    {formData.address || '-'}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-100/50">
+                            <div className="space-y-2">
+                                <span className="text-[7px] font-black text-amber-500 uppercase ml-1">Orang Tua (Ayah / Ibu)</span>
+                                <div className="flex flex-col gap-1.5">
+                                    <div className="px-3 py-2 bg-white border-2 border-slate-50 rounded-xl text-[10px] font-bold text-slate-700 truncate shadow-sm flex items-center justify-between">
+                                        <span>{formData.father_name || '-'}</span>
+                                        <span className="text-[8px] opacity-40">{formData.father_phone}</span>
+                                    </div>
+                                    <div className="px-3 py-2 bg-white border-2 border-slate-50 rounded-xl text-[10px] font-bold text-slate-700 truncate shadow-sm flex items-center justify-between">
+                                        <span>{formData.mother_name || '-'}</span>
+                                        <span className="text-[8px] opacity-40">{formData.mother_phone}</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="space-y-1.5">
-                                    <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">RT / RW</label>
-                                    <div className="w-full px-4 py-2 border-2 border-slate-50 bg-slate-50 rounded-xl text-xs font-bold text-slate-500">
-                                        {formData.rt_rw || '-'}
-                                    </div>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Kel / Desa</label>
-                                    <div className="w-full px-4 py-2 border-2 border-slate-50 bg-slate-50 rounded-xl text-xs font-bold text-slate-500">
-                                        {formData.village || '-'}
-                                    </div>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Kecamatan</label>
-                                    <div className="w-full px-4 py-2 border-2 border-slate-50 bg-slate-50 rounded-xl text-xs font-bold text-slate-500">
-                                        {formData.district || '-'}
-                                    </div>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Kab / Kota</label>
-                                    <div className="w-full px-4 py-2 border-2 border-slate-50 bg-slate-50 rounded-xl text-xs font-bold text-slate-500">
-                                        {formData.city || '-'}
-                                    </div>
+
+                            <div className="space-y-2">
+                                <span className="text-[7px] font-black text-rose-500 uppercase ml-1">Alamat Domisili</span>
+                                <div className="px-3 py-2 bg-white border-2 border-slate-50 rounded-xl text-[10px] font-bold text-slate-600 leading-relaxed shadow-sm min-h-[68px] line-clamp-3">
+                                    {[
+                                        formData.address,
+                                        formData.rt_rw ? (formData.rt_rw.includes('/') ? `RT ${formData.rt_rw.split('/')[0].trim()} / RW ${formData.rt_rw.split('/')[1].trim()}` : `RT/RW ${formData.rt_rw}`) : '',
+                                        formData.village,
+                                        formData.district,
+                                        formData.city
+                                    ].filter(Boolean).join(', ') || '-'}
                                 </div>
                             </div>
                         </div>
@@ -270,7 +264,7 @@ const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, st
     };
 
     return (
-        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800" onClick={onClose}>
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800 lg:pl-64 lg:pt-16" onClick={onClose}>
             <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 relative" onClick={e => e.stopPropagation()}>
                 {/* Close Button UI */}
                 <button 
@@ -292,7 +286,7 @@ const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, st
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Belum ada pencapaian</p>
                         </div>
                     ) : achievements.map(ach => (
-                        <div key={ach.id} className="group relative flex justify-between items-center bg-slate-50/30 p-2.5 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-md hover:border-indigo-100 ring-1 ring-transparent hover:ring-indigo-50/50">
+                        <div key={ach.id} className="group relative flex justify-between items-center bg-slate-50/30 p-2.5 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-md hover:border-jade-100 ring-1 ring-transparent hover:ring-jade-50/50">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-amber-50 rounded-xl border border-amber-100/50 shadow-sm transition-transform group-hover:scale-110">
                                     <Trophy className="w-3 h-3 text-amber-500" />
@@ -319,11 +313,11 @@ const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, st
                         value={title} 
                         onChange={e => setTitle(e.target.value)} 
                         placeholder="Tulis pencapaian baru..." 
-                        className="w-full px-5 py-2.5 border-2 border-slate-50 bg-white rounded-2xl focus:ring-0 focus:border-indigo-400 shadow-sm transition-all text-sm font-bold text-slate-800 outline-none" 
+                        className="w-full px-5 py-2.5 border-2 border-slate-50 bg-white rounded-2xl focus:ring-0 focus:border-jade-400 shadow-sm transition-all text-sm font-bold text-slate-800 outline-none" 
                     />
                     <button 
                         type="submit"
-                        className="p-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95"
+                        className="p-3 bg-jade-600 text-white rounded-2xl hover:bg-jade-700 shadow-lg shadow-primary-100 transition-all active:scale-95"
                     >
                         <Plus className="w-5 h-5"/>
                     </button>
@@ -356,6 +350,7 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
     const [content, setContent] = useState('');
     const [category, setCategory] = useState<'Motivasi' | 'Evaluasi' | 'Perilaku' | 'Lainnya'>('Motivasi');
     const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
+    const [viewingReply, setViewingReply] = useState<string | null>(null);
     const { addNotification } = useNotification();
     const categories: (typeof category)[] = ['Motivasi', 'Evaluasi', 'Perilaku', 'Lainnya'];
 
@@ -405,7 +400,7 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
     };
 
     return (
-        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800" onClick={onClose}>
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800 lg:pl-64 lg:pt-16" onClick={onClose}>
             <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 relative" onClick={e => e.stopPropagation()}>
                 {/* Close Button UI */}
                 <button 
@@ -426,49 +421,91 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
                             <MessageSquare className="w-12 h-12 mb-2" />
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Belum ada catatan</p>
                         </div>
-                    ) : notes.map(note => (
-                        <div key={note.id} className="group relative flex flex-col bg-slate-50/30 p-2.5 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-md hover:border-indigo-100 ring-1 ring-transparent hover:ring-indigo-50/50">
-                            <div className="flex justify-between items-center">
-                                <span className={`px-2 py-0.5 text-[7.5px] font-black uppercase tracking-[0.1em] rounded-lg border shadow-sm ${
-                                    note.category === 'Motivasi' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                                    note.category === 'Evaluasi' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                    note.category === 'Perilaku' ? 'bg-rose-50 text-rose-600 border-rose-100' :
-                                    'bg-slate-100 text-slate-600 border-slate-200'
-                                }`}>
-                                    {note.category}
-                                </span>
-                                <div className="flex items-center gap-2">
-                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1 opacity-60">
-                                        <Calendar className="w-2.5 h-2.5" />
-                                        {note.date ? new Date(note.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
-                                    </p>
-                                    <button 
-                                        onClick={() => handleDelete(note.id)}
-                                        className="p-1 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                    ) : (
+                        <div className="space-y-3">
+                            {notes.map(note => (
+                                    <div 
+                                        key={note.id} 
+                                        onClick={() => note.reply_content && setViewingReply(viewingReply === note.id ? null : note.id)}
+                                        className={`group relative flex flex-col bg-slate-50/30 p-2.5 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-md hover:border-jade-100 ring-1 ring-transparent hover:ring-jade-50/50 ${note.reply_content ? 'cursor-pointer' : ''}`}
                                     >
-                                        <Trash className="w-3 h-3"/>
-                                    </button>
-                                </div>
-                            </div>
-                            <p className="text-[11px] font-black text-slate-700 mt-2 leading-tight tracking-tight px-1 uppercase">{note.content}</p>
+                                        <div className="flex justify-between items-center">
+                                            <span className={`px-2 py-0.5 text-[7.5px] font-black uppercase tracking-[0.1em] rounded-lg border shadow-sm ${
+                                                note.category === 'Motivasi' ? 'bg-jade-50 text-jade-600 border-jade-100' :
+                                                note.category === 'Evaluasi' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                note.category === 'Perilaku' ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                                                'bg-slate-100 text-slate-600 border-slate-200'
+                                            }`}>
+                                                {note.category}
+                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1 opacity-60">
+                                                    <Calendar className="w-2.5 h-2.5" />
+                                                    {note.date ? new Date(note.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                                                </p>
+                                                <div className="flex items-center gap-1">
+                                                    {note.reply_content && (
+                                                        <>
+                                                            <div className="flex items-center gap-1 bg-jade-50 px-1.5 py-0.5 rounded-lg border border-jade-100 mr-1 shadow-sm">
+                                                                <CheckCircle2 className="w-2.5 h-2.5 text-jade-500" />
+                                                                <span className="text-[6.5px] font-black text-jade-600 uppercase">Dibalas</span>
+                                                            </div>
+                                                            <div 
+                                                                className={`p-1.5 rounded-xl bg-slate-50 border border-slate-100 transition-all duration-300 ${viewingReply === note.id ? 'rotate-180 bg-jade-50 border-jade-100' : 'group-hover:border-slate-200'}`}
+                                                            >
+                                                                <ChevronDown className={`w-3 h-3 ${viewingReply === note.id ? 'text-jade-600' : 'text-slate-500'}`} strokeWidth={3} />
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); handleDelete(note.id); }}
+                                                        className="p-1 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                                    >
+                                                        <Trash className="w-3 h-3"/>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p className="text-[11px] font-black text-slate-700 mt-2 leading-tight tracking-tight px-1 uppercase">{note.content}</p>
+                                        
+                                        <div className={`grid transition-all duration-500 ease-in-out ${viewingReply === note.id ? 'grid-rows-[1fr] opacity-100 mt-3' : 'grid-rows-[0fr] opacity-0'}`}>
+                                            <div className="overflow-hidden">
+                                                <div className="p-2.5 bg-jade-50/50 border border-jade-100 rounded-xl">
+                                                    <p className="text-[7px] font-black text-jade-500 uppercase tracking-widest mb-1 flex items-center gap-1">
+                                                        <Reply className="w-2.5 h-2.5 rotate-180" />
+                                                        Balasan Wali Santri:
+                                                    </p>
+                                                    <p className="text-[10px] font-bold text-jade-700 leading-tight uppercase tracking-tight">
+                                                        {note.reply_content}
+                                                    </p>
+                                                    {note.replied_at && (
+                                                        <p className="text-[6.5px] font-black text-jade-300 mt-1 uppercase">
+                                                            Dibalas pada: {new Date(note.replied_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                            ))}
                         </div>
-                    ))}
+                    )}
                 </div>
                 <form onSubmit={handleAdd} className="p-3 border-t border-slate-100 bg-slate-50/30 space-y-2.5">
                     <div className="flex items-center gap-3">
-                        <label className="text-[7.5px] font-black text-indigo-400 uppercase tracking-[0.2em] w-12 shrink-0 ml-1">Catatan</label>
+                        <label className="text-[7.5px] font-black text-jade-400 uppercase tracking-[0.2em] w-12 shrink-0 ml-1">Catatan</label>
                         <input 
                             type="text"
                             value={content} 
                             onChange={e => setContent(e.target.value)} 
                             placeholder="Tulis catatan harian..." 
-                            className="flex-1 px-3.5 py-1.5 border border-slate-200 bg-white rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 shadow-sm transition-all text-xs font-bold text-slate-800 outline-none h-9 placeholder:text-slate-300 placeholder:font-black placeholder:uppercase placeholder:text-[9px]" 
+                            className="flex-1 px-3.5 py-1.5 border border-slate-200 bg-white rounded-xl focus:ring-2 focus:ring-jade-100 focus:border-jade-400 shadow-sm transition-all text-xs font-bold text-slate-800 outline-none h-9 placeholder:text-slate-300 placeholder:font-black placeholder:uppercase placeholder:text-[9px]" 
                         />
                     </div>
                     
                     <div className="flex items-center gap-3">
-                        <label className="text-[7.5px] font-black text-indigo-400 uppercase tracking-[0.2em] w-12 shrink-0 ml-1">Kategori</label>
-                        <div className="flex-1 flex bg-indigo-50/40 p-0.5 rounded-xl border border-indigo-100/30 overflow-x-auto no-scrollbar shadow-inner">
+                        <label className="text-[7.5px] font-black text-jade-400 uppercase tracking-[0.2em] w-12 shrink-0 ml-1">Kategori</label>
+                        <div className="flex-1 flex bg-jade-50/40 p-0.5 rounded-xl border border-jade-100/30 overflow-x-auto no-scrollbar shadow-inner">
                             {categories.map((cat) => (
                                 <button
                                     type="button"
@@ -476,8 +513,8 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
                                     onClick={() => setCategory(cat)}
                                     className={`flex-1 px-2.5 py-1.5 text-[8px] font-black uppercase tracking-tight rounded-lg transition-all whitespace-nowrap ${
                                         category === cat
-                                            ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-indigo-100'
-                                            : 'text-slate-400 hover:text-indigo-400'
+                                            ? 'bg-white text-jade-600 shadow-sm ring-1 ring-jade-100'
+                                            : 'text-slate-400 hover:text-jade-400'
                                     }`}
                                 >
                                     {cat}
@@ -488,7 +525,7 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
 
                     <button 
                         type="submit"
-                        className="w-full py-2.5 bg-indigo-600 text-white rounded-xl font-black text-[9px] uppercase tracking-[0.3em] hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group"
+                        className="w-full py-2.5 bg-jade-600 text-white rounded-xl font-black text-[9px] uppercase tracking-[0.3em] hover:bg-jade-700 shadow-lg shadow-primary-100 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group"
                     >
                         <Save className="w-4 h-4 transition-transform group-hover:scale-110"/>
                         SIMPAN DATA
@@ -517,7 +554,7 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const { setLoading: setGlobalLoading } = useLoading();
   const { addNotification } = useNotification();
   const [showNIS, setShowNIS] = useState<boolean>(() => {
@@ -578,7 +615,9 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
   const paginatedStudents = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredStudents.slice(start, start + itemsPerPage);
-  }, [filteredStudents, currentPage]);
+  }, [filteredStudents, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
 
   
   const handleUpdateStudent = async (id: string, data: Partial<Student> & { guardian_name?: string, guardian_whatsapp?: string }) => {
@@ -631,22 +670,22 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
   return (
     <div className="space-y-6">
       {/* Top Utility Strip - High Density Single Row for Mobile */}
-      <div className="flex flex-row items-center gap-1.5 lg:gap-4 bg-white/40 p-1.5 lg:p-2 rounded-2xl lg:rounded-[24px] border border-white/20 backdrop-blur-md">
+      <div className="flex flex-row items-center gap-1.5 lg:gap-4 py-2 lg:py-3">
           {/* Search Area */}
           <div className="relative flex-1 group">
-              <Search className="absolute left-3 lg:left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3 lg:w-4 h-3 lg:h-4 group-focus-within:text-indigo-500 transition-colors" />
+              <Search className="absolute left-3 lg:left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3 lg:w-4 h-3 lg:h-4 group-focus-within:text-jade-500 transition-colors" />
               <input 
                   type="text" 
                   value={search} 
                   onChange={e => setSearch(e.target.value)} 
                   placeholder="Cari..." 
-                  className="w-full pl-8 lg:pl-11 pr-2 lg:pr-4 py-1.5 lg:py-2.5 text-[10px] lg:text-xs font-black border border-slate-100 lg:border-2 lg:border-slate-50 rounded-xl lg:rounded-2xl focus:ring-4 focus:ring-indigo-50/50 focus:border-indigo-500 focus:outline-none bg-white text-slate-900 transition-all placeholder:font-bold placeholder:text-slate-400 shadow-sm h-8 lg:h-11"
+                  className="w-full pl-8 lg:pl-11 pr-2 lg:pr-4 py-1.5 lg:py-2.5 text-[10px] lg:text-xs font-black border border-slate-200 rounded-xl lg:rounded-2xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 focus:outline-none bg-white text-slate-900 transition-all placeholder:font-bold placeholder:text-slate-300 shadow-sm h-8 lg:h-11"
               />
           </div>
           
           <div className="flex items-center gap-1.5 lg:gap-2">
               {/* Gender Filter */}
-              <div className="flex items-center gap-1 bg-white px-2 lg:px-4 py-1 rounded-xl lg:rounded-2xl border border-slate-100 lg:border-2 lg:border-slate-50 shadow-sm h-8 lg:h-11 ring-1 ring-slate-100/50">
+              <div className="flex items-center gap-1 bg-white px-2 lg:px-4 py-1 rounded-xl lg:rounded-2xl border border-slate-200 shadow-sm h-8 lg:h-11 ring-1 ring-slate-100/50">
                   <User className="w-3 lg:w-3.5 h-3 lg:h-3.5 text-slate-400 shrink-0" />
                   <select 
                       value={genderFilter} 
@@ -662,7 +701,7 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                {/* Toggle NIS Visibility */}
                <button 
                   onClick={() => setShowNIS(!showNIS)}
-                  className="p-2 lg:px-4 lg:py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-slate-100 lg:border-2 lg:border-slate-50 bg-white text-slate-500 hover:bg-slate-50 transition-all active:scale-95 shadow-sm h-8 lg:h-11 flex items-center justify-center shrink-0"
+                  className="p-2 lg:px-4 lg:py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all active:scale-95 shadow-sm h-8 lg:h-11 flex items-center justify-center shrink-0"
                   title={showNIS ? "Sembunyikan NIS" : "Tampilkan NIS"}
                >
                   {showNIS ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
@@ -671,7 +710,7 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                {/* Refresh Action */}
               <button 
                   onClick={() => fetchData()}
-                  className="p-2 lg:px-6 lg:py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-slate-100 lg:border-2 lg:border-slate-50 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all active:scale-95 shadow-sm h-8 lg:h-11 flex items-center justify-center shrink-0"
+                  className="p-2 lg:px-6 lg:py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all active:scale-95 shadow-sm h-8 lg:h-11 flex items-center justify-center shrink-0"
                   title="Refresh Data"
               >
                   <RotateCcw className="w-3.5 h-3.5 lg:hidden" />
@@ -689,7 +728,7 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                         {showNIS && <th className="w-[80px] min-w-[80px] lg:w-[100px] lg:min-w-[100px] sticky left-[35px] lg:left-[50px] bg-white z-50 px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">NIS</th>}
                         <th className={`w-[130px] min-w-[130px] lg:w-[300px] lg:min-w-[300px] sticky ${showNIS ? 'left-[115px] lg:left-[150px]' : 'left-[35px] lg:left-[50px]'} bg-white z-50 px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.02)]`}>Nama Santri</th>
                         <th className="px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100 bg-white">Jenis Kelamin</th>
-                        <th className="px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center border-b border-r border-slate-100 bg-indigo-50/30 whitespace-nowrap">Hafalan Saat Ini</th>
+                        <th className="px-3 py-4 text-[10px] font-bold text-emerald-600 uppercase tracking-widest text-center border-b border-r border-slate-100 bg-jade-50/30 whitespace-nowrap">Hafalan Saat Ini</th>
                         <th className="w-[140px] min-w-[140px] px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 bg-slate-50/30">Aksi</th>
                     </tr>
                 </thead>
@@ -707,7 +746,7 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                              <td className={`sticky ${showNIS ? 'left-[115px] lg:left-[150px]' : 'left-[35px] lg:left-[50px]'} bg-white group-hover:bg-[#F8FAFC] px-4 py-3 text-xs font-bold text-slate-800 border-r border-slate-100 z-20 truncate transition-colors`}>
                                 <div className="flex items-center gap-2">
                                     <span className="truncate">{student.full_name}</span>
-                                    <Edit3 className="w-2.5 h-2.5 text-indigo-300 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                    <Edit3 className="w-2.5 h-2.5 text-jade-300 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                                 </div>
                             </td>
                              <td className="px-3 py-3 text-[11px] font-bold text-slate-600 text-center border-r border-slate-100">
@@ -716,7 +755,7 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                                  </span>
                              </td>
                             
-                            <td className="px-4 py-3 text-center border-r border-slate-50 bg-indigo-50/5">
+                            <td className="px-4 py-3 text-center border-r border-slate-50 bg-jade-50/5">
                                 <span className="text-[11px] font-black text-slate-800">
                                     {student.current_juz || 0} Juz 
                                 </span>
@@ -726,14 +765,14 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                                 <div className="flex justify-center gap-1">
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); openModal('notes', student); }} 
-                                        className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-200 hover:border-indigo-100 transition-all bg-white shadow-sm" 
+                                        className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm" 
                                         title="Catatan"
                                     >
                                         <MessageSquare className="w-3.5 h-3.5" />
                                     </button>
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); openModal('achievement', student); }} 
-                                        className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-200 hover:border-indigo-100 transition-all bg-white shadow-sm" 
+                                        className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm" 
                                         title="Pencapaian"
                                     >
                                         <Trophy className="w-3.5 h-3.5" />
@@ -747,25 +786,61 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
           </div>
 
           {/* PAGINATION CONTROLS */}
-          {filteredStudents.length > itemsPerPage && (
-            <div className="bg-slate-50/50 border-t border-slate-100 px-6 py-4 flex justify-between items-center">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                    Menampilkan <span className="text-slate-600">{(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredStudents.length)}</span> Dari <span className="text-indigo-600">{filteredStudents.length}</span> Santri
-                </p>
-                <div className="flex gap-2">
+          {filteredStudents.length > 0 && (
+            <div className="bg-[#F8FAFC] border-t border-slate-100 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2">
+                <div className="flex items-center gap-2">
+                    <select 
+                        value={itemsPerPage}
+                        onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                        className="bg-white border-2 border-slate-50 rounded-xl px-2 md:px-3 py-1 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-jade-50/50 cursor-pointer shadow-sm transition-all"
+                    >
+                        {[10, 25, 50, 100].map(val => (
+                            <option key={val} value={val}>{val}</option>
+                        ))}
+                    </select>
+                    <div className="hidden sm:block w-px h-4 bg-slate-200 mx-1" />
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-tight whitespace-nowrap">
+                        <span className="hidden sm:inline">DATA</span> {((currentPage - 1) * itemsPerPage + 1)}-{Math.min(currentPage * itemsPerPage, filteredStudents.length)} <span className="hidden sm:inline text-slate-300">/</span> <span className="text-jade-600 ml-0.5">{filteredStudents.length}</span>
+                    </p>
+                </div>
+
+                <div className="flex items-center gap-0.5 md:gap-1">
                     <button 
                         disabled={currentPage === 1}
-                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                        className="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-white border border-slate-100 rounded-xl hover:bg-slate-50 disabled:opacity-30 transition-all active:scale-95 shadow-sm"
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        className={`p-1.5 md:p-2 rounded-xl border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
                     >
-                        Sebelumnya
+                        <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4 rotate-180" />
                     </button>
+                    
+                    <div className="flex items-center gap-0.5 md:gap-1 px-1 md:px-2">
+                        {[...Array(totalPages)].map((_, i) => {
+                            const pNum = i + 1;
+                            if (totalPages > 5) {
+                                if (pNum !== 1 && pNum !== totalPages && Math.abs(pNum - currentPage) > 1) {
+                                    if (pNum === 2 || pNum === totalPages - 1) return <span key={pNum} className="text-slate-300 text-[8px] md:text-[10px] font-black">..</span>;
+                                    return null;
+                                }
+                            }
+                            
+                            return (
+                                <button 
+                                    key={pNum}
+                                    onClick={() => setCurrentPage(pNum)}
+                                    className={`w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black transition-all active:scale-95 ${currentPage === pNum ? 'bg-jade-600 text-white shadow-lg shadow-jade-100 border-2 border-jade-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600 border-2 border-transparent'}`}
+                                >
+                                    {pNum}
+                                </button>
+                            );
+                        })}
+                    </div>
+
                     <button 
-                        disabled={currentPage * itemsPerPage >= filteredStudents.length}
-                        onClick={() => setCurrentPage(p => p + 1)}
-                        className="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-white border border-slate-100 rounded-xl hover:bg-slate-50 disabled:opacity-30 transition-all active:scale-95 shadow-sm"
+                        disabled={currentPage === totalPages || totalPages === 0}
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        className={`p-1.5 md:p-2 rounded-xl border-2 transition-all active:scale-90 ${currentPage === totalPages || totalPages === 0 ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
                     >
-                        Berikutnya
+                        <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     </button>
                 </div>
             </div>

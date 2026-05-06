@@ -1,6 +1,7 @@
 import { supabase } from '../../lib/supabase';
 import { Student, UserProfile, TeacherNote, Achievement } from '../../types';
 import { logAudit } from './auditService';
+import { createNotification } from './notificationService';
 
 export const getStudents = async (tenantId: string): Promise<Student[]> => {
   const { data, error } = await supabase.from('students').select('*').eq('tenant_id', tenantId).order('created_at', { ascending: true });
@@ -18,6 +19,12 @@ export const getUnassignedStudents = async (tenantId: string): Promise<Student[]
     const { data, error } = await supabase.from('students').select('*').eq('tenant_id', tenantId).is('halaqah_id', null).order('full_name', { ascending: true });
     if (error || !data) return [];
     return data as Student[];
+};
+
+export const getStudentById = async (studentId: string): Promise<Student | null> => {
+    const { data, error } = await supabase.from('students').select('*').eq('id', studentId).single();
+    if (error || !data) return null;
+    return data as Student;
 };
 
 export const getUnlinkedStudents = async (tenantId: string): Promise<Student[]> => {
@@ -55,8 +62,31 @@ export const getStudentNotes = async (studentId: string): Promise<TeacherNote[]>
 };
 
 export const createStudentNote = async (note: Omit<TeacherNote, 'id'>, actor: UserProfile, studentName: string): Promise<TeacherNote> => {
-    const { data, error } = await supabase.from('teacher_notes').insert(note).select().single();
+    const { data, error } = await supabase.from('teacher_notes').insert({ ...note, tenant_id: actor.tenant_id }).select().single();
     if (error) throw error;
+
+    // --- TRIGGER NOTIFICATIONS ---
+    try {
+        const { data: student } = await supabase.from('students').select('parent_id, full_name').eq('id', note.student_id).single();
+        
+        const recipients = [];
+        if (student?.parent_id) recipients.push(student.parent_id);
+        recipients.push(note.student_id);
+
+        await Promise.all(recipients.map(recipientId => 
+            createNotification({
+                user_id: recipientId,
+                tenant_id: actor.tenant_id!,
+                title: "Catatan Baru dari Ustadz",
+                message: `Ustadz ${actor.full_name} telah menambahkan catatan kategori ${note.category} untuk ${student?.full_name || studentName}.`,
+                type: 'info',
+                metadata: { student_id: note.student_id, type: 'note' }
+            })
+        ));
+    } catch (notifErr) {
+        console.warn("Could not send notification:", notifErr);
+    }
+
     await logAudit(actor, 'CREATE', `Catatan: ${studentName}`, `Menambahkan catatan kategori '${note.category}'.`);
     return data as TeacherNote;
 };
@@ -67,6 +97,23 @@ export const deleteStudentNote = async (noteId: string, actor: UserProfile, stud
     await logAudit(actor, 'DELETE', `Catatan: ${studentName}`, `Menghapus catatan ustadz.`);
 };
 
+export const replyStudentNote = async (noteId: string, replyContent: string, actor: UserProfile): Promise<void> => {
+    const { error } = await supabase
+        .from('teacher_notes')
+        .update({ 
+            reply_content: replyContent, 
+            replied_at: new Date().toISOString() 
+        })
+        .eq('id', noteId);
+    
+    if (error) {
+        console.error("Error replying to note:", error);
+        throw error;
+    }
+
+    await logAudit(actor, 'UPDATE', `Balasan Catatan`, `Santri membalas catatan ustadz.`);
+};
+
 // Achievements
 export const getAchievements = async (studentId: string): Promise<Achievement[]> => {
     const { data, error } = await supabase.from('achievements').select('*').eq('student_id', studentId).order('date', { ascending: false });
@@ -75,8 +122,31 @@ export const getAchievements = async (studentId: string): Promise<Achievement[]>
 };
 
 export const createAchievement = async (data: Omit<Achievement, 'id'>, actor: UserProfile, studentName: string): Promise<Achievement> => {
-    const { data: res, error } = await supabase.from('achievements').insert(data).select().single();
+    const { data: res, error } = await supabase.from('achievements').insert({ ...data, tenant_id: actor.tenant_id }).select().single();
     if (error) throw error;
+
+    // --- TRIGGER NOTIFICATIONS ---
+    try {
+        const { data: student } = await supabase.from('students').select('parent_id, full_name').eq('id', data.student_id).single();
+        
+        const recipients = [];
+        if (student?.parent_id) recipients.push(student.parent_id);
+        recipients.push(data.student_id);
+
+        await Promise.all(recipients.map(recipientId => 
+            createNotification({
+                user_id: recipientId,
+                tenant_id: actor.tenant_id!,
+                title: "Pencapaian Baru! 🎉",
+                message: `${student?.full_name || studentName} mendapatkan pencapaian baru: ${res.title}. Barakallah!`,
+                type: 'success',
+                metadata: { student_id: data.student_id, type: 'achievement' }
+            })
+        ));
+    } catch (notifErr) {
+        console.warn("Could not send notification:", notifErr);
+    }
+
     await logAudit(actor, 'CREATE', `Pencapaian: ${studentName}`, `Menambahkan pencapaian '${res.title}'.`);
     return res as Achievement;
 };

@@ -52,7 +52,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSubmit
         {/* Header */}
         <div className="px-6 py-3 border-b border-slate-100 flex justify-between items-center bg-[#FCFDFE] sticky top-0 z-10 transition-all">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-jade-50 flex items-center justify-center text-jade-600 border border-jade-100 shadow-sm">
                 <Edit className="w-4 h-4" />
             </div>
             <div>
@@ -72,15 +72,15 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSubmit
 
 
                 <div className="group">
-                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1 group-focus-within:text-indigo-600 transition-colors">Nama Lengkap Pengguna</label>
+                    <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1 group-focus-within:text-jade-600 transition-colors">Nama Lengkap Pengguna</label>
                     <div className="relative">
-                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-600" />
+                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-jade-600" />
                         <input 
                             required
                             type="text" 
                             value={formData.full_name}
                             onChange={e => setFormData({...formData, full_name: e.target.value})}
-                            className="w-full pl-11 pr-5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 font-bold text-sm focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50/20 outline-none transition-all placeholder:text-slate-300"
+                            className="w-full pl-11 pr-5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 font-bold text-sm focus:bg-white focus:border-jade-400 focus:ring-4 focus:ring-jade-50/20 outline-none transition-all placeholder:text-slate-300"
                             placeholder="Contoh: Abdullah bin Ahmad"
                         />
                     </div>
@@ -148,7 +148,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSubmit
             <button 
                 form="editUserForm"
                 type="submit" 
-                className="flex-[2] px-5 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="flex-[2] px-5 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl bg-jade-600 text-white hover:bg-jade-700 shadow-lg shadow-primary-200 transition-all active:scale-95 flex items-center justify-center gap-2"
             >
                 <Save className="w-3.5 h-3.5" />
                 Simpan Profil
@@ -271,7 +271,7 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                   placeholder="Cari..." 
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-8 lg:pl-12 pr-2 lg:pr-5 py-1.5 lg:py-3 text-[10px] lg:text-[13px] font-bold border border-slate-100 lg:border-2 lg:border-slate-50 rounded-xl lg:rounded-2xl focus:border-emerald-400 bg-white transition-all outline-none h-8 lg:h-12 shadow-sm"
+                  className="w-full pl-8 lg:pl-12 pr-4 py-1.5 lg:py-3 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-emerald-50/50 focus:border-emerald-500 focus:bg-white transition-all text-[10px] lg:text-[12px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none h-8 lg:h-12 shadow-inner"
               />
           </div>
           
@@ -338,14 +338,14 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                     </td>
                     <td className="sticky left-[35px] lg:left-[45px] bg-white px-4 py-4 border-r-2 border-b border-slate-100 z-10 transition-colors">
                         <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className="text-[11px] font-bold text-slate-800 group-hover:text-indigo-600 transition-colors truncate max-w-[120px] lg:max-w-none capitalize">{u.full_name}</span>
+                            <span className="text-[11px] font-bold text-slate-800 group-hover:text-jade-600 transition-colors truncate max-w-[120px] lg:max-w-none capitalize">{u.full_name}</span>
                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter truncate max-w-[120px] lg:max-w-none opacity-60 sm:hidden">{u.email}</span>
                         </div>
                     </td>
                     <td className="px-4 py-4 border-r-2 border-b border-slate-100">
                         <span className={`px-2.5 py-1 text-[9px] font-black uppercase tracking-tight rounded-md border shadow-sm whitespace-nowrap
                             ${u.role === UserRole.SUPERADMIN ? 'bg-slate-50 text-slate-600 border-slate-100' :
-                            u.role === UserRole.ADMIN ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 
+                            u.role === UserRole.ADMIN ? 'bg-jade-50 text-jade-600 border-jade-100' : 
                             u.role === UserRole.TEACHER ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
                             'bg-blue-50 text-blue-600 border-blue-100'}`}>
                             {u.role === UserRole.ADMIN ? 'Admin Sekolah' : 
@@ -367,9 +367,18 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                     </td>
                     <td className="px-4 py-4 border-b border-slate-100">
                         <div className="flex justify-center gap-2">
+                             {onImpersonate && u.role !== UserRole.SUPERADMIN && (
+                                 <button 
+                                    onClick={() => onImpersonate(u)}
+                                    className="p-2.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl border border-slate-200 hover:border-amber-100 transition-all bg-white shadow-sm group relative"
+                                    title={`Masuk sebagai ${u.full_name}`}
+                                >
+                                    <LogIn className="w-4 h-4" />
+                                </button>
+                             )}
                              <button 
                                 onClick={() => handleEdit(u)}
-                                className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-slate-200 hover:border-indigo-100 transition-all bg-white shadow-sm"
+                                className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm"
                                 title="Edit"
                             >
                                 <Edit className="w-4 h-4"/>

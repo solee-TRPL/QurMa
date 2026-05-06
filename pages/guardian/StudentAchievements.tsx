@@ -73,9 +73,6 @@ export const StudentAchievements: React.FC<{ user: UserProfile }> = ({ user }) =
                         <div className="flex flex-col gap-1.5">
                             <div className="flex items-center justify-between gap-4">
                                 <h4 className="text-[11px] lg:text-[12px] font-black text-slate-800 tracking-tight leading-none uppercase flex items-center gap-2">
-                                    <span className="text-amber-500">
-                                        {idx === 0 ? '🏆' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '⭐'}
-                                    </span>
                                     Pencapaian: {ach.title}
                                 </h4>
                                 <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none shrink-0 ">

@@ -137,18 +137,18 @@ export const StudentExamResults: React.FC<{ user?: UserProfile }> = ({ user }) =
     return (
         <div className="h-[calc(100vh-160px)] flex flex-col items-center justify-center animate-fade-in relative overflow-hidden">
             {/* Background Decoration */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-50/50 rounded-full blur-[120px] -z-10" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-jade-50/50 rounded-full blur-[120px] -z-10" />
             
-            <div className="bg-white/40 backdrop-blur-md p-10 rounded-[32px] border border-white/20 shadow-xl shadow-indigo-100/20 text-center max-w-sm relative z-10 transition-all hover:scale-[1.02] duration-500">
-                <div className="w-20 h-20 bg-indigo-600 rounded-[24px] flex items-center justify-center mx-auto mb-8 shadow-lg shadow-indigo-200 animate-bounce-slow">
+            <div className="bg-white/40 backdrop-blur-md p-10 rounded-[32px] border border-white/20 shadow-xl shadow-primary-100/20 text-center max-w-sm relative z-10 transition-all hover:scale-[1.02] duration-500">
+                <div className="w-20 h-20 bg-jade-600 rounded-[24px] flex items-center justify-center mx-auto mb-8 shadow-lg shadow-primary-200 animate-bounce-slow">
                     <Award className="w-10 h-10 text-white" />
                 </div>
                 
                 <h2 className="text-xl font-black text-slate-800 uppercase tracking-[0.2em] mb-3">Nilai Ujian</h2>
                 <div className="flex items-center justify-center gap-2 mb-6">
-                    <div className="h-[2.5px] w-6 bg-indigo-100 rounded-full" />
-                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Segera Hadir</p>
-                    <div className="h-[2.5px] w-6 bg-indigo-100 rounded-full" />
+                    <div className="h-[2.5px] w-6 bg-jade-100 rounded-full" />
+                    <p className="text-[10px] font-black text-jade-400 uppercase tracking-widest">Segera Hadir</p>
+                    <div className="h-[2.5px] w-6 bg-jade-100 rounded-full" />
                 </div>
                 
                 <p className="text-xs font-bold text-slate-400 leading-relaxed uppercase tracking-tight">
@@ -162,8 +162,8 @@ export const StudentExamResults: React.FC<{ user?: UserProfile }> = ({ user }) =
                                 <User className="w-4 h-4 text-slate-300" />
                             </div>
                         ))}
-                        <div className="w-8 h-8 rounded-full border-2 border-white bg-indigo-50 flex items-center justify-center">
-                            <span className="text-[8px] font-black text-indigo-600">+99</span>
+                        <div className="w-8 h-8 rounded-full border-2 border-white bg-jade-50 flex items-center justify-center">
+                            <span className="text-[8px] font-black text-jade-600">+99</span>
                         </div>
                     </div>
                 </div>

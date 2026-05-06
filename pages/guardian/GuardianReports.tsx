@@ -180,6 +180,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
   const stats = useMemo(() => {
     let sabaqCount = 0;
     let sabqiCount = 0;
+    let manzilCount = 0;
     let total = 0;
     let mumtaz = 0;
 
@@ -190,11 +191,12 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
             if (entry.status === MemorizationStatus.LANCAR) mumtaz++;
             if (type === MemorizationType.SABAQ) sabaqCount += (entry.jumlah || 0);
             if (type === MemorizationType.SABQI) sabqiCount += (entry.jumlah || 0);
+            if (type === MemorizationType.MANZIL) manzilCount += (entry.jumlah || 0);
         });
     });
 
     const quality = total > 0 ? Math.round((mumtaz / total) * 100) : 0;
-    return { sabaqCount, sabqiCount, total, quality };
+    return { sabaqCount, sabqiCount, manzilCount, total, quality };
   }, [weeklyData]);
 
   const filteredNotes = useMemo(() => {
@@ -203,7 +205,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
 
   if (loading) return (
     <div className="p-20 flex flex-col items-center justify-center gap-4">
-        <div className="w-10 h-10 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-jade-100 border-t-jade-600 rounded-full animate-spin"></div>
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Menyusun Laporan...</p>
     </div>
   );
@@ -246,10 +248,10 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
               </button>
               
               <div className="flex flex-col items-center justify-center flex-1 px-1">
-                   <span className="text-[9px] font-black text-indigo-600 uppercase tracking-tight leading-none whitespace-nowrap">
+                   <span className="text-[9px] font-black text-jade-600 uppercase tracking-tight leading-none whitespace-nowrap">
                        {new Date(weekDates[0]).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }).toUpperCase()} - {new Date(weekDates[4]).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }).toUpperCase()}
                    </span>
-                   <span className="text-[7px] font-black text-indigo-300 uppercase tracking-widest mt-1">
+                   <span className="text-[7px] font-black text-jade-300 uppercase tracking-widest mt-1">
                        {currentWeekOffset === 0 ? 'PEKAN INI' : 
                         currentWeekOffset === -1 ? 'PEKAN LALU' : 
                         currentWeekOffset < 0 ? `${Math.abs(currentWeekOffset)} PK LALU` : 
@@ -269,57 +271,81 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
               </button>
           </div>
 
-          <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+          <div className="flex-1 flex flex-col gap-2 overflow-hidden">
               {/* Target Pekanan Chartbox */}
-              <div className="bg-white rounded-[24px] p-5 border border-slate-200 shadow-sm flex flex-col gap-4 animate-in slide-in-from-left duration-500">
-                  <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-100 shadow-sm">
-                          <Target className="w-4 h-4" />
-                      </div>
+              <div className="flex-1 bg-white rounded-t-[20px] p-3 border border-slate-200 shadow-sm flex flex-col gap-2 animate-in slide-in-from-left duration-500 min-h-0">
+                  <div className="flex items-center gap-2.5 shrink-0">
+                      
                       <div>
-                          <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Target Pekanan</h3>
-                          <p className="text-[7px] font-black text-indigo-400 uppercase tracking-widest mt-0.5">Disusun Oleh Ustadz</p>
+                          <h3 className="text-[9.5px] font-black text-slate-800 uppercase tracking-widest leading-none">Target Pekanan</h3>
+                          <p className="text-[6.5px] font-black text-jade-400 uppercase tracking-widest mt-1">Oleh Ustadz</p>
                       </div>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="flex-1 flex flex-col justify-between py-1 min-h-0">
                       {/* Sabaq Target */}
-                      <div className="p-3 bg-slate-50/50 border border-slate-100 rounded-2xl group hover:bg-white hover:shadow-md transition-all">
-                          <div className="flex items-center justify-between mb-2">
-                              <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Sabaq</span>
-                              <span className="text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100">
-                                  {weeklyTarget?.sabaq_target || 0} Baris
+                      <div className="p-2 bg-slate-50/50 border border-slate-100 rounded-xl group hover:bg-white hover:shadow-md transition-all flex-1 flex flex-col justify-center mb-1">
+                          <div className="flex items-center justify-between mb-0.5">
+                              <span className="text-[6.5px] font-black text-slate-400 uppercase tracking-widest">SABAQ</span>
+                              <span className="text-[8.5px] font-black text-jade-600 bg-jade-50 px-1.5 py-0.5 rounded-md border border-jade-100">
+                                  {weeklyTarget?.sabaq_target || 0} BRS
                               </span>
                           </div>
-                          <p className="text-[10px] font-black text-slate-700 uppercase tracking-tight truncate">
+                          <p className="text-[8.5px] font-black text-slate-700 uppercase tracking-tight truncate leading-none">
                               {weeklyTarget?.sabaq_target_surat || '-'}
                           </p>
                       </div>
 
                       {/* Sabqi Target */}
-                      <div className="p-3 bg-slate-50/50 border border-slate-100 rounded-2xl group hover:bg-white hover:shadow-md transition-all">
-                          <div className="flex items-center justify-between mb-2">
-                              <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Sabqi</span>
-                              <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">
-                                  {weeklyTarget?.sabqi_target || 0} Hal
+                      <div className="p-2 bg-slate-50/50 border border-slate-100 rounded-xl group hover:bg-white hover:shadow-md transition-all flex-1 flex flex-col justify-center mb-1">
+                          <div className="flex items-center justify-between mb-0.5">
+                              <span className="text-[6.5px] font-black text-slate-400 uppercase tracking-widest">SABQI</span>
+                              <span className="text-[8.5px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-100">
+                                  {weeklyTarget?.sabqi_target || 0} HAL
                               </span>
                           </div>
-                          <p className="text-[10px] font-black text-slate-700 uppercase tracking-tight truncate">
+                          <p className="text-[8.5px] font-black text-slate-700 uppercase tracking-tight truncate leading-none">
                               {weeklyTarget?.sabqi_target_surat || '-'}
                           </p>
                       </div>
 
                       {/* Manzil Target */}
-                      <div className="p-3 bg-slate-50/50 border border-slate-100 rounded-2xl group hover:bg-white hover:shadow-md transition-all">
-                          <div className="flex items-center justify-between mb-2">
-                              <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Manzil</span>
-                              <span className="text-[9px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">
-                                  {weeklyTarget?.manzil_hal || 0} Hal
+                      <div className="p-2 bg-slate-50/50 border border-slate-100 rounded-xl group hover:bg-white hover:shadow-md transition-all flex-1 flex flex-col justify-center">
+                          <div className="flex items-center justify-between mb-0.5">
+                              <span className="text-[6.5px] font-black text-slate-400 uppercase tracking-widest">MANZIL</span>
+                              <span className="text-[8.5px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-100">
+                                  {weeklyTarget?.manzil_hal || 0} HAL
                               </span>
                           </div>
-                          <p className="text-[10px] font-black text-slate-700 uppercase tracking-tight truncate">
+                          <p className="text-[8.5px] font-black text-slate-700 uppercase tracking-tight truncate leading-none">
                               {weeklyTarget?.manzil_target || '-'}
                           </p>
+                      </div>
+                  </div>
+              </div>
+
+              {/* Achievement Summary Chartbox */}
+              <div className="flex-1 bg-jade-600 rounded-none p-3 border border-jade-700 shadow-lg shadow-jade-100/50 flex flex-col gap-2 animate-in slide-in-from-left duration-700 min-h-0">
+                  <div className="flex items-center gap-2.5 shrink-0">
+                      
+                      <div>
+                          <h3 className="text-[9.5px] font-black text-white uppercase tracking-widest leading-none">Capaian Pekan Ini</h3>
+                          <p className="text-[6.5px] font-black text-jade-200 uppercase tracking-widest mt-1">Total Setoran</p>
+                      </div>
+                  </div>
+
+                  <div className="flex-1 flex flex-col justify-between py-1 min-h-0">
+                      <div className="flex items-center justify-between p-2 bg-jade-700/30 rounded-xl border border-jade-500/50 flex-1 mb-1.5">
+                          <span className="text-[7px] font-black text-jade-100 uppercase tracking-widest">SABAQ</span>
+                          <span className="text-[11px] font-black text-white">{stats.sabaqCount} <span className="text-[7px] opacity-60">BRS</span></span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 bg-jade-700/30 rounded-xl border border-jade-500/50 flex-1 mb-1.5">
+                          <span className="text-[7px] font-black text-jade-100 uppercase tracking-widest">SABQI</span>
+                          <span className="text-[11px] font-black text-white">{stats.sabqiCount} <span className="text-[7px] opacity-60">HAL</span></span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 bg-jade-700/30 rounded-xl border border-jade-500/50 flex-1">
+                          <span className="text-[7px] font-black text-jade-100 uppercase tracking-widest">MANZIL</span>
+                          <span className="text-[11px] font-black text-white">{stats.manzilCount} <span className="text-[7px] opacity-60">HAL</span></span>
                       </div>
                   </div>
               </div>
@@ -343,7 +369,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                   >
                       <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <div className="px-2 py-1 text-[9.5px] font-black uppercase tracking-widest text-indigo-600 flex flex-col items-center justify-center flex-1">
+                  <div className="px-2 py-1 text-[9.5px] font-black uppercase tracking-widest text-jade-600 flex flex-col items-center justify-center flex-1">
                       <span className="flex items-center gap-2 whitespace-nowrap leading-none truncate w-full justify-center">
                           <Calendar className="w-3 h-3 shrink-0" />
                           {new Date(weekDates[0]).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })} - {new Date(weekDates[4]).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
@@ -369,7 +395,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                   {/* Table Header Mirroring Teacher Style */}
                   <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-slate-100 flex flex-col lg:flex-row items-center justify-between bg-white relative z-20 gap-3 lg:gap-0 shrink-0">
                       <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 shadow-sm text-indigo-500">
+                          <div className="w-8 h-8 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 shadow-sm text-jade-500">
                               <FileText className="w-3.5 h-3.5" />
                           </div>
                           <div>
@@ -378,8 +404,8 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                           </div>
                       </div>
                       <div className="hidden lg:flex items-center gap-2">
-                          <div className="px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-lg">
-                              <p className="text-[8px] font-black text-indigo-600 uppercase tracking-widest">Mutaba'ah Hafalan</p>
+                          <div className="px-3 py-1.5 bg-jade-50 border border-jade-100 rounded-lg">
+                              <p className="text-[8px] font-black text-jade-600 uppercase tracking-widest">Mutaba'ah Hafalan</p>
                           </div>
                       </div>
                   </div>
@@ -470,7 +496,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                                   {/* SURAT : AYAT COLUMN */}
                                                   <td className={`px-4 py-3 border-b border-r border-slate-200 ${isToday ? 'bg-emerald-50/5' : ''}`}>
                                                       <div className="flex items-center justify-start gap-1 max-w-[400px] mx-auto">
-                                                          <span className={`text-[8px] lg:text-[9px] font-black uppercase tracking-[0.05em] truncate ${rec?.surah_name ? 'text-indigo-600' : 'text-slate-200'}`}>
+                                                          <span className={`text-[8px] lg:text-[9px] font-black uppercase tracking-[0.05em] truncate ${rec?.surah_name ? 'text-jade-600' : 'text-slate-200'}`}>
                                                               {rec?.surah_name || '- SURAT -'}
                                                           </span>
                                                           <span className="text-slate-300 font-black">:</span>

@@ -103,64 +103,57 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
   return (
     <div className="space-y-6">
       {/* Unified Control Bar */}
-      <div className="flex flex-col lg:flex-row w-full gap-2 p-2 bg-white rounded-[28px] lg:rounded-[40px] border border-slate-100 shadow-sm backdrop-blur-sm shrink-0 relative z-[70] sticky top-0">
+      <div className="flex flex-col lg:flex-row w-full gap-2 py-2 bg-white shrink-0 relative z-[70] sticky top-0">
         <div className="flex flex-row items-center gap-2 w-full lg:contents">
+             {/* 3. SORT FILTER */}
+            <div className="flex-1 lg:flex-none flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-2xl border-2 border-slate-100 shadow-sm min-w-[180px] lg:min-w-[200px]">
+                <div className="flex-1 relative group/sel-time">
+                    <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Urutkan Waktu</p>
+                    <div className="relative">
+                        <select 
+                            value={sortOrder}
+                            onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
+                            className="w-full bg-transparent text-[9px] md:text-[10px] font-black text-slate-800 uppercase tracking-tight focus:outline-none appearance-none cursor-pointer p-0 pr-5 relative z-10 truncate"
+                        >
+                            <option value="newest">TERBARU</option>
+                            <option value="oldest">TERLAMA</option>
+                        </select>
+                        <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none group-hover/sel-time:text-jade-500 transition-colors" />
+                    </div>
+                </div>
+            </div>
+
             {/* 1. SEARCH BAR */}
             <div className="relative flex-1 group h-10 min-w-0">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-indigo-500 transition-colors" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-jade-500 transition-colors" />
                 <input 
                     type="text" 
                     placeholder="CARI AUDIT LOG..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full h-full pl-10 pr-4 bg-slate-50/50 border border-slate-100/50 rounded-full focus:ring-4 focus:ring-indigo-50/50 focus:border-indigo-500 focus:bg-white transition-all text-[10px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-inner"
+                    className="w-full h-full pl-10 pr-4 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 focus:bg-white transition-all text-[10px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-inner"
                 />
             </div>
 
             {/* 2. EXPORT CSV */}
             <button 
                 onClick={handleExportCSV}
-                className="h-10 flex flex-none items-center px-6 font-black text-[10px] uppercase tracking-widest rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-100/50 hover:bg-indigo-700 hover:scale-[1.02] transition-all active:scale-95 gap-2 whitespace-nowrap"
+                className="h-10 flex flex-none items-center px-6 font-black text-[10px] uppercase tracking-widest rounded-full bg-jade-600 text-white shadow-lg shadow-primary-100/50 hover:bg-jade-700 hover:scale-[1.02] transition-all active:scale-95 gap-2 whitespace-nowrap"
             >
                 <Download className="w-3.5 h-3.5" /> <span className="hidden lg:inline">EXPORT CSV</span><span className="lg:hidden">CSV</span>
             </button>
-        </div>
-
-        <div className="flex flex-row items-center gap-2 w-full lg:w-auto shrink-0">
-            {/* 3. SORT FILTER */}
-            <div className="flex items-center gap-2 flex-1 lg:flex-none relative">
-                <button 
-                    onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
-                    className="h-10 flex-1 lg:flex-none flex items-center px-5 font-black text-[9px] uppercase tracking-widest rounded-full border border-slate-100 bg-slate-50/50 text-slate-500 hover:bg-white transition-all gap-2 shadow-inner active:scale-95 whitespace-nowrap min-w-[140px]"
-                >
-                    <Filter className="w-3.5 h-3.5" />
-                    <span>WAKTU: {sortOrder === 'newest' ? 'TERBARU' : 'TERLAMA'}</span>
-                    <ChevronDown className="w-3 h-3 opacity-50 ml-auto" />
-                </button>
-                
-                {isFilterMenuOpen && (
-                    <>
-                        <div className="fixed inset-0 z-10" onClick={() => setIsFilterMenuOpen(false)}></div>
-                        <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 z-[100] overflow-hidden animate-in zoom-in-95 duration-200">
-                            <div className="px-4 py-2 bg-slate-50 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">Urutkan Waktu</div>
-                            <button onClick={() => { setSortOrder('newest'); setIsFilterMenuOpen(false); }} className="w-full text-left px-4 py-2.5 text-[10px] font-black text-slate-600 uppercase tracking-tight hover:bg-slate-50 flex items-center justify-between">Terbaru {sortOrder === 'newest' && <Check className="w-3.5 h-3.5 text-indigo-600" />}</button>
-                            <button onClick={() => { setSortOrder('oldest'); setIsFilterMenuOpen(false); }} className="w-full text-left px-4 py-2.5 text-[10px] font-black text-slate-600 uppercase tracking-tight hover:bg-slate-50 flex items-center justify-between">Terlama {sortOrder === 'oldest' && <Check className="w-3.5 h-3.5 text-indigo-600" />}</button>
-                        </div>
-                    </>
-                )}
-            </div>
 
             {/* 4. REFRESH */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-start gap-2">
                 <button 
                     onClick={fetchLogs}
                     disabled={loading}
-                    className="h-10 w-10 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-indigo-600 hover:bg-slate-50 transition-all active:scale-95 rounded-full shadow-sm disabled:opacity-50"
+                    className="h-10 w-10 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 hover:bg-slate-50 transition-all active:scale-95 rounded-full shadow-sm disabled:opacity-50"
                 >
                     <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                 </button>
             </div>
-        </div>
+        </div>            
       </div>
 
       <div className="bg-white shadow-sm border-2 border-slate-200 overflow-hidden flex flex-col">

@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { UserProfile, Student, MemorizationRecord, MemorizationType, Halaqah, WeeklyTarget } from '../../types';
+import { UserProfile, Student, MemorizationRecord, MemorizationType, Halaqah, WeeklyTarget, UserRole } from '../../types';
 import { getStudents, getTenantRecords, getHalaqahs, getUsers, getTenant, updateTenant, getWeeklyTargetsInRange } from '../../services/dataService';
 import { CustomDatePicker } from '../../components/ui/CustomDatePicker';
-import { BookOpen, Calendar, Search, ChevronDown, Activity, Users, User, ArrowRight, TrendingUp, ChevronRight, Target, Plus, Trash2, HelpCircle, X, Save, AlertTriangle } from 'lucide-react';
+import { BookOpen, Calendar, Search, ChevronDown, Activity, Users, User, ArrowRight, TrendingUp, ChevronRight, Target, Plus, Trash2, HelpCircle, X, Save, AlertTriangle, GraduationCap, Clock, Crosshair } from 'lucide-react';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { Tenant } from '../../types';
+import ExcelJS from 'exceljs';
+import { useLoading } from '../../lib/LoadingContext';
+import { useNotification } from '../../lib/NotificationContext';
+import { Download } from 'lucide-react';
 
 // --- Sub Component: Manage Target Info Modal ---
 interface ManageTargetModalProps {
@@ -12,9 +16,10 @@ interface ManageTargetModalProps {
     onClose: () => void;
     tenant: Tenant | null;
     onSave: (info: { label: string; value: string }[]) => Promise<void>;
+    isReadOnly?: boolean;
 }
 
-const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClose, tenant, onSave }) => {
+const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClose, tenant, onSave, isReadOnly = false }) => {
     const [infoList, setInfoList] = useState<{ label: string; value: string }[]>([]);
     const [saving, setSaving] = useState(false);
     const [deleteConfirm, setDeleteConfirm] = useState<{ show: boolean; index: number | null }>({ show: false, index: null });
@@ -80,7 +85,7 @@ const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClo
                 <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                     <div>
                         <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                             <Target className="w-4 h-4 text-indigo-500" />
+                             <Crosshair className="w-4 h-4 text-jade-500" />
                              Target Hafalan
                         </h3>
                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Acuan Standar Hafalan Santri</p>
@@ -102,7 +107,8 @@ const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClo
                                         value={item.label}
                                         onChange={(e) => handleUpdateItem(idx, 'label', e.target.value)}
                                         placeholder="Penerima Target..."
-                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[10.5px] font-black text-slate-800 focus:ring-4 focus:ring-indigo-50/50 focus:border-indigo-400 focus:bg-white transition-all outline-none"
+                                        disabled={isReadOnly}
+                                        className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[10.5px] font-black text-slate-800 transition-all outline-none ${isReadOnly ? 'opacity-70 cursor-not-allowed' : 'focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white'}`}
                                     />
                                 </div>
                                 <div className="flex-1 space-y-1">
@@ -112,48 +118,64 @@ const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClo
                                         value={item.value}
                                         onChange={(e) => handleUpdateItem(idx, 'value', e.target.value)}
                                         placeholder="Target..."
-                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[10.5px] font-black text-slate-800 focus:ring-4 focus:ring-indigo-50/50 focus:border-indigo-400 focus:bg-white transition-all outline-none"
+                                        disabled={isReadOnly}
+                                        className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[10.5px] font-black text-slate-800 transition-all outline-none ${isReadOnly ? 'opacity-70 cursor-not-allowed' : 'focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white'}`}
                                     />
                                 </div>
-                                <button 
-                                    onClick={() => handleConfirmDelete(idx)}
-                                    className="mt-5 p-2.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all active:scale-90 shadow-sm border border-transparent hover:border-rose-100"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
+                                {!isReadOnly && (
+                                    <button 
+                                        onClick={() => handleConfirmDelete(idx)}
+                                        className="mt-5 p-2.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all active:scale-90 shadow-sm border border-transparent hover:border-rose-100"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                )}
                             </div>
                         ))}
                     </div>
 
-                    <button 
-                        onClick={handleAddItem}
-                        className="w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 hover:text-indigo-500 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all flex items-center justify-center gap-2 group"
-                    >
-                        <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Tambah Baris Target</span>
-                    </button>
+                    {!isReadOnly && (
+                        <button 
+                            onClick={handleAddItem}
+                            className="w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 hover:text-jade-500 hover:border-jade-200 hover:bg-jade-50/30 transition-all flex items-center justify-center gap-2 group"
+                        >
+                            <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Tambah Baris Target</span>
+                        </button>
+                    )}
                 </div>
 
                 {/* Footer */}
                 <div className="p-6 border-t border-slate-100 bg-white flex items-center gap-3">
-                    <button 
-                        onClick={onClose}
-                        className="flex-1 py-3 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] hover:bg-slate-50 rounded-xl transition-all active:scale-95"
-                    >
-                        Batal
-                    </button>
-                    <button 
-                        onClick={handleSubmit}
-                        disabled={saving}
-                        className="flex-[1.5] py-3 bg-indigo-600 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
-                    >
-                        {saving ? (
-                            <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                            <Save className="w-3.5 h-3.5" />
-                        )}
-                        <span>Simpan Perubahan</span>
-                    </button>
+                    {isReadOnly ? (
+                        <button 
+                            onClick={onClose}
+                            className="w-full py-3.5 bg-slate-800 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 shadow-xl shadow-slate-100 transition-all active:scale-95 flex items-center justify-center gap-2"
+                        >
+                            Tutup
+                        </button>
+                    ) : (
+                        <>
+                            <button 
+                                onClick={onClose}
+                                className="flex-1 py-3 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] hover:bg-slate-50 rounded-xl transition-all active:scale-95"
+                            >
+                                Batal
+                            </button>
+                            <button 
+                                onClick={handleSubmit}
+                                disabled={saving}
+                                className="flex-[1.5] py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-jade-700 shadow-xl shadow-primary-100 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+                            >
+                                {saving ? (
+                                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <Save className="w-3.5 h-3.5" />
+                                )}
+                                <span>Simpan Perubahan</span>
+                            </button>
+                        </>
+                    )}
                 </div>
 
                 {/* INNER CUSTOM CONFIRM OVERLAY */}
@@ -220,6 +242,7 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState<'nis' | 'sabaq' | 'sabqi' | 'manzil'>('nis');
     const [selectedHalaqahId, setSelectedHalaqahId] = useState<string>("all");
+    const [selectedGender, setSelectedGender] = useState<string>("all");
     const [showNisMobile, setShowNisMobile] = useState(false);
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
     const [tenant, setTenant] = useState<Tenant | null>(null);
@@ -227,6 +250,9 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
+
+    const { setLoading: setGlobalLoading } = useLoading();
+    const { addNotification } = useNotification();
 
     const [selectedMonth, setSelectedMonth] = useState<string>("custom");
 
@@ -251,7 +277,7 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
     // Reset current page when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, selectedHalaqahId, sortBy]);
+    }, [searchQuery, selectedHalaqahId, selectedGender, sortBy]);
 
     const fetchData = async () => {
         setLoading(true);
@@ -340,7 +366,8 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
             const matchesSearch = s.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                                  s.nis?.toLowerCase().includes(searchQuery.toLowerCase());
             const matchesHalaqah = selectedHalaqahId === "all" || s.halaqah_id === selectedHalaqahId;
-            return matchesSearch && matchesHalaqah;
+            const matchesGender = selectedGender === "all" || s.gender === selectedGender;
+            return matchesSearch && matchesHalaqah && matchesGender;
         })
         .sort((a, b) => {
             if (sortBy === 'sabaq') return b.sabaqBaris - a.sabaqBaris;
@@ -353,70 +380,181 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
         return filteredAndSortedStats.slice(start, start + itemsPerPage);
     }, [filteredAndSortedStats, currentPage, itemsPerPage]);
 
+    const handleExport = async () => {
+        setGlobalLoading(true);
+        try {
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('Monitor Hafalan');
+
+            // Styling
+            const headerStyle: Partial<ExcelJS.Style> = {
+                font: { bold: true, color: { argb: 'FFFFFFFF' } },
+                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4472C4' } },
+                alignment: { horizontal: 'center' },
+                border: {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                }
+            };
+
+            const cellStyle: Partial<ExcelJS.Style> = {
+                border: {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                },
+                alignment: { horizontal: 'center' }
+            };
+
+            // Define columns
+            worksheet.columns = [
+                { header: 'No', key: 'no', width: 8 },
+                { header: 'NIS', key: 'nis', width: 15 },
+                { header: 'Nama Santri', key: 'name', width: 40 },
+                { header: 'Gender', key: 'gender', width: 15 },
+                { header: 'Halaqah', key: 'halaqah', width: 25 },
+                { header: 'Pengampu', key: 'teacher', width: 25 },
+                { header: 'Sabaq (Baris)', key: 'sabaq', width: 20 },
+                { header: 'Total Hafalan', key: 'total', width: 20 }
+            ];
+
+            // Apply header style
+            worksheet.getRow(1).eachCell((cell) => {
+                cell.style = headerStyle;
+            });
+
+            // Add rows
+            filteredAndSortedStats.forEach((stat, index) => {
+                const row = worksheet.addRow({
+                    no: index + 1,
+                    nis: stat.nis || '-',
+                    name: stat.full_name,
+                    gender: stat.gender === 'L' ? 'Laki-laki' : (stat.gender === 'P' ? 'Perempuan' : '-'),
+                    halaqah: stat.halaqahName,
+                    teacher: stat.teacherName,
+                    sabaq: stat.sabaqBaris,
+                    total: stat.totalJuz
+                });
+                row.eachCell((cell) => {
+                    cell.style = cellStyle;
+                });
+                row.getCell('name').alignment = { horizontal: 'left' };
+                row.getCell('halaqah').alignment = { horizontal: 'left' };
+                row.getCell('teacher').alignment = { horizontal: 'left' };
+            });
+
+            // Summary info at top
+            worksheet.insertRow(1, []);
+            worksheet.insertRow(1, [`LAPORAN MONITOR HAFALAN SANTRI (${startDate} s/d ${endDate})`]);
+            worksheet.mergeCells('A1:H1');
+            worksheet.getCell('A1').font = { bold: true, size: 14 };
+            worksheet.getCell('A1').alignment = { horizontal: 'center' };
+
+            // Generate buffer
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Monitor_Hafalan_${startDate}_to_${endDate}.xlsx`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            addNotification({ type: 'success', title: 'Berhasil', message: 'Laporan Monitor Hafalan berhasil diunduh.' });
+        } catch (error) {
+            console.error("Export error:", error);
+            addNotification({ type: 'error', title: 'Gagal', message: 'Terjadi kesalahan saat mengekspor data.' });
+        } finally {
+            setGlobalLoading(false);
+        }
+    };
+
     return (
-        <div className="flex flex-col gap-3 md:gap-6 animate-fade-in pb-12">
+        <div className="flex flex-col gap-2 md:gap-3 animate-fade-in pb-12">
             {/* Premium Two-Row Filter Bar */}
-            <div className="flex flex-col gap-3 mb-4 md:mb-6 animate-in slide-in-from-top-4 duration-500 sticky top-0 z-[100]">
-                {/* ROW 1: PRIMARY FILTERS */}
-                <div className="flex flex-col lg:flex-row items-center gap-2 p-2 lg:p-1.5 bg-white/80 rounded-[28px] lg:rounded-[40px] border-2 border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full h-auto lg:h-[60px] backdrop-blur-sm relative z-30">
-                    {/* Section 1: Search Input */}
-                    <div className="relative w-full lg:flex-[1.5] lg:min-w-[140px] group h-10 lg:h-11">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-500 transition-colors" />
+            <div className="flex flex-col gap-3 mb-2 animate-in slide-in-from-top-4 duration-500 sticky top-0 z-[100]">
+                {/* Row 1: Primary Controls */}
+                <div className="flex flex-col lg:flex-row items-center gap-2 md:gap-3 py-2 bg-white w-full relative z-30">
+                    {/* 1. Halaqah Selector */}
+                    <div className="flex-1 lg:flex-none flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-2xl border-2 border-slate-100 shadow-sm min-w-[240px] lg:min-w-[340px]">
+                        <div className="p-1.5 bg-primary-500 rounded-lg text-white shrink-0">
+                            <GraduationCap className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                        </div>
+                        <div className="flex-1 relative group/sel-unified">
+                            <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Pilih Halaqoh / Pengampu</p>
+                            <div className="relative">
+                                <select 
+                                    value={selectedHalaqahId}
+                                    onChange={(e) => setSelectedHalaqahId(e.target.value)}
+                                    className="w-full bg-transparent text-[9px] md:text-[10px] font-black text-slate-800 uppercase tracking-tight focus:outline-none appearance-none cursor-pointer p-0 pr-5 relative z-10 truncate"
+                                >
+                                    <option value="all">SEMUA HALAQAH</option>
+                                    {halaqahs.map(h => (
+                                        <option key={h.id} value={h.id}>{h.name.toUpperCase()} / {h.teacher_name?.toUpperCase() || '-'}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none group-hover/sel-unified:text-primary-500 transition-colors" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 4. Search Input */}
+                    <div className="relative w-full lg:flex-1 group h-10 lg:h-11">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-jade-500 transition-colors" />
                         <input 
                             type="text"
                             placeholder="CARI SANTRI..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full h-full pl-11 pr-4 bg-white border border-slate-50 rounded-full focus:ring-4 focus:ring-indigo-50/50 focus:border-indigo-400 transition-all text-[10px] font-black uppercase tracking-widest placeholder:text-slate-300 outline-none shadow-sm"
+                            className="w-full h-full pl-11 pr-4 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-[10px] font-black uppercase tracking-widest placeholder:text-slate-300 outline-none shadow-inner"
                         />
                     </div>
 
-                    {/* Section 2: Selectors Group */}
-                    <div className="flex flex-row items-center gap-1.5 lg:gap-2 w-full lg:w-auto h-10 lg:h-11">
-                        {/* Combined Halaqah / Teacher Box */}
-                        <div className="relative flex-[1.5] lg:flex-none h-full lg:min-w-[200px] bg-white border border-slate-50 rounded-[18px] lg:rounded-2xl shadow-sm hover:border-indigo-200 transition-all px-3 lg:px-4 flex items-center group/select">
-                            <select 
-                                value={selectedHalaqahId}
-                                onChange={(e) => setSelectedHalaqahId(e.target.value)}
-                                className="w-full bg-transparent text-[9px] lg:text-[10px] font-black text-slate-700 uppercase tracking-widest focus:outline-none appearance-none cursor-pointer pr-4 truncate"
-                            >
-                                <option value="all">HALAQOH / PENGAMPU</option>
-                                {halaqahs.map(h => (
-                                    <option key={h.id} value={h.id}>{h.name.toUpperCase()} / {h.teacher_name?.toUpperCase() || '-'}</option>
-                                ))}
-                            </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 lg:w-3.5 lg:h-3.5 text-slate-300 pointer-events-none group-hover/select:text-indigo-400 transition-colors" />
-                        </div>
+                    {/* 5. Manage Target Button */}
+                    <button 
+                        onClick={() => setIsManageModalOpen(true)}
+                        className="h-10 lg:h-11 w-10 lg:w-11 bg-jade-600 border border-jade-600 rounded-[18px] lg:rounded-2xl text-white hover:bg-jade-700 transition-all flex items-center justify-center group shrink-0 shadow-lg shadow-primary-100/50"
+                        title="Kelola Target"
+                    >
+                        <Crosshair className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform" />
+                    </button>
 
-                        {/* Ranking Box */}
-                        <div className="relative flex-1 lg:flex-none h-full lg:min-w-[120px] bg-white border border-slate-50 rounded-[18px] lg:rounded-2xl shadow-sm hover:border-indigo-200 transition-all px-3 lg:px-4 flex items-center group/select">
-                            <select 
-                                value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value as any)}
-                                className="w-full bg-transparent text-[9px] lg:text-[10px] font-black text-slate-700 uppercase tracking-widest focus:outline-none appearance-none cursor-pointer pr-4 truncate"
-                            >
-                                <option value="nis">URUTAN</option>
-                                <option value="sabaq">SABAQ</option>
-                            </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 lg:w-3.5 lg:h-3.5 text-slate-300 pointer-events-none group-hover/select:text-indigo-400 transition-colors" />
-                        </div>
-
-                        {/* Manage Target Button */}
-                        <button 
-                            onClick={() => setIsManageModalOpen(true)}
-                            className="h-full w-10 lg:w-11 bg-indigo-600 border border-indigo-600 rounded-[18px] lg:rounded-2xl text-white hover:bg-indigo-700 transition-all flex items-center justify-center group shrink-0 shadow-lg shadow-indigo-100/50"
-                            title="Kelola Target"
-                        >
-                            <Target className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform" />
-                        </button>
-                    </div>
+                    {/* 6. Export Button */}
+                    <button 
+                        onClick={handleExport}
+                        className="h-10 lg:h-11 px-4 bg-white border-2 border-jade-500 text-jade-600 rounded-[18px] lg:rounded-2xl hover:bg-jade-50 transition-all flex items-center justify-center gap-2 group shrink-0 shadow-sm"
+                        title="Ekspor Excel"
+                    >
+                        <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                        <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">EKSPOR</span>
+                    </button>
                 </div>
 
-                {/* ROW 2: TIME FILTERS */}
-                <div className="flex flex-row items-center justify-between p-1.5 bg-slate-50/50 rounded-full border border-slate-100 shadow-sm w-full h-[56px] backdrop-blur-sm relative z-20">
-                    {/* Month Quick Selector */}
-                    <div className="relative flex-none h-8 lg:h-10 min-w-[100px] lg:min-w-[160px] bg-white border border-slate-200/60 rounded-xl shadow-sm hover:border-indigo-200 transition-all px-1.5 lg:px-4 flex items-center group/month">
-                        <Calendar className="w-3.5 h-3.5 text-indigo-500 mr-2 shrink-0" />
+                {/* Row 2: Filters and Dates */}
+                <div className="flex flex-col lg:flex-row items-center gap-2 md:gap-3 pb-2 bg-white w-full h-auto lg:h-[48px] relative z-20 lg:justify-end">
+                    {/* 1.5 Gender Selector */}
+                    <div className="flex-none flex items-center gap-2 bg-slate-50/80 border border-slate-200/60 px-3 py-2 rounded-full shadow-inner h-10 lg:h-11 group/gender min-w-[110px]">
+                        <User className="w-3.5 h-3.5 text-blue-500 mr-1 shrink-0" />
+                        <div className="relative flex-1">
+                            <select 
+                                value={selectedGender}
+                                onChange={(e) => setSelectedGender(e.target.value)}
+                                className="w-full bg-transparent text-[9px] font-black text-slate-700 uppercase tracking-widest focus:outline-none appearance-none cursor-pointer pr-4"
+                            >
+                                <option value="all">GENDER</option>
+                                <option value="L">LAKI-LAKI</option>
+                                <option value="P">PEREMPUAN</option>
+                            </select>
+                            <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none group-hover/gender:text-blue-500 transition-colors" />
+                        </div>
+                    </div>
+
+                    {/* 2. Month Selector */}
+                    <div className="relative h-10 lg:h-11 min-w-[120px] lg:min-w-[150px] flex items-center px-4 bg-slate-50/80 border border-slate-200/60 rounded-full shadow-inner group/month transition-all flex-none">
+                        <Calendar className="w-3.5 h-3.5 text-jade-500 mr-2 shrink-0" />
                         <select 
                             value={selectedMonth}
                             onChange={(e) => {
@@ -430,19 +568,19 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                                     setEndDate(lastDay.toISOString().split('T')[0]);
                                 }
                             }}
-                            className="w-full bg-transparent text-[9.5px] font-black text-slate-700 uppercase tracking-widest focus:outline-none appearance-none cursor-pointer pr-4 truncate"
+                            className="w-full bg-transparent text-[9px] font-black text-slate-700 uppercase tracking-widest focus:outline-none appearance-none cursor-pointer pr-4 truncate"
                         >
                             <option value="custom">BULAN</option>
                             {monthOptions.map(m => (
                                 <option key={m.value} value={m.value}>{m.label}</option>
                             ))}
                         </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 pointer-events-none group-hover/month:text-indigo-400 transition-colors" />
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none group-hover/month:text-jade-500 transition-colors" />
                     </div>
 
-                    {/* Date Range Group */}
-                    <div className="flex items-center gap-1 bg-white/50 border border-slate-200/60 rounded-xl px-1 py-0.5 shadow-sm shrink-0">
-                        <div className="h-7 lg:h-9 px-1.5 lg:px-3 bg-white border border-slate-100 rounded-lg flex items-center hover:border-indigo-200 transition-all">
+                    {/* 3. Date Range Group */}
+                    <div className="flex items-center gap-1 shrink-0 h-10 lg:h-11">
+                        <div className="h-full min-w-[110px] lg:min-w-[130px] flex justify-center items-center px-4 bg-slate-50/80 border border-slate-200/60 rounded-full shadow-inner transition-all">
                             <CustomDatePicker 
                                 value={startDate} 
                                 align="right"
@@ -453,9 +591,9 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                             />
                         </div>
                         
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-300 shrink-0 mx-1" />
 
-                        <div className="h-7 lg:h-9 px-1.5 lg:px-3 bg-white border border-slate-100 rounded-lg flex items-center hover:border-indigo-200 transition-all">
+                        <div className="h-full min-w-[110px] lg:min-w-[130px] flex justify-center items-center px-4 bg-slate-50/80 border border-slate-200/60 rounded-full shadow-inner transition-all">
                             <CustomDatePicker 
                                 value={endDate} 
                                 align="right"
@@ -465,13 +603,6 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                                 }} 
                             />
                         </div>
-                    </div>
-
-                    <div className="hidden lg:flex items-center gap-2 px-4 py-3 bg-white border border-slate-200/60 rounded-full shadow-sm">
-                         <span className="text-[8.5px] font-black text-slate-400 uppercase tracking-widest">Periode:</span>
-                         <span className="text-[9px] font-black text-slate-700 uppercase tracking-widest">
-                            {new Date(startDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} - {new Date(endDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                         </span>
                     </div>
                 </div>
             </div>
@@ -486,8 +617,8 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                                 <th rowSpan={2} className="w-[30px] md:w-[45px] sticky left-0 bg-white z-50 px-1 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100">NO</th>
                                 <th rowSpan={2} className={`${showNisMobile ? 'table-cell' : 'hidden'} md:table-cell w-[65px] md:w-[100px] min-w-[65px] md:min-w-[100px] sticky left-[30px] md:left-[45px] bg-white z-50 px-1 md:px-3 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100`}>NIS</th>
                                 <th rowSpan={2} className={`w-auto md:w-[180px] sticky ${showNisMobile ? 'left-[95px]' : 'left-[30px]'} md:left-[145px] bg-white z-50 px-2 md:px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-left border-b-2 border-r-2 border-slate-100`}>NAMA SANTRI</th>
-                                <th rowSpan={2} className="hidden md:table-cell px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100 bg-white min-w-[240px]">HALAQOH ( <span className='text-indigo-600'>PENGAMPU</span> )</th>
-                                <th colSpan={2} className="px-4 py-3 text-[9px] font-black text-indigo-600 uppercase tracking-widest text-center border-b-2 border-slate-100 bg-indigo-50/50">STATISTIK SETORAN</th>
+                                <th rowSpan={2} className="hidden md:table-cell px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100 bg-white min-w-[240px]">HALAQOH ( <span className='text-jade-600'>PENGAMPU</span> )</th>
+                                <th colSpan={2} className="px-4 py-3 text-[9px] font-black text-jade-600 uppercase tracking-widest text-center border-b-2 border-slate-100 bg-jade-50/50">STATISTIK SETORAN</th>
                             </tr>
                             <tr className="bg-white">
                                 <th className="px-2 py-3 text-[8.5px] font-black text-slate-500 uppercase text-center border-b-2 border-r-2 border-slate-100 bg-white w-[85px] md:min-w-[100px]">SABAQ</th>
@@ -521,11 +652,11 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                                         <td className="hidden md:table-cell px-4 py-4 text-[10px] font-black text-slate-600 text-start border-r-2 border-b border-slate-100 uppercase tracking-tight whitespace-nowrap min-w-[240px]">
                                             <span className="text-slate-800">{stat.halaqahName}</span>
                                             <span className="mx-1 text-slate-300 font-bold">(</span>
-                                            <span className="text-indigo-600 font-black">{stat.teacherName}</span>
+                                            <span className="text-jade-600 font-black">{stat.teacherName}</span>
                                             <span className="mx-1 text-slate-300 font-bold">)</span>
                                         </td>
-                                        <td className="px-4 py-4 text-center border-r-2 border-b border-slate-100 bg-indigo-50/5">
-                                            <span className={`text-[11px] font-black ${stat.sabaqBaris > 0 ? 'text-indigo-600' : 'text-slate-300'}`}>
+                                        <td className="px-4 py-4 text-center border-r-2 border-b border-slate-100 bg-jade-50/5">
+                                            <span className={`text-[11px] font-black ${stat.sabaqBaris > 0 ? 'text-jade-600' : 'text-slate-300'}`}>
                                                 {stat.sabaqBaris > 0 ? `${stat.sabaqBaris} Baris` : '-'}
                                             </span>
                                         </td>
@@ -592,7 +723,7 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                                         <button 
                                             key={pNum}
                                             onClick={() => setCurrentPage(pNum)}
-                                            className={`w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black transition-all active:scale-95 ${currentPage === pNum ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100 border-2 border-indigo-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600 border-2 border-transparent'}`}
+                                            className={`w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black transition-all active:scale-95 ${currentPage === pNum ? 'bg-jade-600 text-white shadow-lg shadow-primary-100 border-2 border-jade-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600 border-2 border-transparent'}`}
                                         >
                                             {pNum}
                                         </button>
@@ -618,6 +749,7 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                 onClose={() => setIsManageModalOpen(false)}
                 tenant={tenant}
                 onSave={handleSaveTargetInfo}
+                isReadOnly={user.role === UserRole.SUPERVISOR}
             />
         </div>
     );

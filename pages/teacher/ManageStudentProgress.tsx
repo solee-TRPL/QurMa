@@ -233,7 +233,7 @@ export const ManageStudentProgress: React.FC<{ user: UserProfile }> = ({ user })
 
     if (loading) return (
         <div className="p-20 flex flex-col items-center justify-center gap-4">
-            <div className="w-10 h-10 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+            <div className="w-10 h-10 border-4 border-jade-100 border-t-jade-600 rounded-full animate-spin"></div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Menyiapkan Dashboard Guru...</p>
         </div>
     );
@@ -244,7 +244,7 @@ export const ManageStudentProgress: React.FC<{ user: UserProfile }> = ({ user })
             <div className="flex flex-col lg:flex-row justify-between items-center gap-4 bg-slate-100/30 p-2 rounded-[24px] border border-slate-200/50 backdrop-blur-sm">
                 <div className="flex flex-col md:flex-row items-center gap-3 flex-1 w-full lg:w-auto">
                     <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border-2 border-slate-50 shadow-sm">
-                        <div className="p-1.5 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-100/50">
+                        <div className="p-1.5 bg-jade-600 rounded-xl text-white shadow-lg shadow-primary-100/50">
                             <GraduationCap className="w-4 h-4" />
                         </div>
                         <div>
@@ -254,13 +254,13 @@ export const ManageStudentProgress: React.FC<{ user: UserProfile }> = ({ user })
                     </div>
 
                     <div className="relative flex-1 w-full max-w-xs group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4 group-focus-within:text-indigo-500 transition-colors" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4 group-focus-within:text-jade-500 transition-colors" />
                         <input 
                             type="text"
                             placeholder="Cari nama santri..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-white border-2 border-slate-50 rounded-2xl pl-11 pr-4 py-2.5 text-xs font-black text-slate-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50/50 outline-none transition-all shadow-sm placeholder:font-bold placeholder:text-slate-300"
+                            className="w-full bg-white border-2 border-slate-50 rounded-2xl pl-11 pr-4 py-2.5 text-xs font-black text-slate-700 focus:bg-white focus:border-jade-500 focus:ring-4 focus:ring-jade-50/50 outline-none transition-all shadow-sm placeholder:font-bold placeholder:text-slate-300"
                         />
                     </div>
                 </div>
@@ -288,7 +288,7 @@ export const ManageStudentProgress: React.FC<{ user: UserProfile }> = ({ user })
                                 <Users className="w-3.5 h-3.5" />
                                 Daftar Santri
                             </h3>
-                            <span className="text-[10px] font-black text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-lg">{filteredStudents.length}</span>
+                            <span className="text-[10px] font-black text-jade-500 bg-jade-50 px-2 py-0.5 rounded-lg">{filteredStudents.length}</span>
                         </div>
                         <div className="flex-1 overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
                             {filteredStudents.map(s => (
@@ -297,17 +297,17 @@ export const ManageStudentProgress: React.FC<{ user: UserProfile }> = ({ user })
                                     onClick={() => handleSelectStudent(s)}
                                     className={`w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all text-left group ${
                                         selectedStudent?.id === s.id 
-                                        ? 'bg-indigo-50 border-indigo-100 text-indigo-700 shadow-sm ring-1 ring-indigo-100/50' 
+                                        ? 'bg-jade-50 border-jade-100 text-jade-700 shadow-sm ring-1 ring-jade-100/50' 
                                         : 'hover:bg-slate-50 text-slate-600 border border-transparent hover:border-slate-100'
                                     }`}
                                 >
                                     <div className="flex-1 overflow-hidden">
-                                        <p className={`text-[11px] font-black truncate leading-tight uppercase tracking-tight ${selectedStudent?.id === s.id ? 'text-indigo-700' : 'text-slate-800'}`}>{s.full_name}</p>
-                                        <p className={`text-[9px] font-bold mt-0.5 ${selectedStudent?.id === s.id ? 'text-indigo-400' : 'text-slate-400'}`}>
+                                        <p className={`text-[11px] font-black truncate leading-tight uppercase tracking-tight ${selectedStudent?.id === s.id ? 'text-jade-700' : 'text-slate-800'}`}>{s.full_name}</p>
+                                        <p className={`text-[9px] font-bold mt-0.5 ${selectedStudent?.id === s.id ? 'text-jade-400' : 'text-slate-400'}`}>
                                             NIS: {s.nis || '-'}
                                         </p>
                                     </div>
-                                    <ChevronRight className={`w-4 h-4 transition-transform ${selectedStudent?.id === s.id ? 'rotate-90 text-indigo-500 opacity-100' : 'text-slate-300 opacity-30 group-hover:translate-x-1 group-hover:opacity-100'}`} />
+                                    <ChevronRight className={`w-4 h-4 transition-transform ${selectedStudent?.id === s.id ? 'rotate-90 text-jade-500 opacity-100' : 'text-slate-300 opacity-30 group-hover:translate-x-1 group-hover:opacity-100'}`} />
                                 </button>
                             ))}
                         </div>
@@ -320,13 +320,13 @@ export const ManageStudentProgress: React.FC<{ user: UserProfile }> = ({ user })
                         <>
                             {/* STUDENT HEADER INFO - STRIP STYLE */}
                             <div className="bg-white rounded-[24px] p-5 border border-slate-200/60 shadow-sm flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full translate-x-10 -translate-y-10 blur-3xl pointer-events-none" />
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full translate-x-10 -translate-y-10 blur-3xl pointer-events-none" />
                                 
                                 <div className="flex items-center gap-5 relative z-10 w-full md:w-auto">
                                     <div>
                                         <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight leading-none mb-1.5">{selectedStudent.full_name}</h2>
                                         <div className="flex items-center gap-3">
-                                            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2.5 py-1 rounded-xl border border-indigo-100/50">NIS: {selectedStudent.nis || '-'}</span>
+                                            <span className="text-[10px] font-black text-jade-600 uppercase tracking-widest bg-jade-50 px-2.5 py-1 rounded-xl border border-jade-100/50">NIS: {selectedStudent.nis || '-'}</span>
                                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
                                                 {selectedStudent.gender === 'L' ? 'Ikhwan' : 'Akhwat'}
@@ -356,7 +356,7 @@ export const ManageStudentProgress: React.FC<{ user: UserProfile }> = ({ user })
                                         <tr className="bg-slate-50 text-[9px] font-black uppercase tracking-widest">
                                             <th className="px-3 py-2 text-slate-400 border-b border-r border-slate-200 bg-slate-50/50 w-12 rounded-tl-lg">Kelas</th>
                                             <th className="px-3 py-2 text-slate-400 border-b border-r border-slate-200 bg-slate-50/50 w-12">Semester</th>
-                                            <th className="px-4 py-2 text-indigo-600 border-b border-r border-slate-200 bg-indigo-50/20 min-w-[90px]">Hafalan</th>
+                                            <th className="px-4 py-2 text-jade-600 border-b border-r border-slate-200 bg-jade-50/20 min-w-[90px]">Hafalan</th>
                                             <th className="px-4 py-2 text-blue-600 border-b border-r border-slate-200 bg-blue-50/20 min-w-[90px]">Sabaq</th>
                                             <th className="px-4 py-2 text-slate-400 border-b border-r border-slate-200 bg-slate-50/30 min-w-[110px]">Target Hafalan</th>
                                             <th className="px-4 py-2 text-slate-400 border-b border-r border-slate-200 bg-slate-50/30 min-w-[120px]">Ket</th>
@@ -375,24 +375,24 @@ export const ManageStudentProgress: React.FC<{ user: UserProfile }> = ({ user })
                                                 <td className="px-3 py-1.5 border-r border-b border-slate-100">
                                                     <p className="text-[11px] font-black text-slate-800 leading-none">{row.semester}</p>
                                                 </td>
-                                                <td className="px-2 py-1.5 border-r border-b border-slate-100 bg-indigo-50/5">
+                                                <td className="px-2 py-1.5 border-r border-b border-slate-100 bg-jade-50/5">
                                                     <input 
                                                         type="number"
                                                         step="0.1"
                                                         value={row.hafalanActual}
                                                         onChange={(e) => handleActualChange(e, row.kelas, row.semester, 'hafalan')}
                                                         onKeyDown={(e) => handleKeyDown(e, row.kelas, row.semester, 'hafalan')}
-                                                        className="w-full text-center text-xs font-black text-indigo-700 bg-transparent border-none focus:ring-1 focus:ring-indigo-300 rounded-xl h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                        className="w-full text-center text-xs font-black text-jade-700 bg-transparent border-none focus:ring-1 focus:ring-jade-300 rounded-xl h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                         placeholder="0.0"
                                                     />
                                                 </td>
-                                                <td className="px-2 py-1.5 border-r border-b border-slate-100 bg-indigo-50/5">
+                                                <td className="px-2 py-1.5 border-r border-b border-slate-100 bg-jade-50/5">
                                                     <input 
                                                         type="number"
                                                         value={row.sabaqActual}
                                                         onChange={(e) => handleActualChange(e, row.kelas, row.semester, 'sabaq')}
                                                         onKeyDown={(e) => handleKeyDown(e, row.kelas, row.semester, 'sabaq')}
-                                                        className="w-full text-center text-xs font-black text-indigo-700 bg-transparent border-none focus:ring-1 focus:ring-indigo-300 rounded-xl h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                        className="w-full text-center text-xs font-black text-jade-700 bg-transparent border-none focus:ring-1 focus:ring-jade-300 rounded-xl h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                         placeholder="0"
                                                     />
                                                 </td>

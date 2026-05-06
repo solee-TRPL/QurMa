@@ -54,14 +54,14 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
       ring: 'ring-amber-50'
     },
     info: {
-      icon: 'bg-indigo-50 text-indigo-500',
-      button: 'bg-indigo-500 hover:bg-indigo-600 shadow-indigo-100',
-      ring: 'ring-indigo-50'
+      icon: 'bg-jade-50 text-jade-500',
+      button: 'bg-primary-500 hover:bg-jade-600 shadow-primary-100',
+      ring: 'ring-jade-50'
     },
     primary: {
-      icon: 'bg-indigo-50 text-indigo-600',
-      button: 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100',
-      ring: 'ring-indigo-50'
+      icon: 'bg-jade-50 text-jade-600',
+      button: 'bg-primary-600 hover:bg-primary-700 shadow-primary-100',
+      ring: 'ring-jade-50'
     }
   };
 

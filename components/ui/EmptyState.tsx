@@ -18,8 +18,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     return (
         <div className="flex flex-col items-center justify-center py-16 px-6 text-center animate-in fade-in zoom-in duration-500">
             <div className="w-20 h-20 bg-slate-50 rounded-[32px] flex items-center justify-center mb-6 border-2 border-slate-50/50 shadow-sm relative group overflow-hidden">
-                <div className="absolute inset-0 bg-indigo-50/0 group-hover:bg-indigo-50/50 transition-colors duration-500" />
-                <IconComponent className="w-10 h-10 text-slate-300 group-hover:text-indigo-400 transition-all duration-500 group-hover:scale-110" />
+                <div className="absolute inset-0 bg-jade-50/0 group-hover:bg-jade-50/50 transition-colors duration-500" />
+                <IconComponent className="w-10 h-10 text-slate-300 group-hover:text-jade-400 transition-all duration-500 group-hover:scale-110" />
             </div>
             
             <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest leading-none mb-3">
@@ -33,7 +33,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             ) : (
                 <div className="flex gap-1">
                     <div className="w-6 h-1 bg-slate-100 rounded-full" />
-                    <div className="w-12 h-1 bg-indigo-100 rounded-full" />
+                    <div className="w-12 h-1 bg-jade-100 rounded-full" />
                     <div className="w-6 h-1 bg-slate-100 rounded-full" />
                 </div>
             )}

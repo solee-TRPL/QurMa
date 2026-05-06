@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Layout } from './components/ui/Layout';
+import { Landing } from './pages/Landing';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 // Admin Pages
@@ -69,6 +70,9 @@ const AppContent: React.FC = () => {
   const [showCapacityPrompt, setShowCapacityPrompt] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState<PageView>(() => {
     const path = window.location.pathname.substring(1);
+    if (path === '' || path === 'landing') return 'landing' as PageView;
+    if (path === 'login') return 'login' as PageView;
+    
     // Handle /app prefix
     if (path.startsWith('app')) {
         const subPath = path.substring(4) as PageView; // remove 'app/'
@@ -342,11 +346,15 @@ const AppContent: React.FC = () => {
     // 1. Handle PopState (Navigation)
     const handlePopState = () => {
         const path = window.location.pathname.substring(1);
-        if (path.startsWith('app')) {
+        if (path === '' || path === 'landing') {
+            setCurrentPage('landing');
+        } else if (path === 'login') {
+            setCurrentPage('login');
+        } else if (path.startsWith('app')) {
             const subPath = path.substring(4) as PageView;
             if (subPath) setCurrentPage(subPath);
         } else {
-            setCurrentPage('dashboard');
+            setCurrentPage((path as PageView) || 'dashboard');
         }
     };
     window.addEventListener('popstate', handlePopState);
@@ -395,9 +403,10 @@ const AppContent: React.FC = () => {
         } else {
           setUser(null);
           setTenant(null);
-          // Only redirect if we are currently on an app page
-          if (window.location.pathname.startsWith('/app')) {
-            window.history.pushState({}, '', '/');
+          // Only redirect to login if we are not on landing or login page
+          if (window.location.pathname !== '/' && window.location.pathname !== '/landing' && window.location.pathname !== '/login') {
+            window.history.pushState({}, '', '/login');
+            setCurrentPage('login');
           }
         }
       } catch (err) {
@@ -423,7 +432,10 @@ const AppContent: React.FC = () => {
             setTenant(null);
             localStorage.removeItem('qurma_active_profile');
             localStorage.removeItem('qurma_active_tenant');
-            if (window.location.pathname.startsWith('/app')) window.history.pushState({}, '', '/');
+            if (window.location.pathname !== '/' && window.location.pathname !== '/landing' && window.location.pathname !== '/login') {
+                window.history.pushState({}, '', '/login');
+                setCurrentPage('login');
+            }
         }
     });
 
@@ -451,7 +463,8 @@ const AppContent: React.FC = () => {
         return;
     }
     setCurrentPage(page);
-    window.history.pushState({}, '', `/app/${page}`);
+    const search = (page.includes('weekly-target')) ? window.location.search : '';
+    window.history.pushState({}, '', `/app/${page}${search}`);
   }; 
 
   const proceedNavigation = () => {
@@ -506,7 +519,8 @@ const AppContent: React.FC = () => {
         setTenant(null);
         localStorage.removeItem('qurma_active_profile');
         localStorage.removeItem('qurma_active_tenant');
-        window.history.pushState({}, '', '/');
+        window.history.pushState({}, '', '/login');
+        setCurrentPage('login');
     } finally {
         setLoading(false);
     }
@@ -553,7 +567,8 @@ const AppContent: React.FC = () => {
             const nextAcc = updated[0];
             switchAccount(nextAcc);
         } else {
-            window.location.href = '/';
+            window.history.pushState({}, '', '/login');
+            setCurrentPage('login');
         }
     } finally {
         setLoading(false);
@@ -601,7 +616,10 @@ const AppContent: React.FC = () => {
     setUser(updatedProfile); 
     localStorage.setItem('qurma_active_profile', JSON.stringify(updatedProfile));
   };
-  const handleTenantUpdate = (updatedTenant: Tenant) => { setTenant(updatedTenant); };
+  const handleTenantUpdate = (updatedTenant: Tenant) => { 
+    setTenant(updatedTenant); 
+    localStorage.setItem('qurma_active_tenant', JSON.stringify(updatedTenant));
+  };
 
   const getPageTitle = (page: PageView) => {
     switch (page) {
@@ -623,6 +641,7 @@ const AppContent: React.FC = () => {
       case 'teacher-notes': return 'Catatan Untuk Santri';
       case 'settings': return 'Pengaturan';
       case 'weekly-target': return 'Input Target Pekanan';
+      case 'weekly-target-notes': return 'Catatan Perkembangan Pekanan';
       // case 'student-progress-manage': return 'Kelola Perkembangan';
       case 'sa-dashboard': return 'Platform Dashboard';
       case 'sa-tenants': return 'Manajemen Sekolah';
@@ -631,6 +650,7 @@ const AppContent: React.FC = () => {
       case 'sa-platform-settings': return 'Pengaturan Platform';
       case 'sa-email-settings': return 'Pengaturan Email';
       case 'weekly-target-monitor': return 'Monitor Target Pekanan';
+      case 'weekly-target-monitor-notes': return 'Monitor Catatan Pekanan';
       case 'monitor-hafalan': return 'Monitor Hafalan Santri';
       default: return 'QurMa';
     }
@@ -650,6 +670,7 @@ const AppContent: React.FC = () => {
       case 'recap-hafalan': return 'Analisis data kolektif dan riwayat setoran per periode';
       case 'exam-grades': return 'Evaluasi kumulatif hasil ujian dan standar tasmi\' santri';
       case 'weekly-target': return 'Atur rencana dan capaian hafalan untuk satu pekan ke depan';
+      case 'weekly-target-notes': return 'Catatan khusus asatidz mengenai perkembangan santri per pekan';
       case 'student-progress-manage': return 'Input Standar Capaian Semesteran';
       case 'settings': return 'Konfigurasi profil dan preferensi sekolah';
       case 'sa-dashboard': return 'Statistik agregat dan metrik pertumbuhan seluruh ekosistem platform';
@@ -662,6 +683,7 @@ const AppContent: React.FC = () => {
       case 'student-progress': return 'Visualisasi grafik perkembangan dan pencapaian target hafalan';
       case 'guardian-exams': return 'Rekapitulasi hasil ujian kumulatif dan standar penilaian asatidz';
       case 'weekly-target-monitor': return 'Pantau rencana dan pencapaian target hafalan seluruh ustadz';
+      case 'weekly-target-monitor-notes': return 'Pantau catatan ustadz mengenai perkembangan santri per pekan';
       case 'monitor-hafalan': return 'Pantau progres dan kualitas setoran hafalan santri secara menyeluruh';
       case 'pencapaian': return 'Daftar penghargaan dan apresiasi atas kedisiplinan menghafal';
       case 'teacher-notes': return 'Kumpulan pesan motivasi dan evaluasi dari ustadz pembimbing';
@@ -689,9 +711,30 @@ const AppContent: React.FC = () => {
       case 'input-hafalan': return user.role === UserRole.TEACHER ? <InputHafalan user={user} onSetUnsavedChanges={setHasUnsavedChanges} saveTrigger={saveTriggered} onSaveSuccess={proceedNavigation} isGlobalModalOpen={showUnsavedModal} /> : <div>Akses Ditolak</div>;
       case 'recap-hafalan': return (user.role === UserRole.SUPERVISOR || user.role === UserRole.ADMIN) ? <MemorizationRecap user={user} /> : <div>Akses Ditolak</div>;
       case 'reports': return user.role === UserRole.SANTRI ? <StudentReports user={user} /> : <div>Akses Ditolak</div>;
-      case 'weekly-target': return user.role === UserRole.TEACHER ? <WeeklyTarget user={user} onSetUnsavedChanges={setHasUnsavedChanges} saveTrigger={saveTriggered} onSaveSuccess={proceedNavigation} isGlobalModalOpen={showUnsavedModal} /> : <div>Akses Ditolak</div>;
+      case 'weekly-target':
+      case 'weekly-target-notes': 
+          return user.role === UserRole.TEACHER ? (
+              <WeeklyTarget 
+                  user={user} 
+                  onSetUnsavedChanges={setHasUnsavedChanges} 
+                  saveTrigger={saveTriggered} 
+                  onSaveSuccess={proceedNavigation} 
+                  isGlobalModalOpen={showUnsavedModal} 
+                  showNotesMode={currentPage === 'weekly-target-notes'} 
+                  onNavigate={handleNavigation} 
+              />
+          ) : <div>Akses Ditolak</div>;
       case 'student-progress-manage': return user.role === UserRole.TEACHER ? <ManageStudentProgress user={user} /> : <div>Akses Ditolak</div>;
-      case 'weekly-target-monitor': return (user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) ? <WeeklyTargetMonitor user={user} tenantId={user.tenant_id!} /> : <div>Akses Ditolak</div>;
+      case 'weekly-target-monitor':
+      case 'weekly-target-monitor-notes': 
+          return (user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) ? (
+              <WeeklyTargetMonitor 
+                  user={user} 
+                  tenantId={user.tenant_id!} 
+                  showNotesMode={currentPage === 'weekly-target-monitor-notes'}
+                  onNavigate={handleNavigation}
+              />
+          ) : <div>Akses Ditolak</div>;
       case 'monitor-hafalan': return (user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) ? <MonitorHafalan user={user} tenantId={user.tenant_id!} /> : <div>Akses Ditolak</div>;
       case 'guardian-exams': return user.role === UserRole.SANTRI ? <StudentExamResults user={user} /> : <div>Akses Ditolak</div>;
       case 'student-progress': return user.role === UserRole.SANTRI ? <StudentProgress user={user} /> : <div>Akses Ditolak</div>;
@@ -706,14 +749,14 @@ const AppContent: React.FC = () => {
       return (
           <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 overflow-hidden relative">
               {/* Cinematic Background Elements */}
-              <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-50/50 blur-[120px] rounded-full animate-pulse" />
-              <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-50/50 blur-[120px] rounded-full animate-pulse delay-1000" />
+              <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-jade-50/50 blur-[120px] rounded-full animate-pulse" />
+              <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-jade-50/50 blur-[120px] rounded-full animate-pulse delay-1000" />
               
               <div className="flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-700 relative z-10">
                   <div className="relative w-20 h-20 mb-10">
-                      <div className="absolute inset-0 border-[3px] border-indigo-100 rounded-[24px] opacity-40"></div>
-                      <div className="absolute inset-0 border-[3px] border-transparent border-t-indigo-600 rounded-[24px] animate-[spin_2s_linear_infinite] shadow-[0_0_15px_rgba(79,70,229,0.1)]"></div>
-                      <div className="absolute inset-4 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200 animate-pulse">
+                      <div className="absolute inset-0 border-[3px] border-jade-100 rounded-[24px] opacity-40"></div>
+                      <div className="absolute inset-0 border-[3px] border-transparent border-t-jade-600 rounded-[24px] animate-[spin_2s_linear_infinite] shadow-[0_0_15px_rgba(79,70,229,0.1)]"></div>
+                      <div className="absolute inset-4 bg-jade-600 rounded-2xl flex items-center justify-center shadow-lg shadow-jade-200 animate-pulse">
                           <BookOpen className="w-6 h-6 text-white" />
                       </div>
                   </div>
@@ -722,7 +765,7 @@ const AppContent: React.FC = () => {
                       <h2 className="text-[14px] font-black text-slate-800 uppercase tracking-[0.4em] leading-none">QurMa Platform</h2>
                       <div className="flex items-center gap-3">
                           <div className="h-[2px] w-8 bg-slate-100" />
-                          <p className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.2em]">Memulai Sistem</p>
+                          <p className="text-[9px] font-black text-jade-400 uppercase tracking-[0.2em]">Memulai Sistem</p>
                           <div className="h-[2px] w-8 bg-slate-100" />
                       </div>
                   </div>
@@ -731,7 +774,20 @@ const AppContent: React.FC = () => {
       );
   }
   
-  if (!user) { return <Login onSwitchAccount={switchAccount} />; }
+  if (!user || currentPage === 'login' || currentPage === 'landing') { 
+    if (user && (currentPage === 'login' || currentPage === 'landing')) {
+        setCurrentPage('dashboard');
+        window.history.pushState({}, '', '/dashboard');
+        return null;
+    }
+    if (currentPage === 'landing') {
+        return <Landing onLoginClick={() => {
+            setCurrentPage('login');
+            window.history.pushState({}, '', '/login');
+        }} />;
+    }
+    return <Login onSwitchAccount={switchAccount} />; 
+  }
 
   return (
     <Layout 
@@ -781,7 +837,7 @@ const AppContent: React.FC = () => {
                       </button>
                       <button 
                           onClick={handleSaveAndProceed}
-                          className="flex-[2] py-3 bg-indigo-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 outline-none"
+                          className="flex-[2] py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-jade-700 shadow-lg shadow-jade-100 transition-all active:scale-95 outline-none"
                       >
                           Simpan & Pindah
                       </button>
@@ -800,7 +856,7 @@ const AppContent: React.FC = () => {
               <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest leading-normal mb-3">Slot Akun Penuh</h3>
               <p className="text-[11px] font-bold text-slate-500 leading-relaxed uppercase tracking-wide opacity-80 mb-8">
                 Hanya dapat menyimpan maksimal <span className="font-black text-slate-800">5 akun</span>. 
-                Hubungkan akun ini dengan melepas <span className="font-black text-indigo-600">{(getAccounts().sort((a: any, b: any) => new Date(a.last_active).getTime() - new Date(b.last_active).getTime())[0]?.profile?.full_name)}</span>?
+                Hubungkan akun ini dengan melepas <span className="font-black text-jade-600">{(getAccounts().sort((a: any, b: any) => new Date(a.last_active).getTime() - new Date(b.last_active).getTime())[0]?.profile?.full_name)}</span>?
               </p>
               
               <div className="flex flex-col gap-3">
@@ -810,7 +866,7 @@ const AppContent: React.FC = () => {
                     await saveAccount(profile, session);
                     setShowCapacityPrompt(null);
                   }}
-                  className="w-full py-4 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95"
+                  className="w-full py-4 bg-jade-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-jade-700 transition-all shadow-lg shadow-jade-100 active:scale-95"
                 >
                   Ganti Akun Terlama
                 </button>

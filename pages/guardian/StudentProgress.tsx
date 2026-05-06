@@ -115,7 +115,7 @@ export const StudentProgress: React.FC<{ user: UserProfile }> = ({ user }) => {
 
     if (loading) return (
         <div className="p-20 flex flex-col items-center justify-center gap-4">
-            <div className="w-10 h-10 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+            <div className="w-10 h-10 border-4 border-jade-100 border-t-jade-600 rounded-full animate-spin"></div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Memuat Perkembangan...</p>
         </div>
     );
@@ -137,13 +137,13 @@ export const StudentProgress: React.FC<{ user: UserProfile }> = ({ user }) => {
             <div className="bg-transparent flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-visible group shrink-0 py-2">
                 
                 <div className="flex items-center gap-5 relative z-10 w-full md:w-auto">
-                    <div className="w-11 h-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-100/50 relative transition-all group-hover:scale-105 group-hover:rotate-3">
+                    <div className="w-11 h-11 rounded-2xl bg-jade-600 text-white flex items-center justify-center shadow-lg shadow-primary-100/50 relative transition-all group-hover:scale-105 group-hover:rotate-3">
                         <GraduationCap className="w-6 h-6" />
                     </div>
                     <div>
                         <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight leading-none mb-1.5">{student.full_name}</h2>
                         <div className="flex items-center gap-4">
-                            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50/80 px-2 py-0.5 rounded-lg border border-indigo-100/50 shadow-sm">NIS: {student.nis || '-'}</span>
+                            <span className="text-[10px] font-black text-jade-600 uppercase tracking-widest bg-jade-50/80 px-2 py-0.5 rounded-lg border border-jade-100/50 shadow-sm">NIS: {student.nis || '-'}</span>
                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                                 <div className="w-1 h-1 rounded-full bg-slate-300" />
                                 {student.gender === 'L' ? 'Putra' : 'Putri'}
@@ -153,13 +153,13 @@ export const StudentProgress: React.FC<{ user: UserProfile }> = ({ user }) => {
                 </div>
 
                 <div className="flex items-center gap-4 w-full md:w-auto relative z-10">
-                    <div className="flex-1 md:flex-none bg-white/40 backdrop-blur-sm px-6 py-3 rounded-2xl border border-slate-200/50 text-center transition-all hover:bg-white hover:shadow-md hover:border-indigo-100">
+                    <div className="flex-1 md:flex-none bg-white/40 backdrop-blur-sm px-6 py-3 rounded-2xl border border-slate-200/50 text-center transition-all hover:bg-white hover:shadow-md hover:border-jade-100">
                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Maks Sabaq</p>
                         <p className="text-lg font-black text-slate-800 leading-none">{maxSabaqActual} <span className="text-[10px] text-slate-300">Hal</span></p>
                     </div>
-                    <div className="flex-1 md:flex-none bg-indigo-50/50 backdrop-blur-sm px-6 py-3 rounded-2xl border border-indigo-100/30 text-center transition-all hover:bg-white hover:shadow-md hover:border-indigo-200 group/btn">
-                        <p className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-1">Maks Hafalan</p>
-                        <p className="text-lg font-black text-indigo-700 leading-none group-hover/btn:text-indigo-800">{maxHafalanActual.toFixed(1)} <span className="text-[10px] text-indigo-300">Juz</span></p>
+                    <div className="flex-1 md:flex-none bg-jade-50/50 backdrop-blur-sm px-6 py-3 rounded-2xl border border-jade-100/30 text-center transition-all hover:bg-white hover:shadow-md hover:border-jade-200 group/btn">
+                        <p className="text-[9px] font-black text-jade-400 uppercase tracking-[0.2em] mb-1">Maks Hafalan</p>
+                        <p className="text-lg font-black text-jade-700 leading-none group-hover/btn:text-jade-800">{maxHafalanActual.toFixed(1)} <span className="text-[10px] text-jade-300">Juz</span></p>
                     </div>
                 </div>
             </div>
@@ -173,7 +173,7 @@ export const StudentProgress: React.FC<{ user: UserProfile }> = ({ user }) => {
                                 <th className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-50/50 w-12 rounded-tl-xl">No. Data</th>
                                 <th className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-50/50 w-12">Kelas</th>
                                 <th className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-50/50 w-12">Semester</th>
-                                <th className="px-4 py-2 text-[9px] font-black text-indigo-600 uppercase tracking-widest border-b border-r border-slate-200 bg-indigo-50/20 min-w-[110px]">Hafalan</th>
+                                <th className="px-4 py-2 text-[9px] font-black text-jade-600 uppercase tracking-widest border-b border-r border-slate-200 bg-jade-50/20 min-w-[110px]">Hafalan</th>
                                 <th className="px-4 py-2 text-[9px] font-black text-blue-600 uppercase tracking-widest border-b border-r border-slate-200 bg-blue-50/20 min-w-[110px]">Sabaq</th>
                                 <th className="px-4 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-50/30 min-w-[110px]">Target Hafalan</th>
                                 <th className="px-4 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-50/30 min-w-[110px]">Ket</th>
@@ -195,8 +195,8 @@ export const StudentProgress: React.FC<{ user: UserProfile }> = ({ user }) => {
                                     <td className={`px-3 py-1.5 border-r border-b border-slate-200 ${idx === progressData.length - 1 ? 'border-b-0' : ''}`}>
                                         <p className="text-xs font-black text-slate-800 leading-none">{row.semester}</p>
                                     </td>
-                                    <td className={`px-2 py-1.5 border-r border-b border-slate-200 bg-indigo-50/5 ${idx === progressData.length - 1 ? 'border-b-0' : ''}`}>
-                                        <p className="text-sm font-black text-indigo-700">{row.hafalanActual || '0.0'}</p>
+                                    <td className={`px-2 py-1.5 border-r border-b border-slate-200 bg-jade-50/5 ${idx === progressData.length - 1 ? 'border-b-0' : ''}`}>
+                                        <p className="text-sm font-black text-jade-700">{row.hafalanActual || '0.0'}</p>
                                     </td>
                                     <td className={`px-2 py-1.5 border-r border-b border-slate-200 bg-blue-50/5 ${idx === progressData.length - 1 ? 'border-b-0' : ''}`}>
                                         <p className="text-sm font-black text-blue-700">{row.sabaqActual || '0'}</p>
@@ -233,7 +233,7 @@ export const StudentProgress: React.FC<{ user: UserProfile }> = ({ user }) => {
                     <div className="bg-white p-8 rounded-xl border-2 border-slate-50 shadow-sm flex flex-col gap-6">
                         <div className="flex justify-between items-center">
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center">
-                                <TrendingUp className="w-4 h-4 mr-2 text-indigo-500" />
+                                <TrendingUp className="w-4 h-4 mr-2 text-jade-500" />
                                 Perkembangan Hafalan
                             </h3>
                             <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">JUZ</span>
@@ -259,7 +259,7 @@ export const StudentProgress: React.FC<{ user: UserProfile }> = ({ user }) => {
                     <div className="bg-white p-8 rounded-xl border-2 border-slate-50 shadow-sm flex flex-col gap-6">
                         <div className="flex justify-between items-center">
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center">
-                                <Activity className="w-4 h-4 mr-2 text-indigo-500" />
+                                <Activity className="w-4 h-4 mr-2 text-jade-500" />
                                 Perkembangan Sabaq
                             </h3>
                             <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest">HAL</span>
