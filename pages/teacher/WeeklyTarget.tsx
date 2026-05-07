@@ -38,6 +38,7 @@ import { useLoading } from '../../lib/LoadingContext';
 
 interface WeeklyTargetProps {
   user: UserProfile;
+  tenantId: string;
   onSetUnsavedChanges?: React.Dispatch<React.SetStateAction<boolean>>;
   saveTrigger?: number;
   onSaveSuccess?: () => void;
@@ -68,7 +69,7 @@ interface TargetRow {
   teacherNote: string;
 }
 
-export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedChanges, saveTrigger, onSaveSuccess, isGlobalModalOpen, showNotesMode = false, onNavigate }) => {
+export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSetUnsavedChanges, saveTrigger, onSaveSuccess, isGlobalModalOpen, showNotesMode = false, onNavigate }) => {
   const [loading, setLoading] = useState(true);
   const [isDirty, setIsDirty] = useState(false);
   const { setLoading: setGlobalLoading } = useLoading();

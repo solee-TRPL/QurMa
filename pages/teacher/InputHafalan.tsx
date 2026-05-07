@@ -10,6 +10,7 @@ import { QURAN_NAME_TO_ID } from '../../lib/quranNameToId';
 
 interface InputHafalanProps {
     user: UserProfile;
+    tenantId: string;
     onSetUnsavedChanges?: (hasChanges: boolean) => void;
     saveTrigger?: number;
     onSaveSuccess?: () => void;
@@ -17,7 +18,7 @@ interface InputHafalanProps {
     onMobileDateChange?: (date: string) => void;
 }
 
-export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedChanges, saveTrigger, onSaveSuccess, isGlobalModalOpen }) => {
+export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSetUnsavedChanges, saveTrigger, onSaveSuccess, isGlobalModalOpen }) => {
     const getStudentIdFromUrl = () => new URLSearchParams(window.location.search).get('studentId');
     const [studentIdParam, setStudentIdParam] = useState(getStudentIdFromUrl());
 
