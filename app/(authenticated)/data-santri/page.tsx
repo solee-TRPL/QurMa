@@ -8,7 +8,7 @@ import { UserRole } from '@/types';
 export default function StudentDirectoryPage() {
   const { user } = useAuth();
   
-  if (!user || user.role !== UserRole.TEACHER) return <div>Akses Ditolak</div>;
+  if (!user || (user.role !== UserRole.TEACHER && user.role !== UserRole.ADMIN && user.role !== UserRole.SUPERVISOR)) return <div>Akses Ditolak</div>;
   
-  return <StudentDirectory user={user} />;
+  return <StudentDirectory user={user} tenantId={user.tenant_id || ''} />;
 }

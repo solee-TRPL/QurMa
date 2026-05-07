@@ -13,6 +13,7 @@ export default function WeeklyTargetPage() {
   return (
     <WeeklyTarget 
       user={user} 
+      tenantId={user.tenant_id || ''}
       onSetUnsavedChanges={setHasUnsavedChanges}
       saveTrigger={saveTriggered}
       onSaveSuccess={proceedNavigation}
