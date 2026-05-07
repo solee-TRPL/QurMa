@@ -60,6 +60,7 @@ interface TargetRow {
   sabaqTargetSurat: string;
   sabaqKet: 'A' | 'B' | 'C' | '';
   teacherNote: string;
+  halaqahName: string;
 }
 
 export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, tenantId, showNotesMode = false, onNavigate }) => {
@@ -69,7 +70,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
   
   const [teachers, setTeachers] = useState<UserProfile[]>([]);
   const [allHalaqahs, setAllHalaqahs] = useState<Halaqah[]>([]);
-  const [selectedTeacherId, setSelectedTeacherId] = useState<string>('');
+  const [selectedTeacherId, setSelectedTeacherId] = useState<string>('all');
   const [selectedHalaqahId, setSelectedHalaqahId] = useState<string>(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get('halaqahId')
@@ -119,7 +120,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
     const diff = (day === 0 ? -6 : 1) - day + (currentWeekOffset * 7);
     const start = new Date(today);
     start.setDate(today.getDate() + diff);
-    const dates = [];
+    const dates: string[] = [];
     for (let i = 0; i < 7; i++) {
         const current = new Date(start);
         current.setDate(start.getDate() + i);
@@ -146,59 +147,22 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
   }, [weekDates]);
 
   
-  // Initial Load: Fetch Teachers, Halaqahs & Tenant Settings
-  useEffect(() => {
-    const init = async () => {
-        try {
-            const [allUsers, tenantData, halaqahs] = await Promise.all([
-                getUsers(tenantId),
-                getTenant(tenantId),
-                getHalaqahs(tenantId)
-            ]);
-            
-            if (tenantData?.cycle_config?.activeDays) {
-                setActiveDays(tenantData.cycle_config.activeDays);
-            }
-
-            const teacherList = allUsers.filter(u => u.role === UserRole.TEACHER);
-            setTeachers(teacherList);
-            setAllHalaqahs(halaqahs);
-            
-            // Initial selection sync
-            if (selectedHalaqahId && selectedHalaqahId !== 'all') {
-                const h = halaqahs.find(h => h.id === selectedHalaqahId);
-                if (h && h.teacher_id) setSelectedTeacherId(h.teacher_id);
-            } else if (selectedHalaqahId === 'all') {
-                setSelectedTeacherId('all');
-            } else if (halaqahs.length > 0) {
-                const firstHalaqah = halaqahs[0];
-                setSelectedHalaqahId(firstHalaqah.id);
-                if (firstHalaqah.teacher_id) setSelectedTeacherId(firstHalaqah.teacher_id);
-            } else {
-                setLoading(false);
-            }
-        } catch (error) {
-            addNotification({ type: 'error', title: 'Gagal', message: 'Gagal memuat daftar ustadz.' });
-            setLoading(false);
-        }
-    };
-    init();
-  }, [tenantId]);
-
   // Sync Logic: Teacher -> Halaqah
   const handleTeacherChange = (teacherId: string) => {
       setSelectedTeacherId(teacherId);
+      setCurrentPage(1);
       const matchedHalaqah = allHalaqahs.find(h => h.teacher_id === teacherId);
       if (matchedHalaqah) {
           setSelectedHalaqahId(matchedHalaqah.id);
       } else {
-          setSelectedHalaqahId('');
+          setSelectedHalaqahId('all');
       }
   };
 
   // Sync Logic: Halaqah -> Teacher
   const handleHalaqahChange = (halaqahId: string) => {
       setSelectedHalaqahId(halaqahId);
+      setCurrentPage(1);
       if (halaqahId === 'all') {
           setSelectedTeacherId('all');
           return;
@@ -242,96 +206,158 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
     return 'C';
   };
 
-  const fetchData = async () => {
-    if (!selectedHalaqahId) return;
+  // Unified Data Fetcher
+  const performDataFetch = async (hList: Halaqah[]) => {
+    if (!tenantId) {
+        setLoading(false);
+        return;
+    }
+    
     setLoading(true);
     try {
+        console.log("[WTM] performDataFetch started");
         const [studentData, classData] = await Promise.all([
             getStudents(tenantId),
             getClasses(tenantId)
         ]);
-
-        const filteredHalaqah = allHalaqahs.find(h => h.id === selectedHalaqahId);
+        
         const classMap = new Map(classData.map(c => [c.id, c.name]));
-        
-        setCurrentHalaqah(filteredHalaqah || null);
+        setStudents(studentData);
 
-        const hStudents = selectedHalaqahId === 'all' 
-            ? studentData 
-            : studentData.filter(s => s.halaqah_id === selectedHalaqahId);
-        
-        if (hStudents.length > 0 || selectedHalaqahId === 'all') {
-            setStudents(hStudents);
-            
-            const [existingTargets, weeklyTotals] = await Promise.all([
-              getWeeklyTargets(hStudents.map(s => s.id), weekDates[0]),
-              getWeeklyAllTypeTotals(hStudents.map(s => s.id), weekDates[0])
-            ]);
-            setWeeklyActualTotals(weeklyTotals);
-            const targetMap = new Map(existingTargets.map(t => [t.student_id, t]));
-
-            const initialTargets: Record<string, TargetRow> = {};
-            hStudents.forEach(s => {
-                const dbTarget = targetMap.get(s.id);
-                const data = dbTarget?.target_data || {};
+        if (studentData.length > 0) {
+            console.log(`[WTM] Fetching targets/totals for ${studentData.length} students`);
+            try {
+                const [existingTargets, weeklyTotals] = await Promise.all([
+                  getWeeklyTargets(studentData.map(s => s.id), weekDates[0] || ""),
+                  getWeeklyAllTypeTotals(studentData.map(s => s.id), weekDates[0] || "")
+                ]);
                 
-                const juz = data.current_juz ?? s.current_juz ?? 0;
-                const hal = data.current_page ?? s.current_page ?? 0;
-                const manzilAtmValue = calculateManzilAtm(juz);
-                const hariAtmValue = calculateHariAtm(juz, manzilAtmValue);
-                const sabqiAtmValue = calculateSabqiAtm(hal);
+                setWeeklyActualTotals(weeklyTotals);
+                const targetMap = new Map(existingTargets.map(t => [t.student_id, t]));
+                const initialTargets: Record<string, TargetRow> = {};
 
-                const currentClassName = s.class_id ? classMap.get(s.class_id) || '-' : '-';
+                studentData.forEach(s => {
+                    const dbTarget = targetMap.get(s.id);
+                    const data = dbTarget?.target_data || {};
+                    const juz = data.current_juz ?? s.current_juz ?? 0;
+                    const hal = data.current_page ?? s.current_page ?? 0;
+                    const currentClassName = s.class_id ? classMap.get(s.class_id) || '-' : '-';
 
-                initialTargets[s.id] = {
-                    studentId: s.id,
-                    nis: s.nis || '-',
-                    name: s.full_name,
-                    className: currentClassName,
-                    hafalanJuz: (juz && juz > 0) ? juz.toString() : '',
-                    hafalanHal: (hal && hal > 0) ? hal.toString() : '',
-                    manzilAtm: manzilAtmValue > 0 ? manzilAtmValue.toString() : '',
-                    hariAtm: hariAtmValue > 0 ? hariAtmValue.toString() : '',
-                    sabqiAtm: sabqiAtmValue,
-                    css: data.css || '',
-                    manzilTarget: data.manzil_target || '',
-                    manzilHal: data.manzil_hal?.toString() || '',
-                    manzilKet: calculateABCStatus(weeklyTotals[s.id]?.manzil || 0, data.manzil_hal || 0),
-                    sabqiTarget: data.sabqi_target?.toString() || '',
-                    sabqiTargetSurat: data.sabqi_target_surat || '',
-                    sabqiKet: calculateABCStatus(weeklyTotals[s.id]?.sabqi || 0, data.sabqi_target || 0),
-                    sabaqTarget: data.sabaq_target?.toString() || '',
-                    sabaqTargetSurat: data.sabaq_target_surat || '',
-                    sabaqKet: calculateABCStatus(weeklyTotals[s.id]?.sabaq || 0, data.sabaq_target || 0),
-                    teacherNote: data.teacher_note || ''
-                };
-            });
-            setTargets(initialTargets);
+                    initialTargets[s.id] = {
+                        studentId: s.id,
+                        nis: s.nis || '-',
+                        name: s.full_name,
+                        className: currentClassName,
+                        hafalanJuz: (juz && juz > 0) ? juz.toString() : '',
+                        hafalanHal: (hal && hal > 0) ? hal.toString() : '',
+                        manzilAtm: calculateManzilAtm(juz).toString() || '',
+                        hariAtm: calculateHariAtm(juz, calculateManzilAtm(juz)).toString() || '',
+                        sabqiAtm: calculateSabqiAtm(hal),
+                        css: data.css || '',
+                        manzilTarget: data.manzil_target || '',
+                        manzilHal: data.manzil_hal?.toString() || '',
+                        manzilKet: calculateABCStatus(weeklyTotals[s.id]?.manzil || 0, data.manzil_hal || 0),
+                        sabqiTarget: data.sabqi_target?.toString() || '',
+                        sabqiTargetSurat: data.sabqi_target_surat || '',
+                        sabqiKet: calculateABCStatus(weeklyTotals[s.id]?.sabqi || 0, data.sabqi_target || 0),
+                        sabaqTarget: data.sabaq_target?.toString() || '',
+                        sabaqTargetSurat: data.sabaq_target_surat || '',
+                        sabaqKet: calculateABCStatus(weeklyTotals[s.id]?.sabaq || 0, data.sabaq_target || 0),
+                        teacherNote: data.teacher_note || '',
+                        halaqahName: (() => {
+                            const h = hList.find(h => h.id === s.halaqah_id);
+                            if (!h) return '-';
+                            return `${h.name.toUpperCase()} ( ${h.teacher_name?.toUpperCase() || '-'} )`;
+                        })()
+                    };
+                });
+                setTargets(initialTargets);
+            } catch (targetError) {
+                console.error("[WTM] Target fetch failed:", targetError);
+            }
         } else {
-            setStudents([]);
             setTargets({});
         }
     } catch (error) {
-        addNotification({ type: 'error', title: 'Gagal', message: 'Gagal memuat data.' });
+        console.error("[WTM] performDataFetch error:", error);
     } finally {
         setLoading(false);
     }
   };
 
-  useEffect(() => { 
-    if (selectedHalaqahId) fetchData(); 
-  }, [selectedHalaqahId, weekDates, currentWeekOffset]);
+  // Effect 1: Initial load of static data
+  useEffect(() => {
+    const initStatic = async () => {
+        if (!tenantId) {
+            setLoading(false);
+            return;
+        }
+        try {
+            console.log("[WTM] Initializing static data with tenantId:", tenantId);
+            const [allUsers, tenantData, halaqahData] = await Promise.all([
+                getUsers(tenantId),
+                getTenant(tenantId),
+                getHalaqahs(tenantId)
+            ]);
+
+            setTeachers(allUsers);
+            const enriched = halaqahData.map(h => ({
+                ...h,
+                teacher_name: allUsers.find(u => u.id === h.teacher_id)?.full_name || '-'
+            }));
+            setAllHalaqahs(enriched);
+            
+            if (tenantData?.cycle_config?.activeDays) {
+                const newActiveDays = tenantData.cycle_config.activeDays;
+                setActiveDays(prev => {
+                    if (JSON.stringify(prev) === JSON.stringify(newActiveDays)) return prev;
+                    return newActiveDays;
+                });
+            }
+            
+            // Check if selectedHalaqahId is valid, else reset to all
+            if (selectedHalaqahId !== 'all' && !enriched.find(h => h.id === selectedHalaqahId)) {
+                setSelectedHalaqahId('all');
+            }
+        } catch (error) {
+            console.error("[WTM] InitStatic error:", error);
+            setLoading(false);
+        }
+    };
+    initStatic();
+  }, [tenantId]);
+
+  // Effect 2: Dynamic data fetch when date range changes
+  useEffect(() => {
+      performDataFetch(allHalaqahs);
+  }, [tenantId, weekDates[0], allHalaqahs]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const filteredStudents = useMemo(() => {
-    if (!searchQuery) return students;
-    return students.filter(s => 
-        s.full_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        s.nis?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [students, searchQuery]);
+    let result = students;
+    
+    // 1. Filter by Halaqah / Teacher
+    if (selectedHalaqahId !== 'all') {
+        result = result.filter(s => s.halaqah_id === selectedHalaqahId);
+    } else if (selectedTeacherId !== 'all') {
+        // If teacher is selected but halaqah is 'all', filter by all halaqahs belonging to that teacher
+        const teacherHalaqahs = allHalaqahs.filter(h => h.teacher_id === selectedTeacherId).map(h => h.id);
+        result = result.filter(s => teacherHalaqahs.includes(s.halaqah_id || ''));
+    }
+
+    // 2. Filter by Search Query
+    if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        result = result.filter(s => 
+            s.full_name.toLowerCase().includes(query) || 
+            s.nis?.toLowerCase().includes(query)
+        );
+    }
+    
+    return result;
+  }, [students, searchQuery, selectedHalaqahId, selectedTeacherId, allHalaqahs]);
 
   // Reset to first page when filters change
   useEffect(() => {
@@ -353,7 +379,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
       <div className="flex flex-col lg:flex-row items-center gap-2 md:gap-4 py-2 rounded-[24px]">
           {/* Row 1: Unified Halaqah / Teacher Selector */}
           <div className="flex flex-row items-center gap-2 w-full lg:w-auto lg:flex-1">
-              <div className="flex-1 md:flex-initial flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-2xl border-2 border-slate-10 shadow-sm md:min-w-[340px]">
+              <div className="flex-1 md:flex-initial flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-2xl border border-slate-200 shadow-sm md:min-w-[340px] focus-within:ring-4 focus-within:ring-jade-50/50 focus-within:border-jade-400 transition-all">
                   <div className="p-1.5 bg-primary-500 rounded-lg text-white shrink-0">
                       <GraduationCap className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   </div>
@@ -366,19 +392,17 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                             className="w-full bg-transparent text-[9px] md:text-[10px] font-black text-slate-800 uppercase tracking-tight focus:outline-none appearance-none cursor-pointer p-0 pr-5 relative z-10 truncate"
                           >
                               <option value="all">SEMUA HALAQOH</option>
-                              {allHalaqahs.map(h => {
-                                  const t = teachers.find(u => u.id === h.teacher_id);
-                                  return (
-                                      <option key={h.id} value={h.id}>
-                                          {h.name} / {t?.full_name || 'TANPA PENGAMPU'}
-                                      </option>
-                                  );
-                              })}
+                              {allHalaqahs.map(h => (
+                                  <option key={h.id} value={h.id}>
+                                      {h.name.toUpperCase()} / {h.teacher_name?.toUpperCase() || '-'}
+                                  </option>
+                              ))}
                           </select>
                           <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none z-0 group-hover/sel-unified:text-jade-400 transition-colors" />
                       </div>
                   </div>
               </div>
+
           </div>
 
           <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
@@ -471,6 +495,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                             <th rowSpan={2} className="w-[65px] md:w-[100px] min-w-[65px] md:min-w-[100px] sticky sm:left-[45px] left-0 bg-white z-50 px-1 md:px-3 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100 animate-in slide-in-from-left-1 duration-300">NIS</th>
                         )}
                         <th rowSpan={2} className={`w-[115px] md:w-[200px] min-w-[115px] md:min-w-[200px] sticky ${showNisKelas ? 'sm:left-[145px] left-[65px]' : 'sm:left-[45px] left-0'} bg-white z-50 px-2 md:px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-left border-b-2 border-r-2 border-slate-100 shadow-[2px_0_5px_rgba(0,0,0,0.05)] transition-all duration-300`}>NAMA SANTRI</th>
+                        <th rowSpan={2} className="hidden lg:table-cell px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100 bg-white min-w-[180px]">HALAQOH ( PENGAMPU )</th>
                         
                         {!showNotes ? (
                           <>
@@ -526,6 +551,9 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                                 )}
                                 <td className={`sticky ${showNisKelas ? 'sm:left-[145px] left-[65px]' : 'sm:left-[45px] left-0'} bg-white px-2 md:px-4 py-1.5 text-[10.5px] md:text-[11px] font-bold text-slate-800 border-r-2 border-b border-slate-100 z-20 transition-all duration-300 truncate shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-[115px] md:w-[200px]`}>
                                     <div className="h-10 flex items-center">{target.name}</div>
+                                </td>
+                                <td className="hidden lg:table-cell px-4 py-1.5 border-r-2 border-b border-slate-100 text-start bg-white">
+                                    <div className="h-10 flex items-center text-[10px] font-black text-slate-500 uppercase tracking-tight truncate">{target.halaqahName}</div>
                                 </td>
                                 
                                 {!showNotes ? (
@@ -611,7 +639,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
             </table>
           </div>
           
-          <div className="bg-[#F8FAFC] border-t border-slate-100 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 rounded-b-lg">
+          <div className="bg-slate-50/50 border-t border-slate-100 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 rounded-b-lg">
               <div className="flex items-center gap-2 md:gap-4">
                   {/* Legend inside the bar (Desktop Only) */}
                   <div className="hidden xl:flex items-center gap-4 text-[9px] font-black text-slate-400 uppercase tracking-widest border-r border-slate-200 pr-6 mr-2">

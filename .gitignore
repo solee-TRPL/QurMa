@@ -28,3 +28,6 @@ sql.txt
 schema.sql
 tmp_update_role.js
 .gemini/
+.next/
+out/
+build/

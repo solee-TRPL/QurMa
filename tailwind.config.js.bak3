@@ -1,0 +1,78 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./pages/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+      },
+      colors: {
+        primary: {
+          50: '#fff9e6',
+          100: '#ffefcc',
+          200: '#ffdf99',
+          300: '#ffcf66',
+          400: '#ffbf33',
+          500: '#f2c14e',
+          600: '#d9a63d',
+          700: '#b3862e',
+          800: '#8c6621',
+          900: '#664a18',
+        },
+        slate: {
+          50: '#FFFFFF',
+          100: '#F8FAFC',
+          200: '#F1F5F9',
+          300: '#E2E8F0',
+          400: '#94A3B8',
+          500: '#64748B',
+          600: '#475569',
+          700: '#334155',
+          800: '#36453B',
+          900: '#2D3A32',
+        },
+        jade: {
+          50: '#eefcf5',
+          100: '#dcf7eb',
+          200: '#baefd8',
+          300: '#8be2bf',
+          400: '#54cc9f',
+          500: '#33b084',
+          600: '#2a7f5e',
+          700: '#22664d',
+          800: '#1c523e',
+          900: '#174333',
+        }
+      },
+      keyframes: {
+        'fade-in-right': {
+          '0%': { opacity: '0', transform: 'translateX(20px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        'fade-out': {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' },
+        },
+        fadeIn: {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
+        },
+        scaleIn: {
+          from: { opacity: '0', transform: 'scale(0.95)' },
+          to: { opacity: '1', transform: 'scale(1)' },
+        },
+      },
+      animation: {
+        'fade-in-right': 'fade-in-right 0.3s ease-out forwards',
+        'fade-out': 'fade-out 0.3s ease-out forwards',
+        'fade-in': 'fadeIn 0.2s ease-out forwards',
+        'scale-in': 'scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+      },
+    },
+  },
+  plugins: [],
+}

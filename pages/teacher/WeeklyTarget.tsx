@@ -119,7 +119,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
     const diff = (day === 0 ? -6 : 1) - day + (currentWeekOffset * 7);
     const start = new Date(today);
     start.setDate(today.getDate() + diff);
-    const dates = [];
+    const dates: string[] = [];
     for (let i = 0; i < 5; i++) {
         const current = new Date(start);
         current.setDate(start.getDate() + i);
@@ -453,7 +453,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[400px] bg-white rounded-[32px] border-2 border-slate-50 shadow-sm animate-fade-in">
+      <div className="flex flex-col items-center justify-center h-[400px] bg-white rounded-32px border-2 border-slate-50 shadow-sm animate-fade-in">
         <div className="flex flex-col items-center justify-center space-y-4 opacity-40">
             <div className="w-10 h-10 border-2 border-jade-600 border-t-transparent rounded-full animate-spin" />
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 ml-[0.3em]">Memuat Data Target</p>
@@ -465,7 +465,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
   return (
     <div className="space-y-4">
       {/* Top Utility Strip */}
-      <div className="flex flex-col gap-2 py-2 lg:flex-row lg:justify-between lg:items-center rounded-[28px]">
+      <div className="flex flex-col gap-2 py-2 lg:flex-row lg:justify-between lg:items-center rounded-28px">
           {/* Row 1: Week & Halaqah */}
           <div className="flex items-stretch gap-2 w-full lg:w-auto">
               {/* Week Selector */}
@@ -585,7 +585,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
               </div>
           </div>
 
-          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent min-h-[500px]">
             <table className="w-full border-separate border-spacing-0">
                 <thead className="sticky top-0 z-40">
                     <tr className="bg-white">
@@ -650,7 +650,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                         } as TargetRow;
 
                         return (
-                            <tr key={s.id} className="group transition-colors">
+                            <tr key={s.id} className="group transition-colors h-[62px]">
                                 {/* Frozen Body Cells */}
                                 <td className="hidden sm:table-cell sticky sm:left-0 bg-white px-1 lg:px-3 py-4 text-[10px] lg:text-[11px] font-bold text-slate-400 text-center border-r border-slate-50 z-20 transition-colors">{idx + 1}</td>
                                 <td className={`sticky sm:left-[50px] left-0 bg-white px-2 lg:px-4 py-4 text-[9.5px] lg:text-xs font-bold text-slate-800 border-r border-slate-100 z-20 transition-all duration-300 whitespace-normal leading-tight break-words shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-[95px] lg:w-[220px]`}>{target.name}</td>
@@ -676,7 +676,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                                                     handleInputChange(s.id, 'hafalanJuz', val.toString());
                                                 }
                                             }} 
-                                            className="w-full text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-jade-300 rounded h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                            className="w-full text-center text-[9px] lg:text-[10px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-jade-300 rounded h-8 appearance-none" 
                                             placeholder="Juz" 
                                         />
                                     </td>
@@ -695,20 +695,20 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                                                     handleInputChange(s.id, 'hafalanHal', val.toString());
                                                 }
                                             }} 
-                                            className="w-full text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-jade-300 rounded h-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                            className="w-full text-center text-[9px] lg:text-[10px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-jade-300 rounded h-8 appearance-none" 
                                             placeholder="Hal" 
                                         />
                                     </td>
                                     {showAtm && (
                                         <>
                                             <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
-                                                <input readOnly type="text" value={target.manzilAtm ? `${target.manzilAtm} Hlm` : ''} className="w-full text-center text-[10px] lg:text-[11px] font-black text-amber-500 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
+                                                <input readOnly type="text" value={target.manzilAtm ? `${target.manzilAtm} Hlm` : ''} className="w-full text-center text-[9px] lg:text-[10px] font-black text-amber-500 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
                                             </td>
                                             <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
-                                                <input readOnly type="text" value={target.hariAtm ? `${target.hariAtm} Hari` : ''} className="w-full text-center text-[10px] lg:text-[11px] font-black text-amber-500 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
+                                                <input readOnly type="text" value={target.hariAtm ? `${target.hariAtm} Hari` : ''} className="w-full text-center text-[9px] lg:text-[10px] font-black text-amber-500 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
                                             </td>
                                             <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
-                                                <input readOnly type="text" value={target.sabqiAtm} className="w-full text-center text-[10px] lg:text-[11px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-10 cursor-default" />
+                                                <input readOnly type="text" value={target.sabqiAtm} className="w-full text-center text-[9px] lg:text-[10px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
                                             </td>
                                         </>
                                     )}
@@ -749,7 +749,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                                                         }
                                                         handleInputChange(s.id, 'manzilTarget', surahName ? `${surahName}:${val}` : '');
                                                     }}
-                                                    className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none" 
+                                                    className="w-8 lg:w-10 text-center text-[9px] lg:text-[10px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-7 appearance-none p-0 outline-none" 
                                                     placeholder="0"
                                                 />
                                             </div>
@@ -758,7 +758,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                                                     type="number" 
                                                     readOnly
                                                     value={target.manzilHal} 
-                                                    className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-500 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 cursor-not-allowed" 
+                                                    className="w-8 lg:w-10 text-center text-[9px] lg:text-[10px] font-black text-slate-500 tracking-tight bg-transparent border-none focus:ring-0 rounded h-7 appearance-none p-0 cursor-not-allowed" 
                                                     placeholder="0"
                                                 />
                                                 <span className="text-[7.5px] lg:text-[8px] font-extrabold text-emerald-400 uppercase mr-0.5 lg:mr-1">Hal</span>
@@ -814,7 +814,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                                                         }
                                                         handleInputChange(s.id, 'sabqiTargetSurat', surahName ? `${surahName}:${val}` : '');
                                                     }}
-                                                    className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none" 
+                                                    className="w-8 lg:w-10 text-center text-[9px] lg:text-[10px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-7 appearance-none p-0 outline-none" 
                                                     placeholder="0"
                                                 />
                                             </div>
@@ -823,7 +823,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                                                     type="number" 
                                                     readOnly
                                                     value={target.sabqiTarget} 
-                                                    className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-500 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none cursor-not-allowed" 
+                                                    className="w-8 lg:w-10 text-center text-[9px] lg:text-[10px] font-black text-slate-500 tracking-tight bg-transparent border-none focus:ring-0 rounded h-7 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none cursor-not-allowed" 
                                                     placeholder="0"
                                                 />
                                                 <span className="text-[7.5px] lg:text-[8px] font-extrabold text-emerald-400 uppercase mr-0.5 lg:mr-1">Hal</span>
@@ -879,7 +879,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                                                         }
                                                         handleInputChange(s.id, 'sabaqTargetSurat', surahName ? `${surahName}:${val}` : '');
                                                     }}
-                                                    className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none" 
+                                                    className="w-8 lg:w-10 text-center text-[9px] lg:text-[10px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-0 rounded h-7 appearance-none p-0 outline-none" 
                                                     placeholder="0"
                                                 />
                                             </div>
@@ -888,7 +888,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                                                     type="number" 
                                                     readOnly
                                                     value={target.sabaqTarget} 
-                                                    className="w-8 lg:w-10 text-center text-[10px] lg:text-[11px] font-black text-slate-500 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none cursor-not-allowed" 
+                                                    className="w-8 lg:w-10 text-center text-[9px] lg:text-[10px] font-black text-slate-500 tracking-tight bg-transparent border-none focus:ring-0 rounded h-7 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none cursor-not-allowed" 
                                                     placeholder="0"
                                                 />
                                                 <span className="text-[7.5px] lg:text-[8px] font-extrabold text-emerald-400 uppercase mr-0.5 lg:mr-1">Baris</span>
@@ -909,12 +909,12 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
                                     </td>
                                   </>
                                 ) : (
-                                  <td className="px-2 py-1 bg-amber-50/5">
+                                  <td className="px-2 py-1.5 bg-amber-50/5 h-[62px]">
                                     <textarea 
                                       value={target.teacherNote}
                                       onChange={e => handleInputChange(s.id, 'teacherNote', e.target.value)}
                                       placeholder="Tambahkan catatan..."
-                                      className="w-full h-9 mt-0.5 pb-1 pt-1.5 px-2 text-[10px] lg:text-[11px] font-bold text-slate-700 bg-white border border-slate-100 rounded-lg focus:ring-0 focus:border-amber-300 outline-none transition-all resize-none shadow-sm placeholder:font-bold placeholder:text-slate-300 leading-tight text-start"
+                                      className="w-full h-10 pb-1 pt-1.5 px-2 text-[10px] lg:text-[11px] font-bold text-slate-700 bg-white border border-slate-100 rounded-lg focus:ring-0 focus:border-amber-300 outline-none transition-all resize-none shadow-sm placeholder:font-bold placeholder:text-slate-300 leading-tight text-start"
                                     />
                                   </td>
                                 )}
@@ -943,11 +943,11 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, onSetUnsavedCh
       {/* Info Modal */}
       {isInfoModalOpen && (
           <div 
-              className="fixed inset-0 z-[999999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 lg:pl-64 pt-20"
+              className="fixed inset-0 z-999999 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 lg:pl-64 pt-20"
               onClick={() => setIsInfoModalOpen(false)}
           >
               <div 
-                  className="relative bg-white rounded-[24px] shadow-2xl w-full max-w-[340px] overflow-hidden animate-in zoom-in-95 duration-200 border border-white flex flex-col max-h-[70vh]"
+                  className="relative bg-white rounded-3xl shadow-2xl w-full max-w-[340px] overflow-hidden animate-in zoom-in-95 duration-200 border border-white flex flex-col max-h-[70vh]"
                   onClick={e => e.stopPropagation()}
               >
                   <div className="p-6 overflow-y-auto scrollbar-hide">

@@ -69,9 +69,10 @@ export const createStudentNote = async (note: Omit<TeacherNote, 'id'>, actor: Us
     try {
         const { data: student } = await supabase.from('students').select('parent_id, full_name').eq('id', note.student_id).single();
         
-        const recipients = [];
+        const recipients: string[] = [];
         if (student?.parent_id) recipients.push(student.parent_id);
-        recipients.push(note.student_id);
+        // Notifications are sent to parents/guardians. 
+        // Direct student notifications are disabled because most students do not have user accounts.
 
         await Promise.all(recipients.map(recipientId => 
             createNotification({
@@ -129,9 +130,10 @@ export const createAchievement = async (data: Omit<Achievement, 'id'>, actor: Us
     try {
         const { data: student } = await supabase.from('students').select('parent_id, full_name').eq('id', data.student_id).single();
         
-        const recipients = [];
+        const recipients: string[] = [];
         if (student?.parent_id) recipients.push(student.parent_id);
-        recipients.push(data.student_id);
+        // Notifications are sent to parents/guardians. 
+        // Direct student notifications are disabled because most students do not have user accounts.
 
         await Promise.all(recipients.map(recipientId => 
             createNotification({

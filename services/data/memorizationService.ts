@@ -65,10 +65,10 @@ export const createRecord = async (record: Omit<MemorizationRecord, 'id' | 'crea
     try {
         const { data: student } = await supabase.from('students').select('parent_id, full_name').eq('id', record.student_id).single();
         
-        const recipients = [];
+        const recipients: string[] = [];
         if (student?.parent_id) recipients.push(student.parent_id);
-        // Student might have their own account where their user_id matches their student_id
-        recipients.push(record.student_id);
+        // Notifications are sent to parents/guardians. 
+        // Direct student notifications are disabled because most students do not have user accounts.
 
         await Promise.all(recipients.map(recipientId => 
             createNotification({

@@ -42,7 +42,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSubmit
 
   return (
     <div 
-        className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 lg:pl-64 pt-16"
+        className="fixed inset-0 z-9999 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 lg:pl-64 pt-16"
         onClick={onClose}
     >
       <div 
@@ -148,7 +148,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSubmit
             <button 
                 form="editUserForm"
                 type="submit" 
-                className="flex-[2] px-5 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl bg-jade-600 text-white hover:bg-jade-700 shadow-lg shadow-primary-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="flex-2 px-5 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl bg-jade-600 text-white hover:bg-jade-700 shadow-lg shadow-primary-200 transition-all active:scale-95 flex items-center justify-center gap-2"
             >
                 <Save className="w-3.5 h-3.5" />
                 Simpan Profil
@@ -322,8 +322,8 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
             <table className="w-full table-fixed divide-y divide-slate-100 border-separate border-spacing-0">
             <thead>
                 <tr className="bg-white">
-                <th className="w-[35px] min-w-[35px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-white z-[30] px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100">NO</th>
-                <th className="w-[150px] min-w-[150px] lg:w-[250px] lg:min-w-[250px] sticky left-[35px] lg:left-[45px] bg-white z-[30] px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">PENGGUNA</th>
+                <th className="w-[35px] min-w-[35px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-white z-30 px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100">NO</th>
+                <th className="w-[150px] min-w-[150px] lg:w-[250px] lg:min-w-[250px] sticky left-[35px] lg:left-[45px] bg-white z-30 px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">PENGGUNA</th>
                 <th className="w-[120px] min-w-[120px] px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">LEVEL / ROLE</th>
                 <th className="w-[180px] min-w-[180px] px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">INSTITUSI</th>
                 <th className="w-[200px] min-w-[200px] px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">EMAIL ADDRESS</th>

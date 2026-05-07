@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { getStudentsByHalaqah, createStudent, getHalaqahs, createUser, createStudentNote, updateStudent, deleteStudent, updateUser, getUsers, getAchievements, createAchievement, deleteAchievement, getStudentNotes, deleteStudentNote, getClasses } from '../../services/dataService';
+import { getStudents, getStudentsByHalaqah, createStudent, getHalaqahs, createUser, createStudentNote, updateStudent, deleteStudent, updateUser, getUsers, getAchievements, createAchievement, deleteAchievement, getStudentNotes, deleteStudentNote, getClasses } from '../../services/dataService';
 import { Student, Halaqah, UserProfile, UserRole, Achievement, TeacherNote, Class } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
@@ -93,11 +93,11 @@ const StudentDetailModal: React.FC<StudentDetailModalProps> = ({ isOpen, onClose
 
     return (
         <div 
-            className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800 lg:pl-64 lg:pt-16"
+            className="fixed inset-0 z-999999 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800 lg:pl-64 lg:pt-16"
             onClick={onClose}
         >
             <div 
-                className="bg-white rounded-[32px] shadow-2xl w-full max-w-xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 max-h-[80vh] relative"
+                className="bg-white rounded-32px shadow-2xl w-full max-w-xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 max-h-[80vh] relative"
                 onClick={e => e.stopPropagation()}
             >
                 <div className="px-5 py-3.5 border-b border-slate-100 flex justify-between items-center bg-[#FCFDFE]">
@@ -264,8 +264,8 @@ const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, st
     };
 
     return (
-        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800 lg:pl-64 lg:pt-16" onClick={onClose}>
-            <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 relative" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-999999 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800 lg:pl-64 lg:pt-16" onClick={onClose}>
+            <div className="bg-white rounded-32px shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 relative" onClick={e => e.stopPropagation()}>
                 {/* Close Button UI */}
                 <button 
                   onClick={onClose}
@@ -400,8 +400,8 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
     };
 
     return (
-        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800 lg:pl-64 lg:pt-16" onClick={onClose}>
-            <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 relative" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-999999 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800 lg:pl-64 lg:pt-16" onClick={onClose}>
+            <div className="bg-white rounded-32px shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 relative" onClick={e => e.stopPropagation()}>
                 {/* Close Button UI */}
                 <button 
                   onClick={onClose}
@@ -578,19 +578,26 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
   // New Filters
   const [genderFilter, setGenderFilter] = useState<'ALL' | 'L' | 'P'>('ALL');
 
+  const [myHalaqahs, setMyHalaqahs] = useState<Halaqah[]>([]);
+
   const fetchData = async () => {
+    const tid = user.tenant_id;
+    if (!tid || !user.id) return;
     setLoading(true);
     try {
-      const allHalaqahs = await getHalaqahs(tenantId);
+      const [allHalaqahs, studentData] = await Promise.all([
+        getHalaqahs(tid),
+        getStudents(tid)
+      ]);
       
-      const myHalaqah = allHalaqahs.find(h => h.teacher_id === user.id);
-      setHalaqah(myHalaqah || null);
-
-      if (myHalaqah) {
-        const studentData = await getStudentsByHalaqah(myHalaqah.id);
-        setStudents(studentData);
+      const teacherHalaqahs = allHalaqahs.filter(h => h.teacher_id === user.id);
+      setMyHalaqahs(teacherHalaqahs);
+      setStudents(studentData);
+      
+      if (teacherHalaqahs.length > 0) {
+        setHalaqah(teacherHalaqahs[0]);
       } else {
-        setStudents([]);
+        setHalaqah(null);
       }
     } catch (error) {
       console.error("Failed to fetch students:", error);
@@ -604,13 +611,30 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
     fetchData();
   }, [tenantId, user.id]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [students]);
+
   const filteredStudents = useMemo(() => {
+    if (!students) return [];
+    
+    const isAdminOrSupervisor = user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR;
+    const myHalaqahIds = new Set(myHalaqahs.map(h => h.id));
+
     return students.filter(s => {
-      const matchSearch = s.full_name.toLowerCase().includes(search.toLowerCase());
+      if (!s) return false;
+      
+      // Role-based visibility
+      const matchRole = isAdminOrSupervisor || (s.halaqah_id && myHalaqahIds.has(s.halaqah_id));
+      if (!matchRole) return false;
+
+      // Other filters
+      const matchSearch = (s.full_name || '').toLowerCase().includes((search || '').toLowerCase());
       const matchGender = genderFilter === 'ALL' || s.gender === genderFilter;
+      
       return matchSearch && matchGender;
     });
-  }, [students, search, genderFilter]);
+  }, [students, search, genderFilter, user.role, myHalaqahs]);
 
   const paginatedStudents = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;

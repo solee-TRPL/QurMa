@@ -90,8 +90,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
     try {
       if (user.role === UserRole.TEACHER) {
           const [allHalaqahs, tenantData] = await Promise.all([
-              getHalaqahs(user.tenant_id),
-              getTenant(user.tenant_id)
+              getHalaqahs(user.tenant_id || ''),
+              getTenant(user.tenant_id || '')
           ]);
           
           if (tenantData?.cycle_config?.activeDays) {
@@ -117,7 +117,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
               dashboardCache.recentRecords = halaqahRecords;
           }
       } else if (user.role === UserRole.SANTRI) {
-          const allStudents = await getStudents(user.tenant_id);
+          const allStudents = await getStudents(user.tenant_id || '');
           const myStudent = allStudents.find(s => s.parent_id === user.id) || allStudents.find(s => s.id === user.id);
           const studentToLoad = myStudent || null;
           setStudentProfile(studentToLoad);
@@ -129,9 +129,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
                   getGuardianStats(studentToLoad.id),
                   getAchievements(studentToLoad.id),
                   getStudentNotes(studentToLoad.id),
-                  getHalaqahs(user.tenant_id),
-                  getUsers(user.tenant_id),
-                  getTenant(user.tenant_id)
+                  getHalaqahs(user.tenant_id || ''),
+                  getUsers(user.tenant_id || ''),
+                  getTenant(user.tenant_id || '')
               ]);
 
               recs.sort((a, b) => new Date(b.record_date).getTime() - new Date(a.record_date).getTime());
@@ -159,11 +159,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
           }
       } else if (user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) {
           const [stats, studentList, halaqahList, userList, tenantData] = await Promise.all([
-              getAdminStats(user.tenant_id),
-              getStudents(user.tenant_id),
-              getHalaqahs(user.tenant_id),
-              getUsers(user.tenant_id),
-              getTenant(user.tenant_id)
+              getAdminStats(user.tenant_id || ''),
+              getStudents(user.tenant_id || ''),
+              getHalaqahs(user.tenant_id || ''),
+              getUsers(user.tenant_id || ''),
+              getTenant(user.tenant_id || '')
           ]);
           setAdminStats(stats);
           setStudents(studentList);

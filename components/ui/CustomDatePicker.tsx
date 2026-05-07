@@ -1,3 +1,4 @@
+'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X } from 'lucide-react';
@@ -70,7 +71,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
     
     // Adjusted to start from Monday if needed, but standard calendar is Sunday (0)
     // To match common ID calendars, let's keep Sunday as 0
-    const days = [];
+    const days: any[] = [];
     
     // Padding for previous month
     const prevMonthDays = getDaysInMonth(year, month - 1);
@@ -172,10 +173,9 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
             </div>
           </div>
 
-          {/* Day Names */}
           <div className="grid grid-cols-7 mb-2">
-            {dayNames.map(d => (
-              <span key={d} className="text-center text-[7px] font-black text-slate-300 uppercase tracking-widest">{d}</span>
+            {dayNames.map((d, i) => (
+              <span key={i} className="text-center text-[7px] font-black text-slate-300 uppercase tracking-widest">{d}</span>
             ))}
           </div>
 

@@ -88,7 +88,7 @@ export const GlobalAuditLogs: React.FC = () => {
 
   const getVisiblePages = () => {
     const delta = 1;
-    const range = [];
+    const range: (number | string)[] = [];
     for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
         range.push(i);
     }
@@ -136,7 +136,7 @@ export const GlobalAuditLogs: React.FC = () => {
     <div className="space-y-4 animate-fade-in pb-10">
       <div className="flex flex-row items-center gap-1.5 lg:gap-4 bg-white/40 p-1.5 lg:p-2 rounded-2xl lg:rounded-[24px] border border-white/20 backdrop-blur-md overflow-x-auto no-scrollbar">
           {/* Search */}
-          <div className="relative flex-[2] min-w-[120px] group">
+          <div className="relative flex-2 min-w-[120px] group">
               <Search className="absolute left-3 lg:left-5 top-1/2 -translate-y-1/2 w-3 lg:w-4 h-3 lg:h-4 text-slate-300 group-focus-within:text-emerald-600 transition-colors" />
               <input 
                   type="text" 
@@ -184,7 +184,7 @@ export const GlobalAuditLogs: React.FC = () => {
           {isSortMenuOpen && (
               <>
                   <div className="fixed inset-0 z-50" onClick={() => setIsSortMenuOpen(false)}></div>
-                  <div className="absolute right-2 top-full mt-2 w-48 bg-white rounded-[24px] shadow-2xl border-2 border-slate-50 z-[60] overflow-hidden animate-scale-in p-2">
+                  <div className="absolute right-2 top-full mt-2 w-48 bg-white rounded-[24px] shadow-2xl border-2 border-slate-50 z-60 overflow-hidden animate-scale-in p-2">
                       <button onClick={() => { setSortOrder('newest'); setIsSortMenuOpen(false); }} className={`w-full text-left px-4 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center justify-between transition-colors ${sortOrder === 'newest' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50'}`}>
                           Terbaru
                           {sortOrder === 'newest' && <Check className="w-3.5 h-3.5" />}
@@ -204,9 +204,9 @@ export const GlobalAuditLogs: React.FC = () => {
             <table className="w-full table-fixed divide-y divide-slate-100 border-separate border-spacing-0">
             <thead>
                 <tr className="bg-white">
-                    <th className="w-[35px] min-w-[35px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-white z-[30] px-3 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100">NO</th>
-                    <th className="w-[100px] min-w-[100px] lg:w-[150px] lg:min-w-[150px] sticky left-[35px] lg:left-[45px] bg-white z-[30] px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 whitespace-nowrap">WAKTU</th>
-                    <th className="w-[150px] min-w-[150px] lg:w-[200px] lg:min-w-[200px] sticky left-[135px] lg:left-[195px] bg-white z-[30] px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">AKTOR</th>
+                    <th className="w-[35px] min-w-[35px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-white z-30 px-3 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100">NO</th>
+                    <th className="w-[100px] min-w-[100px] lg:w-[150px] lg:min-w-[150px] sticky left-[35px] lg:left-[45px] bg-white z-30 px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 whitespace-nowrap">WAKTU</th>
+                    <th className="w-[150px] min-w-[150px] lg:w-[200px] lg:min-w-[200px] sticky left-[135px] lg:left-[195px] bg-white z-30 px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">AKTOR</th>
                     <th className="w-[180px] min-w-[180px] px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">SEKOLAH</th>
                     <th className="w-[100px] min-w-[100px] px-4 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">AKSI</th>
                     <th className="w-[250px] min-w-[250px] px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-slate-100 bg-white">DETAIL AKTIVITAS</th>

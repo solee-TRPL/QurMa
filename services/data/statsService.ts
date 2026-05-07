@@ -57,7 +57,7 @@ export const getAdminStats = async (tenantId: string): Promise<AdminStats> => {
     const sabqiToday = safeRecordsToday.filter(r => r.type === MemorizationType.SABQI).length;
     const manzilToday = safeRecordsToday.filter(r => r.type === MemorizationType.MANZIL).length;
 
-    const studentsDoneManzilToday = new Set(safeRecordsToday.filter(r => r.type === MemorizationType.MANZIL).map(r => r.student_id));
+    const studentsDoneManzilToday = new Set<string>(safeRecordsToday.filter(r => r.type === MemorizationType.MANZIL).map(r => r.student_id as string));
     const notManzilToday = Math.max(0, (totalStudents || 0) - studentsDoneManzilToday.size);
 
     const { data: records } = await supabase.from('memorization_records')
@@ -87,7 +87,7 @@ export const getAdminStats = async (tenantId: string): Promise<AdminStats> => {
     ] : [];
 
     // Trend mapping (7 days)
-    const memorizationTrend = [];
+    const memorizationTrend: any[] = [];
     for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
@@ -98,7 +98,7 @@ export const getAdminStats = async (tenantId: string): Promise<AdminStats> => {
     }
 
     // Monthly Trend (30 days)
-    const monthlyTrend = [];
+    const monthlyTrend: any[] = [];
     for (let i = 29; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);

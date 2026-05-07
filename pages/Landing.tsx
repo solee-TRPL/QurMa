@@ -88,7 +88,7 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
         fetchPartners();
     }, []);
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-[#2a7f5e]/20 selection:text-[#2a7f5e] overflow-x-hidden text-slate-800">
+        <div className="min-h-screen bg-white font-sans selection:bg-jade-600/20 selection:text-jade-600 overflow-x-hidden text-slate-800">
             {/* Header / Nav */}
             <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
                 isScrolled 
@@ -97,10 +97,10 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
             }`}>
                 <div className="container mx-auto px-8 md:px-16 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <img src="/public/images/qurma-logo.png" alt="QurMa Logo" className="w-12 h-12 rounded-2xl shadow-lg shadow-black/5" />
+                        <img src="/images/qurma-logo.png" alt="QurMa Logo" className="w-12 h-12 rounded-2xl shadow-lg shadow-black/5" />
                         <div>
                             <h1 className={`text-xl font-black tracking-tight leading-none uppercase transition-colors duration-300 ${isScrolled ? 'text-slate-800' : 'text-white'}`}>QurMa</h1>
-                            <p className={`text-[10px] font-bold uppercase tracking-widest mt-0.5 transition-colors duration-300 ${isScrolled ? 'text-[#2a7f5e]' : 'text-amber-400'}`}>Management Platform</p>
+                            <p className={`text-[10px] font-bold uppercase tracking-widest mt-0.5 transition-colors duration-300 ${isScrolled ? 'text-jade-600' : 'text-primary-500'}`}>Management Platform</p>
                         </div>
                     </div>
                     
@@ -110,7 +110,7 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                                 key={item}
                                 className={`text-xs font-black uppercase tracking-widest transition-all duration-300 ${
                                     isScrolled 
-                                    ? 'text-slate-600 hover:text-[#2a7f5e]' 
+                                    ? 'text-slate-600 hover:text-jade-600' 
                                     : 'text-white/80 hover:text-white hover:scale-105'
                                 }`}
                             >
@@ -140,13 +140,13 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                     <div className="max-w-3xl space-y-4 animate-in fade-in slide-in-from-bottom-10 duration-1000">
                         <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-[1.1]">
                             Aplikasi Manajemen <br/>
-                            Tahfidz <span className="bg-gradient-to-b from-[#f3cf8c] via-[#d4af37] to-[#996515] bg-clip-text text-transparent uppercase drop-shadow-[0_2px_2px_rgba(0,0,0,0.3)]">Al Qur'an</span>
+                            Tahfidz <span className="bg-gradient-to-b from-primary-200 via-primary-500 to-primary-700 bg-clip-text text-transparent uppercase drop-shadow-[0_2px_2px_rgba(0,0,0,0.3)]">Al Qur'an</span>
                         </h2>
                         <p className="text-white/90 text-base md:text-lg font-medium leading-relaxed max-w-xl">
                             Tingkatkan program Tahfidz dengan menggunakan QurMa. <br />Pantau, sinkron data realtime dan kontrol hafalan dengan mudah dan efektif.
                         </p>
                         <div className="flex items-center gap-4 pt-2">
-                            <button className="h-12 px-8 bg-amber-400 text-amber-950 font-black uppercase text-[11px] tracking-widest hover:bg-amber-300 shadow-xl shadow-amber-400/20 hover:scale-[1.05] transition-all active:scale-95">BACA INFO</button>
+                            <button className="h-12 px-8 bg-primary-500 text-amber-950 font-black uppercase text-[11px] tracking-widest hover:bg-primary-400 shadow-xl shadow-primary-500/20 hover:scale-[1.05] transition-all active:scale-95">BACA INFO</button>
                             <button onClick={onLoginClick} className="h-12 px-8 font-black text-[11px] uppercase tracking-widest bg-jade-600 text-white shadow-xl shadow-jade-600/20 hover:bg-jade-700 hover:scale-[1.05] transition-all active:scale-95">LOGIN SEKARANG</button>
                         </div>
                     </div>
@@ -197,7 +197,7 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                         <div className="md:w-1/2 space-y-10">
                             <div className="flex flex-col items-start">
                                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-800 tracking-tight uppercase text-left">
-                                    Kenapa Sistem Ini <span className="text-[#2a7f5e]">Penting?</span>
+                                    Kenapa Sistem Ini <span className="text-jade-600">Penting?</span>
                                 </h2>
                             </div>
 
@@ -219,7 +219,7 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                         <div className="md:w-1/2 relative">
                             <div className="absolute -inset-10 bg-jade-600/10 rounded-full blur-[80px] -z-10" />
                             <div className="relative group">
-                                <div className="absolute -inset-1 bg-gradient-to-r from-jade-600 to-amber-400 rounded-[40px] blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+                                <div className="absolute -inset-1 bg-gradient-to-r from-jade-600 to-primary-500 rounded-[40px] blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
                                 <img 
                                     src="/images/tahfidz_mockup.png" 
                                     alt="Tahfidz Digital Mockup" 
@@ -240,7 +240,7 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                     
                     <div className="flex flex-col md:flex-row items-start justify-center gap-16 lg:gap-20 w-full mx-auto">
                         <div className="md:w-1/2 relative flex justify-center">
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#2a7f5e]/20 rounded-full blur-[80px] -z-10" />
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-jade-600/20 rounded-full blur-[80px] -z-10" />
                             <img 
                                 src="/images/teacher_portrait.png" 
                                 alt="Ustadz" 
@@ -332,8 +332,8 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                                 "Keterlibatan wali santri dalam memantau perkembangan anak"
                             ].map((text, i) => (
                                 <div key={i} className="flex gap-4 items-center">
-                                    <div className="w-8 h-8 rounded-lg bg-white border-2 border-[#2a7f5e] flex items-center justify-center shrink-0">
-                                        <Star className="w-4 h-4 text-[#2a7f5e] fill-current" />
+                                    <div className="w-8 h-8 rounded-lg bg-white border-2 border-jade-600 flex items-center justify-center shrink-0">
+                                        <Star className="w-4 h-4 text-jade-600 fill-current" />
                                     </div>
                                     <p className="text-xs md:text-sm font-bold text-slate-700 leading-tight">{text}</p>
                                 </div>
@@ -344,18 +344,18 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                              {/* Mockup for "Buat Target Hafalan Dalam Satu Genggaman" */}
                              <div className="relative w-full max-w-[400px] h-[400px] bg-white rounded-3xl overflow-hidden shadow-lg shadow-slate-200 border border-slate-100 flex flex-col justify-center items-center">
                                  {/* Abstract styling for graphic */}
-                                 <div className="absolute top-0 right-0 w-64 h-64 bg-[#2a7f5e]/10 rounded-full blur-[60px]" />
-                                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#f2c14e]/20 rounded-full blur-[60px]" />
+                                 <div className="absolute top-0 right-0 w-64 h-64 bg-jade-600/10 rounded-full blur-[60px]" />
+                                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary-500/20 rounded-full blur-[60px]" />
                                  
                                  <div className="flex w-full px-8 items-center justify-between z-10">
                                      <div className="w-1/2 space-y-2">
                                          <div className="flex items-center gap-2 mb-4">
-                                            <div className="w-6 h-6 rounded-md bg-[#2a7f5e] flex items-center justify-center shadow-md">
+                                            <div className="w-6 h-6 rounded-md bg-jade-600 flex items-center justify-center shadow-md">
                                                 <BookOpen className="w-3 h-3 text-white" />
                                             </div>
-                                            <span className="text-[10px] font-black text-[#2a7f5e] uppercase tracking-widest">QurMa</span>
+                                            <span className="text-[10px] font-black text-jade-600 uppercase tracking-widest">QurMa</span>
                                          </div>
-                                         <h3 className="text-xl md:text-2xl font-black text-slate-800 leading-tight">Buat <span className="text-[#f2c14e]">Target<br/>Hafalan,</span><br/>Dalam Satu<br/>Genggaman</h3>
+                                         <h3 className="text-xl md:text-2xl font-black text-slate-800 leading-tight">Buat <span className="text-primary-500">Target<br/>Hafalan,</span><br/>Dalam Satu<br/>Genggaman</h3>
                                          <p className="text-[8px] text-slate-500 font-medium leading-relaxed mt-2 max-w-[120px]">
                                              Dirancang untuk membantu kebutuhan Manajemen Tahfidz dalam menyusun target hafalan santri secara cepat dan mudah.
                                          </p>
@@ -365,18 +365,18 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                                          <div className="w-[140px] h-[280px] bg-slate-800 rounded-[20px] p-1 shadow-2xl relative rotate-3 hover:rotate-0 transition-transform duration-500">
                                              <div className="w-full h-full bg-slate-50 rounded-[16px] flex flex-col overflow-hidden relative border border-slate-600">
                                                 <div className="w-16 h-3 bg-slate-800 absolute top-0 left-1/2 -translate-x-1/2 rounded-b-md z-10"></div>
-                                                <div className="bg-[#2a7f5e] h-12 w-full shrink-0 flex items-end px-2 pb-2">
+                                                <div className="bg-jade-600 h-12 w-full shrink-0 flex items-end px-2 pb-2">
                                                     <div className="w-10 h-2 bg-white/20 rounded-full"></div>
                                                 </div>
                                                 <div className="p-2 space-y-2 flex-1 relative bg-white">
                                                     <div className="h-16 bg-slate-50 rounded-lg shadow-sm border border-slate-100 flex flex-col justify-center items-center relative overflow-hidden">
-                                                        <div className="absolute top-0 left-0 w-1 h-full bg-[#2a7f5e]"></div>
-                                                        <CheckCircle className="w-4 h-4 text-[#2a7f5e] mb-1" />
+                                                        <div className="absolute top-0 left-0 w-1 h-full bg-jade-600"></div>
+                                                        <CheckCircle className="w-4 h-4 text-jade-600 mb-1" />
                                                         <div className="w-12 h-1 bg-slate-200 rounded-full"></div>
                                                     </div>
                                                     <div className="h-16 bg-slate-50 rounded-lg shadow-sm border border-slate-100 flex flex-col justify-center items-center relative overflow-hidden">
-                                                        <div className="absolute top-0 left-0 w-1 h-full bg-[#f2c14e]"></div>
-                                                        <Target className="w-4 h-4 text-[#f2c14e] mb-1" />
+                                                        <div className="absolute top-0 left-0 w-1 h-full bg-primary-500"></div>
+                                                        <Target className="w-4 h-4 text-primary-500 mb-1" />
                                                         <div className="w-16 h-1 bg-slate-200 rounded-full"></div>
                                                     </div>
                                                     <div className="h-16 bg-slate-50 rounded-lg shadow-sm border border-slate-100 flex flex-col justify-center items-center relative overflow-hidden">
@@ -409,18 +409,18 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                     <div className="flex flex-col md:flex-row items-start gap-16 lg:gap-20 w-full mx-auto">
                         <div className="md:w-1/2 flex flex-col items-center gap-8">
                             <div className="relative w-full max-w-[400px] h-[400px] bg-slate-50/50 rounded-3xl overflow-hidden shadow-inner border border-slate-200 flex flex-col justify-center items-center p-8">
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#2a7f5e]/10 rounded-full blur-[60px]" />
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-jade-600/10 rounded-full blur-[60px]" />
                                 
                                 <div className="flex items-center justify-between w-full h-full relative z-10">
                                     <div className="w-1/2 pr-4 space-y-4">
                                         <div className="flex items-center gap-2 mb-2">
-                                            <div className="w-6 h-6 rounded-md bg-[#2a7f5e] flex items-center justify-center shadow-md">
+                                            <div className="w-6 h-6 rounded-md bg-jade-600 flex items-center justify-center shadow-md">
                                                 <BookOpen className="w-3 h-3 text-white" />
                                             </div>
-                                            <span className="text-[9px] font-black text-[#2a7f5e] uppercase tracking-widest">QurMa</span>
+                                            <span className="text-[9px] font-black text-jade-600 uppercase tracking-widest">QurMa</span>
                                         </div>
-                                        <h3 className="text-xl md:text-2xl font-black text-[#2a7f5e] leading-tight">
-                                            Aplikasi Dibuatkan <br/><span className="text-[#f2c14e]">Khusus Untuk Lembaga Anda</span>
+                                        <h3 className="text-xl md:text-2xl font-black text-jade-600 leading-tight">
+                                            Aplikasi Dibuatkan <br/><span className="text-primary-500">Khusus Untuk Lembaga Anda</span>
                                         </h3>
                                         <p className="text-[9px] text-slate-500 font-medium leading-relaxed">
                                             Selain menu default, juga dapat ditambahkan menu lain sesuai kebutuhan.
@@ -428,13 +428,13 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                                     </div>
                                     <div className="w-1/2 relative h-full flex items-center justify-end">
                                         <div className="w-[160px] h-[320px] bg-slate-800 rounded-[24px] p-1 shadow-2xl relative -rotate-6 translate-x-4 hover:rotate-0 hover:translate-x-0 transition-transform duration-500 border border-slate-700">
-                                             <div className="w-full h-full bg-[#2a7f5e] rounded-[20px] flex flex-col overflow-hidden relative">
+                                             <div className="w-full h-full bg-jade-600 rounded-[20px] flex flex-col overflow-hidden relative">
                                                 <div className="w-20 h-4 bg-slate-800 absolute top-0 left-1/2 -translate-x-1/2 rounded-b-lg z-10"></div>
-                                                <div className="pt-10 px-3 pb-3 grid grid-cols-2 gap-2 content-start flex-1 bg-[#20664a]">
+                                                <div className="pt-10 px-3 pb-3 grid grid-cols-2 gap-2 content-start flex-1 bg-jade-800">
                                                     {[...Array(8)].map((_, i) => (
                                                         <div key={i} className="aspect-square bg-white rounded-xl flex items-center justify-center shadow-md hover:scale-105 transition-transform">
                                                             <div className="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center">
-                                                                <Activity className="w-3 h-3 text-[#2a7f5e]" />
+                                                                <Activity className="w-3 h-3 text-jade-600" />
                                                             </div>
                                                         </div>
                                                     ))}
@@ -515,8 +515,8 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                             ].map((item, i) => (
                                 <div key={i} className="flex gap-4 items-start group">
                                     <div className="mt-1">
-                                        <div className="w-8 h-8 rounded-lg border-2 border-[#2a7f5e] flex items-center justify-center shrink-0 group-hover:bg-[#2a7f5e] transition-colors">
-                                            <CheckSquare className="w-5 h-5 text-[#2a7f5e] group-hover:text-white transition-colors" />
+                                        <div className="w-8 h-8 rounded-lg border-2 border-jade-600 flex items-center justify-center shrink-0 group-hover:bg-jade-600 transition-colors">
+                                            <CheckSquare className="w-5 h-5 text-jade-600 group-hover:text-white transition-colors" />
                                         </div>
                                     </div>
                                     <div>
@@ -532,12 +532,12 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                         <div className="md:w-1/2 flex flex-col items-center">
                             <div className="relative">
                                 {/* Large circle background */}
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-[#2a7f5e]/90 rounded-full -z-10" />
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-jade-600/90 rounded-full -z-10" />
                                 
                                 <div className="w-[280px] h-[580px] bg-slate-900 rounded-[40px] p-2 shadow-2xl shadow-slate-900/40 relative transform transition-transform duration-500">
                                      <div className="w-full h-full bg-slate-50 rounded-[32px] overflow-hidden flex flex-col relative border border-slate-200">
                                          {/* Phone UI Header */}
-                                         <div className="bg-[#2a7f5e] pt-8 pb-10 px-5 text-white relative">
+                                         <div className="bg-jade-600 pt-8 pb-10 px-5 text-white relative">
                                             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-xl z-20"></div>
                                             <div className="flex justify-between items-center mb-6">
                                                 <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
@@ -545,7 +545,7 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                                                 </div>
                                                 <span className="font-black text-xs">QurMa Mobile</span>
                                             </div>
-                                            <h3 className="text-xl font-black leading-tight">QurMa adalah<br/><span className="text-[#f2c14e]">Pionir</span><br/>Aplikasi Manajemen<br/>Tahfidz Al-Quran</h3>
+                                            <h3 className="text-xl font-black leading-tight">QurMa adalah<br/><span className="text-primary-500">Pionir</span><br/>Aplikasi Manajemen<br/>Tahfidz Al-Quran</h3>
                                          </div>
                                          {/* Phone UI Body */}
                                          <div className="flex-1 bg-slate-50 -mt-4 rounded-t-3xl p-5 grid grid-cols-3 gap-3 content-start z-10 relative">
@@ -553,7 +553,7 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                                                 { icon: BookOpen, label: 'Target', color: 'text-rose-500', bg: 'bg-rose-100' },
                                                 { icon: CheckCircle, label: 'Setoran', color: 'text-amber-500', bg: 'bg-amber-100' },
                                                 { icon: BarChart, label: 'Statistik', color: 'text-blue-500', bg: 'bg-blue-100' },
-                                                { icon: FileText, label: 'Buku Rapot', color: 'text-[#2a7f5e]', bg: 'bg-emerald-100' },
+                                                { icon: FileText, label: 'Buku Rapot', color: 'text-jade-600', bg: 'bg-emerald-100' },
                                                 { icon: Activity, label: 'Ujian', color: 'text-purple-500', bg: 'bg-purple-100' },
                                                 { icon: Settings, label: 'Setelan', color: 'text-slate-500', bg: 'bg-slate-200' },
                                             ].map((item, i) => (
@@ -567,14 +567,14 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                                             
                                             <div className="col-span-3 mt-6 bg-white p-4 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
                                                 <div className="absolute top-0 right-0 p-4 opacity-10">
-                                                    <BarChart className="w-16 h-16 text-[#2a7f5e]" />
+                                                    <BarChart className="w-16 h-16 text-jade-600" />
                                                 </div>
                                                 <p className="text-[10px] text-slate-400 font-bold mb-1">Setoran Hari Ini</p>
-                                                <h4 className="text-2xl font-black text-[#2a7f5e]">6.236 <span className="text-xs font-bold text-slate-400">Baris</span></h4>
+                                                <h4 className="text-2xl font-black text-jade-600">6.236 <span className="text-xs font-bold text-slate-400">Baris</span></h4>
                                             </div>
                                             <div className="col-span-3 mt-2 bg-white p-4 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
                                                 <p className="text-[10px] text-slate-400 font-bold mb-1">Total Santri Aktif</p>
-                                                <h4 className="text-2xl font-black text-[#2a7f5e]">3.236 <span className="text-xs font-bold text-slate-400">Santri</span></h4>
+                                                <h4 className="text-2xl font-black text-jade-600">3.236 <span className="text-xs font-bold text-slate-400">Santri</span></h4>
                                             </div>
                                          </div>
                                      </div>
@@ -653,7 +653,7 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                                 onClick={() => scrollTo(i)}
                                 className={`h-2.5 rounded-full transition-all duration-300 ${
                                     activeTesti === i 
-                                    ? 'w-8 bg-[#2a7f5e]' 
+                                    ? 'w-8 bg-jade-600' 
                                     : 'w-2.5 bg-slate-200 hover:bg-slate-300'
                                 }`}
                                 aria-label={`Go to testimonial ${i + 1}`}
@@ -669,10 +669,10 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                         {/* Brand Section */}
                         <div className="space-y-6">
                             <div className="flex items-center gap-3">
-                                <img src="/public/images/qurma-logo.png" alt="QurMa Logo" className="w-10 h-10 rounded-2xl" />
+                                <img src="/images/qurma-logo.png" alt="QurMa Logo" className="w-10 h-10 rounded-2xl" />
                                 <div>
                                     <h1 className="text-xl font-black text-white tracking-tight leading-none uppercase">QurMa</h1>
-                                    <p className="text-[10px] font-bold text-[#f2c14e] uppercase tracking-widest mt-0.5">Management Platform</p>
+                                    <p className="text-[10px] font-bold text-primary-500 uppercase tracking-widest mt-0.5">Management Platform</p>
                                 </div>
                             </div>
                             <p className="text-slate-400 text-xs leading-relaxed max-w-xs font-medium">
@@ -680,7 +680,7 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                             </p>
                             <div className="flex gap-3">
                                 {[Instagram, MessageCircle, Facebook, Youtube].map((Icon, i) => (
-                                    <div key={i} className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#f2c14e] transition-colors cursor-pointer group">
+                                    <div key={i} className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-primary-500 transition-colors cursor-pointer group">
                                         <Icon className="w-4 h-4 text-slate-400 group-hover:text-[#1e1e1e] transition-colors" />
                                     </div>
                                 ))}
@@ -694,7 +694,7 @@ export const Landing: React.FC<LandingProps> = ({ onLoginClick }) => {
                                 <ul className="space-y-3">
                                     {['Tentang Kami', 'Portofolio', 'FAQ'].map((link, i) => (
                                         <li key={i}>
-                                            <a href="#" className="text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-[#f2c14e] transition-colors">{link}</a>
+                                            <a href="#" className="text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-primary-500 transition-colors">{link}</a>
                                         </li>
                                     ))}
                                 </ul>

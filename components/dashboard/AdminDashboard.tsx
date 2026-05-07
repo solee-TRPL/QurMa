@@ -109,7 +109,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 ].map((stat, i) => (
                     <div 
                         key={i} 
-                        className={`bg-white rounded-2xl p-3 lg:p-4 border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden group transition-all ${stat.onClick ? 'cursor-pointer hover:border-rose-100 hover:shadow-md active:scale-[0.98]' : ''}`}
+                        className={`bg-white rounded-2xl p-3 lg:p-4 border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden group transition-all ${stat.onClick ? 'cursor-pointer hover:border-rose-100 hover:shadow-md active:scale-98' : ''}`}
                         onClick={stat.onClick}
                     >
                         <div className="absolute right-0 top-0 w-16 h-16 bg-slate-50/30 rounded-full -translate-y-6 translate-x-6 group-hover:scale-110 transition-transform duration-500" />
@@ -162,11 +162,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                             <div className="flex items-center bg-white px-4 rounded-full border border-slate-200 shadow-sm ring-1 ring-white h-9 lg:h-10 shrink-0 justify-center sm:justify-start gap-4">
                                 <div className="flex items-center gap-1.5">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-[#2a7f5e]"></div>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-jade-600"></div>
                                     <span className="text-[7px] font-black text-slate-500 uppercase tracking-wider">SABAQ</span>
                                 </div>
                                 <div className="flex items-center gap-1.5 border-l border-slate-200 pl-4">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-[#f2c14e]"></div>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
                                     <span className="text-[7px] font-black text-slate-500 uppercase tracking-wider">SABQI</span>
                                 </div>
                                 <div className="flex items-center gap-1.5 border-l border-slate-200 pl-4">
@@ -312,15 +312,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 <YAxis tick={{fill: '#94a3b8', fontSize: 7, fontWeight: 900}} tickLine={false} axisLine={false} dx={-5} />
                                 <Tooltip 
                                     cursor={{ stroke: '#f1f5f9', strokeWidth: 2 }}
-                                    contentStyle={{ borderRadius: '1.25rem', border: 'none', backgroundColor: '#2a7f5e', color: '#fff', padding: '12px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                                    contentStyle={{ borderRadius: '1.25rem', border: 'none', backgroundColor: 'var(--color-jade-600)', color: '#fff', padding: '12px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
                                     itemStyle={{ color: '#fff', fontSize: '9px', fontWeight: 800, padding: 0 }}
                                     labelStyle={{ color: '#fff', opacity: 0.6, fontSize: '7px', fontWeight: 900, marginBottom: '6px', textTransform: 'uppercase' }}
                                 />
                                 {(adminTrendType === 'all' || adminTrendType === MemorizationType.SABAQ) && (
-                                    <Line type="monotone" name="Sabaq" dataKey="sabaq" stroke="#2a7f5e" strokeWidth={3} dot={{ r: 0 }} activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2, fill: '#2a7f5e' }} />
+                                    <Line type="monotone" name="Sabaq" dataKey="sabaq" stroke="var(--color-jade-600)" strokeWidth={3} dot={{ r: 0 }} activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2, fill: 'var(--color-jade-600)' }} />
                                 )}
                                 {(adminTrendType === 'all' || adminTrendType === MemorizationType.SABQI) && (
-                                    <Line type="monotone" name="Sabqi" dataKey="sabqi" stroke="#f2c14e" strokeWidth={3} dot={{ r: 0 }} activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2, fill: '#f2c14e' }} />
+                                    <Line type="monotone" name="Sabqi" dataKey="sabqi" stroke="var(--color-primary-500)" strokeWidth={3} dot={{ r: 0 }} activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2, fill: 'var(--color-primary-500)' }} />
                                 )}
                                 {(adminTrendType === 'all' || adminTrendType === MemorizationType.MANZIL) && (
                                     <Line type="monotone" name="Manzil" dataKey="manzil" stroke="#94a3b8" strokeWidth={3} dot={{ r: 0 }} activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2, fill: '#94a3b8' }} />
@@ -359,11 +359,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                         <div className="hidden lg:flex items-center gap-4 px-5 rounded-full bg-white border border-slate-200 shadow-sm ring-1 ring-white h-9 lg:h-10 shrink-0">
                             <div className="flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full bg-[#2a7f5e]"></div>
+                                <div className="w-1.5 h-1.5 rounded-full bg-jade-600"></div>
                                 <span className="text-[7px] font-black text-slate-500 uppercase tracking-wider">TERCAPAI</span>
                             </div>
                             <div className="flex items-center gap-1.5 border-l border-slate-200 pl-4">
-                                <div className="w-1.5 h-1.5 rounded-full bg-[#f2c14e]"></div>
+                                <div className="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
                                 <span className="text-[7px] font-black text-slate-500 uppercase tracking-wider">TERLAMPAUI</span>
                             </div>
                             <div className="flex items-center gap-1.5 border-l border-slate-200 pl-4">
@@ -397,10 +397,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 7, fontWeight: 900, fill: '#94A3B8' }} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 7, fontWeight: 900, fill: '#94A3B8' }} allowDecimals={false} />
-                                <Tooltip contentStyle={{ borderRadius: '1.25rem', border: 'none', backgroundColor: '#2a7f5e', color: '#fff', padding: '12px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }} cursor={{ fill: '#f8fafc' }} itemStyle={{ color: '#fff', fontSize: '9px', fontWeight: 800, padding: 0 }} labelStyle={{ color: '#fff', opacity: 0.6, fontSize: '7px', fontWeight: 900, marginBottom: '6px', textTransform: 'uppercase' }} />
-                                <Bar dataKey="tercapai" name="Tercapai" fill="#2a7f5e" radius={[5, 5, 0, 0]} barSize={28} />
+                                <Tooltip contentStyle={{ borderRadius: '1.25rem', border: 'none', backgroundColor: 'var(--color-jade-600)', color: '#fff', padding: '12px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }} cursor={{ fill: '#f8fafc' }} itemStyle={{ color: '#fff', fontSize: '9px', fontWeight: 800, padding: 0 }} labelStyle={{ color: '#fff', opacity: 0.6, fontSize: '7px', fontWeight: 900, marginBottom: '6px', textTransform: 'uppercase' }} />
+                                <Bar dataKey="tercapai" name="Tercapai" fill="var(--color-jade-600)" radius={[5, 5, 0, 0]} barSize={28} />
                                 <Bar dataKey="tidakTercapai" name="Tidak Tercapai" fill="#f43f5e" radius={[5, 5, 0, 0]} barSize={28} />
-                                <Bar dataKey="terlampaui" name="Terlampaui" fill="#f2c14e" radius={[5, 5, 0, 0]} barSize={28} />
+                                <Bar dataKey="terlampaui" name="Terlampaui" fill="var(--color-primary-500)" radius={[5, 5, 0, 0]} barSize={28} />
                             </BarChart>
                         </ResponsiveContainer>
                     ) : (

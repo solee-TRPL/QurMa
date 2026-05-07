@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { UserProfile, Student, MemorizationRecord, MemorizationType, MemorizationStatus, Halaqah, Tenant } from '../../types';
-import { getHalaqahs, getStudentsByHalaqah, getWeeklyMemorization, upsertWeeklyMemorization, createRecord, deleteRecord, getTenant, updateTenant, getLastProgressByType } from '../../services/dataService';
+import { UserProfile, Student, MemorizationRecord, MemorizationType, MemorizationStatus, Halaqah, Tenant, UserRole } from '../../types';
+import { getHalaqahs, getStudents, getStudentsByHalaqah, getWeeklyMemorization, upsertWeeklyMemorization, createRecord, deleteRecord, getTenant, updateTenant, getLastProgressByType } from '../../services/dataService';
 import { BookOpen, Search, User, Users, Calendar, Plus, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, XCircle, Filter, Save, X, Book, Check, Eye, HelpCircle, AlertTriangle, Settings2, ChevronDown, Circle, HeartPulse, FileText, UserX, Activity } from 'lucide-react';
 import { useNotification } from '../../lib/NotificationContext';
 import { useLoading } from '../../lib/LoadingContext';
@@ -95,7 +95,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedCh
         const start = new Date(today);
         start.setDate(today.getDate() + diff);
         
-        const dates = [];
+        const dates: string[] = [];
         // Loop through 7 full days starting from Monday
         for (let i = 0; i < 7; i++) {
             const current = new Date(start);
@@ -168,13 +168,12 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedCh
                 }
             }
 
-            const myHalaqah = allHalaqahs.find(h => h.teacher_id === user.id);
+            const myHalaqahs = allHalaqahs.filter(h => h.teacher_id === user.id);
+            const isAdminOrSupervisor = user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR;
             
-            if (myHalaqah) {
-                const studentData = await getStudentsByHalaqah(myHalaqah.id);
+            if (isAdminOrSupervisor) {
+                const studentData = await getStudents(user.tenant_id);
                 setStudents(studentData);
-                
-                // Sync from URL if available
                 if (studentData.length > 0) {
                     if (studentIdParam) {
                         const found = studentData.find(s => s.id === studentIdParam);
@@ -182,6 +181,23 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedCh
                         else setSelectedStudent(studentData[0]);
                     } else {
                         setSelectedStudent(studentData[0]);
+                    }
+                }
+            } else {
+                // Use the same logic as WeeklyTarget.tsx: Fetch all and filter
+                const studentData = await getStudents(user.tenant_id);
+                const myHalaqahIds = new Set(myHalaqahs.map(h => h.id));
+                
+                const hStudents = studentData.filter(s => s.halaqah_id && myHalaqahIds.has(s.halaqah_id));
+                setStudents(hStudents);
+                
+                if (hStudents.length > 0) {
+                    if (studentIdParam) {
+                        const found = hStudents.find(s => s.id === studentIdParam);
+                        if (found) setSelectedStudent(found);
+                        else setSelectedStudent(hStudents[0]);
+                    } else {
+                        setSelectedStudent(hStudents[0]);
                     }
                 }
             }
@@ -1079,7 +1095,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedCh
                             {/* Dropdown Menu */}
                             <div 
                                 id="student-mobile-dropdown"
-                                className="hidden absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-[100] max-h-[300px] overflow-y-auto no-scrollbar animate-in slide-in-from-top-2 duration-200"
+                                className="hidden absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-100 max-h-[300px] overflow-y-auto no-scrollbar animate-in slide-in-from-top-2 duration-200"
                             >
                                 <div className="p-2 space-y-1">
                                     {students.map(student => (
@@ -1474,7 +1490,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedCh
                                      <table className="border-collapse table-fixed w-max h-full border-spacing-0">
                                          <thead>
                                               <tr className="snap-start">
-                                                 <th className="sticky left-0 z-[70] bg-slate-50 border-b border-r border-slate-200 w-[50px] min-w-[50px]">
+                                                  <th className="sticky left-0 z-70 bg-slate-50 border-b border-r border-slate-200 w-[50px] min-w-[50px]">
                                                      <div className="flex flex-col items-center justify-center gap-1.5 py-2 h-full">
                                                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">TGL</span>
                                                          <div className="flex items-center justify-center gap-1 w-full px-1">
@@ -1512,7 +1528,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedCh
                                                  })}
                                              </tr>
                                              <tr className="snap-start">
-                                                <th className="sticky left-0 z-[70] bg-slate-50 border-b border-r border-slate-200 w-[50px] min-w-[50px]">
+                                                <th className="sticky left-0 z-70 bg-slate-50 border-b border-r border-slate-200 w-[50px] min-w-[50px]">
                                                     <div className="flex items-center justify-center h-full w-full py-2">
                                                         <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">SETORAN</span>
                                                     </div>
@@ -1533,7 +1549,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedCh
                                         <tbody>
                                             {/* SURAT/AYAT ROW */}
                                             <tr className="hover:bg-slate-50/30 snap-start">
-                                                <th className="sticky left-0 z-[50] bg-slate-50 border-b border-r border-slate-200 w-[50px] min-w-[50px]">
+                                                <th className="sticky left-0 z-50 bg-slate-50 border-b border-r border-slate-200 w-[50px] min-w-[50px]">
                                                     <div className="flex items-center justify-center h-full w-full py-4">
                                                         <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">SURAT / AYAT</span>
                                                     </div>
@@ -1598,7 +1614,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedCh
 
                                             {/* KETERANGAN ROW */}
                                             <tr className="hover:bg-slate-50/30 snap-start">
-                                                <th className="sticky left-0 z-[50] bg-slate-50 border-b border-r border-slate-200 w-[50px] min-w-[50px]">
+                                                <th className="sticky left-0 z-50 bg-slate-50 border-b border-r border-slate-200 w-[50px] min-w-[50px]">
                                                     <div className="flex items-center justify-center h-full w-full py-2">
                                                         <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">KET</span>
                                                     </div>
@@ -1644,7 +1660,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedCh
 
                                             {/* PARAF ROW */}
                                             <tr className="hover:bg-slate-50/30 snap-start">
-                                                <th className="sticky left-0 z-[50] bg-slate-50 border-b border-r border-slate-200 w-[50px] min-w-[50px]">
+                                                <th className="sticky left-0 z-50 bg-slate-50 border-b border-r border-slate-200 w-[50px] min-w-[50px]">
                                                     <div className="flex items-center justify-center h-full w-full py-2">
                                                         <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">PARAF</span>
                                                     </div>
@@ -1738,7 +1754,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedCh
             {/* Input Modal */}
             {isAddModalOpen && (
                 <div 
-                    className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 lg:pl-64 pt-20"
+                    className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 lg:pl-64 pt-20"
                     onClick={() => setIsAddModalOpen(false)}
                 >
                     <div 
@@ -1933,7 +1949,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedCh
                                 </button>
                                 <button 
                                     type="submit"
-                                    className="flex-[2] py-3.5 font-black text-[11px] uppercase tracking-widest rounded-2xl border-2 border-jade-600 bg-jade-600 text-white shadow-xl shadow-primary-100 hover:bg-jade-700 hover:border-jade-700 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                    className="flex-2 py-3.5 font-black text-[11px] uppercase tracking-widest rounded-2xl border-2 border-jade-600 bg-jade-600 text-white shadow-xl shadow-primary-100 hover:bg-jade-700 hover:border-jade-700 transition-all active:scale-95 flex items-center justify-center gap-2"
                                 >
                                     <Save className="w-4 h-4" />
                                     SIMPAN REKAMAN
@@ -1947,7 +1963,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedCh
             {/* Information Modal */}
             {isInfoModalOpen && (
                 <div 
-                    className="fixed inset-0 z-[999999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-fade-in lg:pl-64 pt-20"
+                    className="fixed inset-0 z-999999 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-fade-in lg:pl-64 pt-20"
                     onClick={() => setIsInfoModalOpen(false)}
                 >
                     <div 
@@ -2019,7 +2035,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedCh
             {/* Progress Information Modal - Compact Version */}
             {isProgressModalOpen && (
                 <div 
-                    className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in lg:pl-64"
+                    className="fixed inset-0 z-999999 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in lg:pl-64"
                     onClick={() => setIsProgressModalOpen(false)}
                 >
                     <div 
@@ -2083,7 +2099,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedCh
             )}
             {/* Local Unsaved Changes Modal (for Switching Students) */}
             {showLocalUnsavedModal && (
-                <div className="fixed inset-0 z-[999999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-fade-in shadow-2xl lg:pl-64">
+                <div className="fixed inset-0 z-999999 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-fade-in shadow-2xl lg:pl-64">
                     <div className="bg-white rounded-[28px] shadow-2xl w-full max-w-[380px] overflow-hidden animate-scale-in border border-white/50">
                         <div className="p-8 text-center">
                             <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-amber-500 shadow-sm border border-amber-100">
@@ -2109,7 +2125,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedCh
                             </button>
                             <button 
                                 onClick={handleLocalSaveAndSwitch}
-                                className="flex-[2] py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-jade-700 shadow-lg shadow-primary-100 transition-all active:scale-95 outline-none"
+                                className="flex-2 py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-jade-700 shadow-lg shadow-primary-100 transition-all active:scale-95 outline-none"
                             >
                                 Simpan & Pindah
                             </button>
@@ -2119,7 +2135,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, onSetUnsavedCh
             )}
             {/* Initialization Modal */}
             {isInitModalOpen && (
-                <div className="fixed inset-0 z-[999999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-fade-in shadow-2xl lg:pl-64">
+                <div className="fixed inset-0 z-999999 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-fade-in shadow-2xl lg:pl-64">
                     <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-[340px] overflow-hidden animate-scale-in border border-white/50">
                         <div className="p-6 text-center pb-2">
                             <div className="w-12 h-12 bg-jade-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-jade-500 shadow-sm border border-jade-100">

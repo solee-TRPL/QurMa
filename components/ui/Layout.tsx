@@ -1,3 +1,4 @@
+'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { UserProfile, UserRole, PageView, Tenant } from '../../types';
@@ -220,12 +221,18 @@ export const Layout: React.FC<LayoutProps> = ({
 
   // Update Favicon based on school logo
   useEffect(() => {
+    const link: any = document.querySelector("link[rel*='icon']") || document.createElement('link');
+    link.type = 'image/x-icon';
+    link.rel = 'shortcut icon';
+    
     if (tenant?.logo_url) {
-      const link: any = document.querySelector("link[rel*='icon']") || document.createElement('link');
-      link.type = 'image/x-icon';
-      link.rel = 'shortcut icon';
       link.href = tenant.logo_url;
-      document.getElementsByTagName('head')[0].appendChild(link);
+    } else {
+      link.href = '/images/qurma-logo.png';
+    }
+    
+    if (!document.querySelector("link[rel*='icon']")) {
+        document.getElementsByTagName('head')[0].appendChild(link);
     }
   }, [tenant?.logo_url]);
 
@@ -238,7 +245,7 @@ export const Layout: React.FC<LayoutProps> = ({
         }}
         className={`w-full flex items-center px-4 py-2.5 text-sm transition-all duration-200 rounded-xl border-2 group
           ${active 
-            ? 'bg-[#f2c14e] border-[#d4a017] text-slate-900 shadow-lg shadow-black/10' 
+            ? 'bg-primary-500 border-primary-600 text-slate-900 shadow-lg shadow-black/10' 
             : 'bg-transparent border-transparent text-[#e2f3eb] hover:bg-white/10 hover:text-white'}
         `}
       >
@@ -322,12 +329,12 @@ export const Layout: React.FC<LayoutProps> = ({
       )}
 
       <aside 
-        className={`fixed inset-y-0 left-0 z-[60] w-64 bg-[#2a7f5e] border-r border-[#1e6348] flex flex-col h-[calc(100vh)] transition-transform duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${isImpersonating ? 'mt-10 h-[calc(100vh-40px)]' : ''}`}
+        className={`fixed inset-y-0 left-0 z-60 w-64 bg-jade-600 border-r border-jade-700 flex flex-col h-[calc(100vh)] transition-transform duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${isImpersonating ? 'mt-10 h-[calc(100vh-40px)]' : ''}`}
       >
         <div className="px-5 py-8 flex items-center gap-4 shrink-0 border-b border-white/5 mb-2">
             <div className={`w-16 h-16 rounded-full flex items-center justify-center overflow-hidden shadow-lg border border-white/10 transition-all bg-white shrink-0`}>
                 {isSuperAdmin ? (
-                    <img src="/public/images/qurma-logo.png" alt="Logo" className="w-full h-full object-contain p-1" />
+                    <img src="/images/qurma-logo.png" alt="Logo" className="w-full h-full object-contain p-1" />
                 ) : (
                     tenant?.logo_url ? (
                         <img src={tenant.logo_url} alt="Logo" className="w-full h-full object-contain p-1" />
@@ -340,7 +347,7 @@ export const Layout: React.FC<LayoutProps> = ({
                 <h1 className="text-sm font-black text-white tracking-tight leading-none truncate">
                     {isSuperAdmin ? 'PLATFORM HQ' : (tenant?.name?.toUpperCase() || 'QURMA')}
                 </h1>
-                <p className={`text-[9px] font-black uppercase tracking-widest mt-1 opacity-60 ${isSuperAdmin ? 'text-[#a5d1bd]' : 'text-[#f2c14e]'}`}>
+                <p className={`text-[9px] font-black uppercase tracking-widest mt-1 opacity-60 ${isSuperAdmin ? 'text-[#a5d1bd]' : 'text-primary-500'}`}>
                     {isSuperAdmin ? 'Super Control' : 'Tahfidz System'}
                 </p>
             </div>

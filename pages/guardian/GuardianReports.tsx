@@ -50,7 +50,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
   });
 
   const weekDates = useMemo(() => {
-    const dates = [];
+    const dates: string[] = [];
     const start = new Date(selectedWeek);
     const dayCount = activeDays.length > 5 ? activeDays.length : 5; // Minimum 5 days
     for (let i = 0; i < dayCount; i++) {
@@ -84,7 +84,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
       }
 
       try {
-          const allStudents = await getStudents(user.tenant_id);
+          const allStudents = await getStudents(user.tenant_id || '');
           const myStudent = allStudents.find(s => s.parent_id === user.id) || allStudents[0];
           
           if (myStudent) {
@@ -93,7 +93,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                 getStudentRecords(myStudent.id),
                 getStudentNotes(myStudent.id),
                 getWeeklyMemorization(myStudent.id, selectedWeek),
-                getTenant(user.tenant_id),
+                getTenant(user.tenant_id || ''),
                 getWeeklyTargets([myStudent.id], selectedWeek)
               ]);
 

@@ -47,7 +47,7 @@ const HalaqahFormModal: React.FC<HalaqahFormModalProps> = ({ isOpen, onClose, on
   };
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in text-slate-800 lg:pl-64">
+    <div className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in text-slate-800 lg:pl-64">
       <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-sm overflow-hidden border border-white flex flex-col max-h-[80vh]">
         {/* Header */}
         <div className="px-6 py-3 bg-white border-b border-slate-50 flex justify-between items-center shrink-0">
@@ -104,7 +104,7 @@ const HalaqahFormModal: React.FC<HalaqahFormModalProps> = ({ isOpen, onClose, on
             </button>
             <button 
                 type="submit"
-                className="flex-[2] flex items-center justify-center px-4 py-2.5 font-black text-[9px] uppercase tracking-tight rounded-xl border-2 border-jade-600 bg-jade-600 text-white shadow-lg shadow-primary-100 hover:bg-jade-700 transition-all active:scale-95"
+                className="flex-2 flex items-center justify-center px-4 py-2.5 font-black text-[9px] uppercase tracking-tight rounded-xl border-2 border-jade-600 bg-jade-600 text-white shadow-lg shadow-primary-100 hover:bg-jade-700 transition-all active:scale-95"
             >
               <Save className="w-4 h-4 mr-2" />
               {initialData ? 'SIMPAN' : 'BUAT HALAQAH'}
@@ -143,7 +143,7 @@ const HalaqahDetailModal: React.FC<HalaqahDetailModalProps> = ({ isOpen, onClose
 
   return (
     <div 
-        className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300 text-slate-800 lg:pl-64"
+        className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300 text-slate-800 lg:pl-64"
         onClick={onClose}
     >
       <div 
@@ -221,57 +221,78 @@ interface ImportModalProps {
 const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, progress }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center lg:pl-64 p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
-            <div className="bg-white rounded-[28px] shadow-2xl max-w-md w-full overflow-hidden border border-white/20">
-                <div className="px-6 py-4 border-b border-slate-50 flex justify-between items-center bg-[#FCFDFE]">
-                    <div>
-                        <h3 className="text-sm font-black text-slate-800 tracking-tight flex items-center gap-2">
-                            <Database className="w-4 h-4 text-jade-500" />
-                            Sinkronisasi Halaqah
-                        </h3>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Memproses Perpindahan Santri</p>
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-white/95 backdrop-blur-sm animate-in fade-in duration-500 lg:pl-64">
+            <div className="flex flex-col items-center justify-center max-w-md w-full px-6">
+                {/* Branding Icon Container (Plek Ketiplek from GlobalLoader) */}
+                <div className="relative w-24 h-24 flex items-center justify-center mb-8">
+                    <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-jade-600/80 animate-spin" style={{ animationDuration: '2s' }}></div>
+                    <div className="absolute inset-[4px] rounded-full border border-slate-100/50"></div>
+                    
+                    <div className="relative w-14 h-14 bg-white border border-slate-100 rounded-[20px] flex items-center justify-center shadow-xl shadow-jade-900/5 ring-4 ring-jade-50/30">
+                        <div className="w-9 h-9 bg-jade-600/10 rounded-lg flex items-center justify-center">
+                            <Database className="w-5 h-5 text-jade-600" />
+                        </div>
                     </div>
-                    <button onClick={onClose} className="p-1.5 text-slate-300 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-all">
-                        <X className="w-3.5 h-3.5" />
-                    </button>
                 </div>
-                <div className="p-6 space-y-5">
-                    <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                                {progress.current === progress.total ? 'Selesai' : 'Sedang memproses...'}
-                            </span>
-                            <span className="text-[10px] font-black text-slate-600 tabular-nums">
+
+                {/* Header Branding */}
+                <div className="text-center mb-10 w-full">
+                    <h1 className="text-[12px] font-black text-slate-800 uppercase tracking-[0.5em] leading-none mb-3">
+                        QURMA PLATFORM
+                    </h1>
+                    <div className="flex items-center gap-4 w-full">
+                        <div className="h-[1px] bg-gradient-to-r from-transparent to-slate-200 flex-1"></div>
+                        <span className="text-[9px] font-black text-jade-500 uppercase tracking-[0.3em] whitespace-nowrap">
+                            SINKRONISASI DATA
+                        </span>
+                        <div className="h-[1px] bg-gradient-to-l from-transparent to-slate-200 flex-1"></div>
+                    </div>
+                </div>
+
+                {/* Progress Details Card */}
+                <div className="w-full bg-white rounded-[32px] border border-slate-100 p-8 shadow-2xl shadow-jade-900/5 space-y-6">
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-end">
+                            <div className="space-y-1">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Progress</p>
+                                <p className="text-[10px] font-black text-jade-600 uppercase">
+                                    {progress.current === progress.total ? 'Sinkronisasi Selesai' : 'Memproses Data...'}
+                                </p>
+                            </div>
+                            <span className="text-[11px] font-black text-slate-600 tabular-nums bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
                                 {progress.current} / {progress.total}
                             </span>
                         </div>
-                        <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                        <div className="w-full bg-slate-50 h-3 rounded-full overflow-hidden border border-slate-100/50 p-0.5">
                             <div 
-                                className="bg-primary-500 h-full rounded-full transition-all duration-500 ease-out" 
+                                className="bg-gradient-to-r from-jade-500 to-emerald-400 h-full rounded-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(16,185,129,0.3)]" 
                                 style={{ width: `${(progress.current / (progress.total || 1)) * 100}%` }}
                             />
                         </div>
                     </div>
+
                     {progress.errors.length > 0 && (
-                        <div className="bg-red-50/50 rounded-2xl border border-red-50 p-4 max-h-[200px] overflow-y-auto">
-                            <p className="text-[9px] font-black text-red-600 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                <X className="w-3 h-3" /> Ada {progress.errors.length} Masalah ditemukan
+                        <div className="bg-rose-50/50 rounded-2xl border border-rose-100 p-4 max-h-[160px] overflow-y-auto custom-scrollbar">
+                            <p className="text-[9px] font-black text-rose-600 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <X className="w-3 h-3" /> {progress.errors.length} Kendala Ditemukan
                             </p>
-                            <div className="space-y-1.5">
+                            <div className="space-y-2">
                                 {progress.errors.map((err, i) => (
-                                    <p key={i} className="text-[10px] font-bold text-red-500 leading-tight flex gap-2">
-                                        <span className="opacity-40">•</span> {err}
-                                    </p>
+                                    <div key={i} className="text-[9.5px] font-bold text-rose-500 leading-relaxed flex gap-2">
+                                        <span className="opacity-40 shrink-0">•</span> 
+                                        <span>{err}</span>
+                                    </div>
                                 ))}
                             </div>
                         </div>
                     )}
+
                     {progress.current === progress.total && (
                         <button 
                             onClick={onClose}
-                            className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-[10px] uppercase tracking-widest rounded-xl transition-all"
+                            className="w-full py-3.5 bg-slate-900 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl hover:bg-slate-800 transition-all active:scale-[0.98] shadow-lg shadow-slate-200"
                         >
-                            TUTUP
+                            SELESAI
                         </button>
                     )}
                 </div>
@@ -716,7 +737,7 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
             for (let i = 0; i < updateLogs.length; i++) {
                 const { student, newHalaqahId } = updateLogs[i];
                 try {
-                    await updateStudent({ id: student.id, halaqah_id: newHalaqahId }, user);
+                    await updateStudent({ id: student.id, halaqah_id: newHalaqahId ?? undefined }, user);
                     successCount++;
                 } catch (err) {
                     errors.push(`Gagal memindahkan ${student.full_name}.`);
@@ -845,7 +866,7 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
   return (
     <div className="space-y-6">
       {/* Unified Control Bar */}
-      <div className="flex flex-col lg:flex-row w-full gap-4 py-2 bg-white shrink-0 relative z-[70] sticky top-0 items-center">
+      <div className="flex flex-col lg:flex-row w-full gap-4 py-2 bg-white shrink-0 z-70 relative items-center">
         {/* 1. STATS (HALAQAH & SANTRI) - PALING KIRI */}
         <div className="bg-slate-50/50 h-10 px-4 border border-slate-100/50 flex items-center gap-4 rounded-full shadow-inner shrink-0 order-1">
             <div className="flex items-center gap-1.5">
@@ -1066,9 +1087,9 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
         message={
             <span>
                 Hapus halaqah <strong>{halaqahToDelete?.name}</strong>? 
-                {halaqahToDelete && halaqahToDelete.student_count > 0 && (
+                {halaqahToDelete && (halaqahToDelete.student_count ?? 0) > 0 && (
                     <span className="text-red-600 font-bold block mt-2 text-[10px]">
-                        Peringatan: Ada {halaqahToDelete.student_count} santri di kelompok ini!
+                        Peringatan: Ada {halaqahToDelete.student_count ?? 0} santri di kelompok ini!
                     </span>
                 )}
             </span>

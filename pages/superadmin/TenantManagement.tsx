@@ -49,7 +49,7 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSu
 
   return (
     <div 
-        className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 lg:pl-64 pt-16"
+        className="fixed inset-0 z-9999 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 lg:pl-64 pt-16"
         onClick={onClose}
     >
       <div 
@@ -569,7 +569,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
 
   const getVisiblePages = () => {
     const delta = 1;
-    const range = [];
+    const range: (number | string)[] = [];
     for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
         range.push(i);
     }
@@ -731,12 +731,12 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
           <table className="min-w-full divide-y divide-slate-100 border-separate border-spacing-0">
             <thead>
               <tr className="bg-white">
-                <th className="w-[40px] min-w-[40px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-white z-[30] px-3 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100">NO</th>
+                <th className="w-[40px] min-w-[40px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-white z-30 px-3 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100">NO</th>
                 
                 {/* Kode Column - Conditionally hidden on mobile */}
-                <th className={`${showCode ? 'flex' : 'hidden'} lg:table-cell w-[80px] min-w-[80px] lg:w-[150px] lg:min-w-[150px] sticky left-[40px] lg:left-[45px] bg-white z-[30] px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100`}>KODE</th>
+                <th className={`${showCode ? 'flex' : 'hidden'} lg:table-cell w-[80px] min-w-[80px] lg:w-[150px] lg:min-w-[150px] sticky left-[40px] lg:left-[45px] bg-white z-30 px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100`}>KODE</th>
                 
-                <th className={`w-[120px] min-w-[120px] lg:w-[auto] lg:min-w-[300px] sticky ${showCode ? 'left-[120px]' : 'left-[40px]'} lg:left-[195px] bg-white z-[30] px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 shadow-[2px_0_5px_rgba(0,0,0,0.02)] transition-all`}>NAMA SEKOLAH</th>
+                <th className={`w-[120px] min-w-[120px] lg:w-[auto] lg:min-w-[300px] sticky ${showCode ? 'left-[120px]' : 'left-[40px]'} lg:left-[195px] bg-white z-30 px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 shadow-[2px_0_5px_rgba(0,0,0,0.02)] transition-all`}>NAMA SEKOLAH</th>
                 <th className="px-6 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 bg-white min-w-[120px]">REGISTRASI</th>
                 <th className="px-6 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-slate-100 bg-white">AKSI</th>
               </tr>

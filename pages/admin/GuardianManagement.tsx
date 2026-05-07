@@ -145,7 +145,7 @@ const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, st
     };
 
     return (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800 lg:pl-64" onClick={onClose}>
+        <div className="fixed inset-0 z-99999 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800 lg:pl-64" onClick={onClose}>
             <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 relative" onClick={e => e.stopPropagation()}>
                 <button onClick={onClose} className="absolute top-4 right-4 p-1.5 text-slate-300 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-all z-20">
                   <X className="w-3.5 h-3.5" />
@@ -225,7 +225,7 @@ const HistoryModal = ({ isOpen, onClose, student }: { isOpen: boolean, onClose: 
     if (!isOpen || !student) return null;
 
     return (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800 lg:pl-64" onClick={onClose}>
+        <div className="fixed inset-0 z-99999 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 text-slate-800 lg:pl-64" onClick={onClose}>
             <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 relative" onClick={e => e.stopPropagation()}>
                 <button onClick={onClose} className="absolute top-4 right-4 p-1.5 text-slate-300 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-all z-20">
                   <X className="w-3.5 h-3.5" />
@@ -303,7 +303,7 @@ const GlobalTrackingModal = ({ isOpen, onClose, tenantId }: { isOpen: boolean, o
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center lg:pl-64 lg:pt-16 p-4 md:p-6 bg-slate-900/60 backdrop-blur-md animate-fade-in text-slate-800" onClick={onClose}>
+        <div className="fixed inset-0 z-120 flex items-center justify-center lg:pl-64 lg:pt-16 p-4 md:p-6 bg-slate-900/60 backdrop-blur-md animate-fade-in text-slate-800" onClick={onClose}>
             <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white relative max-h-[80vh]" onClick={e => e.stopPropagation()}>
                 <button onClick={onClose} className="absolute top-4 right-4 p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all z-20 group">
                   <X className="w-5 h-5 group-hover:rotate-90 transition-transform" />
@@ -757,7 +757,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
   const InfoModal = ({ student, onClose }: { student: StudentRekap, onClose: () => void }) => {
     return (
         <div 
-            className="fixed inset-0 z-[150] flex items-center justify-center lg:pl-64 lg:pt-16 p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 text-slate-800"
+            className="fixed inset-0 z-150 flex items-center justify-center lg:pl-64 lg:pt-16 p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 text-slate-800"
             onClick={onClose}
         >
             <div 
@@ -1783,7 +1783,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
         )}
       </div>
 
-      <div className="flex flex-col w-full gap-3 py-4 bg-white shrink-0 relative z-[70] sticky top-0">
+      <div className="flex flex-col w-full gap-3 py-4 bg-white shrink-0 z-70 sticky top-0">
         {/* ROW 1: Search & Action Buttons / Combined Row for Supervisor */}
         <div className="flex flex-row items-center gap-2 w-full overflow-x-auto no-scrollbar pb-1 lg:pb-0">
           {/* 1. SEARCH BAR */}
@@ -1935,9 +1935,9 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
           <table className="w-full border-separate border-spacing-0">
             <thead className="sticky top-0 z-40 bg-white">
               <tr>
-                <th className="px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 sticky left-0 z-[60] bg-white w-[40px] md:w-[45px] min-w-[40px] md:min-w-[45px]">NO</th>
-                <th className={`px-1 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 sticky left-[40px] md:left-[45px] z-[60] bg-white w-[65px] md:w-[100px] min-w-[65px] md:min-w-[100px] ${!showNisMobile ? 'hidden md:table-cell' : ''}`}>NIS</th>
-                <th className={`px-2 md:px-3 py-4 text-left text-[9.5px] whitespace-nowrap font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 sticky z-[60] bg-white w-[115px] md:w-[140px] lg:w-auto ${!showNisMobile ? 'left-[40px] md:left-[145px]' : 'left-[105px] md:left-[145px]'}`}>NAMA SANTRI</th>
+                <th className="px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 sticky left-0 z-60 bg-white w-[40px] md:w-[45px] min-w-[40px] md:min-w-[45px]">NO</th>
+                <th className={`px-1 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 sticky left-[40px] md:left-[45px] z-60 bg-white w-[65px] md:w-[100px] min-w-[65px] md:min-w-[100px] ${!showNisMobile ? 'hidden md:table-cell' : ''}`}>NIS</th>
+                <th className={`px-2 md:px-3 py-4 text-left text-[9.5px] whitespace-nowrap font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 sticky z-60 bg-white w-[115px] md:w-[140px] lg:w-auto ${!showNisMobile ? 'left-[40px] md:left-[145px]' : 'left-[105px] md:left-[145px]'}`}>NAMA SANTRI</th>
                 <th className="px-3 py-4 text-center text-[9.5px] whitespace-nowrap font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white w-32">JENIS KELAMIN</th>
                 <th className="px-6 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white max-w-[130px]">PENGAMPU</th>
                 <th className="px-6 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white max-w-[110px]">HALAQAH</th>
@@ -2143,7 +2143,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
 
       {/* Add Student Modal */}
       {showAddModal && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center lg:pl-64 lg:pt-16 p-4 md:p-6 bg-slate-900/60 backdrop-blur-md animate-fade-in">
+          <div className="fixed inset-0 z-120 flex items-center justify-center lg:pl-64 lg:pt-16 p-4 md:p-6 bg-slate-900/60 backdrop-blur-md animate-fade-in">
               <div className="bg-white w-full max-w-lg rounded-[32px] shadow-2xl overflow-hidden border border-white flex flex-col max-h-[80vh]">
                   <div className="px-6 py-4 bg-white border-b border-slate-50 flex justify-between items-center shrink-0">
                       <div>
@@ -2451,7 +2451,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                       <button 
                         onClick={() => (document.querySelector('form') as HTMLFormElement).requestSubmit()}
                         disabled={isSubmitting}
-                        className="flex-[2] flex items-center justify-center px-4 py-3 font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl border-2 border-jade-600 bg-jade-600 text-white shadow-xl shadow-primary-100 hover:bg-jade-700 transition-all active:scale-95 disabled:opacity-50"
+                        className="flex-2 flex items-center justify-center px-4 py-3 font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl border-2 border-jade-600 bg-jade-600 text-white shadow-xl shadow-primary-100 hover:bg-jade-700 transition-all active:scale-95 disabled:opacity-50"
                       >
                           {isSubmitting ? 'MEMPROSES...' : (isEditMode ? 'SIMPAN PERUBAHAN' : 'DAFTARKAN SANTRI')}
                       </button>
@@ -2463,7 +2463,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
       {/* Import Modal */}
       {showImportModal && (
           <div 
-            className="fixed inset-0 z-[120] flex items-center justify-center lg:pl-64 lg:pt-16 p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 cursor-pointer"
+            className="fixed inset-0 z-120 flex items-center justify-center lg:pl-64 lg:pt-16 p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 cursor-pointer"
             onClick={() => setShowImportModal(false)}
           >
               <div 

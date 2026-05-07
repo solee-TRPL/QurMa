@@ -25,8 +25,18 @@ export const createNotification = async (notif: Partial<AppNotification>) => {
         if (error) {
             if (error.code === '42P01') { // Relation does not exist
                 console.warn("Table 'notifications' does not exist yet. Please create it in Supabase.");
+            } else if (error.code === '23503') { // Foreign key violation
+                // This happens when the user_id (recipient) does not exist in auth.users
+                // Common when trying to notify a student who hasn't been given a user account yet
+                console.info(`[Notification] Recipient ${notif.user_id} is not a registered user. Skipping notification.`);
             } else {
-                console.error("Failed to create notification:", error);
+                console.error("Failed to create notification:", {
+                    code: error.code,
+                    message: error.message,
+                    details: error.details,
+                    hint: error.hint,
+                    recipient: notif.user_id
+                });
             }
         }
     } catch (err) {

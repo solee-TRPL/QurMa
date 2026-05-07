@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { Layout } from './components/ui/Layout';
 import { Landing } from './pages/Landing';
 import { Login } from './pages/Login';
@@ -120,7 +121,7 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const saveAccount = async (profile: UserProfile, session: any) => {
+  const saveAccount = async (profile: UserProfile, session: Session) => {
     if (!profile || !profile.id) return;
     const accounts = getAccounts();
     const filtered = accounts.filter((a: any) => (a.id || a.profile?.id) !== profile.id);
@@ -218,7 +219,7 @@ const AppContent: React.FC = () => {
     } catch (e) {}
   };
 
-  const switchAccount = async (targetAccount: any) => {
+  const switchAccount = async (targetAccount: { id: string; profile: UserProfile; session: { refresh_token: string } }) => {
     if (!targetAccount) return;
     
     if (hasUnsavedChanges) {
@@ -287,51 +288,54 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleAuthSuccess = async (userId: string, session: any) => {
-    if (isUpdatingAuth.current) return;
+  const handleAuthSuccess = async (userId: string, session: Session | null) => {
+    console.log(`[Auth] Handling success for ${userId}`);
+    if (isUpdatingAuth.current) {
+        console.log("[Auth] Already updating, skipping.");
+        return;
+    }
     isUpdatingAuth.current = true;
     
     try {
-        // Reduced delay for faster transition
+        console.log("[Auth] Fetching profile...");
         const profile = await getProfileWithRetry(userId, session?.user);
         if (!profile) {
-            // If profile still fails, maybe session is truly invalid
+            console.error("[Auth] Profile fetch failed.");
             isUpdatingAuth.current = false;
             return;
         }
 
+        console.log("[Auth] Profile found, updating state...");
         setUser(profile);
         userRef.current = profile;
         localStorage.setItem('qurma_active_profile', JSON.stringify(profile));
         
+        // IMMEDIATE UI UPDATE: Stop loading and switch page
+        setIsInitializing(false);
+        const isSuperAdmin = profile.role === UserRole.SUPERADMIN;
+        const targetHome = isSuperAdmin ? 'sa-dashboard' : 'dashboard';
+        setCurrentPage(targetHome);
+        window.history.pushState({}, '', `/app/${targetHome}`);
+
         if (profile.tenant_id) {
+            console.log(`[Auth] Fetching tenant ${profile.tenant_id}...`);
             const tenantData = await getTenant(profile.tenant_id);
             setTenant(tenantData);
             localStorage.setItem('qurma_active_tenant', JSON.stringify(tenantData));
         }
 
-        // CHECK CAPACITY BEFORE SAVING
+        console.log("[Auth] Checking account storage...");
         const accounts = getAccounts();
         const isAlreadyIn = accounts.some((a: any) => (a.id || a.profile?.id) === profile.id);
         
         if (!isAlreadyIn && accounts.length >= 100) {
             // Effectively disabled for 100 accounts
-        } else {
-            // CRITICAL: Await the save to DB before proceeding
+        } else if (session) {
+            console.log("[Auth] Saving account to DB...");
             await saveAccount(profile, session);
         }
 
-        // Smart URL Redirection
-        const path = window.location.pathname.substring(1);
-        const isSuperAdmin = profile.role === UserRole.SUPERADMIN;
-        const targetHome = isSuperAdmin ? 'sa-dashboard' : 'dashboard';
-        const isSaPage = path && path.includes('sa-');
-
-        if (!path.startsWith('app') || (isSuperAdmin && path === 'app/dashboard') || (!isSuperAdmin && isSaPage)) {
-            setCurrentPage(targetHome);
-            window.history.pushState({}, '', `/app/${targetHome}`);
-        }
-        
+        console.log("[Auth] Success handler completed.");
         return profile;
     } catch (e) {
         console.error("[Auth] Sync failed:", e);
@@ -421,20 +425,33 @@ const AppContent: React.FC = () => {
         initAuth();
     }
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
+        console.log(`[Auth] Event: ${event}`);
+        
         // PREVENT DOUBLE EXECUTE: Ignore background events if we are already in the middle of a manual switch
-        if (isUpdatingAuth.current) return;
+        if (isUpdatingAuth.current) {
+            console.log("[Auth] Update already in progress, skipping event.");
+            return;
+        }
 
         if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && session) {
-            handleAuthSuccess(session.user.id, session);
+            await handleAuthSuccess(session.user.id, session);
+            setIsInitializing(false);
         } else if (event === 'SIGNED_OUT') {
             setUser(null);
             setTenant(null);
             localStorage.removeItem('qurma_active_profile');
             localStorage.removeItem('qurma_active_tenant');
+            setIsInitializing(false);
+            
             if (window.location.pathname !== '/' && window.location.pathname !== '/landing' && window.location.pathname !== '/login') {
                 window.history.pushState({}, '', '/login');
                 setCurrentPage('login');
+            }
+        } else {
+            // For other events (like INITIAL_SESSION with no user)
+            if (event === 'INITIAL_SESSION' && !session) {
+                setIsInitializing(false);
             }
         }
     });
@@ -727,6 +744,7 @@ const AppContent: React.FC = () => {
       case 'student-progress-manage': return user.role === UserRole.TEACHER ? <ManageStudentProgress user={user} /> : <div>Akses Ditolak</div>;
       case 'weekly-target-monitor':
       case 'weekly-target-monitor-notes': 
+          console.log("[App] Rendering WeeklyTargetMonitor with tenantId:", user.tenant_id);
           return (user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) ? (
               <WeeklyTargetMonitor 
                   user={user} 
@@ -811,7 +829,7 @@ const AppContent: React.FC = () => {
 
       {/* Unsaved Changes Confirmation Modal */}
       {showUnsavedModal && (
-          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in lg:pl-64">
+          <div className="fixed inset-0 z-99999 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in lg:pl-64">
               <div className="bg-white rounded-[28px] shadow-2xl w-full max-w-[380px] overflow-hidden animate-scale-in border border-white/50">
                   <div className="p-8 text-center">
                       <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-amber-500 shadow-sm border border-amber-100">
@@ -837,7 +855,7 @@ const AppContent: React.FC = () => {
                       </button>
                       <button 
                           onClick={handleSaveAndProceed}
-                          className="flex-[2] py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-jade-700 shadow-lg shadow-jade-100 transition-all active:scale-95 outline-none"
+                          className="flex-2 py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-jade-700 shadow-lg shadow-jade-100 transition-all active:scale-95 outline-none"
                       >
                           Simpan & Pindah
                       </button>
@@ -847,7 +865,7 @@ const AppContent: React.FC = () => {
       )}
       {/* ACCOUNT CAPACITY MODAL */}
       {showCapacityPrompt && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in">
+        <div className="fixed inset-0 z-10000 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in">
           <div className="bg-white rounded-[28px] shadow-2xl w-full max-w-[380px] overflow-hidden animate-scale-in border border-white/50">
             <div className="p-8 text-center text-balance">
               <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 mx-auto mb-6 border border-amber-100/50">

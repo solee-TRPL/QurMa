@@ -103,7 +103,7 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
   return (
     <div className="space-y-6">
       {/* Unified Control Bar */}
-      <div className="flex flex-col lg:flex-row w-full gap-2 py-2 bg-white shrink-0 relative z-[70] sticky top-0">
+      <div className="flex flex-col lg:flex-row w-full gap-2 py-2 bg-white shrink-0 z-70 sticky top-0">
         <div className="flex flex-row items-center gap-2 w-full lg:contents">
              {/* 3. SORT FILTER */}
             <div className="flex-1 lg:flex-none flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-2xl border-2 border-slate-100 shadow-sm min-w-[180px] lg:min-w-[200px]">
@@ -161,9 +161,9 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
             <table className="min-w-full border-separate border-spacing-0">
             <thead className="sticky top-0 z-40 bg-white">
                 <tr>
-                    <th className="sticky left-0 z-[60] bg-white px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[45px] min-w-[45px]">NO</th>
-                    <th className="sticky left-[45px] z-[60] bg-white px-2 md:px-4 py-4 text-center md:text-left text-[9.5px] whitespace-nowrap font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[70px] md:w-[110px] min-w-[70px] md:min-w-[110px]">WAKTU</th>
-                    <th className="sticky left-[115px] md:left-[155px] z-[60] bg-white px-2 md:px-6 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[90px] md:w-[150px] min-w-[90px] md:min-w-[150px] whitespace-nowrap">AKTOR</th>
+                    <th className="sticky left-0 z-60 bg-white px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[45px] min-w-[45px]">NO</th>
+                    <th className="sticky left-[45px] z-60 bg-white px-2 md:px-4 py-4 text-center md:text-left text-[9.5px] whitespace-nowrap font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[70px] md:w-[110px] min-w-[70px] md:min-w-[110px]">WAKTU</th>
+                    <th className="sticky left-[115px] md:left-[155px] z-60 bg-white px-2 md:px-6 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[90px] md:w-[150px] min-w-[90px] md:min-w-[150px] whitespace-nowrap">AKTOR</th>
                     <th className="px-6 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-24 whitespace-nowrap">AKSI</th>
                     <th className="px-6 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 whitespace-nowrap min-w-[300px]">ENTITAS & DETAIL</th>
                     <th className="px-6 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-slate-100 whitespace-nowrap w-32">IP ADDRESS</th>

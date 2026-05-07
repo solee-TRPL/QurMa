@@ -1,3 +1,5 @@
+'use client';
+
 import React, { createContext, useState, useContext, useCallback, ReactNode } from 'react';
 import { Notification } from '../types';
 import { NotificationContainer } from '../components/ui/Notification';

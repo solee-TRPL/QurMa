@@ -81,7 +81,7 @@ export const StudentExamResults: React.FC<{ user?: UserProfile }> = ({ user }) =
             }
 
             try {
-                const allStudents = await getStudents(user.tenant_id);
+                const allStudents = await getStudents(user.tenant_id || '');
                 const myStudent = allStudents.find(s => s.parent_id === user.id);
 
                 if (myStudent) {

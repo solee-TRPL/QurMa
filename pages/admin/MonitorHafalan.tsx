@@ -74,7 +74,7 @@ const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClo
 
     return (
         <div 
-            className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 lg:pl-64 pt-16"
+            className="fixed inset-0 z-999999 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 lg:pl-64 pt-16"
             onClick={onClose}
         >
             <div 
@@ -165,7 +165,7 @@ const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClo
                             <button 
                                 onClick={handleSubmit}
                                 disabled={saving}
-                                className="flex-[1.5] py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-jade-700 shadow-xl shadow-primary-100 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+                                className="flex-1.5 py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-jade-700 shadow-xl shadow-primary-100 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
                             >
                                 {saving ? (
                                     <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -180,7 +180,7 @@ const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClo
 
                 {/* INNER CUSTOM CONFIRM OVERLAY */}
                 {deleteConfirm.show && (
-                    <div className="absolute inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="absolute inset-0 z-100 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
                         <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-[320px] overflow-hidden animate-in zoom-in-95 duration-200 border border-white/50 relative">
                             <button 
                                 onClick={() => setDeleteConfirm({ show: false, index: null })}
@@ -197,7 +197,7 @@ const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClo
                                 <p className="text-[10px] font-bold text-slate-500 leading-relaxed uppercase tracking-wide opacity-80">
                                     Hapus target <span className="text-slate-800">{infoList[deleteConfirm.index!]?.label || 'ini'}</span>?
                                 </p>
-                                <p className="text-[9px] font-black text-rose-500 mt-4 uppercase tracking-[0.05em]">
+                                <p className="text-[9px] font-black text-rose-500 mt-4 uppercase tracking-0.05em">
                                     Data yang dihapus tidak dapat dipulihkan.
                                 </p>
                             </div>
@@ -211,7 +211,7 @@ const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClo
                                 </button>
                                 <button 
                                     onClick={executeDelete}
-                                    className="flex-[1.5] py-3.5 bg-rose-600 text-white rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-700 shadow-lg shadow-rose-100 transition-all active:scale-95 outline-none"
+                                    className="flex-1.5 py-3.5 bg-rose-600 text-white rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-700 shadow-lg shadow-rose-100 transition-all active:scale-95 outline-none"
                                 >
                                     Ya, Hapus Data
                                 </button>
@@ -475,7 +475,7 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
     return (
         <div className="flex flex-col gap-2 md:gap-3 animate-fade-in pb-12">
             {/* Premium Two-Row Filter Bar */}
-            <div className="flex flex-col gap-3 mb-2 animate-in slide-in-from-top-4 duration-500 sticky top-0 z-[100]">
+            <div className="flex flex-col gap-3 mb-2 animate-in slide-in-from-top-4 duration-500 sticky top-0 z-100">
                 {/* Row 1: Primary Controls */}
                 <div className="flex flex-col lg:flex-row items-center gap-2 md:gap-3 py-2 bg-white w-full relative z-30">
                     {/* 1. Halaqah Selector */}
@@ -683,7 +683,7 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
 
                 {/* PAGINATION CONTROLS */}
                 {!loading && filteredAndSortedStats.length > 0 && (
-                    <div className="bg-[#F8FAFC] border-t border-slate-100 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 rounded-b-3xl">
+                    <div className="bg-slate-50 border-t border-slate-100 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 rounded-b-3xl">
                         <div className="flex items-center gap-2">
                             <select 
                                 value={itemsPerPage}

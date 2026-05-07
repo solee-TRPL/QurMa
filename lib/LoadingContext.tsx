@@ -1,3 +1,5 @@
+'use client';
+
 import React, { createContext, useState, useContext, useMemo, useRef, useCallback, useEffect } from 'react';
 import { GlobalLoader } from '../components/ui/GlobalLoader';
 

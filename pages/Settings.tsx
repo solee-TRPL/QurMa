@@ -154,7 +154,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
         // 2. Update Student Table if Role is SANTRI
         if (user.role === UserRole.SANTRI) {
             // Find the student ID to update (might be different from user.id if linked via parent_id)
-            let studentIdToUpdate = null;
+            let studentIdToUpdate: string | null = null;
             const directStudent = await getStudentById(user.id);
             
             if (directStudent) {

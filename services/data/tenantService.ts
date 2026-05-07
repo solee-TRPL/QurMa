@@ -52,7 +52,7 @@ export const deleteTenant = async (tenantId: string, actor: UserProfile, tenantN
 
 export const sendPasswordReset = async (email: string, actor: UserProfile): Promise<void> => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + '/#settings',
+        redirectTo: (typeof window !== 'undefined' ? window.location.origin : '') + '/app/settings',
     });
     
     if (error) throw error;

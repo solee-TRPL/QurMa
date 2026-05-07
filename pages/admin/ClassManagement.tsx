@@ -51,7 +51,7 @@ const ClassFormModal: React.FC<ClassFormModalProps> = ({ isOpen, onClose, onSubm
   };
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in text-slate-800">
+    <div className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in text-slate-800">
       <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-xs overflow-hidden border border-white flex flex-col max-h-[80vh] relative">
         {/* Close Button UI */}
         <button 
@@ -102,7 +102,7 @@ const ClassFormModal: React.FC<ClassFormModalProps> = ({ isOpen, onClose, onSubm
                 <button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="flex-[2] flex items-center justify-center px-4 py-2.5 font-black text-[9px] uppercase tracking-tight rounded-xl border-2 border-jade-600 bg-jade-600 text-white shadow-lg shadow-primary-100 hover:bg-jade-700 transition-all active:scale-95 disabled:opacity-50"
+                    className="flex-2 flex items-center justify-center px-4 py-2.5 font-black text-[9px] uppercase tracking-tight rounded-xl border-2 border-jade-600 bg-jade-600 text-white shadow-lg shadow-primary-100 hover:bg-jade-700 transition-all active:scale-95 disabled:opacity-50"
                 >
                     {isSubmitting ? '...' : (initialData ? 'SIMPAN' : 'BUAT KELAS')}
                 </button>
@@ -1331,7 +1331,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
 
       {/* Roster Modal */}
       {isStudentsModalOpen && selectedClass && (
-          <div className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="fixed inset-0 z-160 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
               <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 border border-white/20 relative">
                   {/* Close Button UI */}
                   <button 
@@ -1466,7 +1466,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
 
       {/* Promotion Confirmation Modal */}
       {showPromoteModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center lg:pl-64 lg:pt-20 p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="fixed inset-0 z-200 flex items-center justify-center lg:pl-64 lg:pt-20 p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
               <div className="bg-white rounded-[28px] shadow-2xl max-w-sm w-full overflow-hidden relative border border-white/20 animate-in zoom-in-95 duration-200">
                   
                   {/* Header */}
@@ -1527,7 +1527,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
                           </button>
                           <button 
                             onClick={handleBulkPromote}
-                            className="flex-[2] py-2.5 rounded-xl text-[10px] font-black text-white uppercase tracking-[0.15em] bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-100 border-2 border-orange-500 transition-all active:scale-[0.98]"
+                            className="flex-2 py-2.5 rounded-xl text-[10px] font-black text-white uppercase tracking-[0.15em] bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-100 border-2 border-orange-500 transition-all active:scale-98"
                           >
                               Proses Sekarang
                           </button>

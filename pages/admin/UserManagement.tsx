@@ -81,7 +81,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center lg:pl-64 lg:pt-20 lg:pb-20 p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-100 flex items-center justify-center lg:pl-64 lg:pt-20 lg:pb-20 p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in">
       <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-md overflow-hidden border border-white flex flex-col max-h-[85vh]">
         <div className="px-5 py-2.5 border-b border-slate-50 flex justify-between items-center bg-white shrink-0">
           <div>
@@ -186,7 +186,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
             </button>
             <button 
                 type="submit"
-                className="flex-[2] flex items-center justify-center px-4 py-2 font-black text-[9px] uppercase tracking-tight rounded-xl border-2 border-jade-600 bg-jade-600 text-white shadow-lg shadow-primary-100 hover:bg-jade-700 transition-all active:scale-95"
+                className="flex-2 flex items-center justify-center px-4 py-2 font-black text-[9px] uppercase tracking-tight rounded-xl border-2 border-jade-600 bg-jade-600 text-white shadow-lg shadow-primary-100 hover:bg-jade-700 transition-all active:scale-95"
             >
               <Save className="w-3.5 h-3.5 mr-1.5" />
               {initialData ? 'SIMPAN' : 'BUAT USER'}
@@ -360,7 +360,7 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
     return (
         <div className="space-y-6">
             {/* Unified Control Bar */}
-            <div className="flex flex-col lg:flex-row w-full gap-2 py-2 bg-white shrink-0 relative z-[70] sticky top-0">
+            <div className="flex flex-col lg:flex-row w-full gap-2 py-2 bg-white shrink-0 z-70 sticky top-0">
                 <div className="flex flex-row items-center gap-2 w-full lg:contents">
                     {/* 1. SEARCH BAR */}
                     <div className="relative flex-1 group h-10 min-w-0">
@@ -420,7 +420,7 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                     <table className="min-w-full border-separate border-spacing-0">
                         <thead className="sticky top-0 z-40 bg-white">
                             <tr>
-                                <th className="sticky left-0 z-[60] bg-white px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[40px] md:w-[45px] min-w-[40px] md:min-w-[45px]">NO</th>
+                                <th className="sticky left-0 z-60 bg-white px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[40px] md:w-[45px] min-w-[40px] md:min-w-[45px]">NO</th>
                                 <th className="px-6 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">USER & EMAIL</th>
                                 <th className="px-6 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 bg-white min-w-[120px]">ROLE</th>
                                 <th className="px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-44">WHATSAPP</th>
