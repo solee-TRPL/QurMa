@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { GlobalUserManagement } from '@/pages/superadmin/GlobalUserManagement';
+import { GlobalUserManagement } from '@/views/superadmin/GlobalUserManagement';
 import { useAuth } from '@/lib/AuthContext';
 import { UserRole } from '@/types';
 

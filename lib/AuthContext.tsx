@@ -376,7 +376,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateTenant = (t: Tenant) => { setTenant(t); localStorage.setItem('qurma_active_tenant', JSON.stringify(t)); };
 
   const value = {
-    user, tenant, isInitializing, currentPage: (pathname.split('/').pop() || 'dashboard') as PageView,
+    user, tenant, isInitializing, currentPage: (pathname?.split('/').pop() || 'dashboard') as PageView,
     deviceId, isImpersonating: !!originalUser, originalUser, originalTenant,
     hasUnsavedChanges, setHasUnsavedChanges, 
     showUnsavedModal, setShowUnsavedModal,

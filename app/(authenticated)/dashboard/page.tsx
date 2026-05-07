@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Dashboard } from '@/pages/Dashboard';
+import { Dashboard } from '@/views/Dashboard';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function DashboardPage() {

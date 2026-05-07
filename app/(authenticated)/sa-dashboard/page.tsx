@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { SuperAdminDashboard } from '@/pages/superadmin/SuperAdminDashboard';
+import { SuperAdminDashboard } from '@/views/superadmin/SuperAdminDashboard';
 import { useAuth } from '@/lib/AuthContext';
 import { UserRole } from '@/types';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { EmailSettings } from '@/pages/superadmin/EmailSettings';
+import { EmailSettings } from '@/views/superadmin/EmailSettings';
 import { useAuth } from '@/lib/AuthContext';
 import { UserRole } from '@/types';
 

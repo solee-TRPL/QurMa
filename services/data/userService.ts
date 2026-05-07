@@ -154,6 +154,11 @@ export const deleteUser = async (userId: string, userName: string, actor: UserPr
 
 export const forceResetPassword = async (userId: string, targetPassword: string, actor: UserProfile): Promise<void> => {
     const { supabaseAdmin } = await import('../../lib/supabase');
+    
+    if (!supabaseAdmin) {
+        throw new Error("Akses Service Role tidak tersedia. Fitur ini hanya dapat dijalankan jika kunci admin dikonfigurasi.");
+    }
+
     const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, { 
         password: targetPassword 
     });

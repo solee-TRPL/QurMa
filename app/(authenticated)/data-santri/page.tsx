@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { StudentDirectory } from '@/pages/teacher/StudentDirectory';
+import { StudentDirectory } from '@/views/teacher/StudentDirectory';
 import { useAuth } from '@/lib/AuthContext';
 import { UserRole } from '@/types';
 

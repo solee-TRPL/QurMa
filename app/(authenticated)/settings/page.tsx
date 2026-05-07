@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Settings } from '@/pages/Settings';
+import { Settings } from '@/views/Settings';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function SettingsPage() {
@@ -13,8 +13,8 @@ export default function SettingsPage() {
     <Settings 
       user={user} 
       tenant={tenant} 
-      onUpdateProfile={updateProfile}
-      onUpdateTenant={updateTenant}
+      onProfileUpdate={updateProfile}
+      onTenantUpdate={updateTenant}
     />
   );
 }

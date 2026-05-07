@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { PlatformSettings } from '@/pages/superadmin/PlatformSettings';
+import { PlatformSettings } from '@/views/superadmin/PlatformSettings';
 import { useAuth } from '@/lib/AuthContext';
 import { UserRole } from '@/types';
 

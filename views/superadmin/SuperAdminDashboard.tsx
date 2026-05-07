@@ -1,15 +1,16 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { getSuperAdminStats, getAllTenants } from '../../services/dataService';
-import { SuperAdminStats, Tenant, PageView } from '../../types';
+import { SuperAdminStats, Tenant, PageView, UserProfile } from '../../types';
 import { Building, Users, GraduationCap, UserCheck, TrendingUp, PieChart as PieChartIcon, Clock, ArrowUpRight } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 interface SuperAdminDashboardProps {
+    user: UserProfile;
     onNavigate: (page: PageView) => void;
 }
 
-export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ onNavigate }) => {
+export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, onNavigate }) => {
     const [stats, setStats] = useState<SuperAdminStats | null>(null);
     const [tenants, setTenants] = useState<Tenant[]>([]);
     const [loading, setLoading] = useState(true);

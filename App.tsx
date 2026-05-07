@@ -2,41 +2,41 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { Layout } from './components/ui/Layout';
-import { Landing } from './pages/Landing';
-import { Login } from './pages/Login';
-import { Dashboard } from './pages/Dashboard';
+import { Landing } from './views/Landing';
+import { Login } from './views/Login';
+import { Dashboard } from './views/Dashboard';
 // Admin Pages
-import { UserManagement } from './pages/admin/UserManagement';
-import { StudentManagement } from './pages/admin/GuardianManagement';
-import { HalaqahManagement } from './pages/admin/HalaqahManagement';
-import { ClassManagement } from './pages/admin/ClassManagement';
-import { AuditLogs } from './pages/admin/AuditLogs';
-import { TargetManagement } from './pages/admin/TargetManagement';
-import { WeeklyTargetMonitor } from './pages/admin/WeeklyTargetMonitor';
-import { MonitorHafalan } from './pages/admin/MonitorHafalan';
+import { UserManagement } from './views/admin/UserManagement';
+import { StudentManagement } from './views/admin/GuardianManagement';
+import { HalaqahManagement } from './views/admin/HalaqahManagement';
+import { ClassManagement } from './views/admin/ClassManagement';
+import { AuditLogs } from './views/admin/AuditLogs';
+import { TargetManagement } from './views/admin/TargetManagement';
+import { WeeklyTargetMonitor } from './views/admin/WeeklyTargetMonitor';
+import { MonitorHafalan } from './views/admin/MonitorHafalan';
 // Teacher Pages
-import { StudentDirectory } from './pages/teacher/StudentDirectory';
-import { GuardianDirectory } from './pages/teacher/GuardianDirectory';
-import { ExamGrades } from './pages/teacher/ExamGrades';
-import { InputHafalan } from './pages/teacher/InputHafalan';
-import { MemorizationRecap } from './pages/teacher/MemorizationRecap';
-import { WeeklyTarget } from './pages/teacher/WeeklyTarget';
-import { ManageStudentProgress } from './pages/teacher/ManageStudentProgress';
+import { StudentDirectory } from './views/teacher/StudentDirectory';
+import { GuardianDirectory } from './views/teacher/GuardianDirectory';
+import { ExamGrades } from './views/teacher/ExamGrades';
+import { InputHafalan } from './views/teacher/InputHafalan';
+import { MemorizationRecap } from './views/teacher/MemorizationRecap';
+import { WeeklyTarget } from './views/teacher/WeeklyTarget';
+import { ManageStudentProgress } from './views/teacher/ManageStudentProgress';
 // Guardian Pages
-import { StudentReports } from './pages/guardian/GuardianReports';
-import { StudentExamResults } from './pages/guardian/GuardianExamResults';
-import { StudentProgress } from './pages/guardian/StudentProgress';
-import { StudentAchievements } from './pages/guardian/StudentAchievements';
-import { TeacherNotesList } from './pages/guardian/TeacherNotesList';
+import { StudentReports } from './views/guardian/GuardianReports';
+import { StudentExamResults } from './views/guardian/GuardianExamResults';
+import { StudentProgress } from './views/guardian/StudentProgress';
+import { StudentAchievements } from './views/guardian/StudentAchievements';
+import { TeacherNotesList } from './views/guardian/TeacherNotesList';
 // Superadmin Pages
-import { SuperAdminDashboard } from './pages/superadmin/SuperAdminDashboard';
-import { TenantManagement } from './pages/superadmin/TenantManagement';
-import { GlobalUserManagement } from './pages/superadmin/GlobalUserManagement';
-import { PlatformSettings } from './pages/superadmin/PlatformSettings';
-import { EmailSettings } from './pages/superadmin/EmailSettings';
-import { GlobalAuditLogs } from './pages/superadmin/GlobalAuditLogs';
+import { SuperAdminDashboard } from './views/superadmin/SuperAdminDashboard';
+import { TenantManagement } from './views/superadmin/TenantManagement';
+import { GlobalUserManagement } from './views/superadmin/GlobalUserManagement';
+import { PlatformSettings } from './views/superadmin/PlatformSettings';
+import { EmailSettings } from './views/superadmin/EmailSettings';
+import { GlobalAuditLogs } from './views/superadmin/GlobalAuditLogs';
 // Common Page
-import { Settings } from './pages/Settings';
+import { Settings } from './views/Settings';
 import { BookOpen, AlertTriangle, AlertCircle } from 'lucide-react';
 
 import { UserProfile, PageView, UserRole, Tenant } from './types';
@@ -711,7 +711,7 @@ const AppContent: React.FC = () => {
   const renderContent = () => {
     if (!user) return null;
     switch (currentPage) {
-      case 'sa-dashboard': return user.role === UserRole.SUPERADMIN ? <SuperAdminDashboard onNavigate={handleNavigation} /> : <div>Akses Ditolak</div>;
+      case 'sa-dashboard': return user.role === UserRole.SUPERADMIN ? <SuperAdminDashboard user={user} onNavigate={handleNavigation} /> : <div>Akses Ditolak</div>;
       case 'sa-tenants': return user.role === UserRole.SUPERADMIN ? <TenantManagement user={user} /> : <div>Akses Ditolak</div>;
       case 'sa-users': return user.role === UserRole.SUPERADMIN ? <GlobalUserManagement user={user} onImpersonate={handleImpersonate} /> : <div>Akses Ditolak</div>;
       case 'sa-audit-logs': return user.role === UserRole.SUPERADMIN ? <GlobalAuditLogs /> : <div>Akses Ditolak</div>;
@@ -725,7 +725,7 @@ const AppContent: React.FC = () => {
       case 'target-management': return (user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) ? <TargetManagement tenantId={user.tenant_id!} user={user} /> : <div>Akses Ditolak</div>;
       case 'audit-logs': return (user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) ? <AuditLogs tenantId={user.tenant_id!} /> : <div>Akses Ditolak</div>;
       case 'data-santri': return (user.role === UserRole.TEACHER || user.role === UserRole.SUPERVISOR || user.role === UserRole.ADMIN) ? <StudentDirectory user={user} tenantId={user.tenant_id!} /> : <div>Akses Ditolak</div>;
-      case 'input-hafalan': return user.role === UserRole.TEACHER ? <InputHafalan user={user} onSetUnsavedChanges={setHasUnsavedChanges} saveTrigger={saveTriggered} onSaveSuccess={proceedNavigation} isGlobalModalOpen={showUnsavedModal} /> : <div>Akses Ditolak</div>;
+      case 'input-hafalan': return user.role === UserRole.TEACHER ? <InputHafalan user={user} tenantId={user.tenant_id!} onSetUnsavedChanges={setHasUnsavedChanges} saveTrigger={saveTriggered} onSaveSuccess={proceedNavigation} isGlobalModalOpen={showUnsavedModal} /> : <div>Akses Ditolak</div>;
       case 'recap-hafalan': return (user.role === UserRole.SUPERVISOR || user.role === UserRole.ADMIN) ? <MemorizationRecap user={user} /> : <div>Akses Ditolak</div>;
       case 'reports': return user.role === UserRole.SANTRI ? <StudentReports user={user} /> : <div>Akses Ditolak</div>;
       case 'weekly-target':
@@ -733,6 +733,7 @@ const AppContent: React.FC = () => {
           return user.role === UserRole.TEACHER ? (
               <WeeklyTarget 
                   user={user} 
+                  tenantId={user.tenant_id!}
                   onSetUnsavedChanges={setHasUnsavedChanges} 
                   saveTrigger={saveTriggered} 
                   onSaveSuccess={proceedNavigation} 
@@ -759,7 +760,7 @@ const AppContent: React.FC = () => {
       case 'pencapaian': return user.role === UserRole.SANTRI ? <StudentAchievements user={user} /> : <div>Akses Ditolak</div>;
       case 'teacher-notes': return user.role === UserRole.SANTRI ? <TeacherNotesList user={user} /> : <div>Akses Ditolak</div>;
       case 'settings': return <Settings user={user} tenant={tenant} onProfileUpdate={handleProfileUpdate} onTenantUpdate={handleTenantUpdate} />;
-      default: return user.role === UserRole.SUPERADMIN ? <SuperAdminDashboard onNavigate={handleNavigation} /> : <Dashboard user={user} onNavigate={handleNavigation} />;
+      default: return user.role === UserRole.SUPERADMIN ? <SuperAdminDashboard user={user} onNavigate={handleNavigation} /> : <Dashboard user={user} onNavigate={handleNavigation} />;
     }
   };
   

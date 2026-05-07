@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { TenantManagement } from '@/pages/superadmin/TenantManagement';
+import { TenantManagement } from '@/views/superadmin/TenantManagement';
 import { useAuth } from '@/lib/AuthContext';
 import { UserRole } from '@/types';
 

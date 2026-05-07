@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { AuditLogs } from '@/pages/admin/AuditLogs';
+import { AuditLogs } from '@/views/admin/AuditLogs';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function AuditLogsPage() {

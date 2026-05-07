@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { StudentReports } from '@/pages/guardian/GuardianReports';
+import { StudentReports } from '@/views/guardian/GuardianReports';
 import { useAuth } from '@/lib/AuthContext';
 import { UserRole } from '@/types';
 

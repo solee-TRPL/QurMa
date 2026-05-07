@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { StudentProgress } from '@/pages/guardian/StudentProgress';
+import { StudentProgress } from '@/views/guardian/StudentProgress';
 import { useAuth } from '@/lib/AuthContext';
 import { UserRole } from '@/types';
 

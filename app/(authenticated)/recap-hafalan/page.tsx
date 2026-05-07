@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MemorizationRecap } from '@/pages/teacher/MemorizationRecap';
+import { MemorizationRecap } from '@/views/teacher/MemorizationRecap';
 import { useAuth } from '@/lib/AuthContext';
 import { UserRole } from '@/types';
 

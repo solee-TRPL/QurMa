@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { GlobalAuditLogs } from '@/pages/superadmin/GlobalAuditLogs';
+import { GlobalAuditLogs } from '@/views/superadmin/GlobalAuditLogs';
 import { useAuth } from '@/lib/AuthContext';
 import { UserRole } from '@/types';
 

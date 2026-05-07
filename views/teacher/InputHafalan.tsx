@@ -5,7 +5,7 @@ import { BookOpen, Search, User, Users, Calendar, Plus, ChevronRight, ChevronLef
 import { useNotification } from '../../lib/NotificationContext';
 import { useLoading } from '../../lib/LoadingContext';
 import { SURAH_DATA } from '../../lib/quranData';
-import { calculateLines, calculatePages, getNextAyah } from '@/lib/quranUtils';
+import { calculateLines, calculatePages, getNextAyah } from '../../lib/quranUtils';
 import { QURAN_NAME_TO_ID } from '../../lib/quranNameToId';
 
 interface InputHafalanProps {

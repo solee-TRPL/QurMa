@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { StudentManagement } from '@/pages/admin/GuardianManagement';
+import { StudentManagement } from '@/views/admin/GuardianManagement';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function StudentManagementPage() {

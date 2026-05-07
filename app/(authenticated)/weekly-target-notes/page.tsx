@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { WeeklyTarget } from '@/pages/teacher/WeeklyTarget';
+import { WeeklyTarget } from '@/views/teacher/WeeklyTarget';
 import { useAuth } from '@/lib/AuthContext';
 import { UserRole } from '@/types';
 
@@ -13,8 +13,9 @@ export default function WeeklyTargetNotesPage() {
   return (
     <WeeklyTarget 
       user={user} 
+      tenantId={user.tenant_id!}
       onSetUnsavedChanges={setHasUnsavedChanges} 
-      isNotesView={true} 
+      showNotesMode={true} 
       saveTrigger={saveTriggered}
       onSaveSuccess={proceedNavigation}
       isGlobalModalOpen={showUnsavedModal}

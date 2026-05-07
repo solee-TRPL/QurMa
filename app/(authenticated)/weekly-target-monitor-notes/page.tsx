@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { WeeklyTargetMonitor } from '@/pages/admin/WeeklyTargetMonitor';
+import { WeeklyTargetMonitor } from '@/views/admin/WeeklyTargetMonitor';
 import { useAuth } from '@/lib/AuthContext';
 import { UserRole } from '@/types';
 

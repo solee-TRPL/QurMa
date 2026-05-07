@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { InputHafalan } from '@/pages/teacher/InputHafalan';
+import { InputHafalan } from '@/views/teacher/InputHafalan';
 import { useAuth } from '@/lib/AuthContext';
 import { UserRole } from '@/types';
 

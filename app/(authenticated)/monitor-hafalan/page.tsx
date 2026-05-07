@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MonitorHafalan } from '@/pages/admin/MonitorHafalan';
+import { MonitorHafalan } from '@/views/admin/MonitorHafalan';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function MonitorHafalanPage() {

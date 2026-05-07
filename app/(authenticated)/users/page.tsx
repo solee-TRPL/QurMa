@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { UserManagement } from '@/pages/admin/UserManagement';
+import { UserManagement } from '@/views/admin/UserManagement';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function UsersPage() {

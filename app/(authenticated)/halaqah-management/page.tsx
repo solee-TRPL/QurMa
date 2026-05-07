@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { HalaqahManagement } from '@/pages/admin/HalaqahManagement';
+import { HalaqahManagement } from '@/views/admin/HalaqahManagement';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function HalaqahManagementPage() {
