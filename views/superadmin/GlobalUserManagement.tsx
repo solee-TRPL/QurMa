@@ -322,9 +322,9 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
             <table className="w-full table-fixed divide-y divide-slate-100 border-separate border-spacing-0">
             <thead>
                 <tr className="bg-white">
-                <th className="w-[35px] min-w-[35px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-white z-30 px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100">NO</th>
-                <th className="w-[150px] min-w-[150px] lg:w-[250px] lg:min-w-[250px] sticky left-[35px] lg:left-[45px] bg-white z-30 px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">PENGGUNA</th>
-                <th className="w-[120px] min-w-[120px] px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">LEVEL / ROLE</th>
+                <th className="hidden lg:table-cell w-[35px] min-w-[35px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-white z-30 px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100">NO</th>
+                <th className="w-[130px] min-w-[130px] lg:w-[250px] lg:min-w-[250px] sticky left-0 lg:left-[45px] bg-white z-30 px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">PENGGUNA</th>
+                <th className="w-[120px] min-w-[120px] px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">ROLE</th>
                 <th className="w-[180px] min-w-[180px] px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">INSTITUSI</th>
                 <th className="w-[200px] min-w-[200px] px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">EMAIL ADDRESS</th>
                 <th className="w-[100px] min-w-[100px] px-4 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-slate-100 bg-white">AKSI</th>
@@ -333,13 +333,13 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
             <tbody key={currentPage} className="bg-white divide-y divide-slate-50 animate-fade-in">
                 {paginatedUsers.map((u, index) => (
                 <tr key={u.id} className="group transition-colors hover:bg-slate-50/30">
-                    <td className="sticky left-0 bg-white px-2 py-4 text-[10.5px] font-black text-slate-400 text-center border-r-2 border-b border-slate-100 z-10 transition-colors uppercase">
+                    <td className="hidden lg:table-cell sticky left-0 bg-white px-2 py-4 text-[10.5px] font-black text-slate-400 text-center border-r-2 border-b border-slate-100 z-10 transition-colors uppercase">
                         {String(index + 1 + (currentPage - 1) * itemsPerPage)}
                     </td>
-                    <td className="sticky left-[35px] lg:left-[45px] bg-white px-4 py-4 border-r-2 border-b border-slate-100 z-10 transition-colors">
+                    <td className="sticky left-0 lg:left-[45px] bg-white px-4 py-4 border-r-2 border-b border-slate-100 z-10 transition-colors">
                         <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className="text-[11px] font-bold text-slate-800 group-hover:text-jade-600 transition-colors truncate max-w-[120px] lg:max-w-none capitalize">{u.full_name}</span>
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter truncate max-w-[120px] lg:max-w-none opacity-60 sm:hidden">{u.email}</span>
+                            <span className="text-[11px] font-bold text-slate-800 group-hover:text-jade-600 transition-colors truncate max-w-[110px] lg:max-w-none capitalize">{u.full_name}</span>
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter truncate max-w-[110px] lg:max-w-none opacity-60 sm:hidden">{u.email}</span>
                         </div>
                     </td>
                     <td className="px-4 py-4 border-r-2 border-b border-slate-100">
@@ -348,8 +348,8 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                             u.role === UserRole.ADMIN ? 'bg-jade-50 text-jade-600 border-jade-100' : 
                             u.role === UserRole.TEACHER ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
                             'bg-blue-50 text-blue-600 border-blue-100'}`}>
-                            {u.role === UserRole.ADMIN ? 'Admin Sekolah' : 
-                             u.role === UserRole.TEACHER ? 'Ustadz / Guru' :
+                            {u.role === UserRole.ADMIN ? 'Admin' : 
+                             u.role === UserRole.TEACHER ? 'Ustadz' :
                              u.role === UserRole.SANTRI ? 'Santri' :
                              u.role === UserRole.SUPERVISOR ? 'Supervisor' :
                              u.role === UserRole.SUPERADMIN ? 'Superadmin' : (u.role as string).replace('_', ' ')}
@@ -393,21 +393,19 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
 
         {/* PAGINATION CONTROLS */}
         {!loading && filteredUsers.length > 0 && (
-            <div className="bg-[#F8FAFC] border-t border-slate-100 px-6 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <select 
-                            value={itemsPerPage}
-                            onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                            className="bg-white border-2 border-slate-100 rounded-xl px-3 py-1.5 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-emerald-50/50 cursor-pointer shadow-sm transition-all"
-                        >
-                            {[10, 25, 50, 100].map(val => (
-                                <option key={val} value={val}>{val}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="hidden sm:block w-px h-6 bg-slate-200" />
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-tight leading-none whitespace-nowrap">
+            <div className="bg-[#F8FAFC] border-t border-slate-100 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 lg:gap-4">
+                <div className="flex items-center gap-2 lg:gap-4">
+                    <select 
+                        value={itemsPerPage}
+                        onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                        className="bg-white border-2 border-slate-100 rounded-xl px-2 md:px-3 py-1.5 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-emerald-50/50 cursor-pointer shadow-sm transition-all h-8"
+                    >
+                        {[10, 25, 50, 100].map(val => (
+                            <option key={val} value={val}>{val}</option>
+                        ))}
+                    </select>
+                    <div className="hidden lg:block w-px h-6 bg-slate-200" />
+                    <p className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-tight leading-none whitespace-nowrap">
                         <span className="hidden sm:inline">DATA</span> {((currentPage - 1) * itemsPerPage + 1)}-{Math.min(currentPage * itemsPerPage, filteredUsers.length)} <span className="hidden sm:inline text-slate-300">/</span> <span className="text-emerald-600 ml-0.5">{filteredUsers.length}</span>
                     </p>
                 </div>
@@ -416,12 +414,12 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                     <button 
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        className={`p-2 rounded-xl border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
+                        className={`p-1.5 lg:p-2 rounded-lg lg:rounded-xl border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
                     >
-                        <ChevronRight className="w-4 h-4 rotate-180" />
+                        <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4 rotate-180" />
                     </button>
                     
-                    <div className="flex items-center gap-1 px-2">
+                    <div className="flex items-center gap-0.5 lg:gap-1 px-1 lg:px-2">
                         {[...Array(totalPages)].map((_, i) => {
                             const pNum = i + 1;
                             if (totalPages > 5) {
@@ -435,7 +433,7 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                                 <button 
                                     key={pNum}
                                     onClick={() => setCurrentPage(pNum)}
-                                    className={`w-9 h-9 rounded-xl text-[10px] font-black transition-all active:scale-95 ${currentPage === pNum ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200 border-2 border-emerald-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600 border-2 border-transparent'}`}
+                                    className={`w-7 h-7 lg:w-9 lg:h-9 rounded-lg lg:rounded-xl text-[9px] lg:text-[10px] font-black transition-all active:scale-95 ${currentPage === pNum ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200 border-2 border-emerald-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600 border-2 border-transparent'}`}
                                 >
                                     {pNum}
                                 </button>
@@ -446,9 +444,9 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                     <button 
                         disabled={currentPage === totalPages}
                         onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                        className={`p-2 rounded-xl border-2 transition-all active:scale-90 ${currentPage === totalPages ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
+                        className={`p-1.5 lg:p-2 rounded-lg lg:rounded-xl border-2 transition-all active:scale-90 ${currentPage === totalPages ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
                     >
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
                     </button>
                 </div>
             </div>

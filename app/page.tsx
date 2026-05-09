@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { BookOpen, ShieldCheck, Activity, Users, Settings, Cloud, BarChart, FileText, MonitorPlay, ChevronRight, Lock, Target, CheckCircle, Star, CheckSquare, Facebook, Instagram, Youtube, Twitter, MessageCircle, AlertCircle } from 'lucide-react';
+import { BookOpen, ShieldCheck, Activity, Users, Settings, Cloud, BarChart, FileText, MonitorPlay, ChevronRight, Lock, Target, CheckCircle, Star, CheckSquare, Facebook, Instagram, Youtube, Twitter, MessageCircle, AlertCircle, Menu, X } from 'lucide-react';
 import { getAllTenants } from '@/services/data/tenantService';
 import { Tenant } from '@/types';
 
@@ -12,6 +12,7 @@ export default function LandingPage() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [activeAccordion, setActiveAccordion] = useState<number | null>(1);
     const [activeWhyQurMa, setActiveWhyQurMa] = useState<number | null>(0);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const onLoginClick = () => {
         router.push('/login');
@@ -96,33 +97,38 @@ export default function LandingPage() {
             <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
                 isScrolled 
                 ? 'bg-white/90 backdrop-blur-md border-b border-slate-200 py-3 shadow-md' 
-                : 'bg-transparent py-5 border-b border-white/5'
+                : 'py-5 border-b border-white/5'
             }`}>
                 <div className="container mx-auto px-8 md:px-16 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <img src="/images/qurma-logo.png" alt="QurMa Logo" className="w-12 h-12 rounded-2xl shadow-lg shadow-black/5" />
+                    <div className="flex items-center gap-2 lg:gap-3">
+                        <img src="/images/qurma-logo.png" alt="QurMa Logo" className="w-10 h-10 lg:w-12 lg:h-12 rounded-2xl shadow-lg shadow-black/5" />
                         <div>
-                            <h1 className={`text-xl font-black tracking-tight leading-none uppercase transition-colors duration-300 ${isScrolled ? 'text-slate-800' : 'text-white'}`}>QurMa</h1>
-                            <p className={`text-[10px] font-bold uppercase tracking-widest mt-0.5 transition-colors duration-300 ${isScrolled ? 'text-jade-600' : 'text-primary-500'}`}>Management Platform</p>
+                            <h1 className={`text-lg lg:text-xl font-black tracking-tight leading-none uppercase transition-colors duration-300 ${isScrolled ? 'text-slate-800' : 'text-white'}`}>QurMa</h1>
+                            <p className={`text-[8px] lg:text-[10px] font-bold uppercase tracking-widest mt-0.5 transition-colors duration-300 ${isScrolled ? 'text-jade-600' : 'text-primary-500'}`}>Management Platform</p>
                         </div>
                     </div>
                     
-                    <div className="hidden md:flex items-center gap-8">
-                        {['Tentang Kami', 'Portofolio', 'FAQ'].map((item) => (
-                            <button 
-                                key={item}
-                                className={`text-xs font-black uppercase tracking-widest transition-all duration-300 ${
-                                    isScrolled 
-                                    ? 'text-slate-600 hover:text-jade-600' 
-                                    : 'text-white/80 hover:text-white hover:scale-105'
-                                }`}
-                            >
-                                {item}
-                            </button>
-                        ))}
+                    <div className="flex items-center gap-2 lg:gap-8">
+                        {/* Desktop Menu */}
+                        <div className="hidden md:flex items-center gap-8">
+                            {['Tentang Kami', 'Portofolio', 'FAQ'].map((item) => (
+                                <button 
+                                    key={item}
+                                    className={`text-xs font-black uppercase tracking-widest transition-all duration-300 ${
+                                        isScrolled 
+                                        ? 'text-slate-600 hover:text-jade-600' 
+                                        : 'text-white/80 hover:text-white hover:scale-105'
+                                    }`}
+                                >
+                                    {item}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Login Button - Always Visible */}
                         <button 
                             onClick={onLoginClick} 
-                            className={`h-10 px-6 font-black text-[10px] uppercase tracking-widest rounded-full transition-all duration-300 ${
+                            className={`h-9 lg:h-10 px-4 lg:px-6 font-black text-[9px] lg:text-[10px] uppercase tracking-widest rounded-full transition-all duration-300 ${
                                 isScrolled 
                                 ? 'bg-jade-600 text-white shadow-lg shadow-jade-600/30 hover:bg-jade-700' 
                                 : 'bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white hover:text-jade-700'
@@ -130,6 +136,41 @@ export default function LandingPage() {
                         >
                             Login
                         </button>
+
+                        {/* Hamburger Menu - Mobile Only */}
+                        <button 
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            className={`md:hidden transition-all duration-300 ${
+                                isScrolled 
+                                ? 'p-2 text-slate-800 hover:text-jade-600' 
+                                : 'p-2 lg:p-2.5 rounded-xl lg:rounded-2xl bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white/20 shadow-lg shadow-black/5'
+                            }`}
+                        >
+                            {isMenuOpen ? <X className="w-5 h-5 lg:w-6 lg:h-6" /> : <Menu className="w-5 h-5 lg:w-6 lg:h-6" />}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Mobile Menu Overlay */}
+                <div className={`md:hidden absolute top-full left-0 right-0 transition-all duration-500 overflow-hidden shadow-2xl ${isMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'} ${
+                    isScrolled 
+                    ? 'bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-md' 
+                    : 'bg-[#2D2419]/95 backdrop-blur-xl border-b border-white/5'
+                }`}>
+                    <div className="flex flex-col px-8 py-8 gap-0">
+                        {['Tentang Kami', 'Portofolio', 'FAQ'].map((item) => (
+                            <button 
+                                key={item}
+                                onClick={() => setIsMenuOpen(false)}
+                                className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors py-5 border-b last:border-0 text-left ${
+                                    isScrolled 
+                                    ? 'text-slate-600 hover:text-jade-600 border-slate-50' 
+                                    : 'text-white/80 hover:text-white border-white/5'
+                                }`}
+                            >
+                                {item}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </nav>
@@ -139,59 +180,21 @@ export default function LandingPage() {
                 
                 <div className="container mx-auto px-8 md:px-16 relative z-10">
                     <div className="max-w-3xl space-y-4 animate-in fade-in slide-in-from-bottom-10 duration-1000">
-                        <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-[1.1]">
-                            Aplikasi Manajemen <br/>
+                        <h2 className="text-[28px] md:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-[1.2] md:leading-[1.1]">
+                            Aplikasi Manajemen <br className="hidden sm:block"/>
                             Tahfidz <span className="bg-gradient-to-b from-primary-200 via-primary-500 to-primary-700 bg-clip-text text-transparent uppercase drop-shadow-[0_2px_2px_rgba(0,0,0,0.3)]">Al Qur'an</span>
                         </h2>
-                        <p className="text-white/90 text-base md:text-lg font-medium leading-relaxed max-w-xl">
-                            Tingkatkan program Tahfidz dengan menggunakan QurMa. <br />Pantau, sinkron data realtime dan kontrol hafalan dengan mudah dan efektif.
+                        <p className="text-white/90 text-[13px] md:text-lg font-medium leading-relaxed max-w-xl">
+                            Tingkatkan program Tahfidz dengan menggunakan QurMa. <br className="hidden sm:block"/>Pantau, sinkron data realtime dan kontrol hafalan dengan mudah dan efektif.
                         </p>
-                        <div className="flex items-center gap-4 pt-2">
-                            <button className="h-12 px-8 bg-primary-500 text-amber-950 font-black uppercase text-[11px] tracking-widest hover:bg-primary-400 shadow-xl shadow-primary-500/20 hover:scale-[1.05] transition-all active:scale-95">BACA INFO</button>
-                            <button onClick={onLoginClick} className="h-12 px-8 font-black text-[11px] uppercase tracking-widest bg-jade-600 text-white shadow-xl shadow-jade-600/20 hover:bg-jade-700 hover:scale-[1.05] transition-all active:scale-95">LOGIN SEKARANG</button>
+                        <div className="flex flex-row items-center gap-2 sm:gap-4 pt-4 sm:pt-2">
+                            <button className="h-10 sm:h-12 px-4 sm:px-8 bg-primary-500 text-amber-950 font-black uppercase text-[9px] sm:text-[11px] tracking-widest hover:bg-primary-400 shadow-xl shadow-primary-500/20 hover:scale-[1.05] transition-all active:scale-95 whitespace-nowrap">BACA INFO</button>
+                            <button onClick={onLoginClick} className="h-10 sm:h-12 px-4 sm:px-8 font-black text-[9px] sm:text-[11px] uppercase tracking-widest bg-jade-600 text-white shadow-xl shadow-jade-600/20 hover:bg-jade-700 hover:scale-[1.05] transition-all active:scale-95 whitespace-nowrap">LOGIN SEKARANG</button>
                         </div>
                     </div>
                 </div>
             </main>
 
-            <section className="py-24 bg-[#F9FAFB] border-t border-slate-200 overflow-hidden">
-                <div className="container mx-auto px-8 md:px-16 w-full">
-                    <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-20">
-                        <div className="md:w-1/2 space-y-10">
-                            <div className="flex flex-col items-start">
-                                <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-800 tracking-tight uppercase text-left">
-                                    Kenapa Sistem Ini <span className="text-jade-600">Penting?</span>
-                                </h2>
-                            </div>
-
-                            <div className="space-y-4">
-                                {[
-                                    "Target tidak jelas",
-                                    "Muraja’ah tidak terkontrol",
-                                    "Progress sulit dipantau",
-                                    "Orang tua tidak terlibat"
-                                ].map((item, i) => (
-                                    <div key={i} className="flex items-center gap-4 bg-white py-4 px-5 rounded-2xl border border-slate-300 shadow-sm transition-all hover:border-jade-400 hover:bg-jade-50/20 group">
-                                        <h4 className="text-base lg:text-lg font-black text-slate-800 uppercase tracking-tight">{item}</h4>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="md:w-1/2 relative">
-                            <div className="absolute -inset-10 bg-jade-600/10 rounded-full blur-[80px] -z-10" />
-                            <div className="relative group">
-                                <div className="absolute -inset-1 bg-gradient-to-r from-jade-600 to-primary-500 rounded-[40px] blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
-                                <img 
-                                    src="/images/tahfidz_mockup.png" 
-                                    alt="Tahfidz Digital Mockup" 
-                                    className="relative w-full h-auto rounded-[32px] shadow-2xl border-4 border-white transform hover:scale-[1.02] transition-all duration-500" 
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
             <section className="py-24 bg-white">
                 <div className="container mx-auto px-8 md:px-16 w-full">

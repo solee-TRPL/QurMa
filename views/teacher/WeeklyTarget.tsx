@@ -614,7 +614,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                         {!showNotes ? (
                           <>
                             <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-jade-50/10 min-w-[45px] lg:min-w-[60px]">Juz</th>
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-jade-50/10 min-w-[55px] lg:min-w-[80px]">Hal</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-jade-50/10 min-w-[55px] lg:min-w-[80px]">Halaman</th>
                             {showAtm && (
                                 <>
                                     <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-amber-500 uppercase text-center border-b border-r border-slate-100 bg-blue-50/10 min-w-[55px] lg:min-w-[80px]">Manzil</th>
@@ -697,7 +697,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                                 }
                                             }} 
                                             className="w-full text-center text-[9px] lg:text-[10px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-jade-300 rounded h-8 appearance-none" 
-                                            placeholder="Hal" 
+                                            placeholder="Halaman" 
                                         />
                                     </td>
                                     {showAtm && (
@@ -762,7 +762,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                                     className="w-8 lg:w-10 text-center text-[9px] lg:text-[10px] font-black text-slate-500 tracking-tight bg-transparent border-none focus:ring-0 rounded h-7 appearance-none p-0 cursor-not-allowed" 
                                                     placeholder="0"
                                                 />
-                                                <span className="text-[7.5px] lg:text-[8px] font-extrabold text-emerald-400 uppercase mr-0.5 lg:mr-1">Hal</span>
+                                                <span className="text-[7.5px] lg:text-[8px] font-extrabold text-emerald-400 uppercase mr-0.5 lg:mr-1">Halaman</span>
                                             </div>
                                         </div>
                                     </td>
@@ -827,7 +827,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                                     className="w-8 lg:w-10 text-center text-[9px] lg:text-[10px] font-black text-slate-500 tracking-tight bg-transparent border-none focus:ring-0 rounded h-7 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 outline-none cursor-not-allowed" 
                                                     placeholder="0"
                                                 />
-                                                <span className="text-[7.5px] lg:text-[8px] font-extrabold text-emerald-400 uppercase mr-0.5 lg:mr-1">Hal</span>
+                                                <span className="text-[7.5px] lg:text-[8px] font-extrabold text-emerald-400 uppercase mr-0.5 lg:mr-1">Halaman</span>
                                             </div>
                                         </div>
                                     </td>

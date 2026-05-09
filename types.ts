@@ -48,6 +48,7 @@ export interface UserProfile {
   tenant_id: string | null; // Superadmin has null tenant_id
   avatar_url?: string;
   whatsapp_number?: string;
+  nip?: string;
   initial_password?: string; // Backup for manual reset (no-email env)
   student_name?: string; // For UI display
   tenant_name?: string; // For Superadmin UI display

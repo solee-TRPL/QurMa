@@ -115,9 +115,9 @@ export const GuardianDirectory: React.FC<{ tenantId: string, user: UserProfile }
             {/* Guardian List Container */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden max-w-7xl mx-auto">
                 {loading ? (
-                    <div className="p-12 text-center text-slate-400">
-                        <div className="w-8 h-8 border-4 border-slate-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-2"></div>
-                        Memuat data...
+                    <div className="p-16 flex flex-col items-center justify-center">
+                        <div className="w-12 h-12 border-4 border-jade-100 border-t-jade-600 rounded-full animate-spin mb-4"></div>
+                        <p className="text-[10px] font-black text-jade-600 uppercase tracking-widest animate-pulse">Memuat data...</p>
                     </div>
                 ) : filteredGuardians.length > 0 ? (
                     <div className="divide-y divide-slate-100">

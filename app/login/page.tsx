@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { signIn, signUp } from '@/services/authService';
 import { supabase } from '@/lib/supabase';
 import { useNotification } from '@/lib/NotificationContext';
-import { GraduationCap, Mail, Lock, ArrowRight, Zap, ArrowLeft } from 'lucide-react';
+import { GraduationCap, Mail, Lock, ArrowRight, Zap, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { getSuperAdminStats } from '@/services/dataService';
 import { SuperAdminStats, UserRole } from '@/types';
 
@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [stats, setStats] = useState<SuperAdminStats | null>(null);
   const { addNotification } = useNotification();
   const formRef = useRef<HTMLFormElement>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     getSuperAdminStats().then(s => {
@@ -175,7 +176,7 @@ export default function LoginPage() {
       <div className="flex-1 lg:w-1/2 flex items-center justify-center p-8 bg-white relative">
         <button 
             onClick={handleBackToHome} 
-            className="absolute top-6 right-6 lg:left-6 lg:right-auto p-2.5 text-slate-400 hover:bg-slate-50 hover:text-jade-600 rounded-full transition-all group flex items-center gap-2 z-50 border border-transparent hover:border-slate-100"
+            className="absolute top-6 left-6 p-2.5 text-slate-400 hover:bg-slate-50 hover:text-jade-600 rounded-full transition-all group flex items-center gap-2 z-50 border border-transparent hover:border-slate-100"
             title="Kembali ke Beranda"
         >
             <ArrowLeft className="w-5 h-5" />
@@ -241,11 +242,23 @@ export default function LoginPage() {
                   </div>
                   <input 
                       name="password"
-                      type="password" 
+                      type={showPassword ? 'text' : 'password'} 
                       placeholder="••••••••••••"
                       autoComplete="new-password"
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl text-slate-800 font-bold text-xs focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-jade-100/20 outline-none transition-all placeholder:text-slate-300 shadow-sm"
+                      className="w-full pl-10 pr-12 py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl text-slate-800 font-bold text-xs focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-jade-100/20 outline-none transition-all placeholder:text-slate-300 shadow-sm"
                   />
+                  <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 text-slate-500 hover:text-jade-600 transition-all z-30 flex items-center justify-center rounded-xl hover:bg-slate-50"
+                  >
+                      {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-slate-400 group-focus-within:text-jade-600 transition-colors" />
+                      ) : (
+                          <Eye className="h-4 w-4 text-slate-400 group-focus-within:text-jade-600 transition-colors" />
+                      )}
+                  </button>
                 </div>
               </div>
 

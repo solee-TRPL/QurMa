@@ -103,6 +103,17 @@ export const Layout: React.FC<LayoutProps> = ({
         if (user.role === UserRole.SANTRI) {
             const stats = await getGuardianStats(user.id);
             if (stats) setTotalHafalan(stats.totalJuz.toString());
+
+            // Also fetch halaqah for student
+            try {
+                const { data: student } = await supabase.from('students').select('halaqah_id').eq('id', user.id).maybeSingle();
+                const sid = student?.halaqah_id || (await supabase.from('students').select('halaqah_id').eq('parent_id', user.id).maybeSingle()).data?.halaqah_id;
+                
+                if (sid) {
+                    const { data: halaqah } = await supabase.from('halaqah_classes').select('name').eq('id', sid).maybeSingle();
+                    if (halaqah) setHalaqahName(halaqah.name);
+                }
+            } catch (err) {}
         }
 
         if (user.role === UserRole.TEACHER && user.tenant_id) {
@@ -413,186 +424,171 @@ export const Layout: React.FC<LayoutProps> = ({
       </aside>
 
       <div className={`lg:pl-64 flex flex-col min-h-screen transition-all duration-300`}>
-        <header className={`fixed right-0 left-0 lg:left-64 z-50 h-16 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-4 lg:px-8 shrink-0 transition-all shadow-sm ${topOffsetClass}`}>
-            <div className="flex items-center gap-2 sm:gap-4">
-                <button className="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors" onClick={() => setIsSidebarOpen(true)}>
-                    <Menu className="w-6 h-6" />
-                </button>
-                
-                {/* HALAQAH NAME FOR TEACHER ROLE - MOVED TO LEFT FOR MOBILE VISIBILITY, HIDDEN ON DESKTOP HERE */}
-                {user.role === UserRole.TEACHER && halaqahName && (
-                    <div className="md:hidden flex bg-jade-50/50 px-2.5 py-1 rounded-lg border border-jade-100 shadow-sm animate-in fade-in slide-in-from-left-4 duration-500">
-                        <div className="flex flex-col items-start justify-center">
-                            <span className="text-[6px] md:text-[7px] text-jade-400 uppercase tracking-widest font-black leading-none mb-0.5 md:mb-1 opacity-70">
-                                Halaqah
-                            </span>
-                            <span className="text-[9px] md:text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none">
-                                {halaqahName}
-                            </span>
-                        </div>
-                    </div>
-                )}
+        <header className={`fixed right-0 left-0 lg:left-64 z-50 h-16 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center px-4 lg:px-8 shrink-0 transition-all shadow-sm gap-1.5 sm:gap-3 ${topOffsetClass}`}>
+            
+            {/* Hamburger */}
+            <button className="lg:hidden p-1.5 sm:p-2 -ml-1.5 sm:-ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors order-1 shrink-0" onClick={() => setIsSidebarOpen(true)}>
+                <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
 
-                <div className="hidden md:block">
-                    <h2 className="text-base font-black text-slate-900 uppercase tracking-tight leading-none">{title}</h2>
-                    {subtitle && <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-80">{subtitle}</p>}
-                </div>
+            {/* Title (Desktop) */}
+            <div className="hidden md:block order-2 mr-auto shrink-0">
+                <h2 className="text-base font-black text-slate-900 uppercase tracking-tight leading-none">{title}</h2>
+                {subtitle && <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-80">{subtitle}</p>}
             </div>
 
-            <div className="flex items-center gap-3 ml-auto relative">
-                 {/* NOTIFICATION BELL - HIDDEN FOR ADMIN & SUPERADMIN */}
-                 {user.role !== UserRole.ADMIN && user.role !== UserRole.SUPERADMIN && (
-                    <div className="relative" ref={notifRef}>
-                        <button 
-                            onClick={() => {
-                                setIsNotificationsOpen(!isNotificationsOpen);
-                                if (!isNotificationsOpen && unreadCount > 0) {
-                                    markNotificationsAsRead(user.id);
-                                    // Optimistically clear unread locally
-                                    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-                                }
-                            }}
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all border ${
-                                isNotificationsOpen 
-                                ? 'bg-jade-50 text-jade-600 border-jade-100 shadow-inner' 
-                                : 'bg-white text-jade-600 border-slate-100 hover:bg-jade-50 hover:text-jade-700 shadow-sm'
-                            }`}
-                        >
-                            <Bell className={`w-5 h-5 ${unreadCount > 0 ? 'animate-bounce' : ''}`} />
-                            {unreadCount > 0 && (
-                                <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-black rounded-full flex items-center justify-center ring-2 ring-white">
-                                    {unreadCount > 9 ? '9+' : unreadCount}
-                                </span>
-                            )}
-                        </button>
+            {/* TOTAL HAFALAN FOR SANTRI */}
+            {user.role === UserRole.SANTRI && (
+                <div className="flex bg-jade-50/50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl border border-jade-100 shadow-sm animate-in fade-in slide-in-from-left-4 duration-500 order-2 lg:order-4 shrink-0">
+                    <div className="flex flex-col items-start justify-center">
+                        <span className="text-[6px] sm:text-[7px] text-jade-400 uppercase tracking-widest font-black leading-none mb-0.5 sm:mb-1 opacity-70">
+                            Hafalan
+                        </span>
+                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none">
+                            {totalHafalan || '0'} JUZ
+                        </span>
+                    </div>
+                </div>
+            )}
 
-                        {/* Notification Dropdown */}
-                        {isNotificationsOpen && (
-                            <div className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-20 sm:top-full mt-0 sm:mt-4 w-auto sm:w-80 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 ring-1 ring-slate-900/5 z-[110] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top sm:origin-top-right">
-                                <div className="p-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                                    <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Pemberitahuan</h4>
-                                    <span className="text-[9px] font-black bg-jade-50 text-jade-600 px-2 py-0.5 rounded-full">Terbaru</span>
-                                </div>
+            {/* HALAQAH NAME FOR TEACHER & SANTRI ROLE */}
+            {(user.role === UserRole.TEACHER || user.role === UserRole.SANTRI) && halaqahName && (
+                <div className="flex bg-jade-50/50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl border border-jade-100 shadow-sm animate-in fade-in slide-in-from-right-4 duration-500 order-3 lg:order-5 shrink-0">
+                    <div className="flex flex-col items-start justify-center">
+                        <span className="text-[6px] sm:text-[7px] text-jade-400 uppercase tracking-widest font-black leading-none mb-0.5 sm:mb-1 opacity-70 whitespace-nowrap">
+                            Halaqah
+                        </span>
+                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none whitespace-nowrap">
+                            {halaqahName}
+                        </span>
+                    </div>
+                </div>
+            )}
 
-                                <div className="max-h-[255px] overflow-y-auto no-scrollbar">
-                                    {notifications.length > 0 ? (
-                                        notifications.slice(0, 10).map((notif) => (
-                                            <div 
-                                                key={notif.id} 
-                                                onClick={() => handleNotificationClick(notif)}
-                                                className={`p-4 border-b border-slate-50 hover:bg-slate-50/80 transition-all flex gap-3.5 group cursor-pointer relative ${!notif.is_read ? 'bg-jade-50/20' : ''}`}
-                                            >
-                                                {!notif.is_read && (
-                                                    <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
-                                                )}
-                                                <div className={`w-10 h-10 rounded-2xl shrink-0 flex items-center justify-center transition-transform group-hover:scale-105 duration-300 ${
-                                                    notif.type === 'success' ? 'bg-emerald-50 text-emerald-600 shadow-sm shadow-emerald-100' :
-                                                    notif.type === 'error' ? 'bg-rose-50 text-rose-600 shadow-sm shadow-rose-100' :
-                                                    'bg-jade-50 text-jade-600 shadow-sm shadow-primary-100'
-                                                }`}>
-                                                    {notif.title.includes('Hafalan') ? <BookOpen className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center justify-between gap-2 mb-1">
-                                                        <p className="text-[11px] font-black text-slate-900 leading-none truncate">{notif.title}</p>
-                                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter shrink-0">{formatTime(notif.created_at)}</span>
-                                                    </div>
-                                                    <p className="text-[10.5px] font-medium text-slate-500 leading-relaxed line-clamp-2">
-                                                        {renderFormattedMessage(notif.message)}
-                                                    </p>
-                                                </div>
-                                                <div className="self-center opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
-                                                    <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
-                                                </div>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className="py-12 px-6 text-center">
-                                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                                <Bell className="w-6 h-6 text-slate-300" />
-                                            </div>
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Belum ada pemberitahuan</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+            {/* WEEKLY DATE FOR SANTRI ROLE */}
+            {user.role === UserRole.SANTRI && (
+                <div className="hidden xl:flex bg-jade-50/50 px-3 py-1.5 rounded-xl border border-jade-100 shadow-sm animate-in fade-in slide-in-from-right-4 duration-500 order-6 shrink-0">
+                    <div className="flex flex-col items-start justify-center">
+                        <span className="text-[7px] text-jade-400 uppercase tracking-widest font-black leading-none mb-1 opacity-70">
+                            Pekan Ini
+                        </span>
+                        <span className="text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none">
+                            {(() => {
+                                const today = new Date();
+                                const day = today.getDay();
+                                const diffToMonday = (day === 0 ? -6 : 1) - day;
+                                const monday = new Date(today);
+                                monday.setDate(today.getDate() + diffToMonday);
+                                const friday = new Date(monday);
+                                friday.setDate(monday.getDate() + 4);
+                                const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short' };
+                                return `${monday.toLocaleDateString('id-ID', options)} - ${friday.toLocaleDateString('id-ID', options)}`.toUpperCase();
+                            })()}
+                        </span>
+                    </div>
+                </div>
+            )}
+
+            {/* NOTIFICATION BELL */}
+            {user.role !== UserRole.ADMIN && user.role !== UserRole.SUPERADMIN && (
+                <div className="relative order-4 lg:order-3 shrink-0" ref={notifRef}>
+                    <button 
+                        onClick={() => {
+                            setIsNotificationsOpen(!isNotificationsOpen);
+                            if (!isNotificationsOpen && unreadCount > 0) {
+                                markNotificationsAsRead(user.id);
+                                setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+                            }
+                        }}
+                        className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all border ${
+                            isNotificationsOpen 
+                            ? 'bg-jade-50 text-jade-600 border-jade-100 shadow-inner' 
+                            : 'bg-white text-jade-600 border-slate-100 hover:bg-jade-50 hover:text-jade-700 shadow-sm'
+                        }`}
+                    >
+                        <Bell className={`w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 ${unreadCount > 0 ? 'animate-bounce' : ''}`} />
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-0.5 -right-0.5 sm:top-0.5 sm:right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-rose-500 text-white text-[7px] sm:text-[8px] font-black rounded-full flex items-center justify-center ring-2 ring-white">
+                                {unreadCount > 9 ? '9+' : unreadCount}
+                            </span>
                         )}
-                    </div>
-                 )}
+                    </button>
 
-                {/* TOTAL HAFALAN FOR SANTRI - MINIMALIST STYLE */}
-                {user.role === UserRole.SANTRI && (
-                    <div className="hidden sm:flex bg-jade-50/50 px-3 py-1.5 rounded-xl border border-jade-100 shadow-sm animate-in fade-in slide-in-from-right-4 duration-500 mx-1">
-                        <div className="flex flex-col items-start justify-center">
-                            <span className="text-[7px] text-jade-400 uppercase tracking-widest font-black leading-none mb-1 opacity-70">
-                                Jumlah Hafalan
-                            </span>
-                            <span className="text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none">
-                                {totalHafalan || '0'} JUZ
-                            </span>
+                    {/* Notification Dropdown */}
+                    {isNotificationsOpen && (
+                        <div className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-20 sm:top-full mt-0 sm:mt-4 w-auto sm:w-80 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 ring-1 ring-slate-900/5 z-[110] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top sm:origin-top-right">
+                            <div className="p-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                                <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Pemberitahuan</h4>
+                                <span className="text-[9px] font-black bg-jade-50 text-jade-600 px-2 py-0.5 rounded-full">Terbaru</span>
+                            </div>
+
+                            <div className="max-h-[255px] overflow-y-auto no-scrollbar">
+                                {notifications.length > 0 ? (
+                                    notifications.slice(0, 10).map((notif) => (
+                                        <div 
+                                            key={notif.id} 
+                                            onClick={() => handleNotificationClick(notif)}
+                                            className={`p-4 border-b border-slate-50 hover:bg-slate-50/80 transition-all flex gap-3.5 group cursor-pointer relative ${!notif.is_read ? 'bg-jade-50/20' : ''}`}
+                                        >
+                                            {!notif.is_read && (
+                                                <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
+                                            )}
+                                            <div className={`w-10 h-10 rounded-2xl shrink-0 flex items-center justify-center transition-transform group-hover:scale-105 duration-300 ${
+                                                notif.type === 'success' ? 'bg-emerald-50 text-emerald-600 shadow-sm shadow-emerald-100' :
+                                                notif.type === 'error' ? 'bg-rose-50 text-rose-600 shadow-sm shadow-rose-100' :
+                                                'bg-jade-50 text-jade-600 shadow-sm shadow-primary-100'
+                                            }`}>
+                                                {notif.title.includes('Hafalan') ? <BookOpen className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between gap-2 mb-1">
+                                                    <p className="text-[11px] font-black text-slate-900 leading-none truncate">{notif.title}</p>
+                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter shrink-0">{formatTime(notif.created_at)}</span>
+                                                </div>
+                                                <p className="text-[10.5px] font-medium text-slate-500 leading-relaxed line-clamp-2">
+                                                    {renderFormattedMessage(notif.message)}
+                                                </p>
+                                            </div>
+                                            <div className="self-center opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
+                                                <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="py-12 px-6 text-center">
+                                        <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                            <Bell className="w-6 h-6 text-slate-300" />
+                                        </div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Belum ada pemberitahuan</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
+            )}
 
-                  {/* HALAQAH NAME FOR TEACHER ROLE - DESKTOP VIEW (RIGHT OF NOTIFICATION) */}
-                  {user.role === UserRole.TEACHER && halaqahName && (
-                    <div className="hidden md:flex bg-jade-50/50 px-3 py-1.5 rounded-xl border border-jade-100 shadow-sm animate-in fade-in slide-in-from-right-4 duration-500 mx-1">
-                        <div className="flex flex-col items-start justify-center">
-                            <span className="text-[7px] text-jade-400 uppercase tracking-widest font-black leading-none mb-1 opacity-70">
-                                Halaqah
-                            </span>
-                            <span className="text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none">
-                                {halaqahName}
-                            </span>
-                        </div>
-                    </div>
-                  )}
-
-                 {/* WEEKLY DATE FOR SANTRI ROLE - TIERED STYLE */}
-                 {user.role === UserRole.SANTRI && (
-                    <div className="hidden xl:flex bg-jade-50/50 px-3 py-1.5 rounded-xl border border-jade-100 shadow-sm animate-in fade-in slide-in-from-right-4 duration-500 mx-1">
-                        <div className="flex flex-col items-start justify-center">
-                            <span className="text-[7px] text-jade-400 uppercase tracking-widest font-black leading-none mb-1 opacity-70">
-                                Pekan Ini
-                            </span>
-                            <span className="text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none">
-                                {(() => {
-                                    const today = new Date();
-                                    const day = today.getDay();
-                                    const diffToMonday = (day === 0 ? -6 : 1) - day;
-                                    const monday = new Date(today);
-                                    monday.setDate(today.getDate() + diffToMonday);
-                                    const friday = new Date(monday);
-                                    friday.setDate(monday.getDate() + 4);
-                                    const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short' };
-                                    return `${monday.toLocaleDateString('id-ID', options)} - ${friday.toLocaleDateString('id-ID', options)}`.toUpperCase();
-                                })()}
-                            </span>
-                        </div>
-                    </div>
-                 )}
-
-
-                 <div className="relative" ref={dropdownRef}>
-                  <button 
+            {/* Profile */}
+            <div className="relative order-5 lg:order-7 shrink-0 ml-auto lg:ml-0" ref={dropdownRef}>
+                <button 
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
-                    className="flex items-center gap-3 hover:bg-slate-50 p-1.5 rounded-2xl transition-all border border-transparent hover:border-slate-100"
-                 >
+                    className="flex items-center gap-1.5 sm:gap-3 hover:bg-slate-50 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl transition-all border border-transparent hover:border-slate-100"
+                >
                     <div className="flex flex-col items-end max-w-[80px] sm:max-w-[120px] lg:max-w-none">
                         <span className="text-[9.5px] lg:text-xs font-black text-slate-900 uppercase tracking-tighter truncate w-full text-right">
                             {(user.role === UserRole.SANTRI && user.student_name) ? user.student_name : (user.full_name || 'User')}
                         </span>
                         <span className="text-[8px] lg:text-[10px] text-jade-600 font-black uppercase tracking-widest opacity-70">{(user.role || '').replace('_', ' ')}</span>
                     </div>
-                    <div className="w-9 h-9 bg-slate-200 rounded-2xl overflow-hidden border-2 border-white shadow-sm ring-1 ring-slate-100">
+                    <div className="w-7 h-7 sm:w-9 sm:h-9 bg-slate-200 rounded-[10px] sm:rounded-2xl overflow-hidden border-2 border-white shadow-sm ring-1 ring-slate-100">
                         {user.avatar_url ? (
                             <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
                         ) : (
                             <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent((user.role === UserRole.SANTRI && user.student_name) ? user.student_name : (user.full_name || 'User'))}&background=${isSuperAdmin ? '1e293b' : '4f46e5'}&color=fff`} alt="" />
                         )}
                     </div>
-                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
-                 </button>
+                    <ChevronDown className={`hidden sm:block w-3 h-3 sm:w-4 sm:h-4 text-slate-400 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                </button>
 
                  {/* Profile Dropdown */}
                  {isProfileOpen && (
@@ -671,7 +667,6 @@ export const Layout: React.FC<LayoutProps> = ({
                     </div>
                  )}
                 </div>
-            </div>
         </header>
 
         <main className="flex-1 p-4 pt-20 lg:p-8 lg:pt-24 min-h-[calc(100vh-64px)] overflow-x-hidden">

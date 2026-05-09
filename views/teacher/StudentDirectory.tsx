@@ -725,7 +725,7 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                {/* Toggle NIS Visibility */}
                <button 
                   onClick={() => setShowNIS(!showNIS)}
-                  className="p-2 lg:px-4 lg:py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all active:scale-95 shadow-sm h-8 lg:h-11 flex items-center justify-center shrink-0"
+                  className="hidden lg:flex p-2 lg:px-4 lg:py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all active:scale-95 shadow-sm h-8 lg:h-11 items-center justify-center shrink-0"
                   title={showNIS ? "Sembunyikan NIS" : "Tampilkan NIS"}
                >
                   {showNIS ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
@@ -748,9 +748,9 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
             <table className="w-full border-separate border-spacing-0">
                 <thead className="sticky top-0 z-40">
                     <tr className="bg-white">
-                        <th className="w-[35px] min-w-[35px] lg:w-[50px] lg:min-w-[50px] sticky left-0 bg-white z-50 px-2 lg:px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">No</th>
-                        {showNIS && <th className="w-[80px] min-w-[80px] lg:w-[100px] lg:min-w-[100px] sticky left-[35px] lg:left-[50px] bg-white z-50 px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">NIS</th>}
-                        <th className={`w-[130px] min-w-[130px] lg:w-[300px] lg:min-w-[300px] sticky ${showNIS ? 'left-[115px] lg:left-[150px]' : 'left-[35px] lg:left-[50px]'} bg-white z-50 px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.02)]`}>Nama Santri</th>
+                        <th className="hidden lg:table-cell w-[50px] min-w-[50px] sticky left-0 bg-white z-50 px-2 lg:px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">No</th>
+                        {showNIS && <th className="w-[80px] min-w-[80px] lg:w-[100px] lg:min-w-[100px] sticky left-0 lg:left-[50px] bg-white z-50 px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">NIS</th>}
+                        <th className={`w-[100px] min-w-[100px] lg:w-[300px] lg:min-w-[300px] sticky ${showNIS ? 'left-[80px] lg:left-[150px]' : 'left-0 lg:left-[50px]'} bg-white z-50 px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.02)]`}>Nama Santri</th>
                         <th className="px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100 bg-white">Jenis Kelamin</th>
                         <th className="px-3 py-4 text-[10px] font-bold text-emerald-600 uppercase tracking-widest text-center border-b border-r border-slate-100 bg-jade-50/30 whitespace-nowrap">Hafalan Saat Ini</th>
                         <th className="w-[140px] min-w-[140px] px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 bg-slate-50/30">Aksi</th>
@@ -765,12 +765,11 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                         </tr>
                     ) : paginatedStudents.map((student, idx) => (
                         <tr key={student.id} className="group transition-colors hover:bg-slate-50/50 cursor-pointer" onClick={() => openModal('detail', student)}>
-                            <td className="sticky left-0 bg-white group-hover:bg-[#F8FAFC] px-2 lg:px-3 py-3 text-[11px] font-bold text-slate-400 text-center border-r border-slate-50 z-20 transition-colors">{(currentPage - 1) * itemsPerPage + idx + 1}</td>
-                            {showNIS && <td className="sticky left-[35px] lg:left-[50px] bg-white group-hover:bg-[#F8FAFC] px-3 py-3 text-[11px] font-bold text-slate-600 text-center border-r border-slate-50 z-20 transition-colors">{student.nis || '-'}</td>}
-                             <td className={`sticky ${showNIS ? 'left-[115px] lg:left-[150px]' : 'left-[35px] lg:left-[50px]'} bg-white group-hover:bg-[#F8FAFC] px-4 py-3 text-xs font-bold text-slate-800 border-r border-slate-100 z-20 truncate transition-colors`}>
+                            <td className="hidden lg:table-cell sticky left-0 bg-white group-hover:bg-[#F8FAFC] px-2 lg:px-3 py-3 text-[11px] font-bold text-slate-400 text-center border-r border-slate-50 z-20 transition-colors">{(currentPage - 1) * itemsPerPage + idx + 1}</td>
+                            {showNIS && <td className="sticky left-0 lg:left-[50px] bg-white group-hover:bg-[#F8FAFC] px-3 py-3 text-[11px] font-bold text-slate-600 text-center border-r border-slate-50 z-20 transition-colors">{student.nis || '-'}</td>}
+                             <td className={`sticky ${showNIS ? 'left-[80px] lg:left-[150px]' : 'left-0 lg:left-[50px]'} bg-white group-hover:bg-[#F8FAFC] px-4 py-3 text-xs font-bold text-slate-800 border-r border-slate-100 z-20 transition-colors`}>
                                 <div className="flex items-center gap-2">
-                                    <span className="truncate">{student.full_name}</span>
-                                    <Edit3 className="w-2.5 h-2.5 text-jade-300 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                    <span className="leading-tight">{student.full_name}</span>
                                 </div>
                             </td>
                              <td className="px-3 py-3 text-[11px] font-bold text-slate-600 text-center border-r border-slate-100">

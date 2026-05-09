@@ -864,24 +864,25 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
   }, [classes, search]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Unified Control Bar */}
-      <div className="flex flex-col lg:flex-row w-full gap-4 py-2 bg-white shrink-0 z-70 relative items-center">
-        {/* 1. STATS (HALAQAH & SANTRI) - PALING KIRI */}
-        <div className="bg-slate-50/50 h-10 px-4 border border-slate-100/50 flex items-center gap-4 rounded-full shadow-inner shrink-0 order-1">
+      <div className="flex flex-row flex-wrap items-center w-full gap-3 lg:gap-4 py-3 bg-white shrink-0 z-70 sticky top-0 border-b border-slate-100 lg:static lg:border-none lg:py-0">
+        
+        {/* 1. STATS (Desktop: 1, Mobile: 2) */}
+        <div className="bg-slate-50/50 h-10 px-3 lg:px-4 border border-slate-100/50 flex items-center justify-center lg:justify-start gap-3 lg:gap-4 rounded-full shadow-inner flex-1 lg:flex-none order-4 lg:order-1">
             <div className="flex items-center gap-1.5">
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">HALAQAH</p>
-                <p className="text-[11px] font-black text-slate-800 leading-none">{classes.length}</p>
+                <p className="text-[7.5px] lg:text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">HALAQAH</p>
+                <p className="text-[10.5px] lg:text-[11px] font-black text-slate-800 leading-none">{classes.length}</p>
             </div>
             <div className="w-px h-3 bg-slate-200" />
             <div className="flex items-center gap-1.5">
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">SANTRI</p>
-                <p className="text-[11px] font-black text-slate-800 leading-none">{classes.reduce((acc, curr) => acc + (curr.student_count || 0), 0)}</p>
+                <p className="text-[7.5px] lg:text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">SANTRI</p>
+                <p className="text-[10.5px] lg:text-[11px] font-black text-slate-800 leading-none">{classes.reduce((acc, curr) => acc + (curr.student_count || 0), 0)}</p>
             </div>
         </div>
 
-        {/* 2. SEARCH BAR */}
-        <div className="relative flex-1 group h-10 min-w-0 order-2 w-full lg:w-auto">
+        {/* 2. SEARCH BAR (Desktop: 2, Mobile: 1) */}
+        <div className="relative flex-1 group h-10 min-w-0 order-1 lg:order-2">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-jade-500 transition-colors" />
             <input 
                 type="text" 
@@ -892,46 +893,47 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
             />
         </div>
 
-        <div className="flex flex-row items-center gap-2 order-3 shrink-0">
-            {/* 3. REFRESH BUTTON */}
-            <button 
-                onClick={fetchData}
-                disabled={loading}
-                className="h-10 w-10 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 hover:bg-slate-50 transition-all active:scale-95 rounded-full shadow-sm disabled:opacity-50"
-            >
-                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            </button>
+        {/* MOBILE BREAK (Forces row 2 on mobile) */}
+        <div className="w-full lg:hidden order-2 h-0" />
 
-            {/* 4. IMPORT & EXPORT BUTTONS */}
-            {!isReadOnly && (
-                <div className="h-10 flex bg-white border border-slate-100 rounded-full p-1 gap-1 shadow-sm px-2">
-                    <button 
-                        onClick={handleExport}
-                        className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-all"
-                        title="Ekspor Data Halaqah"
-                    >
-                        <Download className="w-4 h-4" />
-                    </button>
-                    <div className="w-px h-4 bg-slate-100 self-center" />
-                    <label className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all cursor-pointer" title="Impor Data Halaqah">
-                        <Upload className="w-4 h-4" />
-                        <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleImportExcel} />
-                    </label>
-                </div>
-            )}
-        </div>
+        {/* 3. REFRESH BUTTON (Desktop: 3, Mobile: 2) */}
+        <button 
+            onClick={fetchData}
+            disabled={loading}
+            className="h-10 w-10 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 hover:bg-slate-50 transition-all active:scale-95 rounded-full shadow-sm disabled:opacity-50 order-3 lg:order-3"
+        >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+        </button>
 
-        {/* 5. TAMBAH HALAQAH - PALING KANAN */}
+        {/* 4. IMPORT & EXPORT BUTTONS (Desktop: 4, Mobile: 2) */}
+        {!isReadOnly && (
+            <div className="h-10 flex items-center bg-white border border-slate-100 rounded-full p-1 gap-1 shadow-sm px-2 order-3 lg:order-4">
+                <button 
+                    onClick={handleExport}
+                    className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-all"
+                    title="Ekspor Data Halaqah"
+                >
+                    <Download className="w-4 h-4" />
+                </button>
+                <div className="w-px h-4 bg-slate-100 self-center" />
+                <label className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all cursor-pointer" title="Impor Data Halaqah">
+                    <Upload className="w-4 h-4" />
+                    <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleImportExcel} />
+                </label>
+            </div>
+        )}
+
+        {/* 5. TAMBAH HALAQAH (Desktop: 5, Mobile: 1) */}
         {!isReadOnly ? (
             <button 
                 onClick={openCreateModal}
-                className="h-10 flex items-center px-6 font-black text-[10px] uppercase tracking-widest rounded-full bg-jade-600 text-white shadow-lg shadow-primary-100/50 hover:bg-jade-700 hover:scale-[1.02] transition-all active:scale-95 gap-2 whitespace-nowrap order-4"
+                className="h-10 flex-none flex items-center justify-center px-4 lg:px-6 font-black text-[10px] uppercase tracking-widest rounded-full bg-jade-600 text-white shadow-lg shadow-primary-100/50 hover:bg-jade-700 transition-all active:scale-95 gap-2 whitespace-nowrap order-1 lg:order-5"
             >
-                <Plus className="w-4 h-4" /> <span className="hidden sm:inline">TAMBAH HALAQAH</span><span className="sm:hidden">TAMBAH</span>
+                <Plus className="w-4 h-4" /> <span>TAMBAH <span className="hidden sm:inline">HALAQAH</span></span>
             </button>
         ) : (
-            <div className="h-10 flex items-center px-6 font-black text-[10px] uppercase tracking-widest rounded-full bg-slate-100 text-slate-400 gap-2 whitespace-nowrap order-4">
-                <Users className="w-4 h-4" /> VIEW ONLY
+            <div className="h-10 flex-none flex items-center justify-center px-6 font-black text-[10px] uppercase tracking-widest rounded-full bg-slate-100 text-slate-400 gap-2 whitespace-nowrap order-1 lg:order-5">
+                <Users className="w-4 h-4" /> <span className="hidden sm:inline">VIEW ONLY</span><span className="sm:hidden">VIEW</span>
             </div>
         )}
       </div>

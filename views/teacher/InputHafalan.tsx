@@ -1144,7 +1144,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                         <p className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-0.5">Mutaba'ah Hafalan</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center justify-between lg:justify-end gap-2 lg:gap-4 w-full lg:w-auto">
+                                <div className="flex items-center justify-between lg:justify-end gap-1.5 lg:gap-4 w-full lg:w-auto">
                                     <div className="flex bg-white p-0.5 rounded-lg border border-slate-100 shadow-sm ring-1 ring-white scale-90 lg:scale-100 origin-left">
                                         <button 
                                             onClick={() => setCurrentWeekOffset(prev => prev - 1)}
@@ -1152,8 +1152,8 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                         >
                                             <ChevronLeft className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
                                         </button>
-                                        <div className="px-2 lg:px-3 py-1 text-[8px] lg:text-[9px] font-black uppercase tracking-widest text-jade-600 flex flex-col items-center justify-center min-w-[130px] lg:min-w-[160px]">
-                                            <span className="flex items-center gap-1.5 whitespace-nowrap">
+                                        <div className="px-1.5 sm:px-2 lg:px-3 py-1 text-[7.5px] sm:text-[8px] lg:text-[9px] font-black uppercase tracking-widest text-jade-600 flex flex-col items-center justify-center min-w-[110px] sm:min-w-[130px] lg:min-w-[160px]">
+                                            <span className="flex items-center gap-1 whitespace-nowrap">
                                                 <Calendar className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
                                                 {weekDisplayRange}
                                             </span>
@@ -1173,7 +1173,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                         </button>
                                     </div>
 
-                                    <div className="flex items-center gap-1.5">
+                                    <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                                         <button 
                                             onClick={() => setIsInfoModalOpen(true)}
                                             className="p-1.5 lg:p-2.5 bg-white border border-slate-200/60 rounded-xl text-slate-400 hover:text-jade-600 hover:border-jade-100 transition-all shadow-sm group"
@@ -1192,10 +1192,10 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
 
                                         <button 
                                             onClick={() => handleMassSave(true)}
-                                            className="flex items-center gap-1.5 px-3 lg:px-5 py-1.5 lg:py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg shadow-lg shadow-primary-200 transition-all active:scale-95 group"
+                                            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 lg:px-5 py-1.5 lg:py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg shadow-lg shadow-primary-200 transition-all active:scale-95 group"
                                         >
                                             <Save className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
-                                            <span className="text-[9px] font-black uppercase tracking-widest">Simpan</span>
+                                            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Simpan</span>
                                         </button>
                                     </div>
                                 </div>
@@ -1604,7 +1604,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                                             })()}
                                                                             className="w-full h-6 bg-slate-100 border border-slate-200 rounded-md text-[8.5px] font-black text-center text-slate-500 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                                         />
-                                                                        <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[6px] font-bold text-slate-400 uppercase pointer-events-none">{type === MemorizationType.SABAQ ? 'Brs' : 'Hal'}</span>
+                                                                        <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[6px] font-bold text-slate-400 uppercase pointer-events-none">{type === MemorizationType.SABAQ ? 'Baris' : 'Halaman'}</span>
                                                                     </div>
                                                                 </div>
                                                             </td>
@@ -1682,11 +1682,11 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
 
                                                         return (
                                                             <td key={`${date}-${type}-paraf`} style={{ width: colWidth, minWidth: colWidth }} className={`p-1 border-b border-l border-slate-100 ${isFuture ? 'opacity-30 pointer-events-none' : ''} ${isToday ? 'bg-emerald-50/40' : ''} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-[2px] after:bg-emerald-500 after:z-10' : ''} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-[2px] before:bg-emerald-500 before:z-10' : ''}`}>
-                                                                <div className="flex flex-col items-center justify-center gap-0.5">
+                                                                <div className="flex flex-row items-center justify-center gap-1">
                                                                     <button 
                                                                         disabled={isFuture || !isCompletable}
                                                                         onClick={() => toggleVerification(date, type, rec)}
-                                                                        className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${
+                                                                        className={`w-5 h-5 rounded-md flex items-center justify-center transition-all shrink-0 ${
                                                                             (pendingChanges[`${date}|${type}`]?.is_verified ?? rec?.is_verified) 
                                                                                 ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' 
                                                                                 : 'bg-slate-50 border border-slate-200 text-slate-300'
@@ -1694,7 +1694,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                                     >
                                                                         <Check className="w-2.5 h-2.5" />
                                                                     </button>
-                                                                    <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${
+                                                                    <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all shrink-0 ${
                                                                         rec?.is_read_by_parent 
                                                                             ? 'bg-jade-50 text-jade-600 border border-jade-100' 
                                                                             : 'bg-slate-50 border border-slate-100 opacity-20'

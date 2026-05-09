@@ -258,16 +258,19 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                         <p className="text-[7.5px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total: {chartTotal} {lineChartType === MemorizationType.SABAQ ? 'Baris' : lineChartType === MemorizationType.SABQI ? 'Halaman' : 'Kali'}</p>
                     </div>
                     
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-                        <div className="flex items-center bg-white px-4 rounded-full border border-slate-200 shadow-sm ring-1 ring-white h-9 lg:h-10 shrink-0 justify-center sm:justify-start gap-4">
-                            {[MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL].map((type, idx) => (
+                    <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full lg:w-auto">
+                        <div className="flex items-center w-full lg:w-72 bg-slate-50 p-1 rounded-full border border-slate-200 shadow-sm h-9 lg:h-10 shrink-0">
+                            {[MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL].map((type) => (
                                 <button 
                                     key={type}
                                     onClick={() => setLineChartType(type)}
-                                    className={`flex items-center gap-1.5 transition-all ${idx > 0 ? 'border-l border-slate-200 pl-4' : ''}`}
+                                    className={`flex-1 px-4 py-1.5 lg:py-2 rounded-full text-[8px] font-black uppercase tracking-wider transition-all ${
+                                        lineChartType === type 
+                                        ? 'bg-jade-600 text-white shadow-sm' 
+                                        : 'text-slate-400 hover:text-slate-600'
+                                    }`}
                                 >
-                                    <div className={`w-1.5 h-1.5 rounded-full ${lineChartType === type ? (type === MemorizationType.SABAQ ? 'bg-emerald-600' : type === MemorizationType.SABQI ? 'bg-amber-600' : 'bg-slate-600') : 'bg-slate-200'}`}></div>
-                                    <span className={`text-[7.5px] font-black uppercase tracking-wider ${lineChartType === type ? 'text-slate-800' : 'text-slate-400'}`}>{type}</span>
+                                    {type}
                                 </button>
                             ))}
                         </div>
@@ -308,7 +311,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 </div>
 
                     <div className="flex-1 w-full min-h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                             <AreaChart data={chartData}>
                                 <defs>
                                     <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">

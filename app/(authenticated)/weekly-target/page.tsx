@@ -4,11 +4,12 @@ import React from 'react';
 import { WeeklyTarget } from '@/views/teacher/WeeklyTarget';
 import { useAuth } from '@/lib/AuthContext';
 import { UserRole } from '@/types';
+import { AccessDenied } from '@/components/ui/AccessDenied';
 
 export default function WeeklyTargetPage() {
   const { user, setHasUnsavedChanges, saveTriggered, proceedNavigation, showUnsavedModal } = useAuth();
   
-  if (!user || user.role !== UserRole.TEACHER) return <div>Akses Ditolak</div>;
+  if (!user || user.role !== UserRole.TEACHER) return <AccessDenied />;
   
   return (
     <WeeklyTarget 

@@ -205,7 +205,6 @@ export const TeacherNotesList: React.FC<{ user: UserProfile }> = ({ user }) => {
                                                     className="px-4 py-1.5 bg-jade-600 text-white rounded-lg shadow-md shadow-jade-100 hover:bg-jade-700 disabled:opacity-50 transition-all flex items-center gap-2 group active:scale-95"
                                                 >
                                                     <span className="text-[9px] font-black uppercase tracking-widest">Kirim</span>
-                                                    <Send className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                                                 </button>
                                             </div>
                                         </div>

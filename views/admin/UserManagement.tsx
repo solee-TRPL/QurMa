@@ -26,7 +26,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
     email: '',
     role: UserRole.TEACHER,
     password: '',
-    whatsapp_number: ''
+    whatsapp_number: '',
+    nip: ''
   });
   const [isResetting, setIsResetting] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -40,11 +41,12 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
           email: initialData.email,
           role: initialData.role,
           password: '',
-          whatsapp_number: initialData.whatsapp_number || ''
+          whatsapp_number: initialData.whatsapp_number || '',
+          nip: initialData.nip || ''
         });
       } else {
         // Explicitly reset all fields saat modal Tambah dibuka
-        setFormData({ full_name: '', email: '', role: UserRole.TEACHER, password: '', whatsapp_number: '' });
+        setFormData({ full_name: '', email: '', role: UserRole.TEACHER, password: '', whatsapp_number: '', nip: '' });
       }
     }
   }, [isOpen, initialData]);
@@ -60,7 +62,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
         email: formData.email,
         role: formData.role,
         tenant_id: tenantId,
-        whatsapp_number: formData.whatsapp_number
+        whatsapp_number: formData.whatsapp_number,
+        nip: formData.nip
     };
 
     if (initialData) {
@@ -68,7 +71,9 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
         payload.id = initialData.id;
     } else {
         // Create
-        payload.password = formData.password;
+        // Use NIP as default password if role is teacher or supervisor
+        const isStaff = formData.role === UserRole.TEACHER || formData.role === UserRole.SUPERVISOR;
+        payload.password = (isStaff && formData.nip) ? formData.nip : formData.password;
     }
     
     await onSubmit(payload);
@@ -144,19 +149,38 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
              </div>
           </div>
 
+          {(formData.role === UserRole.TEACHER || formData.role === UserRole.SUPERVISOR) && (
+            <div className="group/field animate-in fade-in slide-in-from-top-1 duration-200">
+                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">NIP</label>
+                <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-jade-600" />
+                    <input 
+                        required={formData.role === UserRole.TEACHER || formData.role === UserRole.SUPERVISOR}
+                        type="text" 
+                        value={formData.nip} 
+                        onChange={e => setFormData({ ...formData, nip: e.target.value })} 
+                        className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 outline-none transition-all placeholder:text-slate-300" 
+                        placeholder="Nomor Induk Pegawai..." 
+                    />
+                </div>
+                <p className="mt-1 ml-1 text-[8px] font-medium text-slate-400 italic">NIP akan digunakan sebagai password default.</p>
+            </div>
+          )}
+
           {!initialData && (
             <div className="group/field">
                 <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">Password</label>
                 <div className="relative">
                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-jade-600" />
                     <input 
-                    required
+                    required={!( (formData.role === UserRole.TEACHER || formData.role === UserRole.SUPERVISOR) && formData.nip )}
+                    readOnly={(formData.role === UserRole.TEACHER || formData.role === UserRole.SUPERVISOR)}
                     type="password" 
-                    value={formData.password}
+                    value={(formData.role === UserRole.TEACHER || formData.role === UserRole.SUPERVISOR) ? formData.nip : formData.password}
                     onChange={e => setFormData({...formData, password: e.target.value})}
                     autoComplete="new-password"
-                    className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 outline-none transition-all placeholder:text-slate-300"
-                    placeholder="Minimal 6 karakter"
+                    className={`w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl font-bold text-[13px] outline-none transition-all placeholder:text-slate-300 ${(formData.role === UserRole.TEACHER || formData.role === UserRole.SUPERVISOR) ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : 'bg-white text-slate-800 focus:border-jade-400'}`}
+                    placeholder={(formData.role === UserRole.TEACHER || formData.role === UserRole.SUPERVISOR) ? "Otomatis dari NIP" : "Minimal 6 karakter"}
                     />
                 </div>
             </div>
@@ -203,7 +227,9 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
                     if (!initialData) return;
                     setIsResetting(true);
                     try {
-                        await onResetPassword(initialData.id, 'password123'); // Default reset
+                        const isStaff = formData.role === UserRole.TEACHER || formData.role === UserRole.SUPERVISOR;
+                        const targetPass = (isStaff && formData.nip) ? formData.nip : 'password123';
+                        await onResetPassword(initialData.id, targetPass); 
                     } finally {
                         setIsResetting(false);
                         setShowResetConfirm(false);
@@ -420,8 +446,8 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                     <table className="min-w-full border-separate border-spacing-0">
                         <thead className="sticky top-0 z-40 bg-white">
                             <tr>
-                                <th className="sticky left-0 z-60 bg-white px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[40px] md:w-[45px] min-w-[40px] md:min-w-[45px]">NO</th>
-                                <th className="px-6 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">USER & EMAIL</th>
+                                <th className="hidden md:table-cell sticky left-0 z-60 bg-white px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[45px] min-w-[45px]">NO</th>
+                                <th className="sticky left-0 md:left-[45px] z-60 bg-white px-4 md:px-6 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 w-[110px] md:w-auto min-w-[110px] md:min-w-0">USER & EMAIL</th>
                                 <th className="px-6 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 bg-white min-w-[120px]">ROLE</th>
                                 <th className="px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-44">WHATSAPP</th>
                                 {!isReadOnly && <th className="px-4 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-slate-100 w-24">AKSI</th>}
@@ -431,8 +457,8 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                             {loading ? (
                                 [...Array(5)].map((_, i) => (
                                     <tr key={i}>
-                                        <td className="sticky left-0 z-10 bg-white border-r-2 border-b border-slate-100 w-[40px] md:w-[45px]"><Skeleton className="h-4 w-4 mx-auto" /></td>
-                                        <td className="px-6 py-4 border-r-2 border-b border-slate-100"><Skeleton className="h-4 w-32" /></td>
+                                        <td className="hidden md:table-cell sticky left-0 z-10 bg-white border-r-2 border-b border-slate-100 w-[45px]"><Skeleton className="h-4 w-4 mx-auto" /></td>
+                                        <td className="sticky left-0 md:left-[45px] z-10 bg-white border-r-2 border-b border-slate-100 w-[110px] md:w-auto"><Skeleton className="h-4 w-20" /></td>
                                         <td className="px-6 py-4 border-r-2 border-b border-slate-100"><Skeleton className="h-4 w-20" /></td>
                                         <td className="px-4 py-4 border-b border-r-2 border-slate-100"><Skeleton className="h-4 w-24" /></td>
                                         {!isReadOnly && <td className="px-4 py-4 border-b border-slate-100"><div className="h-4 bg-slate-100 rounded animate-pulse w-full"></div></td>}
@@ -440,12 +466,12 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                                 ))
                             ) : paginatedData.map((u, index) => (
                                 <tr key={u.id} className="group transition-colors hover:bg-slate-50/30">
-                                    <td className="sticky left-0 bg-white px-2 py-4 text-[10.5px] font-black text-slate-400 text-center border-r-2 border-b border-slate-100 z-20 uppercase transition-colors">
+                                    <td className="hidden md:table-cell sticky left-0 bg-white px-2 py-4 text-[10.5px] font-black text-slate-400 text-center border-r-2 border-b border-slate-100 z-20 uppercase transition-colors">
                                         {String((currentPage - 1) * itemsPerPage + index + 1)}
                                     </td>
-                                    <td className="px-6 py-4 border-r-2 border-b border-slate-100">
-                                        <div className="font-bold text-[11px] text-slate-800">{u.full_name}</div>
-                                        <div className="font-medium text-[10px] text-slate-400">{u.email}</div>
+                                    <td className="sticky left-0 md:left-[45px] bg-white px-3 md:px-6 py-4 border-r-2 border-b border-slate-100 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
+                                        <div className="font-bold text-[10px] md:text-[11px] text-slate-800 truncate max-w-[80px] md:max-w-none" title={u.full_name}>{u.full_name}</div>
+                                        <div className="font-medium text-[9px] md:text-[10px] text-slate-400 truncate max-w-[80px] md:max-w-none" title={u.email}>{u.email}</div>
                                     </td>
                                     <td className="px-6 py-4 border-r-2 border-b border-slate-100 text-center">
                                         <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border-2 ${getRoleBadge(u.role)} shadow-sm`}>

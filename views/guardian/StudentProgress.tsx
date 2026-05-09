@@ -239,7 +239,7 @@ export const StudentProgress: React.FC<{ user: UserProfile }> = ({ user }) => {
                             <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">JUZ</span>
                         </div>
                         <div className="h-64 w-full">
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                 <LineChart data={chartData} margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 800}} dy={10} />
@@ -265,7 +265,7 @@ export const StudentProgress: React.FC<{ user: UserProfile }> = ({ user }) => {
                             <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest">HAL</span>
                         </div>
                         <div className="h-64 w-full">
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                 <LineChart data={chartData} margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 800}} dy={10} />

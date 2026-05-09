@@ -154,6 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [pathname, router, deviceId]);
 
+  // Initialization Effect
   useEffect(() => {
     if (didInit.current) return;
     didInit.current = true;
@@ -205,7 +206,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     initAuth();
+  }, []); // Run once on mount
 
+  // Auth State Listener Effect
+  useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (isUpdatingAuth.current) return;
         if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && session) {
@@ -223,7 +227,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
         authListener.subscription.unsubscribe();
     };
-  }, [handleAuthSuccess, pathname, router, deviceId, getAccounts]);
+  }, [handleAuthSuccess, pathname, router]);
 
   const handleNavigation = (page: PageView) => {
     if (hasUnsavedChanges) {

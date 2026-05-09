@@ -528,7 +528,6 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showCode, setShowCode] = useState(false); // Toggle for 'Kode' column on mobile
 
   const { setLoading: setGlobalLoading } = useLoading();
   const { addNotification } = useNotification();
@@ -706,15 +705,6 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
-              {/* Toggle Kode Column - Mobile Only */}
-              <button 
-                  onClick={() => setShowCode(!showCode)}
-                  className={`flex items-center justify-center h-8 w-8 lg:hidden rounded-xl border transition-all active:scale-90 ${showCode ? 'bg-jade-600 border-jade-600 text-white' : 'bg-white border-slate-100 text-slate-400'}`}
-                  title="Toggle Kolom Kode"
-              >
-                  <Tag className="w-3.5 h-3.5" />
-              </button>
-
               <button 
                   onClick={openCreateModal}
                   className="px-3 lg:px-6 h-8 lg:h-12 font-black text-[9px] lg:text-[11px] uppercase tracking-tighter lg:tracking-widest rounded-xl lg:rounded-2xl border-2 border-jade-400 bg-jade-50 text-jade-700 hover:bg-jade-100 shadow-xl shadow-primary-100/30 transition-all active:scale-95 flex items-center justify-center gap-1.5 lg:gap-2"
@@ -731,12 +721,11 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
           <table className="min-w-full divide-y divide-slate-100 border-separate border-spacing-0">
             <thead>
               <tr className="bg-white">
-                <th className="w-[40px] min-w-[40px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-white z-30 px-3 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100">NO</th>
+                <th className="hidden lg:table-cell w-[40px] min-w-[40px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-white z-30 px-3 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100">NO</th>
                 
-                {/* Kode Column - Conditionally hidden on mobile */}
-                <th className={`${showCode ? 'flex' : 'hidden'} lg:table-cell w-[80px] min-w-[80px] lg:w-[150px] lg:min-w-[150px] sticky left-[40px] lg:left-[45px] bg-white z-30 px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100`}>KODE</th>
+                <th className="hidden lg:table-cell w-[80px] min-w-[80px] lg:w-[150px] lg:min-w-[150px] lg:sticky lg:left-[45px] bg-white z-30 px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100">KODE</th>
                 
-                <th className={`w-[120px] min-w-[120px] lg:w-[auto] lg:min-w-[300px] sticky ${showCode ? 'left-[120px]' : 'left-[40px]'} lg:left-[195px] bg-white z-30 px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 shadow-[2px_0_5px_rgba(0,0,0,0.02)] transition-all`}>NAMA SEKOLAH</th>
+                <th className="w-[120px] min-w-[120px] lg:w-[auto] lg:min-w-[300px] sticky left-0 lg:left-[195px] bg-white z-30 px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 shadow-[2px_0_5px_rgba(0,0,0,0.02)] transition-all">NAMA SEKOLAH</th>
                 <th className="px-6 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 bg-white min-w-[120px]">REGISTRASI</th>
                 <th className="px-6 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-slate-100 bg-white">AKSI</th>
               </tr>
@@ -744,18 +733,17 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
             <tbody className="bg-white divide-y divide-slate-50" key={currentPage}>
               {paginatedTenants.map((tenant, index) => (
                 <tr key={tenant.id} className="group transition-colors hover:bg-slate-50/30">
-                  <td className="sticky left-0 bg-white px-2 py-4 text-[10.5px] font-black text-slate-400 text-center border-r-2 border-b border-slate-100 z-10 transition-colors uppercase">
+                  <td className="hidden lg:table-cell sticky left-0 bg-white px-2 py-4 text-[10.5px] font-black text-slate-400 text-center border-r-2 border-b border-slate-100 z-10 transition-colors uppercase">
                       {String((currentPage - 1) * itemsPerPage + index + 1)}
                   </td>
                   
-                  {/* Kode Cell - Conditionally hidden on mobile */}
-                  <td className={`${showCode ? 'table-cell' : 'hidden'} lg:table-cell sticky left-[40px] lg:left-[45px] bg-white px-4 py-4 border-r-2 border-b border-slate-100 z-10 transition-colors`}>
+                  <td className="hidden lg:table-cell lg:sticky lg:left-[45px] bg-white px-4 py-4 border-r-2 border-b border-slate-100 z-10 transition-colors">
                       <span className="px-2 py-1 bg-slate-100/50 border border-slate-100 rounded-lg font-mono text-[10px] text-slate-500 font-bold group-hover:bg-white transition-colors">
                         {tenant.code || '-'}
                       </span>
                   </td>
                   
-                  <td className={`sticky ${showCode ? 'left-[120px]' : 'left-[40px]'} lg:left-[195px] bg-white px-4 py-4 border-r-2 border-b border-slate-100 z-10 transition-all`}>
+                  <td className="sticky left-0 lg:left-[195px] bg-white px-4 py-4 border-r-2 border-b border-slate-100 z-10 transition-all">
                       <span className="text-[11px] font-bold text-slate-800 group-hover:text-jade-600 transition-colors block break-words leading-tight">{tenant.name}</span>
                   </td>
                   <td className="px-6 py-4 border-r-2 border-b border-slate-100">
@@ -806,27 +794,24 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
         </div>
 
         {/* PAGINATION FOOTER */}
-        {/* PAGINATION CONTROLS */}
         {!loading && filteredTenants.length > 0 && (
-            <div className="bg-[#F8FAFC] border-t border-slate-100 px-6 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <select 
-                            value={itemsPerPage}
-                            onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                            className="bg-white border-2 border-slate-100 rounded-xl px-2 md:px-3 py-1 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-jade-50/50 cursor-pointer shadow-sm transition-all"
-                        >
-                            {[10, 25, 50, 100].map(val => (
-                                <option key={val} value={val}>{val}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="hidden sm:block w-px h-6 bg-slate-200" />
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-tight leading-none whitespace-nowrap">
+            <div className="bg-[#F8FAFC] border-t border-slate-100 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 lg:gap-4">
+                <div className="flex items-center gap-2 lg:gap-4">
+                    <select 
+                        value={itemsPerPage}
+                        onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                        className="bg-white border-2 border-slate-100 rounded-xl px-2 md:px-3 py-1.5 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-jade-50/50 cursor-pointer shadow-sm transition-all h-8"
+                    >
+                        {[10, 25, 50, 100].map(val => (
+                            <option key={val} value={val}>{val}</option>
+                        ))}
+                    </select>
+                    <div className="hidden lg:block w-px h-6 bg-slate-200" />
+                    <p className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-tight leading-none whitespace-nowrap">
                         <span className="hidden sm:inline">DATA</span> 
                         <span className="text-slate-600 ml-1">{(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, filteredTenants.length)}</span> 
                         <span className="hidden sm:inline text-slate-300 mx-1">/</span> 
-                        <span className="text-jade-600 font-bold ml-0.5">{filteredTenants.length}</span> <span className="hidden sm:inline">Sekolah</span>
+                        <span className="text-jade-600 font-bold ml-0.5">{filteredTenants.length}</span>
                     </p>
                 </div>
 
@@ -834,12 +819,12 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                     <button 
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        className={`p-2 rounded-xl border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
+                        className={`p-1.5 lg:p-2 rounded-lg lg:rounded-xl border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
                     >
-                        <ChevronRight className="w-4 h-4 rotate-180" />
+                        <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4 rotate-180" />
                     </button>
                     
-                    <div className="flex items-center gap-1 px-2">
+                    <div className="flex items-center gap-0.5 lg:gap-1 px-1 lg:px-2">
                         {[...Array(totalPages)].map((_, i) => {
                             const pNum = i + 1;
                             if (totalPages > 5) {
@@ -853,7 +838,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                                 <button 
                                     key={pNum}
                                     onClick={() => setCurrentPage(pNum)}
-                                    className={`w-9 h-9 rounded-xl text-[10px] font-black transition-all active:scale-95 ${currentPage === pNum ? 'bg-jade-600 text-white shadow-lg shadow-primary-100 border-2 border-jade-600' : 'text-slate-400 hover:bg-slate-50 border-2 border-transparent'}`}
+                                    className={`w-7 h-7 lg:w-9 lg:h-9 rounded-lg lg:rounded-xl text-[9px] lg:text-[10px] font-black transition-all active:scale-95 ${currentPage === pNum ? 'bg-jade-600 text-white shadow-lg shadow-primary-100 border-2 border-jade-600' : 'text-slate-400 hover:bg-slate-50 border-2 border-transparent'}`}
                                 >
                                     {pNum}
                                 </button>
@@ -864,9 +849,9 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                     <button 
                         disabled={currentPage === totalPages}
                         onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                        className={`p-2 rounded-xl border-2 transition-all active:scale-90 ${currentPage === totalPages ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
+                        className={`p-1.5 lg:p-2 rounded-lg lg:rounded-xl border-2 transition-all active:scale-90 ${currentPage === totalPages ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
                     >
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
                     </button>
                 </div>
             </div>

@@ -24,7 +24,7 @@ import {
     GraduationCap,
     School,
     RotateCcw,
-    Target
+    Crosshair
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -37,6 +37,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
   const [student, setStudent] = useState<Student | null>(null);
   const [activeDays, setActiveDays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [weeklyTarget, setWeeklyTarget] = useState<any>(null);
+  const [showTargetPanel, setShowTargetPanel] = useState(false);
 
   // WEEKLY LOGIC — initialize from localStorage if available
   const [selectedWeek, setSelectedWeek] = useState(() => {
@@ -287,8 +288,8 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                       <div className="p-2 bg-slate-50/50 border border-slate-100 rounded-xl group hover:bg-white hover:shadow-md transition-all flex-1 flex flex-col justify-center mb-1">
                           <div className="flex items-center justify-between mb-0.5">
                               <span className="text-[6.5px] font-black text-slate-400 uppercase tracking-widest">SABAQ</span>
-                              <span className="text-[8.5px] font-black text-jade-600 bg-jade-50 px-1.5 py-0.5 rounded-md border border-jade-100">
-                                  {weeklyTarget?.sabaq_target || 0} BRS
+                              <span className="text-[7.5px] font-black text-jade-600 bg-jade-50 px-1.5 py-0.5 rounded-md border border-jade-100">
+                                  {weeklyTarget?.sabaq_target || 0} BARIS
                               </span>
                           </div>
                           <p className="text-[8.5px] font-black text-slate-700 uppercase tracking-tight truncate leading-none">
@@ -300,8 +301,8 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                       <div className="p-2 bg-slate-50/50 border border-slate-100 rounded-xl group hover:bg-white hover:shadow-md transition-all flex-1 flex flex-col justify-center mb-1">
                           <div className="flex items-center justify-between mb-0.5">
                               <span className="text-[6.5px] font-black text-slate-400 uppercase tracking-widest">SABQI</span>
-                              <span className="text-[8.5px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-100">
-                                  {weeklyTarget?.sabqi_target || 0} HAL
+                              <span className="text-[7.5px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-100">
+                                  {weeklyTarget?.sabqi_target || 0} HALAMAN
                               </span>
                           </div>
                           <p className="text-[8.5px] font-black text-slate-700 uppercase tracking-tight truncate leading-none">
@@ -313,8 +314,8 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                       <div className="p-2 bg-slate-50/50 border border-slate-100 rounded-xl group hover:bg-white hover:shadow-md transition-all flex-1 flex flex-col justify-center">
                           <div className="flex items-center justify-between mb-0.5">
                               <span className="text-[6.5px] font-black text-slate-400 uppercase tracking-widest">MANZIL</span>
-                              <span className="text-[8.5px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-100">
-                                  {weeklyTarget?.manzil_hal || 0} HAL
+                              <span className="text-[7.5px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-100">
+                                  {weeklyTarget?.manzil_hal || 0} HALAMAN
                               </span>
                           </div>
                           <p className="text-[8.5px] font-black text-slate-700 uppercase tracking-tight truncate leading-none">
@@ -337,15 +338,15 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                   <div className="flex-1 flex flex-col justify-between py-1 min-h-0">
                       <div className="flex items-center justify-between p-2 bg-jade-700/30 rounded-xl border border-jade-500/50 flex-1 mb-1.5">
                           <span className="text-[7px] font-black text-jade-100 uppercase tracking-widest">SABAQ</span>
-                          <span className="text-[11px] font-black text-white">{stats.sabaqCount} <span className="text-[7px] opacity-60">BRS</span></span>
+                          <span className="text-[10px] font-black text-white">{stats.sabaqCount} <span className="text-[6px] opacity-60">BARIS</span></span>
                       </div>
                       <div className="flex items-center justify-between p-2 bg-jade-700/30 rounded-xl border border-jade-500/50 flex-1 mb-1.5">
                           <span className="text-[7px] font-black text-jade-100 uppercase tracking-widest">SABQI</span>
-                          <span className="text-[11px] font-black text-white">{stats.sabqiCount} <span className="text-[7px] opacity-60">HAL</span></span>
+                          <span className="text-[10px] font-black text-white">{stats.sabqiCount} <span className="text-[6px] opacity-60">HALAMAN</span></span>
                       </div>
                       <div className="flex items-center justify-between p-2 bg-jade-700/30 rounded-xl border border-jade-500/50 flex-1">
                           <span className="text-[7px] font-black text-jade-100 uppercase tracking-widest">MANZIL</span>
-                          <span className="text-[11px] font-black text-white">{stats.manzilCount} <span className="text-[7px] opacity-60">HAL</span></span>
+                          <span className="text-[10px] font-black text-white">{stats.manzilCount} <span className="text-[6px] opacity-60">HALAMAN</span></span>
                       </div>
                   </div>
               </div>
@@ -393,7 +394,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
               <div className="flex-1 bg-white rounded-t-[32px] border border-slate-200 flex flex-col overflow-hidden shadow-sm relative min-w-0">
                   
                   {/* Table Header Mirroring Teacher Style */}
-                  <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-slate-100 flex flex-col lg:flex-row items-center justify-between bg-white relative z-20 gap-3 lg:gap-0 shrink-0">
+                  <div className="px-4 lg:px-6 py-3 lg:py-4 border-b border-slate-100 flex items-center justify-between bg-white relative z-20 shrink-0 gap-3">
                       <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 shadow-sm text-jade-500">
                               <FileText className="w-3.5 h-3.5" />
@@ -403,12 +404,118 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                               <p className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-0.5">NIS: {student.nis || '-'}</p>
                           </div>
                       </div>
+
+                      <button 
+                          onClick={() => setShowTargetPanel(!showTargetPanel)}
+                          className="lg:hidden w-8 h-8 rounded-xl bg-jade-50 text-jade-600 flex items-center justify-center border border-jade-100 shadow-sm active:scale-90 transition-all shrink-0"
+                      >
+                          <Crosshair className={`w-4 h-4 ${showTargetPanel ? 'animate-pulse' : ''}`} />
+                      </button>
+
                       <div className="hidden lg:flex items-center gap-2">
                           <div className="px-3 py-1.5 bg-jade-50 border border-jade-100 rounded-lg">
                               <p className="text-[8px] font-black text-jade-600 uppercase tracking-widest">Mutaba'ah Hafalan</p>
                           </div>
                       </div>
                   </div>
+                      
+                      {/* MOBILE TARGET MODAL */}
+                      {showTargetPanel && (
+                          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 lg:hidden">
+                              {/* Backdrop */}
+                              <div 
+                                  className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300"
+                                  onClick={() => setShowTargetPanel(false)}
+                              />
+                              
+                              {/* Modal Card */}
+                              <div className="relative w-full max-w-sm bg-white rounded-[32px] shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-300">
+                                  <div className="p-5 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+                                      <div className="flex items-center gap-3">
+                                          <div className="w-8 h-8 rounded-xl bg-jade-600 text-white flex items-center justify-center shadow-md shadow-jade-100">
+                                              <Crosshair className="w-4 h-4" />
+                                          </div>
+                                          <div>
+                                              <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest leading-none">Ringkasan Target</h3>
+                                              <p className="text-[7.5px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">{student.full_name}</p>
+                                          </div>
+                                      </div>
+                                      <button 
+                                          onClick={() => setShowTargetPanel(false)}
+                                          className="w-8 h-8 rounded-full bg-white border border-slate-100 text-slate-400 flex items-center justify-center active:scale-90 transition-all shadow-sm"
+                                      >
+                                          <ChevronRight className="w-4 h-4 rotate-90" />
+                                      </button>
+                                  </div>
+
+                                  <div className="p-5 space-y-5">
+                                      {/* Target Section */}
+                                      <div className="space-y-3">
+                                          <div className="flex items-center gap-2">
+                                              <div className="w-1.5 h-4 bg-slate-200 rounded-full" />
+                                              <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Target Pekan Ini</p>
+                                          </div>
+                                          <div className="grid grid-cols-3 gap-2">
+                                              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-center flex flex-col justify-center min-h-[54px]">
+                                                  <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sabaq</p>
+                                                  <p className="text-[10px] font-black text-slate-700 leading-tight">
+                                                      {weeklyTarget?.sabaq_target || 0} <span className="text-[7.5px] font-bold text-slate-400 block mt-0.5">Baris</span>
+                                                  </p>
+                                              </div>
+                                              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-center flex flex-col justify-center min-h-[54px]">
+                                                  <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sabqi</p>
+                                                  <p className="text-[10px] font-black text-slate-700 leading-tight">
+                                                      {weeklyTarget?.sabqi_target || 0} <span className="text-[7.5px] font-bold text-slate-400 block mt-0.5">Halaman</span>
+                                                  </p>
+                                              </div>
+                                              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-center flex flex-col justify-center min-h-[54px]">
+                                                  <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-1">Manzil</p>
+                                                  <p className="text-[10px] font-black text-slate-700 leading-tight">
+                                                      {weeklyTarget?.manzil_target || 0} <span className="text-[7.5px] font-bold text-slate-400 block mt-0.5">Juz</span>
+                                                  </p>
+                                              </div>
+                                          </div>
+                                      </div>
+
+                                      {/* Achievement Section */}
+                                      <div className="space-y-3">
+                                          <div className="flex items-center gap-2">
+                                              <div className="w-1.5 h-4 bg-jade-400 rounded-full" />
+                                              <p className="text-[8px] font-black text-jade-600 uppercase tracking-[0.2em]">Capaian Riil</p>
+                                          </div>
+                                          <div className="grid grid-cols-2 gap-2">
+                                              <div className="p-3 bg-jade-50/50 rounded-2xl border border-jade-100 text-center relative overflow-hidden flex flex-col justify-center min-h-[54px]">
+                                                  <div className="absolute top-0 right-0 w-8 h-8 bg-jade-100/30 rounded-bl-3xl -mr-2 -mt-2" />
+                                                  <p className="text-[7px] font-bold text-jade-400 uppercase tracking-widest mb-1">Sabaq</p>
+                                                  <p className="text-[10px] font-black text-jade-700 leading-tight">
+                                                      {stats.sabaqCount} <span className="text-[7.5px] font-bold text-jade-400 block mt-0.5">Baris</span>
+                                                  </p>
+                                              </div>
+                                              <div className="p-3 bg-jade-50/50 rounded-2xl border border-jade-100 text-center relative overflow-hidden flex flex-col justify-center min-h-[54px]">
+                                                  <div className="absolute top-0 right-0 w-8 h-8 bg-jade-100/30 rounded-bl-3xl -mr-2 -mt-2" />
+                                                  <p className="text-[7px] font-bold text-jade-400 uppercase tracking-widest mb-1">Sabqi</p>
+                                                  <p className="text-[10px] font-black text-jade-700 leading-tight">
+                                                      {stats.sabqiCount} <span className="text-[7.5px] font-bold text-jade-400 block mt-0.5">Halaman</span>
+                                                  </p>
+                                              </div>
+                                          </div>
+                                      </div>
+
+                                      <button 
+                                          onClick={() => setShowTargetPanel(false)}
+                                          className="w-full py-3.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-slate-900/20 active:scale-[0.98] transition-all mt-2"
+                                      >
+                                          Tutup Ringkasan
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                      )}
+                      <div className="hidden lg:flex items-center gap-2">
+                          <div className="px-3 py-1.5 bg-jade-50 border border-jade-100 rounded-lg">
+                              <p className="text-[8px] font-black text-jade-600 uppercase tracking-widest">Mutaba'ah Hafalan</p>
+                          </div>
+                      </div>
 
                   {/* High Density Table Body */}
                   <div className="flex-1 overflow-x-auto overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent -mt-[1px]">
@@ -526,7 +633,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                           );
                                       })}
                                   </React.Fragment>
-                              ))}
+                                  ))}
                           </tbody>
                   </table>
               </div>

@@ -141,7 +141,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-5 flex-1 min-h-0">
                 {/* 1. Trend Chart (Full Width) */}
-                <div className="lg:col-span-4 bg-white rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-slate-200/60 p-5 lg:p-6 flex flex-col min-h-[340px] relative transition-all duration-500 overflow-hidden">
+                <div className="lg:col-span-4 bg-white rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-slate-200/60 p-5 lg:p-6 flex flex-col min-h-[400px] lg:min-h-[340px] relative transition-all duration-500 overflow-hidden">
                     {loadingAdminTrend && (
                         <div className="absolute inset-0 z-20 bg-white/60 backdrop-blur-[2px] flex items-center justify-center animate-in fade-in duration-300">
                             <div className="flex flex-col items-center">
@@ -175,33 +175,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 </div>
                             </div>
 
-                            <div className="flex items-center bg-white px-3.5 rounded-full border border-slate-200 shadow-sm ring-1 ring-white h-9 lg:h-10 gap-1.5 hover:border-emerald-200 transition-all group cursor-pointer relative shrink-0">
-                                <select 
-                                    value={adminTrendType} 
-                                    onChange={(e) => setAdminTrendType(e.target.value as any)}
-                                    className="bg-transparent text-[8px] font-black text-slate-600 focus:outline-none cursor-pointer uppercase appearance-none pr-4 w-full"
-                                >
-                                    <option value="all">KATEGORI</option>
-                                    <option value={MemorizationType.SABAQ}>SABAQ</option>
-                                    <option value={MemorizationType.SABQI}>SABQI</option>
-                                    <option value={MemorizationType.MANZIL}>MANZIL</option>
-                                </select>
-                                <ChevronDown className="w-2.5 h-2.5 text-slate-300 absolute right-3 pointer-events-none group-hover:text-emerald-500 transition-colors" />
-                            </div>
+                            <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:flex-row sm:gap-3 sm:w-auto">
+                                <div className="flex items-center bg-white px-3.5 rounded-full border border-slate-200 shadow-sm ring-1 ring-white h-9 lg:h-10 gap-1.5 hover:border-emerald-200 transition-all group cursor-pointer relative shrink-0">
+                                    <select 
+                                        value={adminTrendType} 
+                                        onChange={(e) => setAdminTrendType(e.target.value as any)}
+                                        className="bg-transparent text-[8px] font-black text-slate-600 focus:outline-none cursor-pointer uppercase appearance-none pr-4 w-full"
+                                    >
+                                        <option value="all">KATEGORI</option>
+                                        <option value={MemorizationType.SABAQ}>SABAQ</option>
+                                        <option value={MemorizationType.SABQI}>SABQI</option>
+                                        <option value={MemorizationType.MANZIL}>MANZIL</option>
+                                    </select>
+                                    <ChevronDown className="w-2.5 h-2.5 text-slate-300 absolute right-3 pointer-events-none group-hover:text-emerald-500 transition-colors" />
+                                </div>
 
-                            <div className="flex items-center bg-white px-4 rounded-full border border-slate-200 shadow-sm ring-1 ring-white h-10 lg:h-11 gap-1.5 hover:border-emerald-200 transition-all group cursor-pointer relative shrink-0">
-                                <select 
-                                    value={adminTrendPeriod} 
-                                    onChange={(e) => setAdminTrendPeriod(e.target.value as any)}
-                                    className="bg-transparent text-[8px] font-black text-slate-600 focus:outline-none cursor-pointer uppercase appearance-none pr-4 w-full"
-                                >
-                                    <option value="weekly">MINGGUAN</option>
-                                    <option value="monthly">BULANAN</option>
-                                    <option value="3months">3 BULANAN</option>
-                                    <option value="6months">SEMESTERAN</option>
-                                    <option value="yearly">TAHUNAN</option>
-                                </select>
-                                <ChevronDown className="w-2.5 h-2.5 text-slate-300 absolute right-3 pointer-events-none group-hover:text-emerald-500 transition-colors" />
+                                <div className="flex items-center bg-white px-4 rounded-full border border-slate-200 shadow-sm ring-1 ring-white h-9 lg:h-11 gap-1.5 hover:border-emerald-200 transition-all group cursor-pointer relative shrink-0">
+                                    <select 
+                                        value={adminTrendPeriod} 
+                                        onChange={(e) => setAdminTrendPeriod(e.target.value as any)}
+                                        className="bg-transparent text-[8px] font-black text-slate-600 focus:outline-none cursor-pointer uppercase appearance-none pr-4 w-full"
+                                    >
+                                        <option value="weekly">MINGGUAN</option>
+                                        <option value="monthly">BULANAN</option>
+                                        <option value="3months">3 BULANAN</option>
+                                        <option value="6months">SEMESTERAN</option>
+                                        <option value="yearly">TAHUNAN</option>
+                                    </select>
+                                    <ChevronDown className="w-2.5 h-2.5 text-slate-300 absolute right-3 pointer-events-none group-hover:text-emerald-500 transition-colors" />
+                                </div>
                             </div>
                             
                             <div className="flex items-center gap-1.5 ml-auto">
@@ -298,23 +300,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </div>
 
                     <div className="flex-1 w-full overflow-hidden">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                             <LineChart data={adminTrendData} margin={{ top: 10, right: 10, left: -30, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
                                 <XAxis 
                                     dataKey="name" 
-                                    tick={{fill: '#94a3b8', fontSize: 7, fontWeight: 900}} 
+                                    tick={{fill: '#94a3b8', fontSize: 8, fontWeight: 900}} 
                                     tickLine={false} 
                                     axisLine={false} 
                                     dy={8} 
                                     interval={adminTrendPeriod === 'weekly' ? 0 : adminTrendPeriod === 'monthly' ? 2 : 0}
                                 />
-                                <YAxis tick={{fill: '#94a3b8', fontSize: 7, fontWeight: 900}} tickLine={false} axisLine={false} dx={-5} />
+                                <YAxis tick={{fill: '#94a3b8', fontSize: 8, fontWeight: 900}} tickLine={false} axisLine={false} dx={-5} allowDecimals={false} />
                                 <Tooltip 
                                     cursor={{ stroke: '#f1f5f9', strokeWidth: 2 }}
                                     contentStyle={{ borderRadius: '1.25rem', border: 'none', backgroundColor: 'var(--color-jade-600)', color: '#fff', padding: '12px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-                                    itemStyle={{ color: '#fff', fontSize: '9px', fontWeight: 800, padding: 0 }}
-                                    labelStyle={{ color: '#fff', opacity: 0.6, fontSize: '7px', fontWeight: 900, marginBottom: '6px', textTransform: 'uppercase' }}
+                                    itemStyle={{ color: '#fff', fontSize: '10px', fontWeight: 800, padding: 0 }}
+                                    labelStyle={{ color: '#fff', opacity: 0.6, fontSize: '8px', fontWeight: 900, marginBottom: '6px', textTransform: 'uppercase' }}
                                 />
                                 {(adminTrendType === 'all' || adminTrendType === MemorizationType.SABAQ) && (
                                     <Line type="monotone" name="Sabaq" dataKey="sabaq" stroke="var(--color-jade-600)" strokeWidth={3} dot={{ r: 0 }} activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2, fill: 'var(--color-jade-600)' }} />
@@ -350,7 +352,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             Monitor hasil capaian pekanan 
                             {adminTargetData.some(d => d.tercapai > 0 || d.tidakTercapai > 0 || d.terlampaui > 0) && (
                                 <span className="text-emerald-500 ml-1">
-                                    â€¢ {adminTargetData.reduce((acc, curr) => acc + (curr.tercapai || 0) + (curr.tidakTercapai || 0) + (curr.terlampaui || 0), 0)} DATA
+                                    {adminTargetData.reduce((acc, curr) => acc + (curr.tercapai || 0) + (curr.tidakTercapai || 0) + (curr.terlampaui || 0), 0)} DATA
                                 </span>
                             )}
                         </p>
@@ -372,27 +374,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             </div>
                         </div>
 
-                        <div className="flex items-center bg-white px-3.5 rounded-full border border-slate-200 shadow-sm ring-1 ring-white h-9 lg:h-10 gap-2 hover:border-emerald-200 transition-all group cursor-pointer relative min-w-[110px]">
-                            <select value={adminTargetHalaqahId} onChange={(e) => setAdminTargetHalaqahId(e.target.value)} className="bg-transparent text-[8px] font-black text-slate-600 focus:outline-none cursor-pointer uppercase appearance-none pr-4 w-full">
-                                <option value="all">HALAQAH</option>
-                                {halaqahs.map(h => (
-                                    <option key={h.id} value={h.id}>{h.name.toUpperCase()}</option>
-                                ))}
-                            </select>
-                            <ChevronDown className="w-2.5 h-2.5 text-slate-300 absolute right-3 pointer-events-none group-hover:text-emerald-500 transition-colors" />
-                        </div>
+                        <div className="flex flex-row items-center gap-2 w-full sm:w-auto">
+                            <div className="flex items-center bg-white px-3.5 rounded-full border border-slate-200 shadow-sm ring-1 ring-white h-9 lg:h-10 gap-2 hover:border-emerald-200 transition-all group cursor-pointer relative flex-1 sm:flex-none sm:min-w-[110px]">
+                                <select value={adminTargetHalaqahId} onChange={(e) => setAdminTargetHalaqahId(e.target.value)} className="bg-transparent text-[8px] font-black text-slate-600 focus:outline-none cursor-pointer uppercase appearance-none pr-4 w-full">
+                                    <option value="all">HALAQAH</option>
+                                    {halaqahs.map(h => (
+                                        <option key={h.id} value={h.id}>{h.name.toUpperCase()}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown className="w-2.5 h-2.5 text-slate-300 absolute right-3 pointer-events-none group-hover:text-emerald-500 transition-colors" />
+                            </div>
 
-                        <div className="flex items-center gap-1 bg-emerald-600 p-1 rounded-full shadow-[0_4px_12px_rgba(16,185,129,0.15)] min-w-[140px] h-9 lg:h-10">
-                            <button type="button" onClick={() => setAdminTargetWeekOffset(prev => prev - 1)} className="w-7 h-7 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all text-white"><ChevronLeft className="w-3 h-3" /></button>
-                            <div className="flex-1 px-1 text-[6.5px] lg:text-[7.5px] font-black uppercase tracking-widest text-white flex items-center justify-center gap-1.5"><Calendar className="w-2.5 h-2.5 opacity-60" /><span className="whitespace-nowrap">{adminTargetWeekRange.display}</span></div>
-                            <button type="button" onClick={() => setAdminTargetWeekOffset(prev => prev + 1)} className="w-7 h-7 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all text-white"><ChevronRight className="w-3 h-3" /></button>
+                            <div className="flex items-center gap-1 bg-emerald-600 p-1 rounded-full shadow-[0_4px_12px_rgba(16,185,129,0.15)] flex-1 sm:flex-none sm:min-w-[140px] h-9 lg:h-10">
+                                <button type="button" onClick={() => setAdminTargetWeekOffset(prev => prev - 1)} className="w-6 h-6 lg:w-7 lg:h-7 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all text-white"><ChevronLeft className="w-2.5 h-2.5" /></button>
+                                <div className="flex-1 px-1 text-[6.5px] lg:text-[7.5px] font-black uppercase tracking-widest text-white flex items-center justify-center gap-1 lg:gap-1.5"><Calendar className="w-2.5 h-2.5 opacity-60 hidden xs:block" /><span className="whitespace-nowrap">{adminTargetWeekRange.display}</span></div>
+                                <button type="button" onClick={() => setAdminTargetWeekOffset(prev => prev + 1)} className="w-6 h-6 lg:w-7 lg:h-7 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all text-white"><ChevronRight className="w-2.5 h-2.5" /></button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div className="flex-1 w-full overflow-hidden">
                     {adminTargetData.some(d => (d.tercapai || 0) > 0 || (d.tidakTercapai || 0) > 0 || (d.terlampaui || 0) > 0) ? (
-                        <ResponsiveContainer width="100%" height={240}>
+                        <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
                             <BarChart data={adminTargetData} margin={{ top: 10, right: 10, left: -30, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 7, fontWeight: 900, fill: '#94A3B8' }} dy={10} />

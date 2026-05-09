@@ -136,23 +136,23 @@ export const GlobalAuditLogs: React.FC = () => {
     <div className="space-y-4 animate-fade-in pb-10">
       <div className="flex flex-row items-center gap-1.5 lg:gap-4 bg-white/40 p-1.5 lg:p-2 rounded-2xl lg:rounded-[24px] border border-white/20 backdrop-blur-md overflow-x-auto no-scrollbar">
           {/* Search */}
-          <div className="relative flex-2 min-w-[120px] group">
-              <Search className="absolute left-3 lg:left-5 top-1/2 -translate-y-1/2 w-3 lg:w-4 h-3 lg:h-4 text-slate-300 group-focus-within:text-emerald-600 transition-colors" />
+          <div className="relative flex-[2] min-w-[80px] lg:min-w-[200px] group">
+              <Search className="absolute left-2.5 lg:left-5 top-1/2 -translate-y-1/2 w-3 lg:w-4 h-3 lg:h-4 text-slate-300 group-focus-within:text-emerald-600 transition-colors" />
               <input 
                   type="text" 
                   placeholder="Cari..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-8 lg:pl-12 pr-4 py-1.5 lg:py-3 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-emerald-50/50 focus:border-emerald-500 focus:bg-white transition-all text-[10px] lg:text-[12px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none h-8 lg:h-12 shadow-inner"
+                  className="w-full pl-7 lg:pl-12 pr-3 lg:pr-4 py-1.5 lg:py-3 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-emerald-50/50 focus:border-emerald-500 focus:bg-white transition-all text-[9.5px] lg:text-[12px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none h-8 lg:h-12 shadow-inner"
               />
           </div>
 
           {/* School Filter */}
-          <div className="relative flex-1 min-w-[100px] group">
+          <div className="relative flex-[1.5] min-w-[75px] lg:min-w-[150px] group">
               <select 
                 value={selectedTenantId}
                 onChange={(e) => setSelectedTenantId(e.target.value)}
-                className="pl-3 lg:pl-6 pr-6 lg:pr-10 py-1.5 lg:py-3 bg-white border border-slate-100 lg:border-2 lg:border-slate-50 rounded-xl lg:rounded-2xl text-[8.5px] lg:text-[10px] font-black uppercase tracking-tighter lg:tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none min-w-[70px] lg:min-w-[120px] h-8 lg:h-12 shadow-sm"
+                className="w-full pl-2 lg:pl-6 pr-5 lg:pr-10 py-1.5 lg:py-3 bg-white border border-slate-100 lg:border-2 lg:border-slate-50 rounded-xl lg:rounded-2xl text-[8px] lg:text-[10px] font-black uppercase tracking-tighter lg:tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none h-8 lg:h-12 shadow-sm truncate"
               >
                   <option value="all">SEMUA</option>
                   <option value="null">SISTEM</option>
@@ -160,24 +160,24 @@ export const GlobalAuditLogs: React.FC = () => {
                       <option key={t.id} value={t.id}>{t.name.toUpperCase()}</option>
                   ))}
               </select>
-              <ChevronDown className="absolute right-2.5 lg:right-4 top-1/2 -translate-y-1/2 w-2.5 lg:w-4 h-2.5 lg:h-4 text-slate-300 pointer-events-none" />
+              <ChevronDown className="absolute right-1.5 lg:right-4 top-1/2 -translate-y-1/2 w-2 lg:w-4 h-2 lg:h-4 text-slate-300 pointer-events-none" />
           </div>
 
           <div className="flex items-center gap-1.5 lg:gap-3 shrink-0">
-              {/* Export */}
+              {/* Export - Icon only on mobile */}
               <button 
                   onClick={handleExportCSV}
-                  className="flex items-center justify-center h-8 lg:h-12 px-2 lg:px-5 bg-emerald-50 border border-emerald-100 rounded-xl lg:rounded-2xl text-[9px] font-black uppercase tracking-widest text-emerald-700 shadow-sm hover:bg-emerald-100 transition-all active:scale-95"
+                  className="flex items-center justify-center h-8 lg:h-12 px-2.5 lg:px-5 bg-emerald-50 border border-emerald-100 rounded-xl lg:rounded-2xl text-[9px] font-black uppercase tracking-widest text-emerald-700 shadow-sm hover:bg-emerald-100 transition-all active:scale-95"
                   title="Export CSV"
               >
-                  <Download className="w-3.5 h-3.5 sm:mr-2" />
-                  <span className="hidden sm:inline">Export</span>
+                  <Download className="w-3.5 h-3.5 lg:mr-2" />
+                  <span className="hidden lg:inline">Export</span>
               </button>
 
-              {/* Status */}
-              <div className="flex items-center justify-center h-8 lg:h-12 px-2 lg:px-4 bg-emerald-50/50 text-emerald-600 rounded-xl lg:rounded-2xl border border-emerald-100 lg:border-2 lg:border-slate-50 shadow-sm">
-                    <ShieldCheck className="w-3.5 h-3.5 animate-pulse sm:mr-2" />
-                    <span className="text-[9px] font-black uppercase tracking-widest hidden sm:inline">Active</span>
+              {/* Status - Hidden on mobile, visible on lg up */}
+              <div className="hidden lg:flex items-center justify-center h-8 lg:h-12 px-2 lg:px-4 bg-emerald-50/50 text-emerald-600 rounded-xl lg:rounded-2xl border border-emerald-100 lg:border-2 lg:border-slate-50 shadow-sm">
+                    <ShieldCheck className="w-3.5 h-3.5 animate-pulse lg:mr-2" />
+                    <span className="text-[9px] font-black uppercase tracking-widest hidden lg:inline">Active</span>
               </div>
           </div>
 
@@ -204,9 +204,9 @@ export const GlobalAuditLogs: React.FC = () => {
             <table className="w-full table-fixed divide-y divide-slate-100 border-separate border-spacing-0">
             <thead>
                 <tr className="bg-white">
-                    <th className="w-[35px] min-w-[35px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-white z-30 px-3 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100">NO</th>
-                    <th className="w-[100px] min-w-[100px] lg:w-[150px] lg:min-w-[150px] sticky left-[35px] lg:left-[45px] bg-white z-30 px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 whitespace-nowrap">WAKTU</th>
-                    <th className="w-[150px] min-w-[150px] lg:w-[200px] lg:min-w-[200px] sticky left-[135px] lg:left-[195px] bg-white z-30 px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">AKTOR</th>
+                    <th className="hidden lg:table-cell w-[35px] min-w-[35px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-white z-30 px-3 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100">NO</th>
+                    <th className="hidden lg:table-cell w-[100px] min-w-[100px] lg:w-[150px] lg:min-w-[150px] sticky lg:left-[45px] bg-white z-30 px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 whitespace-nowrap">WAKTU</th>
+                    <th className="w-[120px] min-w-[120px] lg:w-[200px] lg:min-w-[200px] sticky left-0 lg:left-[195px] bg-white z-30 px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">AKTOR</th>
                     <th className="w-[180px] min-w-[180px] px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">SEKOLAH</th>
                     <th className="w-[100px] min-w-[100px] px-4 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">AKSI</th>
                     <th className="w-[250px] min-w-[250px] px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-slate-100 bg-white">DETAIL AKTIVITAS</th>
@@ -215,21 +215,22 @@ export const GlobalAuditLogs: React.FC = () => {
             <tbody className="bg-white divide-y divide-slate-50" key={currentPage}>
                 {paginatedLogs.map((log, index) => (
                 <tr key={log.id} className="group transition-colors hover:bg-slate-50/30">
-                    <td className="sticky left-0 bg-white px-2 py-4 text-[10.5px] font-black text-slate-400 text-center border-r-2 border-b border-slate-100 z-10 transition-colors uppercase">
+                    <td className="hidden lg:table-cell sticky left-0 bg-white px-2 py-4 text-[10.5px] font-black text-slate-400 text-center border-r-2 border-b border-slate-100 z-10 transition-colors uppercase">
                         {String((currentPage - 1) * itemsPerPage + index + 1)}
                     </td>
 
-                    <td className="sticky left-[35px] lg:left-[45px] bg-white px-4 py-4 border-r-2 border-b border-slate-100 z-10 transition-colors">
+                    <td className="hidden lg:table-cell lg:sticky lg:left-[45px] bg-white px-4 py-4 border-r-2 border-b border-slate-100 z-10 transition-colors">
                         <div className="flex flex-col gap-0.5">
                             <span className="text-[11px] font-bold text-slate-800 leading-none">{new Date(log.timestamp).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</span>
                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter leading-none">{new Date(log.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                     </td>
 
-                    <td className="sticky left-[135px] lg:left-[195px] bg-white px-4 py-4 border-r-2 border-b border-slate-200 z-10 transition-colors shadow-sm">
+                    <td className="sticky left-0 lg:left-[195px] bg-white px-4 py-4 border-r-2 border-b border-slate-200 z-10 transition-colors shadow-sm">
                         <div className="flex flex-col gap-1 truncate">
-                            <div className="text-[11.5px] font-black text-jade-600 truncate leading-tight capitalize">{log.actor_name}</div>
-                            <div className="text-[7.5px] font-black uppercase tracking-widest text-slate-400 leading-none">{log.actor_role.replace('_', ' ')}</div>
+                            <div className="text-[11.5px] font-black text-jade-600 truncate leading-tight capitalize max-w-[100px] lg:max-w-none">{log.actor_name}</div>
+                            <div className="text-[7.5px] font-black uppercase tracking-widest text-slate-400 leading-none truncate max-w-[100px] lg:max-w-none">{log.actor_role.replace('_', ' ')}</div>
+                            <div className="text-[8px] font-black text-slate-300 sm:hidden">{new Date(log.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
                         </div>
                     </td>
 
@@ -276,23 +277,20 @@ export const GlobalAuditLogs: React.FC = () => {
         )}
 
         {/* PAGINATION FOOTER */}
-        {/* PAGINATION CONTROLS */}
         {!loading && processedLogs.length > 0 && (
-            <div className="bg-[#F8FAFC] border-t border-slate-100 px-6 py-3 flex flex-col md:flex-row justify-between items-center gap-4 rounded-b-lg">
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <select 
-                            value={itemsPerPage}
-                            onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                            className="bg-white border-2 border-slate-100 rounded-xl px-2 md:px-3 py-1 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-emerald-50/50 cursor-pointer shadow-sm transition-all"
-                        >
-                            {[10, 25, 50, 100].map(val => (
-                                <option key={val} value={val}>{val}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="hidden sm:block w-px h-6 bg-slate-200" />
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-tight whitespace-nowrap leading-none">
+            <div className="bg-[#F8FAFC] border-t border-slate-100 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 lg:gap-4 rounded-b-lg">
+                <div className="flex items-center gap-2 lg:gap-4">
+                    <select 
+                        value={itemsPerPage}
+                        onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                        className="bg-white border-2 border-slate-100 rounded-xl px-2 md:px-3 py-1.5 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-emerald-50/50 cursor-pointer shadow-sm transition-all h-8"
+                    >
+                        {[10, 25, 50, 100].map(val => (
+                            <option key={val} value={val}>{val}</option>
+                        ))}
+                    </select>
+                    <div className="hidden lg:block w-px h-6 bg-slate-200" />
+                    <p className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-tight whitespace-nowrap leading-none">
                         <span className="hidden sm:inline">DATA</span> 
                         <span className="text-slate-600 ml-1">{(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, processedLogs.length)}</span> 
                         <span className="hidden sm:inline text-slate-300 mx-1">/</span> 
@@ -304,12 +302,12 @@ export const GlobalAuditLogs: React.FC = () => {
                     <button 
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        className={`p-2 rounded-xl border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
+                        className={`p-1.5 lg:p-2 rounded-lg lg:rounded-xl border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
                     >
-                        <ChevronRight className="w-4 h-4 rotate-180" />
+                        <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4 rotate-180" />
                     </button>
                     
-                    <div className="flex items-center gap-1 px-2">
+                    <div className="flex items-center gap-0.5 lg:gap-1 px-1 lg:px-2">
                         {[...Array(totalPages)].map((_, i) => {
                             const pNum = i + 1;
                             if (totalPages > 5) {
@@ -323,7 +321,7 @@ export const GlobalAuditLogs: React.FC = () => {
                                 <button 
                                     key={pNum}
                                     onClick={() => setCurrentPage(pNum)}
-                                    className={`w-9 h-9 rounded-xl text-[10px] font-black transition-all active:scale-95 ${currentPage === pNum ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100 border-2 border-emerald-600' : 'text-slate-400 hover:bg-slate-50 border-2 border-transparent'}`}
+                                    className={`w-7 h-7 lg:w-9 lg:h-9 rounded-lg lg:rounded-xl text-[9px] lg:text-[10px] font-black transition-all active:scale-95 ${currentPage === pNum ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100 border-2 border-emerald-600' : 'text-slate-400 hover:bg-slate-50 border-2 border-transparent'}`}
                                 >
                                     {pNum}
                                 </button>
@@ -334,9 +332,9 @@ export const GlobalAuditLogs: React.FC = () => {
                     <button 
                         disabled={currentPage === totalPages}
                         onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                        className={`p-2 rounded-xl border-2 transition-all active:scale-90 ${currentPage === totalPages ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
+                        className={`p-1.5 lg:p-2 rounded-lg lg:rounded-xl border-2 transition-all active:scale-90 ${currentPage === totalPages ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
                     >
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
                     </button>
                 </div>
             </div>

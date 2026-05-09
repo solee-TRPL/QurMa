@@ -102,58 +102,61 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
 
   return (
     <div className="space-y-6">
-      {/* Unified Control Bar */}
-      <div className="flex flex-col lg:flex-row w-full gap-2 py-2 bg-white shrink-0 z-70 sticky top-0">
-        <div className="flex flex-row items-center gap-2 w-full lg:contents">
-             {/* 3. SORT FILTER */}
-            <div className="flex-1 lg:flex-none flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-2xl border-2 border-slate-100 shadow-sm min-w-[180px] lg:min-w-[200px]">
-                <div className="flex-1 relative group/sel-time">
-                    <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Urutkan Waktu</p>
-                    <div className="relative">
-                        <select 
-                            value={sortOrder}
-                            onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
-                            className="w-full bg-transparent text-[9px] md:text-[10px] font-black text-slate-800 uppercase tracking-tight focus:outline-none appearance-none cursor-pointer p-0 pr-5 relative z-10 truncate"
-                        >
-                            <option value="newest">TERBARU</option>
-                            <option value="oldest">TERLAMA</option>
-                        </select>
-                        <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none group-hover/sel-time:text-jade-500 transition-colors" />
-                    </div>
-                </div>
-            </div>
+      {/* Unified Control Bar - 2 Rows for Mobile */}
+      <div className="flex flex-col lg:flex-row w-full gap-2.5 py-2 bg-white sticky top-0 z-70 border-b border-slate-100 lg:border-none">
+          {/* BARIS 1: Sort & Search */}
+          <div className="flex flex-row items-center gap-2 w-full lg:flex-1">
+              {/* 3. SORT FILTER */}
+              <div className="flex-none flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-2xl border-2 border-slate-100 shadow-sm min-w-[140px] md:min-w-[200px] h-10 lg:h-11">
+                  <div className="flex-1 relative group/sel-time">
+                      <p className="text-[7.5px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Urutkan</p>
+                      <div className="relative">
+                          <select 
+                              value={sortOrder}
+                              onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
+                              className="w-full bg-transparent text-[8.5px] md:text-[10px] font-black text-slate-800 uppercase tracking-tight focus:outline-none appearance-none cursor-pointer p-0 pr-5 relative z-10 truncate"
+                          >
+                              <option value="newest">TERBARU</option>
+                              <option value="oldest">TERLAMA</option>
+                          </select>
+                          <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none group-hover/sel-time:text-jade-500 transition-colors" />
+                      </div>
+                  </div>
+              </div>
 
-            {/* 1. SEARCH BAR */}
-            <div className="relative flex-1 group h-10 min-w-0">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-jade-500 transition-colors" />
-                <input 
-                    type="text" 
-                    placeholder="CARI AUDIT LOG..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full h-full pl-10 pr-4 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 focus:bg-white transition-all text-[10px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-inner"
-                />
-            </div>
+              {/* 1. SEARCH BAR */}
+              <div className="relative flex-1 group h-10 lg:h-11">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-jade-500 transition-colors" />
+                  <input 
+                      type="text" 
+                      placeholder="CARI AUDIT LOG..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="w-full h-full pl-10 pr-4 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 focus:bg-white transition-all text-[9.5px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-inner"
+                  />
+              </div>
+          </div>
 
-            {/* 2. EXPORT CSV */}
-            <button 
-                onClick={handleExportCSV}
-                className="h-10 flex flex-none items-center px-6 font-black text-[10px] uppercase tracking-widest rounded-full bg-jade-600 text-white shadow-lg shadow-primary-100/50 hover:bg-jade-700 hover:scale-[1.02] transition-all active:scale-95 gap-2 whitespace-nowrap"
-            >
-                <Download className="w-3.5 h-3.5" /> <span className="hidden lg:inline">EXPORT CSV</span><span className="lg:hidden">CSV</span>
-            </button>
+          {/* BARIS 2: Refresh & CSV */}
+          <div className="flex flex-row items-center gap-2 w-full lg:w-auto lg:flex-none">
+              {/* 4. REFRESH (Left-aligned on mobile) */}
+              <button 
+                  onClick={fetchLogs}
+                  disabled={loading}
+                  className="h-10 w-10 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 hover:bg-slate-50 transition-all active:scale-95 rounded-xl shadow-sm disabled:opacity-50"
+                  title="Muat Ulang"
+              >
+                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              </button>
 
-            {/* 4. REFRESH */}
-            <div className="flex items-start gap-2">
-                <button 
-                    onClick={fetchLogs}
-                    disabled={loading}
-                    className="h-10 w-10 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 hover:bg-slate-50 transition-all active:scale-95 rounded-full shadow-sm disabled:opacity-50"
-                >
-                    <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-                </button>
-            </div>
-        </div>            
+              {/* 2. EXPORT CSV (Right-aligned / Fills space on mobile) */}
+              <button 
+                  onClick={handleExportCSV}
+                  className="h-10 flex-1 lg:flex-none flex items-center justify-center px-6 font-black text-[9px] md:text-[10px] uppercase tracking-widest rounded-xl bg-jade-600 text-white shadow-lg shadow-jade-100/50 hover:bg-jade-700 hover:scale-[1.02] transition-all active:scale-95 gap-2 whitespace-nowrap"
+              >
+                  <Download className="w-4 h-4" /> <span>CSV</span><span className="hidden lg:inline">EXPORT</span>
+              </button>
+          </div>
       </div>
 
       <div className="bg-white shadow-sm border-2 border-slate-200 overflow-hidden flex flex-col">
@@ -161,9 +164,9 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
             <table className="min-w-full border-separate border-spacing-0">
             <thead className="sticky top-0 z-40 bg-white">
                 <tr>
-                    <th className="sticky left-0 z-60 bg-white px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[45px] min-w-[45px]">NO</th>
-                    <th className="sticky left-[45px] z-60 bg-white px-2 md:px-4 py-4 text-center md:text-left text-[9.5px] whitespace-nowrap font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[70px] md:w-[110px] min-w-[70px] md:min-w-[110px]">WAKTU</th>
-                    <th className="sticky left-[115px] md:left-[155px] z-60 bg-white px-2 md:px-6 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[90px] md:w-[150px] min-w-[90px] md:min-w-[150px] whitespace-nowrap">AKTOR</th>
+                    <th className="hidden md:table-cell sticky left-0 z-60 bg-white px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[45px] min-w-[45px]">NO</th>
+                    <th className="sticky left-0 md:left-[45px] z-60 bg-white px-1.5 md:px-4 py-4 text-center md:text-left text-[9px] md:text-[9.5px] whitespace-nowrap font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[55px] md:w-[110px] min-w-[55px] md:min-w-[110px]">WAKTU</th>
+                    <th className="sticky left-[55px] md:left-[155px] z-60 bg-white px-2 md:px-6 py-4 text-left text-[9px] md:text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[75px] md:w-[150px] min-w-[75px] md:min-w-[150px] whitespace-nowrap">AKTOR</th>
                     <th className="px-6 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-24 whitespace-nowrap">AKSI</th>
                     <th className="px-6 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 whitespace-nowrap min-w-[300px]">ENTITAS & DETAIL</th>
                     <th className="px-6 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-slate-100 whitespace-nowrap w-32">IP ADDRESS</th>
@@ -172,19 +175,19 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
             <tbody className="bg-white divide-y divide-slate-100">
                 {paginatedLogs.map((log, idx) => (
                 <tr key={log.id} className="hover:bg-slate-50/50 transition-colors group">
-                    <td className="sticky left-0 z-20 bg-white px-2 py-4 whitespace-nowrap text-[10.5px] font-black text-slate-400 border-r-2 border-b border-slate-100 text-center uppercase transition-colors">
+                    <td className="hidden md:table-cell sticky left-0 z-20 bg-white px-2 py-4 whitespace-nowrap text-[10.5px] font-black text-slate-400 border-r-2 border-b border-slate-100 text-center uppercase transition-colors">
                         {String((currentPage - 1) * itemsPerPage + idx + 1).padStart(2, '0')}
                     </td>
-                    <td className="sticky left-[45px] z-20 bg-white px-2 md:px-4 py-4 whitespace-nowrap text-[10.5px] text-slate-700 font-mono font-black border-r-2 border-b border-slate-100 text-center md:text-left">
+                    <td className="sticky left-0 md:left-[45px] z-20 bg-white px-1.5 md:px-4 py-4 whitespace-nowrap text-[9.5px] md:text-[10.5px] text-slate-700 font-mono font-black border-r-2 border-b border-slate-100 text-center md:text-left">
                         <div className="flex flex-col items-center md:items-start leading-tight">
                             <span className="font-black text-slate-800 tracking-tighter truncate">{new Date(log.timestamp).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })}</span>
-                            <span className="text-[9.5px] opacity-50">{new Date(log.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span className="text-[8.5px] md:text-[9.5px] opacity-50">{new Date(log.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                     </td>
-                    <td className="sticky left-[115px] md:left-[155px] z-20 bg-white px-2 md:px-6 py-4 whitespace-nowrap border-r-2 border-b border-slate-100">
+                    <td className="sticky left-[55px] md:left-[155px] z-20 bg-white px-2 md:px-6 py-4 whitespace-nowrap border-r-2 border-b border-slate-100">
                         <div className="flex flex-col">
-                            <div className="text-[11px] font-black text-slate-800 capitalize tracking-tight leading-none mb-1 truncate max-w-[80px] md:max-w-[120px]">{log.actor_name}</div>
-                            <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.1em] opacity-70">
+                            <div className="text-[10px] md:text-[11px] font-black text-slate-800 capitalize tracking-tight leading-none mb-1 truncate max-w-[65px] md:max-w-[120px]">{log.actor_name}</div>
+                            <div className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.1em] opacity-70">
                                 {log.actor_role.toLowerCase() === 'guardian' ? 'Siswa' : log.actor_role.toLowerCase()}
                             </div>
                         </div>

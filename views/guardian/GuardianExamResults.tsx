@@ -120,7 +120,14 @@ export const StudentExamResults: React.FC<{ user?: UserProfile }> = ({ user }) =
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-slate-500">Memuat data ujian...</div>;
+    if (loading) {
+        return (
+            <div className="h-[calc(100vh-160px)] flex flex-col items-center justify-center">
+                <div className="w-12 h-12 border-4 border-jade-100 border-t-jade-600 rounded-full animate-spin mb-4"></div>
+                <p className="text-[10px] font-black text-jade-600 uppercase tracking-widest animate-pulse">Memuat data ujian...</p>
+            </div>
+        );
+    }
 
     if (!studentName && !loading && exams.length === 0) {
         return (

@@ -47,8 +47,14 @@ We define five primary roles in the `user_role` enum:
 
 ### Modular Service Layer
 The application uses a **refactored modular service layer** located in `services/data/`.
-*   **`dataService.ts`**: Central entry point (re-exports) for backward compatibility.
+*   **`services/dataService.ts`**: Central entry point (re-exports) for backward compatibility.
 *   **`services/data/`**: Organized by domain (e.g., `studentService.ts`, `memorizationService.ts`).
+
+### UI Architecture (Next.js App Router)
+The project is built using the **Next.js App Router** for modern performance and SEO.
+*   **`app/`**: Contains page entry points and layouts.
+*   **`views/`**: Contains the core UI components and logic for each page, allowing for better testability and reusability.
+*   **`components/`**: Reusable low-level UI elements (Buttons, Inputs, etc.).
 
 ### Persistence Strategy (Dual-Write)
 To balance performance and usability, memorization inputs use a **Dual-Write** approach:
@@ -56,11 +62,13 @@ To balance performance and usability, memorization inputs use a **Dual-Write** a
 2.  **Weekly Snapshots:** Saved to `weekly_memorization` (JSONB) for efficient high-density table rendering (e.g., Target Monitoring).
 
 ### State Management
-*   **`App.tsx`**: Main router and role-based view switcher.
+*   **`app/providers.tsx`**: Main context provider wrapper.
+*   **`lib/AuthContext`**: Handles session and role-based access.
 *   **`lib/LoadingContext`**: Unified loading states for smooth UX.
 *   **`lib/NotificationContext`**: Global feedback system.
 
 ## 5. Deployment & Terminology
 *   **Standard Status:** `Lancar`, `Tidak Lancar`, `Tidak Setor`.
-*   **CI/CD:** Vite-based builds for instant loading.
-*   **DB Migration:** Always run `sql_migration_final.sql` for schema parity.
+*   **Build:** Next.js optimized production builds.
+*   **DB Migration:** Always run `sql.txt` or relevant SQL scripts for schema parity.
+

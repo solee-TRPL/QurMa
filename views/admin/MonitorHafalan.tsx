@@ -74,60 +74,60 @@ const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClo
 
     return (
         <div 
-            className="fixed inset-0 z-999999 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 lg:pl-64 pt-16"
+            className="fixed inset-0 z-999999 flex items-center justify-center p-2 md:p-4 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 lg:pl-64 pt-16"
             onClick={onClose}
         >
             <div 
-                className="relative bg-white rounded-[28px] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 border border-white flex flex-col max-h-[85vh]"
+                className="relative bg-white rounded-[24px] md:rounded-[28px] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 border border-white flex flex-col max-h-[90vh] md:max-h-[85vh]"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div className="px-4 md:px-6 py-4 md:py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                     <div>
-                        <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                             <Crosshair className="w-4 h-4 text-jade-500" />
+                        <h3 className="text-[11px] md:text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                             <Crosshair className="w-3.5 h-3.5 md:w-4 md:h-4 text-jade-500" />
                              Target Hafalan
                         </h3>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Acuan Standar Hafalan Santri</p>
+                        <p className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5 md:mt-1">Acuan Standar Hafalan Santri</p>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                        <X className="w-4 h-4 text-slate-400" />
+                    <button onClick={onClose} className="p-1.5 md:p-2 hover:bg-slate-100 rounded-full transition-colors">
+                        <X className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400" />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-6 overflow-y-auto scrollbar-hide space-y-4">
-                    <div className="space-y-3">
+                <div className="p-4 md:p-6 overflow-y-auto scrollbar-hide space-y-3 md:space-y-4">
+                    <div className="space-y-2.5 md:space-y-3">
                         {infoList.map((item, idx) => (
-                            <div key={idx} className="flex items-center gap-2 animate-in slide-in-from-left-2 duration-200" style={{ animationDelay: `${idx * 50}ms` }}>
-                                <div className="flex-1 space-y-1">
-                                    <label className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Keterangan</label>
+                            <div key={idx} className="flex items-center gap-1.5 md:gap-2 animate-in slide-in-from-left-2 duration-200" style={{ animationDelay: `${idx * 50}ms` }}>
+                                <div className="flex-1 space-y-0.5 md:space-y-1">
+                                    <label className="text-[7.5px] md:text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Keterangan</label>
                                     <input 
                                         type="text" 
                                         value={item.label}
                                         onChange={(e) => handleUpdateItem(idx, 'label', e.target.value)}
-                                        placeholder="Penerima Target..."
+                                        placeholder="Penerima..."
                                         disabled={isReadOnly}
-                                        className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[10.5px] font-black text-slate-800 transition-all outline-none ${isReadOnly ? 'opacity-70 cursor-not-allowed' : 'focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white'}`}
+                                        className={`w-full px-3 md:px-4 py-2 md:py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[9.5px] md:text-[10.5px] font-black text-slate-800 transition-all outline-none ${isReadOnly ? 'opacity-70 cursor-not-allowed' : 'focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white'}`}
                                     />
                                 </div>
-                                <div className="flex-1 space-y-1">
-                                    <label className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Target</label>
+                                <div className="flex-1 space-y-0.5 md:space-y-1">
+                                    <label className="text-[7.5px] md:text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Target</label>
                                     <input 
                                         type="text" 
                                         value={item.value}
                                         onChange={(e) => handleUpdateItem(idx, 'value', e.target.value)}
                                         placeholder="Target..."
                                         disabled={isReadOnly}
-                                        className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[10.5px] font-black text-slate-800 transition-all outline-none ${isReadOnly ? 'opacity-70 cursor-not-allowed' : 'focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white'}`}
+                                        className={`w-full px-3 md:px-4 py-2 md:py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[9.5px] md:text-[10.5px] font-black text-slate-800 transition-all outline-none ${isReadOnly ? 'opacity-70 cursor-not-allowed' : 'focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white'}`}
                                     />
                                 </div>
                                 {!isReadOnly && (
                                     <button 
                                         onClick={() => handleConfirmDelete(idx)}
-                                        className="mt-5 p-2.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all active:scale-90 shadow-sm border border-transparent hover:border-rose-100"
+                                        className="mt-4 md:mt-5 p-2 md:p-2.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all active:scale-90 shadow-sm border border-transparent hover:border-rose-100"
                                     >
-                                        <Trash2 className="w-4 h-4" />
+                                        <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
                                     </button>
                                 )}
                             </div>
@@ -137,7 +137,7 @@ const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClo
                     {!isReadOnly && (
                         <button 
                             onClick={handleAddItem}
-                            className="w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 hover:text-jade-500 hover:border-jade-200 hover:bg-jade-50/30 transition-all flex items-center justify-center gap-2 group"
+                            className="hidden lg:flex w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 hover:text-jade-500 hover:border-jade-200 hover:bg-jade-50/30 transition-all items-center justify-center gap-2 group"
                         >
                             <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
                             <span className="text-[10px] font-black uppercase tracking-widest">Tambah Baris Target</span>
@@ -146,33 +146,43 @@ const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClo
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-slate-100 bg-white flex items-center gap-3">
+                <div className="p-4 md:p-6 border-t border-slate-100 bg-white flex items-center gap-2 md:gap-3">
                     {isReadOnly ? (
                         <button 
                             onClick={onClose}
-                            className="w-full py-3.5 bg-slate-800 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 shadow-xl shadow-slate-100 transition-all active:scale-95 flex items-center justify-center gap-2"
+                            className="w-full py-3.5 bg-slate-800 text-white rounded-xl text-[8.5px] md:text-[9px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 shadow-xl shadow-slate-100 transition-all active:scale-95 flex items-center justify-center gap-2"
                         >
                             Tutup
                         </button>
                     ) : (
                         <>
+                            {/* COMPACT ADD BUTTON (Mobile Only) */}
+                            <button 
+                                onClick={handleAddItem}
+                                className="lg:hidden h-10 w-10 shrink-0 flex items-center justify-center bg-jade-50 text-jade-600 rounded-xl border border-jade-100 shadow-sm active:scale-90 transition-all"
+                                title="Tambah Baris"
+                            >
+                                <Plus className="w-5 h-5" />
+                            </button>
+
                             <button 
                                 onClick={onClose}
-                                className="flex-1 py-3 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] hover:bg-slate-50 rounded-xl transition-all active:scale-95"
+                                className="flex-1 py-3 text-[8.5px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] hover:bg-slate-50 rounded-xl transition-all active:scale-95 text-center"
                             >
                                 Batal
                             </button>
+                            
                             <button 
                                 onClick={handleSubmit}
                                 disabled={saving}
-                                className="flex-1.5 py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-jade-700 shadow-xl shadow-primary-100 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+                                className="flex-1 py-3 bg-jade-600 text-white rounded-xl text-[8.5px] md:text-[9px] font-black uppercase tracking-[0.2em] hover:bg-jade-700 shadow-lg shadow-jade-100 transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-50 min-w-[90px]"
                             >
                                 {saving ? (
-                                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    <div className="w-3 h-3 md:w-3.5 md:h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                 ) : (
-                                    <Save className="w-3.5 h-3.5" />
+                                    <Save className="w-3 h-3 md:w-3.5 md:h-3.5" />
                                 )}
-                                <span>Simpan Perubahan</span>
+                                <span>Simpan</span>
                             </button>
                         </>
                     )}
@@ -180,40 +190,40 @@ const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClo
 
                 {/* INNER CUSTOM CONFIRM OVERLAY */}
                 {deleteConfirm.show && (
-                    <div className="absolute inset-0 z-100 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-                        <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-[320px] overflow-hidden animate-in zoom-in-95 duration-200 border border-white/50 relative">
+                    <div className="absolute inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/60 lg:backdrop-blur-sm animate-in fade-in duration-200 rounded-[24px] md:rounded-[28px]">
+                        <div className="bg-white rounded-[28px] shadow-2xl w-full max-w-[280px] md:max-w-[320px] overflow-hidden animate-in zoom-in-95 duration-200 border border-white/50 relative">
                             <button 
                                 onClick={() => setDeleteConfirm({ show: false, index: null })}
                                 className="absolute top-4 right-4 p-1.5 hover:bg-slate-50 rounded-full transition-colors"
                             >
-                                <X className="w-4 h-4 text-slate-300" />
+                                <X className="w-3.5 h-3.5 text-slate-300" />
                             </button>
 
-                            <div className="p-8 text-center">
-                                <div className="w-16 h-16 bg-rose-50 rounded-[22px] flex items-center justify-center mx-auto mb-6 text-rose-500 shadow-sm border border-rose-100/50">
-                                    <AlertTriangle className="w-8 h-8" />
+                            <div className="p-6 md:p-8 text-center">
+                                <div className="w-14 h-14 md:w-16 md:h-16 bg-rose-50 rounded-[20px] md:rounded-[22px] flex items-center justify-center mx-auto mb-4 md:mb-6 text-rose-500 shadow-sm border border-rose-100/50">
+                                    <AlertTriangle className="w-6 h-6 md:w-8 md:h-8" />
                                 </div>
-                                <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-widest leading-normal mb-2">Hapus Target?</h3>
-                                <p className="text-[10px] font-bold text-slate-500 leading-relaxed uppercase tracking-wide opacity-80">
+                                <h3 className="text-[11px] md:text-[13px] font-black text-slate-800 uppercase tracking-widest leading-normal mb-1 md:mb-2">Hapus Target?</h3>
+                                <p className="text-[9px] md:text-[10px] font-bold text-slate-500 leading-relaxed uppercase tracking-wide opacity-80">
                                     Hapus target <span className="text-slate-800">{infoList[deleteConfirm.index!]?.label || 'ini'}</span>?
                                 </p>
-                                <p className="text-[9px] font-black text-rose-500 mt-4 uppercase tracking-0.05em">
-                                    Data yang dihapus tidak dapat dipulihkan.
+                                <p className="text-[8px] md:text-[9px] font-black text-rose-500 mt-3 md:mt-4 uppercase tracking-0.05em">
+                                    Data tidak dapat dipulihkan.
                                 </p>
                             </div>
                             
-                            <div className="px-6 pb-8 flex items-center gap-2">
+                            <div className="px-5 md:px-6 pb-6 md:pb-8 flex items-center gap-2">
                                 <button 
                                     onClick={() => setDeleteConfirm({ show: false, index: null })}
-                                    className="flex-1 py-3.5 bg-white text-slate-400 border border-slate-100 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95"
+                                    className="flex-1 py-3 bg-white text-slate-400 border border-slate-100 rounded-xl md:rounded-2xl text-[8.5px] md:text-[9px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95"
                                 >
                                     Batal
                                 </button>
                                 <button 
                                     onClick={executeDelete}
-                                    className="flex-1.5 py-3.5 bg-rose-600 text-white rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-700 shadow-lg shadow-rose-100 transition-all active:scale-95 outline-none"
+                                    className="flex-1 py-3 bg-rose-600 text-white rounded-xl md:rounded-2xl text-[8.5px] md:text-[9px] font-black uppercase tracking-widest hover:bg-rose-700 shadow-lg shadow-rose-100 transition-all active:scale-95 outline-none"
                                 >
-                                    Ya, Hapus Data
+                                    Ya, Hapus
                                 </button>
                             </div>
                         </div>
@@ -474,134 +484,146 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
 
     return (
         <div className="flex flex-col gap-2 md:gap-3 animate-fade-in pb-12">
-            {/* Premium Two-Row Filter Bar */}
-            <div className="flex flex-col gap-3 mb-2 animate-in slide-in-from-top-4 duration-500 sticky top-0 z-100">
-                {/* Row 1: Primary Controls */}
-                <div className="flex flex-col lg:flex-row items-center gap-2 md:gap-3 py-2 bg-white w-full relative z-30">
-                    {/* 1. Halaqah Selector */}
-                    <div className="flex-1 lg:flex-none flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-2xl border-2 border-slate-100 shadow-sm min-w-[240px] lg:min-w-[340px]">
-                        <div className="p-1.5 bg-primary-500 rounded-lg text-white shrink-0">
-                            <GraduationCap className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                        </div>
-                        <div className="flex-1 relative group/sel-unified">
-                            <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Pilih Halaqoh / Pengampu</p>
-                            <div className="relative">
-                                <select 
-                                    value={selectedHalaqahId}
-                                    onChange={(e) => setSelectedHalaqahId(e.target.value)}
-                                    className="w-full bg-transparent text-[9px] md:text-[10px] font-black text-slate-800 uppercase tracking-tight focus:outline-none appearance-none cursor-pointer p-0 pr-5 relative z-10 truncate"
-                                >
-                                    <option value="all">SEMUA HALAQAH</option>
-                                    {halaqahs.map(h => (
-                                        <option key={h.id} value={h.id}>{h.name.toUpperCase()} / {h.teacher_name?.toUpperCase() || '-'}</option>
-                                    ))}
-                                </select>
-                                <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none group-hover/sel-unified:text-primary-500 transition-colors" />
-                            </div>
+            {/* Premium Multi-Row Filter Bar */}
+            <div className="flex flex-row flex-wrap items-center gap-2.5 md:gap-3 py-3 bg-white w-full sticky top-0 z-100 border-b border-slate-100 lg:border-none lg:static lg:py-0">
+                
+                {/* --- BARIS 1 (Mobile) / ROW 1 (Desktop) --- */}
+                
+                {/* 1. Halaqah Selector */}
+                <div className="order-1 lg:order-1 flex-1 lg:flex-none flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-2xl border-2 border-slate-100 shadow-sm min-w-[200px] lg:min-w-[340px] h-10 lg:h-11">
+                    <div className="p-1.5 bg-primary-500 rounded-lg text-white shrink-0">
+                        <GraduationCap className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                    </div>
+                    <div className="flex-1 relative group/sel-unified min-w-0">
+                        <p className="text-[7.5px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Halaqoh / Pengampu</p>
+                        <div className="relative">
+                            <select 
+                                value={selectedHalaqahId}
+                                onChange={(e) => setSelectedHalaqahId(e.target.value)}
+                                className="w-full bg-transparent text-[8.5px] md:text-[10px] font-black text-slate-800 uppercase tracking-tight focus:outline-none appearance-none cursor-pointer p-0 pr-5 relative z-10 truncate"
+                            >
+                                <option value="all">SEMUA HALAQAH</option>
+                                {halaqahs.map(h => (
+                                    <option key={h.id} value={h.id}>{h.name.toUpperCase()} / {h.teacher_name?.toUpperCase() || '-'}</option>
+                                ))}
+                            </select>
+                            <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none group-hover/sel-unified:text-primary-500 transition-colors" />
                         </div>
                     </div>
-
-                    {/* 4. Search Input */}
-                    <div className="relative w-full lg:flex-1 group h-10 lg:h-11">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-jade-500 transition-colors" />
-                        <input 
-                            type="text"
-                            placeholder="CARI SANTRI..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full h-full pl-11 pr-4 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-[10px] font-black uppercase tracking-widest placeholder:text-slate-300 outline-none shadow-inner"
-                        />
-                    </div>
-
-                    {/* 5. Manage Target Button */}
-                    <button 
-                        onClick={() => setIsManageModalOpen(true)}
-                        className="h-10 lg:h-11 w-10 lg:w-11 bg-jade-600 border border-jade-600 rounded-[18px] lg:rounded-2xl text-white hover:bg-jade-700 transition-all flex items-center justify-center group shrink-0 shadow-lg shadow-primary-100/50"
-                        title="Kelola Target"
-                    >
-                        <Crosshair className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform" />
-                    </button>
-
-                    {/* 6. Export Button */}
-                    <button 
-                        onClick={handleExport}
-                        className="h-10 lg:h-11 px-4 bg-white border-2 border-jade-500 text-jade-600 rounded-[18px] lg:rounded-2xl hover:bg-jade-50 transition-all flex items-center justify-center gap-2 group shrink-0 shadow-sm"
-                        title="Ekspor Excel"
-                    >
-                        <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                        <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">EKSPOR</span>
-                    </button>
                 </div>
 
-                {/* Row 2: Filters and Dates */}
-                <div className="flex flex-col lg:flex-row items-center gap-2 md:gap-3 pb-2 bg-white w-full h-auto lg:h-[48px] relative z-20 lg:justify-end">
-                    {/* 1.5 Gender Selector */}
-                    <div className="flex-none flex items-center gap-2 bg-slate-50/80 border border-slate-200/60 px-3 py-2 rounded-full shadow-inner h-10 lg:h-11 group/gender min-w-[110px]">
-                        <User className="w-3.5 h-3.5 text-blue-500 mr-1 shrink-0" />
+                {/* 2. Search Input */}
+                <div className="order-2 lg:order-2 relative flex-1 lg:flex-1 group h-10 lg:h-11 min-w-[140px]">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-jade-500 transition-colors" />
+                    <input 
+                        type="text"
+                        placeholder="CARI SANTRI..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full h-full pl-10 pr-4 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-[9.5px] font-black uppercase tracking-widest placeholder:text-slate-300 outline-none shadow-inner"
+                    />
+                </div>
+
+                {/* BREAK 1 (After Row 1 on Mobile) */}
+                <div className="w-full lg:hidden order-2 h-0" />
+
+                {/* --- BARIS 2 (Mobile) / ROW 2 (Desktop Hybrid) --- */}
+
+                {/* 6. Month Selector - Order 3 on mobile */}
+                <div className="order-3 lg:order-6 relative h-10 lg:h-11 flex-none w-[110px] lg:w-auto lg:min-w-[140px] flex items-center px-3 lg:px-4 bg-slate-50/80 border border-slate-200/60 rounded-full shadow-inner group/month transition-all">
+                    <Calendar className="w-3.5 h-3.5 text-jade-500 mr-1.5 lg:mr-2 shrink-0" />
+                    <select 
+                        value={selectedMonth}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            setSelectedMonth(val);
+                            if (val !== 'custom') {
+                                const [y, m] = val.split('-').map(Number);
+                                const firstDay = new Date(y, m - 1, 1);
+                                const lastDay = new Date(y, m, 0);
+                                setStartDate(firstDay.toISOString().split('T')[0]);
+                                setEndDate(lastDay.toISOString().split('T')[0]);
+                            }
+                        }}
+                        className="w-full bg-transparent text-[8.5px] lg:text-[9px] font-black text-slate-700 uppercase tracking-widest focus:outline-none appearance-none cursor-pointer pr-4 truncate"
+                    >
+                        <option value="custom">BULAN</option>
+                        {monthOptions.map(m => (
+                            <option key={m.value} value={m.value}>{m.label}</option>
+                        ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 lg:right-4 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none group-hover/month:text-jade-500 transition-colors" />
+                </div>
+
+                {/* 7. Date Range Group - Order 4 on mobile */}
+                <div className="order-4 lg:order-7 flex items-center gap-1 shrink-0 h-10 lg:h-11 flex-1 lg:flex-none">
+                    <div className="h-full flex-1 lg:flex-none lg:min-w-[125px] flex justify-center items-center px-2 md:px-4 bg-slate-50/80 border border-slate-200/60 rounded-full shadow-inner transition-all">
+                        <CustomDatePicker 
+                            value={startDate} 
+                            align="right"
+                            onChange={(val) => {
+                                setStartDate(val);
+                                setSelectedMonth("custom");
+                            }} 
+                        />
+                    </div>
+                    
+                    <ArrowRight className="w-3 h-3 text-slate-300 shrink-0 mx-0.5" />
+
+                    <div className="h-full flex-1 lg:flex-none lg:min-w-[125px] flex justify-center items-center px-2 md:px-4 bg-slate-50/80 border border-slate-200/60 rounded-full shadow-inner transition-all">
+                        <CustomDatePicker 
+                            value={endDate} 
+                            align="right"
+                            onChange={(val) => {
+                                setEndDate(val);
+                                setSelectedMonth("custom");
+                            }} 
+                        />
+                    </div>
+                </div>
+
+                {/* BREAK 2 (After Row 2 on Mobile) */}
+                <div className="w-full lg:hidden order-4 h-0" />
+
+                {/* --- BARIS 3 (Mobile) / ROW 1 & 2 (Desktop Hybrid) --- */}
+
+                {/* 3. Manage Target Button - Order 5 on mobile */}
+                <button 
+                    onClick={() => setIsManageModalOpen(true)}
+                    className="order-5 lg:order-3 h-10 lg:h-11 w-10 lg:w-11 bg-jade-600 border border-jade-600 rounded-[18px] lg:rounded-2xl text-white hover:bg-jade-700 transition-all flex items-center justify-center group shrink-0 shadow-lg shadow-primary-100/50"
+                    title="Kelola Target"
+                >
+                    <Crosshair className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform" />
+                </button>
+
+                {/* 4. Export Button - Order 6 on mobile */}
+                <button 
+                    onClick={handleExport}
+                    className="order-6 lg:order-4 h-10 lg:h-11 px-3 md:px-4 bg-white border-2 border-jade-500 text-jade-600 rounded-[18px] lg:rounded-2xl hover:bg-jade-50 transition-all flex items-center justify-center gap-2 group shrink-0 shadow-sm"
+                    title="Ekspor Excel"
+                >
+                    <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    <span className="text-[9px] font-black uppercase tracking-widest hidden sm:inline">EKSPOR</span>
+                </button>
+
+                {/* BREAK for Desktop (Row 1 Ends) */}
+                <div className="hidden lg:block w-full lg:order-4 h-0" />
+
+                {/* 5. Gender Selector - Order 7 on mobile */}
+                <div className="order-7 lg:order-5 flex-1 lg:flex-none flex items-center justify-end lg:justify-start">
+                    <div className="flex items-center gap-2 bg-slate-50/80 border border-slate-200/60 px-3 py-2 rounded-full shadow-inner h-10 lg:h-11 group/gender min-w-[100px] lg:min-w-[120px]">
+                        <User className="w-3.5 h-3.5 text-blue-500 mr-0.5 shrink-0" />
                         <div className="relative flex-1">
                             <select 
                                 value={selectedGender}
                                 onChange={(e) => setSelectedGender(e.target.value)}
-                                className="w-full bg-transparent text-[9px] font-black text-slate-700 uppercase tracking-widest focus:outline-none appearance-none cursor-pointer pr-4"
+                                className="w-full bg-transparent text-[8.5px] lg:text-[9px] font-black text-slate-700 uppercase tracking-widest focus:outline-none appearance-none cursor-pointer pr-4"
                             >
                                 <option value="all">GENDER</option>
-                                <option value="L">LAKI-LAKI</option>
-                                <option value="P">PEREMPUAN</option>
+                                <option value="L">PUTRA</option>
+                                <option value="P">PUTRI</option>
                             </select>
                             <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none group-hover/gender:text-blue-500 transition-colors" />
-                        </div>
-                    </div>
-
-                    {/* 2. Month Selector */}
-                    <div className="relative h-10 lg:h-11 min-w-[120px] lg:min-w-[150px] flex items-center px-4 bg-slate-50/80 border border-slate-200/60 rounded-full shadow-inner group/month transition-all flex-none">
-                        <Calendar className="w-3.5 h-3.5 text-jade-500 mr-2 shrink-0" />
-                        <select 
-                            value={selectedMonth}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                setSelectedMonth(val);
-                                if (val !== 'custom') {
-                                    const [y, m] = val.split('-').map(Number);
-                                    const firstDay = new Date(y, m - 1, 1);
-                                    const lastDay = new Date(y, m, 0);
-                                    setStartDate(firstDay.toISOString().split('T')[0]);
-                                    setEndDate(lastDay.toISOString().split('T')[0]);
-                                }
-                            }}
-                            className="w-full bg-transparent text-[9px] font-black text-slate-700 uppercase tracking-widest focus:outline-none appearance-none cursor-pointer pr-4 truncate"
-                        >
-                            <option value="custom">BULAN</option>
-                            {monthOptions.map(m => (
-                                <option key={m.value} value={m.value}>{m.label}</option>
-                            ))}
-                        </select>
-                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none group-hover/month:text-jade-500 transition-colors" />
-                    </div>
-
-                    {/* 3. Date Range Group */}
-                    <div className="flex items-center gap-1 shrink-0 h-10 lg:h-11">
-                        <div className="h-full min-w-[110px] lg:min-w-[130px] flex justify-center items-center px-4 bg-slate-50/80 border border-slate-200/60 rounded-full shadow-inner transition-all">
-                            <CustomDatePicker 
-                                value={startDate} 
-                                align="right"
-                                onChange={(val) => {
-                                    setStartDate(val);
-                                    setSelectedMonth("custom");
-                                }} 
-                            />
-                        </div>
-                        
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-300 shrink-0 mx-1" />
-
-                        <div className="h-full min-w-[110px] lg:min-w-[130px] flex justify-center items-center px-4 bg-slate-50/80 border border-slate-200/60 rounded-full shadow-inner transition-all">
-                            <CustomDatePicker 
-                                value={endDate} 
-                                align="right"
-                                onChange={(val) => {
-                                    setEndDate(val);
-                                    setSelectedMonth("custom");
-                                }} 
-                            />
                         </div>
                     </div>
                 </div>

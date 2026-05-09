@@ -124,6 +124,7 @@ export const createUser = async (userData: any, actor: UserProfile): Promise<Use
           role: userData.role,
           tenant_id: userData.tenant_id,
           whatsapp_number: userData.whatsapp_number,
+          nip: userData.nip,
           initial_password: userData.password // BACKUP: For environments without email reset
       })
       .eq('id', newProfile.id)
@@ -138,7 +139,8 @@ export const createUser = async (userData: any, actor: UserProfile): Promise<Use
 
 export const updateUser = async (user: Partial<UserProfile>, actor: UserProfile): Promise<UserProfile> => {
   if (!user.id) throw new Error("ID required");
-  const { id, email, ...updateData } = user as any; 
+  // Exclude fields that are not in the profiles table schema (like email)
+  const { id, email, tenant_name, initial_password, student_name, ...updateData } = user as any; 
   const { data, error } = await supabase.from('profiles').update(updateData).eq('id', user.id).select().single();
   if (error) throw error;
   const details = user.id === actor.id ? 'Memperbarui profil pribadi.' : `Memperbarui data user: ${data.full_name}.`;
@@ -153,17 +155,10 @@ export const deleteUser = async (userId: string, userName: string, actor: UserPr
 };
 
 export const forceResetPassword = async (userId: string, targetPassword: string, actor: UserProfile): Promise<void> => {
-    const { supabaseAdmin } = await import('../../lib/supabase');
+    // Gunakan Server Action untuk eksekusi fungsi Admin (tidak bisa di-client)
+    const { forceResetPasswordServer } = await import('./adminActions');
     
-    if (!supabaseAdmin) {
-        throw new Error("Akses Service Role tidak tersedia. Fitur ini hanya dapat dijalankan jika kunci admin dikonfigurasi.");
-    }
-
-    const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, { 
-        password: targetPassword 
-    });
-    
-    if (error) throw error;
+    await forceResetPasswordServer(userId, targetPassword);
     
     const { data: profile } = await supabase.from('profiles').select('full_name, email').eq('id', userId).single();
     await logAudit(actor, 'UPDATE', `Force Reset: ${profile?.email}`, `Password dipaksa kembali ke default oleh Superadmin.`);

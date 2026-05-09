@@ -375,21 +375,22 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
 
   return (
     <div className="space-y-4 animate-fade-in">
-      {/* Top Utility Strip - Maintain Teacher Selector for Admin */}
-      <div className="flex flex-col lg:flex-row items-center gap-2 md:gap-4 py-2 rounded-[24px]">
-          {/* Row 1: Unified Halaqah / Teacher Selector */}
-          <div className="flex flex-row items-center gap-2 w-full lg:w-auto lg:flex-1">
-              <div className="flex-1 md:flex-initial flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-2xl border border-slate-200 shadow-sm md:min-w-[340px] focus-within:ring-4 focus-within:ring-jade-50/50 focus-within:border-jade-400 transition-all">
+      {/* Top Utility Strip - Rearranged for Mobile 2-Row Layout */}
+      <div className="flex flex-col lg:flex-row items-center gap-3 lg:gap-4 py-2">
+          {/* BARIS 1: Halaqah / Teacher Selector & Search Bar */}
+          <div className="flex flex-row items-center gap-2 w-full lg:flex-1">
+              {/* Halaqah Selector */}
+              <div className="flex-1 lg:flex-none flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-2xl border border-slate-200 shadow-sm lg:min-w-[340px] focus-within:ring-4 focus-within:ring-jade-50/50 focus-within:border-jade-400 transition-all h-10 lg:h-11">
                   <div className="p-1.5 bg-primary-500 rounded-lg text-white shrink-0">
                       <GraduationCap className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   </div>
-                  <div className="flex-1 relative group/sel-unified">
-                      <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Pilih Halaqoh / Pengampu</p>
+                  <div className="flex-1 relative group/sel-unified min-w-0">
+                      <p className="text-[7.5px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Halaqoh / Pengampu</p>
                       <div className="relative">
                           <select 
                             value={selectedHalaqahId}
                             onChange={(e) => handleHalaqahChange(e.target.value)}
-                            className="w-full bg-transparent text-[9px] md:text-[10px] font-black text-slate-800 uppercase tracking-tight focus:outline-none appearance-none cursor-pointer p-0 pr-5 relative z-10 truncate"
+                            className="w-full bg-transparent text-[8.5px] md:text-[10px] font-black text-slate-800 uppercase tracking-tight focus:outline-none appearance-none cursor-pointer p-0 pr-5 relative z-10 truncate"
                           >
                               <option value="all">SEMUA HALAQOH</option>
                               {allHalaqahs.map(h => (
@@ -403,14 +404,26 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                   </div>
               </div>
 
+              {/* Search Bar (Mobile Included) */}
+              <div className="relative flex-1 group h-10 lg:h-11 min-w-0">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-jade-500 transition-colors" />
+                  <input 
+                      type="text"
+                      placeholder="CARI SANTRI..."
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      className="w-full h-full pl-9 pr-3 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-[9.5px] font-black uppercase tracking-widest placeholder:text-slate-300 outline-none shadow-inner"
+                  />
+              </div>
           </div>
 
+          {/* BARIS 2: Date Selector & ReadOnly Label */}
           <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
               {/* Date Selector */}
-              <div className="flex-1 lg:flex-none flex bg-white p-1 rounded-[20px] border border-slate-100 shadow-sm ring-1 ring-white h-10 md:h-auto justify-center items-center">
+              <div className="flex-1 lg:flex-none flex bg-white p-1 rounded-[20px] border border-slate-100 shadow-sm ring-1 ring-white h-10 lg:h-11 justify-center items-center">
                   <button 
                       onClick={() => setCurrentWeekOffset(prev => prev - 1)}
-                      className="p-1 px-2.5 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
+                      className="p-1 px-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
                   >
                       <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -429,28 +442,16 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                   </div>
                   <button 
                       onClick={() => setCurrentWeekOffset(prev => prev + 1)}
-                      className="p-1 px-2.5 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
+                      className="p-1 px-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
                   >
                       <ChevronRight className="w-4 h-4" />
                   </button>
               </div>
 
-
               {/* READ-ONLY */}
-              <div className="px-3 md:px-6 py-2 md:py-2.5 font-black text-[8px] md:text-[10px] uppercase tracking-widest rounded-xl border border-slate-100 bg-white/50 text-slate-400 shadow-sm h-10 md:h-auto flex items-center whitespace-nowrap">
+              <div className="px-3 md:px-5 py-2 font-black text-[8px] md:text-[9.5px] uppercase tracking-widest rounded-xl border border-slate-100 bg-white/50 text-slate-400 shadow-sm h-10 lg:h-11 flex items-center whitespace-nowrap">
                   (READ-ONLY)
               </div>
-          </div>
-          {/* SEARCH BAR (SYNCED STYLE) */}
-          <div className="relative w-full lg:flex-1 group h-10 lg:h-11">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-jade-500 transition-colors" />
-              <input 
-                  type="text"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="CARI SANTRI..." 
-                  className="w-full h-full pl-11 pr-4 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-[10px] font-black uppercase tracking-widest placeholder:text-slate-300 outline-none shadow-inner"
-              />
           </div>
       </div>
 

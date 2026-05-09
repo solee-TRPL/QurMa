@@ -682,7 +682,8 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
   };
 
   const onRegencyChange = async (regId: string, regName: string) => {
-    setFormData(prev => ({ ...prev, regencyId: regId, districtId: '', villageId: '', city: regName, district: '', village: '' }));
+    const cleanedCity = regName.replace(/^(KABUPATEN|KOTA|KAB\.|KAB)\s+/i, '').trim();
+    setFormData(prev => ({ ...prev, regencyId: regId, districtId: '', villageId: '', city: cleanedCity, district: '', village: '' }));
     try {
         const res = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${regId}.json`);
         const data = await res.json();
@@ -1283,7 +1284,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
     const sortedCities = cityList.sort((a: any, b: any) => a.province_name.localeCompare(b.province_name));
     sortedCities.forEach((c: any, idx) => {
         wsRef.getCell(idx + 2, 4).value = c.province_name;
-        wsRef.getCell(idx + 2, 5).value = c.name;
+        wsRef.getCell(idx + 2, 5).value = c.name.replace(/^(KABUPATEN|KOTA|KAB\.|KAB)\s+/i, '').trim();
     });
 
     wsRef.state = 'hidden';
@@ -1313,7 +1314,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
         father_phone: '08123456789',
         mother_phone: '08987654321',
         province: 'DKI JAKARTA',
-        city: 'KOTA JAKARTA TIMUR',
+        city: 'JAKARTA TIMUR',
         district: 'PULOGADUNG',
         village: 'PULOGADUNG',
         rt_rw: '001 / 005',
@@ -1450,7 +1451,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
             rt_rw: s.rt_rw || '-',
             village: s.village || '-',
             district: s.district || '-',
-            city: s.city || '-'
+            city: (s.city || '-').replace(/^(KABUPATEN|KOTA|KAB\.|KAB)\s+/i, '').trim()
         });
 
         // Style data cells
@@ -1783,11 +1784,10 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
         )}
       </div>
 
-      <div className="flex flex-col w-full gap-3 py-4 bg-white shrink-0 z-70 sticky top-0">
-        {/* ROW 1: Search & Action Buttons / Combined Row for Supervisor */}
-        <div className="flex flex-row items-center gap-2 w-full overflow-x-auto no-scrollbar pb-1 lg:pb-0">
-          {/* 1. SEARCH BAR */}
-          <div className={`relative group h-10 min-w-[200px] ${isReadOnly ? 'flex-1' : 'flex-1'}`}>
+      <div className="flex flex-col w-full gap-2.5 md:gap-3 py-4 bg-white shrink-0 z-70 sticky top-0 border-b border-slate-100">
+        {/* ROW 1: SEARCH & ACTIONS (Desktop has All, Mobile has Secondary) */}
+        <div className="flex flex-row items-center gap-2 w-full">
+          <div className="relative group h-10 flex-1">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-jade-500 transition-colors" />
             <input 
               type="text" 
@@ -1797,108 +1797,77 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
               className="w-full h-full pl-10 pr-4 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 focus:bg-white transition-all text-[10px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-inner"
             />
           </div>
-
-          {isReadOnly ? (
-            /* CONSOLIDATED FILTERS FOR SUPERVISOR */
-            <div className="flex items-center gap-2 flex-none">
-              <select 
-                  value={filterGender}
-                  onChange={(e) => setFilterGender(e.target.value)}
-                  className="h-10 text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-100 px-4 pr-8 outline-none focus:ring-4 focus:ring-slate-50 bg-slate-50/50 cursor-pointer hover:bg-white transition-all min-w-[100px] rounded-full shadow-inner appearance-none"
-                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.75rem' }}
-              >
-                  <option value="all">GENDER</option>
-                  <option value="L">PUTRA</option>
-                  <option value="P">PUTRI</option>
-              </select>
-
-              <select 
-                  value={filterHalaqah}
-                  onChange={(e) => setFilterHalaqah(e.target.value)}
-                  className="h-10 text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-100 px-4 pr-8 outline-none focus:ring-4 focus:ring-slate-50 bg-slate-50/50 cursor-pointer hover:bg-white transition-all min-w-[120px] rounded-full shadow-inner appearance-none"
-                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.75rem' }}
-              >
-                  <option value="all">HALAQAH</option>
-                  {halaqahs.map(h => (
-                      <option key={h.id} value={h.id}>{h.name.toUpperCase()}</option>
-                  ))}
-              </select>
-
-              <button 
-                  onClick={() => fetchData()}
-                  disabled={loading}
-                  className="h-10 w-10 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 hover:bg-slate-50 transition-all active:scale-95 rounded-full shadow-sm disabled:opacity-50"
-              >
-                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              </button>
-            </div>
-          ) : (
-            /* ADMIN ACTION BUTTONS */
-            <div className="flex items-center gap-2 flex-none">
-              {/* 2. TEMPLATE */}
-              <button 
-                  onClick={downloadTemplate}
-                  className="h-10 flex items-center justify-center gap-1.5 px-3 font-black text-[9px] uppercase tracking-widest rounded-full border border-slate-100 bg-white text-slate-400 hover:bg-slate-50 transition-all active:scale-95 shadow-sm whitespace-nowrap"
-              >
-                  <FileDown className="w-3.5 h-3.5" /> <span className="hidden xl:inline">TEMPLATE</span>
-              </button>
-
-              {/* 3. IMPORT */}
-              <button 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="h-10 flex items-center justify-center gap-1.5 px-3 font-black text-[9px] uppercase tracking-widest rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 shadow-sm shadow-emerald-50 transition-all active:scale-95 whitespace-nowrap border border-emerald-100/50"
-              >
-                  <Upload className="w-3.5 h-3.5" /> <span className="hidden xl:inline">IMPORT</span>
-              </button>
-
-              {/* 4. EXPORT */}
-              <button 
-                  onClick={downloadFullExport}
-                  className="h-10 flex items-center justify-center gap-1.5 px-3 font-black text-[9px] uppercase tracking-widest rounded-full border border-slate-100 bg-white text-slate-400 hover:bg-slate-50 transition-all active:scale-95 shadow-sm whitespace-nowrap"
-              >
-                  <Download className="w-3.5 h-3.5" /> <span className="hidden xl:inline">EXPORT</span>
-              </button>
-
-              {/* 5. TAMBAH SANTRI */}
-              <button 
-                onClick={() => { resetForm(); setShowAddModal(true); }}
-                className="h-10 flex items-center gap-2 px-5 font-black text-[10px] uppercase tracking-widest rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-100/50 hover:bg-emerald-700 hover:scale-[1.02] transition-all active:scale-95 whitespace-nowrap shrink-0"
-              >
-                <UserPlus className="w-3.5 h-3.5" /> <span className="hidden xl:inline">TAMBAH SANTRI</span><span className="xl:hidden">TAMBAH</span>
-              </button>
-
-              {/* 6. AUDIT TRACKING */}
-              <button 
-                  onClick={() => setIsGlobalTrackingOpen(true)}
-                  className="h-10 flex items-center justify-center gap-1.5 px-4 font-black text-[9px] uppercase tracking-widest rounded-full bg-jade-600 text-white shadow-lg shadow-primary-100/50 hover:bg-jade-700 hover:scale-[1.02] transition-all active:scale-95 whitespace-nowrap border-none"
-              >
-                  <Timer className="w-3.5 h-3.5" /> <span className="hidden xl:inline">AUDIT TRACKING</span><span className="xl:hidden">TRACK</span>
-              </button>
+          {!isReadOnly && (
+            <div className="flex items-center gap-1 lg:gap-2 flex-none">
+               {/* Secondary Actions (Icons) */}
+               <div className="flex items-center gap-1 lg:gap-1.5">
+                  <button onClick={downloadTemplate} className="h-9 w-9 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 rounded-full shadow-sm" title="Template">
+                    <FileDown className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={() => fileInputRef.current?.click()} className="h-9 w-9 flex items-center justify-center border border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-full shadow-sm" title="Import">
+                    <Upload className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={downloadFullExport} className="h-9 w-9 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 rounded-full shadow-sm" title="Export">
+                    <Download className="w-3.5 h-3.5" />
+                  </button>
+               </div>
+               
+               {/* Primary Actions (Desktop Only here) */}
+               <div className="hidden lg:flex items-center gap-2">
+                  <button 
+                    onClick={() => { resetForm(); setShowAddModal(true); }}
+                    className="h-10 flex items-center gap-2 px-5 font-black text-[10px] uppercase tracking-widest rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-100/50 hover:bg-emerald-700 transition-all active:scale-95 whitespace-nowrap"
+                  >
+                    <UserPlus className="w-3.5 h-3.5" /> <span>TAMBAH SANTRI</span>
+                  </button>
+                  <button 
+                      onClick={() => setIsGlobalTrackingOpen(true)}
+                      className="h-10 flex items-center gap-2 px-5 font-black text-[10px] uppercase tracking-widest rounded-full bg-jade-600 text-white shadow-lg shadow-primary-100/50 hover:bg-jade-700 transition-all active:scale-95 whitespace-nowrap"
+                  >
+                      <Timer className="w-3.5 h-3.5" /> <span>TRACKING</span>
+                  </button>
+               </div>
             </div>
           )}
         </div>
 
-        {/* ROW 2: Filters & Common Tools (Only for Admin) */}
+        {/* ROW 2: PRIMARY ACTIONS (Mobile Only) */}
         {!isReadOnly && (
-          <div className="flex flex-row items-center gap-2 w-full pt-2 border-t border-slate-50 shrink-0">
-            <div className="flex flex-row items-center gap-2 flex-1">
-              {/* 7. GENDER FILTER */}
+          <div className="flex flex-row lg:hidden items-center gap-2 w-full">
+            <button 
+              onClick={() => { resetForm(); setShowAddModal(true); }}
+              className="h-10 flex-1 flex items-center justify-center gap-2 px-4 font-black text-[10px] uppercase tracking-widest rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-100/50 hover:bg-emerald-700 transition-all active:scale-95 whitespace-nowrap"
+            >
+              <UserPlus className="w-3.5 h-3.5" /> <span>TAMBAH SANTRI</span>
+            </button>
+            <button 
+                onClick={() => setIsGlobalTrackingOpen(true)}
+                className="h-10 flex-1 flex items-center justify-center gap-2 px-4 font-black text-[10px] uppercase tracking-widest rounded-full bg-jade-600 text-white shadow-lg shadow-primary-100/50 hover:bg-jade-700 transition-all active:scale-95 whitespace-nowrap"
+            >
+                <Timer className="w-3.5 h-3.5" /> <span>TRACKING</span>
+            </button>
+          </div>
+        )}
+
+        {/* ROW 3 (Mobile) / ROW 2 (Desktop): FILTERS & UTILITIES */}
+        <div className="flex flex-row items-center gap-2.5 lg:gap-3 w-full">
+          {isReadOnly ? (
+            /* SUPERVISOR FILTERS */
+            <div className="flex items-center gap-2 w-full">
               <select 
                   value={filterGender}
                   onChange={(e) => setFilterGender(e.target.value)}
-                  className="h-9 flex-1 lg:flex-none text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-100 px-4 pr-8 outline-none focus:ring-4 focus:ring-slate-50 bg-slate-50/50 cursor-pointer hover:bg-white transition-all lg:min-w-[120px] rounded-full shadow-inner appearance-none"
+                  className="h-10 flex-1 lg:flex-none text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-100 px-4 pr-8 outline-none bg-slate-50/50 rounded-full appearance-none lg:min-w-[120px]"
                   style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.75rem' }}
               >
                   <option value="all">GENDER</option>
                   <option value="L">PUTRA</option>
                   <option value="P">PUTRI</option>
               </select>
-
-              {/* 8. HALAQAH FILTER */}
               <select 
                   value={filterHalaqah}
                   onChange={(e) => setFilterHalaqah(e.target.value)}
-                  className="h-9 flex-1 lg:flex-none text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-100 px-4 pr-8 outline-none focus:ring-4 focus:ring-slate-50 bg-slate-50/50 cursor-pointer hover:bg-white transition-all lg:min-w-[140px] rounded-full shadow-inner appearance-none"
+                  className="h-10 flex-1 lg:flex-none text-[9px] font-black uppercase tracking-widest text-slate-500 border border-slate-100 px-4 pr-8 outline-none bg-slate-50/50 rounded-full appearance-none lg:min-w-[140px]"
                   style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.75rem' }}
               >
                   <option value="all">HALAQAH</option>
@@ -1906,27 +1875,47 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                       <option key={h.id} value={h.id}>{h.name.toUpperCase()}</option>
                   ))}
               </select>
+              <button onClick={() => fetchData()} disabled={loading} className="h-10 w-10 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 rounded-full shadow-sm flex-none">
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              </button>
             </div>
+          ) : (
+            <div className="flex items-center gap-2 w-full">
+              <div className="flex flex-1 items-center gap-2">
+                <select 
+                    value={filterGender}
+                    onChange={(e) => setFilterGender(e.target.value)}
+                    className="h-9 flex-1 lg:flex-none text-[8.5px] lg:text-[9px] font-black uppercase tracking-tight lg:tracking-widest text-slate-500 border border-slate-100 px-3 lg:px-4 pr-7 lg:pr-8 outline-none bg-slate-50/50 rounded-full appearance-none lg:min-w-[110px]"
+                    style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.65rem center', backgroundSize: '0.65rem' }}
+                >
+                    <option value="all">GENDER</option>
+                    <option value="L">PUTRA</option>
+                    <option value="P">PUTRI</option>
+                </select>
+                <select 
+                    value={filterHalaqah}
+                    onChange={(e) => setFilterHalaqah(e.target.value)}
+                    className="h-9 flex-1 lg:flex-none text-[8.5px] lg:text-[9px] font-black uppercase tracking-tight lg:tracking-widest text-slate-500 border border-slate-100 px-3 lg:px-4 pr-7 lg:pr-8 outline-none bg-slate-50/50 rounded-full appearance-none lg:min-w-[130px]"
+                    style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/xml\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.65rem center', backgroundSize: '0.65rem' }}
+                >
+                    <option value="all">HALAQAH</option>
+                    {halaqahs.map(h => (
+                        <option key={h.id} value={h.id}>{h.name.toUpperCase()}</option>
+                    ))}
+                </select>
+              </div>
 
-            {/* 9, 10. REFRESH & MOBILE TOOLS */}
-            <div className="flex items-center gap-2 ml-auto">
-              <button 
-                  onClick={() => fetchData()}
-                  disabled={loading}
-                  className="h-9 w-9 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 hover:bg-slate-50 transition-all active:scale-95 rounded-full shadow-sm disabled:opacity-50"
-              >
+              <div className="flex items-center gap-1.5 flex-none ml-auto">
+                <button onClick={() => fetchData()} disabled={loading} className="h-9 w-9 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 rounded-full shadow-sm">
                   <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              </button>
-              <button 
-                  onClick={() => setShowNisMobile(!showNisMobile)}
-                  className={`lg:hidden h-9 w-9 shrink-0 flex items-center justify-center border transition-all active:scale-95 rounded-full shadow-sm ${showNisMobile ? 'bg-jade-600 border-jade-600 text-white shadow-primary-100' : 'bg-white border-slate-100 text-slate-400'}`}
-                  title={showNisMobile ? "Sembunyikan NIS" : "Tampilkan NIS"}
-              >
+                </button>
+                <button onClick={() => setShowNisMobile(!showNisMobile)} className={`lg:hidden h-9 w-9 flex items-center justify-center border transition-all rounded-full shadow-sm ${showNisMobile ? 'bg-jade-600 border-jade-600 text-white' : 'bg-white border-slate-100 text-slate-400'}`}>
                   {showNisMobile ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-              </button>
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
         <input type="file" ref={fileInputRef} onChange={handleImportExcel} className="hidden" accept=".xlsx, .xls" />
       </div>
 
@@ -1941,7 +1930,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                 <th className="px-3 py-4 text-center text-[9.5px] whitespace-nowrap font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white w-32">JENIS KELAMIN</th>
                 <th className="px-6 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white max-w-[130px]">PENGAMPU</th>
                 <th className="px-6 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white max-w-[110px]">HALAQAH</th>
-                <th className="px-4 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-slate-100 bg-white w-24">
+                <th className={`px-2 md:px-4 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-slate-100 bg-white ${isReadOnly ? 'w-24' : 'min-w-[185px] md:min-w-[240px]'}`}>
                   {isReadOnly ? 'INFO' : 'AKSI'}
                 </th>
               </tr>
@@ -2005,49 +1994,49 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                     )}
                   </td>
                    {!isReadOnly ? (
-                    <td className="px-6 py-4 whitespace-nowrap text-center border-b border-slate-100 transition-colors">
-                        <div className="flex justify-center gap-2">
+                    <td className="px-2 md:px-6 py-4 whitespace-nowrap text-center border-b border-slate-100 transition-colors">
+                        <div className="flex justify-center gap-1 md:gap-2">
                              <button 
                                  onClick={() => setInfoStudent(s)}
-                                 className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm"
+                                 className="p-1.5 md:p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-lg md:rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm"
                                  title="Detail Informasi Ortu"
                              >
-                                 <Info className="w-4 h-4" />
+                                 <Info className="w-3.5 h-3.5 md:w-4 md:h-4" />
                              </button>
                              <button 
                                  onClick={() => { setSelectedModalStudent(s); setIsNotesModalOpen(true); }} 
-                                 className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm" 
+                                 className="p-1.5 md:p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-lg md:rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm" 
                                  title="Catatan Admin untuk Santri"
                              >
-                                 <MessageSquare className="w-4 h-4" />
+                                 <MessageSquare className="w-3.5 h-3.5 md:w-4 md:h-4" />
                              </button>
                              <button 
                                  onClick={() => { setSelectedModalStudent(s); setIsAchievementModalOpen(true); }} 
-                                 className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm" 
+                                 className="p-1.5 md:p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-lg md:rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm" 
                                  title="Pencapaian Santri"
                              >
-                                 <Trophy className="w-4 h-4" />
+                                 <Trophy className="w-3.5 h-3.5 md:w-4 md:h-4" />
                              </button>
                              <button 
                                  onClick={() => { setSelectedModalStudent(s); setIsHistoryModalOpen(true); }} 
-                                 className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm" 
+                                 className="p-1.5 md:p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-lg md:rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm" 
                                  title="Riwayat Pengampu"
                              >
-                                 <History className="w-4 h-4" />
+                                 <History className="w-3.5 h-3.5 md:w-4 md:h-4" />
                              </button>
                              <button 
                                  onClick={() => handleEdit(s)}
-                                 className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm"
+                                 className="p-1.5 md:p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-lg md:rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm"
                                  title="Edit Data Santri"
                              >
-                                 <Edit className="w-4 h-4" />
+                                 <Edit className="w-3.5 h-3.5 md:w-4 md:h-4" />
                              </button>
                              <button 
                                  onClick={() => setStudentToDelete(s)}
-                                 className="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl border border-slate-200 hover:border-red-100 transition-all bg-white shadow-sm"
+                                 className="p-1.5 md:p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg md:rounded-xl border border-slate-200 hover:border-red-100 transition-all bg-white shadow-sm"
                                  title="Hapus Data Santri"
                              >
-                                 <Trash2 className="w-4 h-4" />
+                                 <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
                              </button>
                          </div>
                     </td>
@@ -2365,13 +2354,18 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                         disabled={!formData.provinceId}
                                         value={formData.regencyId}
                                         onChange={e => {
-                                            const name = regions.regencies.find(r => r.id === e.target.value)?.name || '';
-                                            onRegencyChange(e.target.value, name);
+                                            const originalName = regions.regencies.find(r => r.id === e.target.value)?.name || '';
+                                            const sanitizedName = originalName.replace(/^(KABUPATEN|KOTA|KAB\.|KAB)\s+/i, '').trim();
+                                            onRegencyChange(e.target.value, sanitizedName);
                                         }}
                                         className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-2xl text-xs font-black text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 focus:bg-white transition-all disabled:opacity-50"
                                     >
                                         <option value="">Pilih Kota</option>
-                                        {regions.regencies.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                                        {regions.regencies.map(r => (
+                                            <option key={r.id} value={r.id}>
+                                                {r.name.replace(/^(KABUPATEN|KOTA|KAB\.|KAB)\s+/i, '').trim()}
+                                            </option>
+                                        ))}
                                     </select>
                                     <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 rotate-90 pointer-events-none" />
                                   </div>

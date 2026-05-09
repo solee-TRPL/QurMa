@@ -2,13 +2,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { UserProfile, UserRole, Tenant } from '../types';
 import { Button } from '../components/ui/Button';
-import { User, Lock, Building, Upload, Shield, Settings2, Clock, Check, ChevronDown, Calendar } from 'lucide-react';
+import { User, Lock, Building, Upload, Shield, Settings2, Clock, Check, ChevronDown, Calendar, RefreshCw } from 'lucide-react';
 import { updateUser, uploadAvatar, updateTenant, uploadLogo, getStudentById, updateStudent, getStudents } from '../services/dataService';
 import { supabase } from '../lib/supabase';
 import { useLoading } from '../lib/LoadingContext';
 import { useNotification } from '../lib/NotificationContext';
 import { ImageCropModal } from '../components/ImageCropModal';
-import { provinces, provinceCities, indonesianLocations } from '../lib/locations';
 
 interface SettingsProps {
   user: UserProfile;
@@ -69,9 +68,61 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
     village: '',
     district: '',
     city: '',
-    province: ''
+    province: '',
+    provinceId: '',
+    regencyId: '',
+    districtId: '',
+    villageId: ''
   });
 
+  const [regions, setRegions] = useState<{
+    provinces: {id: string, name: string}[],
+    regencies: {id: string, name: string}[],
+    districts: {id: string, name: string}[],
+    villages: {id: string, name: string}[]
+  }>({ provinces: [], regencies: [], districts: [], villages: [] });
+
+  const fetchProvinces = async () => {
+    try {
+        const res = await fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
+        const data = await res.json();
+        setRegions(prev => ({ ...prev, provinces: data }));
+    } catch (e) { console.error(e); }
+  };
+
+  const onProvinceChange = async (provId: string, provName: string) => {
+    setProfileForm(prev => ({ ...prev, provinceId: provId, province: provName, regencyId: '', districtId: '', villageId: '', city: '', district: '', village: '' }));
+    try {
+        const res = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provId}.json`);
+        const data = await res.json();
+        setRegions(prev => ({ ...prev, regencies: data, districts: [], villages: [] }));
+    } catch (e) { console.error(e); }
+  };
+
+  const onRegencyChange = async (regId: string, regName: string) => {
+    const cleanedCity = regName.replace(/^(KABUPATEN|KOTA|KAB\.|KAB)\s+/i, '').trim();
+    setProfileForm(prev => ({ ...prev, regencyId: regId, districtId: '', villageId: '', city: cleanedCity, district: '', village: '' }));
+    try {
+        const res = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${regId}.json`);
+        const data = await res.json();
+        setRegions(prev => ({ ...prev, districts: data, villages: [] }));
+    } catch (e) { console.error(e); }
+  };
+
+  const onDistrictChange = async (distId: string, distName: string) => {
+    setProfileForm(prev => ({ ...prev, districtId: distId, villageId: '', district: distName, village: '' }));
+    try {
+        const res = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${distId}.json`);
+        const data = await res.json();
+        setRegions(prev => ({ ...prev, villages: data }));
+    } catch (e) { console.error(e); }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'profile') {
+        fetchProvinces();
+    }
+  }, [activeTab]);
 
   // Update state to include oldPassword
   const [passwordForm, setPasswordForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
@@ -108,7 +159,11 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                     village: student?.village || '',
                     district: student?.district || '',
                     city: student?.city || '',
-                    province: student?.province || ''
+                    province: student?.province || '',
+                    provinceId: '',
+                    regencyId: '',
+                    districtId: '',
+                    villageId: ''
                 }));
                 return;
             }
@@ -404,34 +459,34 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
 
   return (
     <div className="h-full flex flex-col animate-fade-in max-w-4xl mx-auto pb-2 overflow-hidden">
-      {/* Control Strip TABS */}
-      <div className="flex justify-start mb-5 lg:mb-6 shrink-0">
-        <div className="flex items-center gap-1 p-0.5 lg:p-1 bg-slate-100/50 border border-slate-200/50 rounded-xl lg:rounded-[20px] w-full lg:w-fit shadow-sm">
+      {/* Control Strip TABS - Optimized for Mobile */}
+      <div className="flex justify-start mb-4 lg:mb-6 shrink-0 px-2 lg:px-0">
+        <div className="flex items-center gap-0.5 lg:gap-1 p-0.5 lg:p-1 bg-slate-100/50 border border-slate-200/50 rounded-xl lg:rounded-[20px] w-full lg:w-fit shadow-sm overflow-hidden">
           <button 
             onClick={() => handleTabChange('profile')}
-            className={`flex-1 lg:flex-none px-3 lg:px-6 py-1.5 lg:py-2 text-[9.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-lg lg:rounded-2xl border-2 transition-all ${activeTab === 'profile' ? 'border-white bg-white text-jade-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
+            className={`flex-1 lg:flex-none px-2 lg:px-6 py-1.5 lg:py-2 text-[8.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-lg lg:rounded-2xl border-2 transition-all ${activeTab === 'profile' ? 'border-white bg-white text-jade-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
           >
-            <div className="flex items-center justify-center gap-1.5">
-                <User className="w-3 lg:w-3.5 h-3 lg:h-3.5" />
+            <div className="flex items-center justify-center gap-1 lg:gap-1.5">
+                <User className="w-2.5 lg:w-3.5 h-2.5 lg:h-3.5" />
                 Profil
             </div>
           </button>
           <button 
             onClick={() => handleTabChange('security')}
-            className={`flex-1 lg:flex-none px-3 lg:px-6 py-1.5 lg:py-2 text-[9.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-lg lg:rounded-2xl border-2 transition-all ${activeTab === 'security' ? 'border-white bg-white text-jade-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
+            className={`flex-1 lg:flex-none px-2 lg:px-6 py-1.5 lg:py-2 text-[8.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-lg lg:rounded-2xl border-2 transition-all ${activeTab === 'security' ? 'border-white bg-white text-jade-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
           >
-            <div className="flex items-center justify-center gap-1.5">
-                <Shield className="w-3 lg:w-3.5 h-3 lg:h-3.5" />
+            <div className="flex items-center justify-center gap-1 lg:gap-1.5">
+                <Shield className="w-2.5 lg:w-3.5 h-2.5 lg:h-3.5" />
                 Keamanan
             </div>
           </button>
           {(user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) && (
             <button 
               onClick={() => handleTabChange('tenant')}
-              className={`flex-1 lg:flex-none px-3 lg:px-6 py-1.5 lg:py-2 text-[9.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-lg lg:rounded-2xl border-2 transition-all ${activeTab === 'tenant' ? 'border-white bg-white text-jade-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
+              className={`flex-1 lg:flex-none px-2 lg:px-6 py-1.5 lg:py-2 text-[8.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-lg lg:rounded-2xl border-2 transition-all ${activeTab === 'tenant' ? 'border-white bg-white text-jade-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
             >
-              <div className="flex items-center justify-center gap-1.5">
-                  <Building className="w-3 lg:w-3.5 h-3 lg:h-3.5" />
+              <div className="flex items-center justify-center gap-1 lg:gap-1.5">
+                  <Building className="w-2.5 lg:w-3.5 h-2.5 lg:h-3.5" />
                   Sekolah
               </div>
             </button>
@@ -439,10 +494,10 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
           {(user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) && (
             <button 
               onClick={() => handleTabChange('system')}
-              className={`flex-1 lg:flex-none px-3 lg:px-6 py-1.5 lg:py-2 text-[9.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-lg lg:rounded-2xl border-2 transition-all ${activeTab === 'system' ? 'border-white bg-white text-jade-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
+              className={`flex-1 lg:flex-none px-2 lg:px-6 py-1.5 lg:py-2 text-[8.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-lg lg:rounded-2xl border-2 transition-all ${activeTab === 'system' ? 'border-white bg-white text-jade-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
             >
-              <div className="flex items-center justify-center gap-1.5">
-                  <Settings2 className="w-3 lg:w-3.5 h-3 lg:h-3.5" />
+              <div className="flex items-center justify-center gap-1 lg:gap-1.5">
+                  <Settings2 className="w-2.5 lg:w-3.5 h-2.5 lg:h-3.5" />
                   Sistem
               </div>
             </button>
@@ -577,13 +632,16 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                     <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Provinsi</label>
                                     <div className="relative">
                                         <select 
-                                            value={profileForm.province} 
-                                            onChange={e => setProfileForm({...profileForm, province: e.target.value, city: '', district: '', village: ''})} 
+                                            value={profileForm.provinceId} 
+                                            onChange={e => {
+                                                const name = regions.provinces.find(p => p.id === e.target.value)?.name || '';
+                                                onProvinceChange(e.target.value, name);
+                                            }} 
                                             className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none appearance-none"
                                         >
-                                            <option value="">PILIH PROVINSI</option>
-                                            {provinces.map(prov => (
-                                                <option key={prov} value={prov}>{prov}</option>
+                                            <option value="">{profileForm.province || 'PILIH PROVINSI'}</option>
+                                            {regions.provinces.map(prov => (
+                                                <option key={prov.id} value={prov.id}>{prov.name}</option>
                                             ))}
                                         </select>
                                         <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
@@ -592,111 +650,63 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                  <div className="space-y-1.5">
                                     <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Kota / Kabupaten</label>
                                     <div className="relative">
-                                        {profileForm.province ? (
-                                            <>
-                                                <select 
-                                                    value={profileForm.city} 
-                                                    onChange={e => setProfileForm({...profileForm, city: e.target.value, district: '', village: ''})} 
-                                                    className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none appearance-none"
-                                                >
-                                                    <option value="">PILIH KOTA/KABUPATEN</option>
-                                                    {(provinceCities[profileForm.province] || []).map(city => (
-                                                        <option key={city} value={city}>{city}</option>
-                                                    ))}
-                                                    <option value="LAINNYA">LAINNYA (INPUT MANUAL)</option>
-                                                </select>
-                                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-                                            </>
-                                        ) : (
-                                            <div className="relative">
-                                                <input 
-                                                    type="text"
-                                                    disabled
-                                                    placeholder="Pilih Provinsi Terlebih Dahulu"
-                                                    className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl text-slate-400 outline-none opacity-50 text-xs lg:text-sm font-bold" 
-                                                />
-                                            </div>
-                                        )}
+                                        <select 
+                                            disabled={!profileForm.provinceId}
+                                            value={profileForm.regencyId} 
+                                            onChange={e => {
+                                                const name = regions.regencies.find(r => r.id === e.target.value)?.name || '';
+                                                onRegencyChange(e.target.value, name);
+                                            }} 
+                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none appearance-none disabled:opacity-50"
+                                        >
+                                            <option value="">{profileForm.city || 'PILIH KOTA/KABUPATEN'}</option>
+                                            {regions.regencies.map(r => (
+                                                <option key={r.id} value={r.id}>
+                                                    {r.name.replace(/^(KABUPATEN|KOTA|KAB\.|KAB)\s+/i, '').trim()}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
                                     </div>
                                 </div>
                                  <div className="space-y-1.5">
                                     <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Kecamatan</label>
                                     <div className="relative">
-                                        {profileForm.province && profileForm.city && indonesianLocations[profileForm.province]?.[profileForm.city] && profileForm.district !== 'LAINNYA_MANUAL' ? (
-                                            <>
-                                                <select 
-                                                    value={profileForm.district} 
-                                                    onChange={e => setProfileForm({...profileForm, district: e.target.value, village: ''})} 
-                                                    className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none appearance-none"
-                                                >
-                                                    <option value="">PILIH KECAMATAN</option>
-                                                    {Object.keys(indonesianLocations[profileForm.province][profileForm.city]).map(dist => (
-                                                        <option key={dist} value={dist}>{dist}</option>
-                                                    ))}
-                                                    <option value="LAINNYA_MANUAL">LAINNYA (INPUT MANUAL)</option>
-                                                </select>
-                                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-                                            </>
-                                        ) : (
-                                            <div className="relative group">
-                                                <input 
-                                                    type="text" 
-                                                    value={profileForm.district === 'LAINNYA_MANUAL' ? '' : profileForm.district} 
-                                                    disabled={!profileForm.city}
-                                                    placeholder={profileForm.city ? "Input Kecamatan" : "Pilih Kota Terlebih Dahulu"}
-                                                    onChange={e => setProfileForm({...profileForm, district: e.target.value.toUpperCase()})} 
-                                                    className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none disabled:opacity-50" 
-                                                />
-                                                {profileForm.district !== '' && profileForm.province && indonesianLocations[profileForm.province]?.[profileForm.city] && (
-                                                    <button 
-                                                        onClick={() => setProfileForm({...profileForm, district: ''})}
-                                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-jade-600 uppercase tracking-tighter hover:text-jade-700 transition-colors"
-                                                    >
-                                                        Reset
-                                                    </button>
-                                                )}
-                                            </div>
-                                        )}
+                                        <select 
+                                            disabled={!profileForm.regencyId}
+                                            value={profileForm.districtId} 
+                                            onChange={e => {
+                                                const name = regions.districts.find(d => d.id === e.target.value)?.name || '';
+                                                onDistrictChange(e.target.value, name);
+                                            }} 
+                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none appearance-none disabled:opacity-50"
+                                        >
+                                            <option value="">{profileForm.district || 'PILIH KECAMATAN'}</option>
+                                            {regions.districts.map(d => (
+                                                <option key={d.id} value={d.id}>{d.name}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
                                     </div>
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Kelurahan / Desa</label>
                                     <div className="relative">
-                                        {profileForm.province && profileForm.city && profileForm.district && indonesianLocations[profileForm.province]?.[profileForm.city]?.[profileForm.district] && profileForm.village !== 'LAINNYA_MANUAL' ? (
-                                            <>
-                                                <select 
-                                                    value={profileForm.village} 
-                                                    onChange={e => setProfileForm({...profileForm, village: e.target.value})} 
-                                                    className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none appearance-none"
-                                                >
-                                                    <option value="">PILIH KELURAHAN/DESA</option>
-                                                    {indonesianLocations[profileForm.province][profileForm.city][profileForm.district].map(vill => (
-                                                        <option key={vill} value={vill}>{vill}</option>
-                                                    ))}
-                                                    <option value="LAINNYA_MANUAL">LAINNYA (INPUT MANUAL)</option>
-                                                </select>
-                                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-                                            </>
-                                        ) : (
-                                            <div className="relative group">
-                                                <input 
-                                                    type="text" 
-                                                    value={profileForm.village === 'LAINNYA_MANUAL' ? '' : profileForm.village} 
-                                                    disabled={!profileForm.district}
-                                                    placeholder={profileForm.district ? "Input Kelurahan/Desa" : "Pilih Kecamatan Terlebih Dahulu"}
-                                                    onChange={e => setProfileForm({...profileForm, village: e.target.value.toUpperCase()})} 
-                                                    className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none disabled:opacity-50" 
-                                                />
-                                                {profileForm.village !== '' && profileForm.province && profileForm.city && profileForm.district && indonesianLocations[profileForm.province]?.[profileForm.city]?.[profileForm.district] && (
-                                                    <button 
-                                                        onClick={() => setProfileForm({...profileForm, village: ''})}
-                                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-jade-600 uppercase tracking-tighter hover:text-jade-700 transition-colors"
-                                                    >
-                                                        Reset
-                                                    </button>
-                                                )}
-                                            </div>
-                                        )}
+                                        <select 
+                                            disabled={!profileForm.districtId}
+                                            value={profileForm.villageId} 
+                                            onChange={e => {
+                                                const name = regions.villages.find(v => v.id === e.target.value)?.name || '';
+                                                setProfileForm({...profileForm, villageId: e.target.value, village: name});
+                                            }} 
+                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none appearance-none disabled:opacity-50"
+                                        >
+                                            <option value="">{profileForm.village || 'PILIH KELURAHAN/DESA'}</option>
+                                            {regions.villages.map(v => (
+                                                <option key={v.id} value={v.id}>{v.name}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
                                     </div>
                                 </div>
                                 <div className="space-y-1.5">
@@ -921,7 +931,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                              <p className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1.5 lg:pb-2">Tentukan hari aktif setoran hafalan</p>
                         </div>
 
-                        <div className="flex flex-wrap gap-2 lg:gap-3">
+                        <div className="flex flex-row items-center gap-1 lg:gap-3 overflow-x-hidden">
                             {days.map((day) => {
                                 const isActive = systemForm.activeDays.includes(day.id);
                                 return (
@@ -930,10 +940,10 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                         type="button"
                                         disabled={isReadOnly}
                                         onClick={() => toggleDay(day.id)}
-                                        className={`px-4 lg:px-6 py-2 lg:py-2.5 rounded-xl lg:rounded-2xl text-[10px] lg:text-[11px] font-black uppercase tracking-tight border-2 transition-all ${
+                                        className={`flex-1 lg:flex-none px-1.5 lg:px-6 py-2 lg:py-2.5 rounded-lg lg:rounded-2xl text-[9px] lg:text-[11px] font-black uppercase tracking-tighter lg:tracking-tight border-2 transition-all h-9 lg:h-auto flex items-center justify-center ${
                                             isActive 
                                                 ? 'bg-jade-600 border-jade-600 text-white shadow-md' 
-                                                : 'bg-white border-slate-400 text-slate-400 hover:border-slate-200'
+                                                : 'bg-white border-slate-200 text-slate-400 hover:border-jade-200'
                                         }`}
                                     >
                                         {day.label}
