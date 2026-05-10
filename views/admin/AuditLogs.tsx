@@ -12,6 +12,11 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
   // Filter States
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -180,8 +185,8 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
                     </td>
                     <td className="sticky left-0 md:left-[45px] z-20 bg-white px-1.5 md:px-4 py-4 whitespace-nowrap text-[9.5px] md:text-[10.5px] text-slate-700 font-mono font-black border-r-2 border-b border-slate-100 text-center md:text-left">
                         <div className="flex flex-col items-center md:items-start leading-tight">
-                            <span className="font-black text-slate-800 tracking-tighter truncate">{new Date(log.timestamp).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })}</span>
-                            <span className="text-[8.5px] md:text-[9.5px] opacity-50">{new Date(log.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span className="font-black text-slate-800 tracking-tighter truncate">{mounted ? new Date(log.timestamp).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' }) : '--/--'}</span>
+                            <span className="text-[8.5px] md:text-[9.5px] opacity-50">{mounted ? new Date(log.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</span>
                         </div>
                     </td>
                     <td className="sticky left-[55px] md:left-[155px] z-20 bg-white px-2 md:px-6 py-4 whitespace-nowrap border-r-2 border-b border-slate-100">

@@ -111,7 +111,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, 
     };
 
     return (
-        <div className="lg:h-[calc(100vh-140px)] flex flex-col gap-4 animate-fade-in lg:overflow-hidden pb-10 lg:pb-0">
+        <div className="lg:h-[calc(100vh-140px)] flex flex-col gap-4 animate-fade-in lg:overflow-hidden pb-0">
             {/* Top Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 shrink-0 px-2 lg:px-0">
                 <StatCard icon={Building} label="Total Sekolah" value={stats?.totalTenants} color="primary" />

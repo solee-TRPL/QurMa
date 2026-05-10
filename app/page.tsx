@@ -10,7 +10,7 @@ export default function LandingPage() {
     const router = useRouter();
     const [partners, setPartners] = useState<Tenant[]>([]);
     const [isScrolled, setIsScrolled] = useState(false);
-    const [activeAccordion, setActiveAccordion] = useState<number | null>(1);
+    const [activeAccordion, setActiveAccordion] = useState<number | null>(0);
     const [activeWhyQurMa, setActiveWhyQurMa] = useState<number | null>(0);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -662,8 +662,8 @@ export default function LandingPage() {
                         </div>
                     </div>
 
-                    <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em]">
+                    <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 w-full">
+                        <p className="text-[7px] md:text-[9px] font-black text-slate-600 uppercase tracking-widest md:tracking-[0.2em] whitespace-nowrap text-center" suppressHydrationWarning>
                             &copy; {new Date().getFullYear()} QurMa Digital Indonesia. All rights reserved.
                         </p>
                     </div>

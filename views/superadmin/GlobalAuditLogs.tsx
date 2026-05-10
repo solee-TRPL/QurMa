@@ -19,6 +19,11 @@ export const GlobalAuditLogs: React.FC = () => {
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -221,8 +226,8 @@ export const GlobalAuditLogs: React.FC = () => {
 
                     <td className="hidden lg:table-cell lg:sticky lg:left-[45px] bg-white px-4 py-4 border-r-2 border-b border-slate-100 z-10 transition-colors">
                         <div className="flex flex-col gap-0.5">
-                            <span className="text-[11px] font-bold text-slate-800 leading-none">{new Date(log.timestamp).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</span>
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter leading-none">{new Date(log.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span className="text-[11px] font-bold text-slate-800 leading-none">{mounted ? new Date(log.timestamp).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) : '--/--'}</span>
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter leading-none">{mounted ? new Date(log.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</span>
                         </div>
                     </td>
 

@@ -749,8 +749,8 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                 <thead className="sticky top-0 z-40">
                     <tr className="bg-white">
                         <th className="hidden lg:table-cell w-[50px] min-w-[50px] sticky left-0 bg-white z-50 px-2 lg:px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">No</th>
-                        {showNIS && <th className="w-[80px] min-w-[80px] lg:w-[100px] lg:min-w-[100px] sticky left-0 lg:left-[50px] bg-white z-50 px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">NIS</th>}
-                        <th className={`w-[100px] min-w-[100px] lg:w-[300px] lg:min-w-[300px] sticky ${showNIS ? 'left-[80px] lg:left-[150px]' : 'left-0 lg:left-[50px]'} bg-white z-50 px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.02)]`}>Nama Santri</th>
+                        {showNIS && <th className="hidden lg:table-cell w-[100px] min-w-[100px] sticky lg:left-[50px] bg-white z-50 px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">NIS</th>}
+                        <th className={`w-[100px] min-w-[100px] lg:w-[300px] lg:min-w-[300px] sticky ${showNIS ? 'left-0 lg:left-[150px]' : 'left-0 lg:left-[50px]'} bg-white z-50 px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.02)]`}>Nama Santri</th>
                         <th className="px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100 bg-white">Jenis Kelamin</th>
                         <th className="px-3 py-4 text-[10px] font-bold text-emerald-600 uppercase tracking-widest text-center border-b border-r border-slate-100 bg-jade-50/30 whitespace-nowrap">Hafalan Saat Ini</th>
                         <th className="w-[140px] min-w-[140px] px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 bg-slate-50/30">Aksi</th>
@@ -766,8 +766,8 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                     ) : paginatedStudents.map((student, idx) => (
                         <tr key={student.id} className="group transition-colors hover:bg-slate-50/50 cursor-pointer" onClick={() => openModal('detail', student)}>
                             <td className="hidden lg:table-cell sticky left-0 bg-white group-hover:bg-[#F8FAFC] px-2 lg:px-3 py-3 text-[11px] font-bold text-slate-400 text-center border-r border-slate-50 z-20 transition-colors">{(currentPage - 1) * itemsPerPage + idx + 1}</td>
-                            {showNIS && <td className="sticky left-0 lg:left-[50px] bg-white group-hover:bg-[#F8FAFC] px-3 py-3 text-[11px] font-bold text-slate-600 text-center border-r border-slate-50 z-20 transition-colors">{student.nis || '-'}</td>}
-                             <td className={`sticky ${showNIS ? 'left-[80px] lg:left-[150px]' : 'left-0 lg:left-[50px]'} bg-white group-hover:bg-[#F8FAFC] px-4 py-3 text-xs font-bold text-slate-800 border-r border-slate-100 z-20 transition-colors`}>
+                            {showNIS && <td className="hidden lg:table-cell sticky lg:left-[50px] bg-white group-hover:bg-[#F8FAFC] px-3 py-3 text-[11px] font-bold text-slate-600 text-center border-r border-slate-50 z-20 transition-colors">{student.nis || '-'}</td>}
+                             <td className={`sticky ${showNIS ? 'left-0 lg:left-[150px]' : 'left-0 lg:left-[50px]'} bg-white group-hover:bg-[#F8FAFC] px-4 py-3 text-xs font-bold text-slate-800 border-r border-slate-100 z-20 transition-colors`}>
                                 <div className="flex items-center gap-2">
                                     <span className="leading-tight">{student.full_name}</span>
                                 </div>

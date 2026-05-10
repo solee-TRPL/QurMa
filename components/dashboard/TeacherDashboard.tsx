@@ -188,7 +188,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                                     ].map(tf => (
                                         <button 
                                             key={tf.id}
-                                            onClick={() => setPerfTimeframe(tf as any)}
+                                            onClick={() => setPerfTimeframe(tf.id as any)}
                                             className={`px-4 py-1.5 text-[8px] font-black uppercase tracking-widest rounded-full transition-all whitespace-nowrap ${
                                                 perfTimeframe === tf.id ? 'bg-jade-700 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'
                                             }`}

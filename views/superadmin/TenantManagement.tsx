@@ -690,7 +690,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
   };
 
   return (
-    <div className="space-y-4 animate-fade-in pb-10">
+    <div className="space-y-4 animate-fade-in">
       {/* Action Bar - Optimized for Mobile Density */}
       <div className="flex flex-row items-center gap-1.5 lg:gap-4 bg-white/40 p-1.5 lg:p-2 rounded-2xl lg:rounded-[24px] border border-white/20 backdrop-blur-md">
           <div className="relative flex-1 group">

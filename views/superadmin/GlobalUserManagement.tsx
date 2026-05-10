@@ -260,7 +260,7 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
   };
 
   return (
-    <div className="space-y-4 animate-fade-in pb-10">
+    <div className="space-y-4 animate-fade-in">
       {/* Top Utility Strip - Optimized for Mobile Density */}
       <div className="flex flex-row items-center gap-1.5 lg:gap-4 bg-white/40 p-1.5 lg:p-2 rounded-2xl lg:rounded-[24px] border border-white/20 backdrop-blur-md">
           {/* Search Area */}

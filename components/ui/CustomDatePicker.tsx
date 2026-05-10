@@ -22,8 +22,16 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
   align = 'center'
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [viewDate, setViewDate] = useState(value ? new Date(value) : new Date());
+  const [viewDate, setViewDate] = useState(new Date());
+  const [mounted, setMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    if (value) {
+        setViewDate(new Date(value));
+    }
+  }, []);
 
   // Sync viewDate when value or isOpen changes
   useEffect(() => {
@@ -140,7 +148,9 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 cursor-pointer outline-none"
       >
-         <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{displayValue || placeholder}</span>
+         <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">
+            {mounted ? (displayValue || placeholder) : placeholder}
+         </span>
       </div>
 
       {isOpen && (

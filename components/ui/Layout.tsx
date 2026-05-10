@@ -88,6 +88,11 @@ export const Layout: React.FC<LayoutProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
   const { addNotification } = useNotification();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
@@ -230,23 +235,6 @@ export const Layout: React.FC<LayoutProps> = ({
     return () => { document.body.style.overflow = 'unset'; };
   }, [isSidebarOpen]);
 
-  // Update Favicon based on school logo
-  useEffect(() => {
-    const link: any = document.querySelector("link[rel*='icon']") || document.createElement('link');
-    link.type = 'image/x-icon';
-    link.rel = 'shortcut icon';
-    
-    if (tenant?.logo_url) {
-      link.href = tenant.logo_url;
-    } else {
-      link.href = '/images/qurma-logo.png';
-    }
-    
-    if (!document.querySelector("link[rel*='icon']")) {
-        document.getElementsByTagName('head')[0].appendChild(link);
-    }
-  }, [tenant?.logo_url]);
-
   const NavItem = ({ icon: Icon, label, page, active }: { icon: any, label: string, page: PageView, active?: boolean }) => (
     <div className="px-3 py-0.5">
       <button 
@@ -335,7 +323,7 @@ export const Layout: React.FC<LayoutProps> = ({
         </div>
       )}
 
-      {isSidebarOpen && (
+      {mounted && isSidebarOpen && (
         <div className="fixed inset-0 z-[55] bg-slate-900/20 backdrop-blur-sm lg:hidden" onClick={() => setIsSidebarOpen(false)}></div>
       )}
 
@@ -411,7 +399,7 @@ export const Layout: React.FC<LayoutProps> = ({
             )}
         </div>
 
-        <div className="py-4 border-t border-white/5 shrink-0 bg-transparent space-y-1">
+        <div className="py-2 pb-16 lg:pb-4 border-t border-white/5 shrink-0 bg-transparent space-y-1">
             {isSuperAdmin ? (
                 <>
                     <NavItem icon={Settings} label="Pengaturan Platform" page="sa-platform-settings" active={currentPage === 'sa-platform-settings'} />
@@ -473,7 +461,7 @@ export const Layout: React.FC<LayoutProps> = ({
                             Pekan Ini
                         </span>
                         <span className="text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none">
-                            {(() => {
+                            {mounted ? (() => {
                                 const today = new Date();
                                 const day = today.getDay();
                                 const diffToMonday = (day === 0 ? -6 : 1) - day;
@@ -483,7 +471,7 @@ export const Layout: React.FC<LayoutProps> = ({
                                 friday.setDate(monday.getDate() + 4);
                                 const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short' };
                                 return `${monday.toLocaleDateString('id-ID', options)} - ${friday.toLocaleDateString('id-ID', options)}`.toUpperCase();
-                            })()}
+                            })() : '...'}
                         </span>
                     </div>
                 </div>
@@ -543,7 +531,7 @@ export const Layout: React.FC<LayoutProps> = ({
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between gap-2 mb-1">
                                                     <p className="text-[11px] font-black text-slate-900 leading-none truncate">{notif.title}</p>
-                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter shrink-0">{formatTime(notif.created_at)}</span>
+                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter shrink-0" suppressHydrationWarning>{formatTime(notif.created_at)}</span>
                                                 </div>
                                                 <p className="text-[10.5px] font-medium text-slate-500 leading-relaxed line-clamp-2">
                                                     {renderFormattedMessage(notif.message)}
@@ -669,7 +657,7 @@ export const Layout: React.FC<LayoutProps> = ({
                 </div>
         </header>
 
-        <main className="flex-1 p-4 pt-20 lg:p-8 lg:pt-24 min-h-[calc(100vh-64px)] overflow-x-hidden">
+        <main className="flex-1 p-4 pt-20 lg:p-8 lg:pt-24 lg:min-h-[calc(100vh-64px)] min-h-0 overflow-x-hidden">
             <div className="max-w-[1600px] mx-auto">
                 {children}
             </div>

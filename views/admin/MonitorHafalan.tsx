@@ -236,12 +236,15 @@ const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClo
 
 export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> = ({ user, tenantId }) => {
     // 1. State for Date Range (Default: Last 30 days)
-    const [startDate, setStartDate] = useState(() => {
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
+
+    useEffect(() => {
         const d = new Date();
         d.setDate(d.getDate() - 30);
-        return d.toISOString().split('T')[0];
-    });
-    const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+        setStartDate(d.toISOString().split('T')[0]);
+        setEndDate(new Date().toISOString().split('T')[0]);
+    }, []);
     
     const [students, setStudents] = useState<Student[]>([]);
     const [halaqahs, setHalaqahs] = useState<Halaqah[]>([]);
@@ -260,6 +263,11 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const { setLoading: setGlobalLoading } = useLoading();
     const { addNotification } = useNotification();

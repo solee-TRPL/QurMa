@@ -66,7 +66,7 @@ export const EmailSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
   }
 
   return (
-    <div className="lg:h-[calc(100vh-140px)] flex flex-col animate-fade-in lg:overflow-hidden pb-10 lg:pb-0">
+    <div className="lg:h-[calc(100vh-140px)] flex flex-col animate-fade-in lg:overflow-hidden pb-0">
       <form onSubmit={handleSave} className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 min-h-0 lg:overflow-hidden">
         
         {/* Left Column: Template Editor */}
