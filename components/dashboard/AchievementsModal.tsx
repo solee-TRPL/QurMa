@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Trophy, X } from 'lucide-react';
+import { Trophy, X, Calendar } from 'lucide-react';
 import { Achievement } from '../../types';
 
 interface AchievementsModalProps {
