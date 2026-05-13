@@ -91,20 +91,28 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, 
         const c = colorMap[color] || color;
 
         return (
-            <div className="bg-white rounded-[20px] border-2 border-slate-50 p-3 lg:p-4 flex items-center gap-2 lg:gap-3 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
-                <div className="absolute top-0 right-0 p-1 opacity-[0.03] group-hover:scale-110 transition-transform hidden sm:block">
-                    <Icon className="w-12 h-12 rotate-12" />
+            <div className="bg-white rounded-xl border-2 border-slate-300 p-3 lg:p-4 flex items-center gap-3 lg:gap-4 relative overflow-hidden group hover:border-jade-300 transition-all shadow-none">
+                <div className={`absolute right-0 top-0 w-24 h-24 rounded-2xl -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500 ${
+                    c === 'jade' ? 'bg-jade-50/40' :
+                    c === 'blue' ? 'bg-blue-50/40' :
+                    c === 'orange' ? 'bg-orange-50/40' :
+                    'bg-emerald-50/40'
+                }`} />
+                <div className={`w-8 h-8 lg:w-9 lg:h-9 rounded-xl flex items-center justify-center border-2 relative z-10 ${
+                    c === 'jade' ? 'bg-jade-50 text-jade-700 border-jade-100' :
+                    c === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                    c === 'orange' ? 'bg-orange-50 text-orange-700 border-orange-100' :
+                    'bg-emerald-50 text-emerald-700 border-emerald-100'
+                }`}>
+                    <Icon className="w-4 h-4 lg:w-4.5 lg:h-4.5" />
                 </div>
-                <div className={`w-8 h-8 lg:w-10 lg:h-10 rounded-xl lg:rounded-[16px] bg-${c}-50 flex items-center justify-center text-${c}-600 shrink-0 border border-${c}-100/50`}>
-                    <Icon className="w-4 h-4 lg:w-5 lg:h-5" />
-                </div>
-                <div className="min-w-0">
-                    <p className="text-[8px] lg:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5 group-hover:text-jade-600 transition-colors truncate">{label}</p>
-                    <div className="text-base lg:text-xl font-black text-slate-800 tracking-tight leading-none">
+                <div className="relative z-10">
+                    <p className="text-[7.5px] lg:text-[8.5px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 lg:mb-1.5 group-hover:text-jade-600 transition-colors truncate">{label}</p>
+                    <h4 className="text-sm lg:text-lg font-black text-slate-800 leading-none">
                         {loading ? (
                             <div className="h-4 lg:h-5 w-8 lg:w-12 bg-slate-100 animate-pulse rounded" />
                         ) : value}
-                    </div>
+                    </h4>
                 </div>
             </div>
         );
@@ -113,7 +121,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, 
     return (
         <div className="lg:h-[calc(100vh-140px)] flex flex-col gap-4 animate-fade-in lg:overflow-hidden pb-0">
             {/* Top Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 shrink-0 px-2 lg:px-0">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-3.5 shrink-0 px-2 lg:px-0">
                 <StatCard icon={Building} label="Total Sekolah" value={stats?.totalTenants} color="primary" />
                 <StatCard icon={Users} label="Total Pengguna" value={stats?.totalUsers} color="blue" />
                 <StatCard icon={GraduationCap} label="Total Santri" value={stats?.totalStudents} color="orange" />
@@ -123,40 +131,50 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, 
             {/* Charts Section */}
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
                 {/* Growth Chart */}
-                <div className="lg:col-span-3 bg-white p-6 rounded-2xl border-2 border-slate-50 shadow-sm relative overflow-hidden flex flex-col min-h-0">
+                <div className="lg:col-span-3 bg-white p-5 lg:p-6 rounded-xl border-2 border-slate-300 shadow-none relative overflow-hidden flex flex-col min-h-0">
                     <div className="flex justify-between items-center mb-6 shrink-0">
-                        <div className="flex items-center gap-4">
-                            <div>
-                                <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-tight">
-                                    Pertumbuhan Sekolah
-                                </h3>
-                                <p className="text-[11px] font-bold text-slate-400">Akumulasi pendaftaran 6 bulan terakhir</p>
-                            </div>
+                        <div className="flex flex-col">
+                            <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.2em] mb-1">
+                                Pertumbuhan Sekolah
+                            </h3>
+                            <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest leading-none">Akumulasi pendaftaran 6 bulan terakhir</p>
                         </div>
                     </div>
-                    <div className="h-[250px] lg:h-[300px] w-full overflow-hidden">
+                    <div className="flex-1 w-full overflow-hidden">
                         {isMounted && (
                             <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                                <AreaChart data={growthData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
+                                <AreaChart data={growthData} margin={{ top: 10, right: 10, left: -30, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorGrowth" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.15}/>
-                                        <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="var(--color-jade-600)" stopOpacity={0.15}/>
+                                        <stop offset="95%" stopColor="var(--color-jade-600)" stopOpacity={0}/>
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 700}} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 700}} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
+                                <XAxis 
+                                    dataKey="name" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{fill: '#94a3b8', fontSize: 8, fontWeight: 900}} 
+                                    dy={10} 
+                                />
+                                <YAxis 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{fill: '#94a3b8', fontSize: 8, fontWeight: 900}} 
+                                    allowDecimals={false}
+                                />
                                 <Tooltip 
-                                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                                    itemStyle={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase' }}
-                                    labelStyle={{ fontSize: '10px', color: '#64748b', fontWeight: 900, marginBottom: '4px' }}
-                                    formatter={(value: number) => [value, 'Sekolah']}
+                                    cursor={{ stroke: '#f1f5f9', strokeWidth: 2 }}
+                                    contentStyle={{ borderRadius: '12px', border: '2px solid #e2e8f0', backgroundColor: '#fff', color: '#1e293b', padding: '10px', boxShadow: 'none' }}
+                                    itemStyle={{ color: '#1e293b', fontSize: '9px', fontWeight: 900, padding: 0, textTransform: 'uppercase' }}
+                                    labelStyle={{ color: '#94a3b8', opacity: 1, fontSize: '7px', fontWeight: 900, marginBottom: '4px', textTransform: 'uppercase' }}
+                                    formatter={(value: number) => [value, 'SEKOLAH']}
                                 />
                                 <Area 
                                     type="monotone" 
                                     dataKey="total" 
-                                    stroke="#4f46e5" 
+                                    stroke="var(--color-jade-600)" 
                                     strokeWidth={4}
                                     fillOpacity={1} 
                                     fill="url(#colorGrowth)" 

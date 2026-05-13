@@ -47,22 +47,22 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   const colorClasses = {
     danger: {
       icon: 'bg-red-50 text-red-600',
-      button: 'bg-red-600 hover:bg-red-700 shadow-red-100',
+      button: 'bg-red-600 hover:bg-red-700 border-2 border-red-600 shadow-none',
       ring: 'ring-red-100'
     },
     warning: {
       icon: 'bg-amber-50 text-amber-500',
-      button: 'bg-amber-500 hover:bg-amber-600 shadow-amber-100',
+      button: 'bg-amber-500 hover:bg-amber-600 border-2 border-amber-500 shadow-none',
       ring: 'ring-amber-50'
     },
     info: {
       icon: 'bg-jade-50 text-jade-500',
-      button: 'bg-primary-500 hover:bg-jade-600 shadow-primary-100',
+      button: 'bg-jade-600 hover:bg-jade-700 border-2 border-jade-600 shadow-none',
       ring: 'ring-jade-50'
     },
     primary: {
       icon: 'bg-jade-50 text-jade-600',
-      button: 'bg-primary-600 hover:bg-primary-700 shadow-primary-100',
+      button: 'bg-jade-600 hover:bg-jade-700 border-2 border-jade-600 shadow-none',
       ring: 'ring-jade-50'
     }
   };
@@ -77,18 +77,18 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   };
 
   return (
-    <div className={`fixed inset-0 z-[999999] flex items-center justify-center p-4 sm:p-6 text-slate-800 ${!centerOnScreen ? 'lg:pl-64 lg:pt-20' : ''}`}>
+    <div className={`fixed inset-0 z-[999999] flex items-center justify-center p-4 sm:p-6 text-slate-800 ${!centerOnScreen ? 'lg:pl-64 pt-16' : ''}`}>
       {/* Cinematic Overlay */}
       <div 
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300" 
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300" 
         onClick={onClose}
       />
       
       {/* Modal Card */}
-      <div className="relative w-full max-w-sm bg-white rounded-[32px] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden animate-in zoom-in-95 fade-in duration-300">
+      <div className="relative w-full max-w-sm bg-white rounded-xl shadow-none border-2 border-slate-300 overflow-hidden animate-in zoom-in-95 fade-in duration-300">
         {/* Header/Ikon */}
         <div className="p-5 pb-2 flex flex-col items-center text-center">
-          <div className={`w-12 h-12 ${currentVariant.icon} rounded-[18px] flex items-center justify-center mb-4 ring-2 ${currentVariant.ring} transition-all`}>
+          <div className={`w-12 h-12 ${currentVariant.icon} rounded-xl flex items-center justify-center mb-4 border-2 border-slate-100 transition-all`}>
             {renderIcon()}
           </div>
           
@@ -105,14 +105,14 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           <button
             disabled={isSubmitting}
             onClick={handleConfirm}
-            className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] text-white shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 ${currentVariant.button}`}
+            className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] text-white shadow-none transition-all active:scale-[0.98] disabled:opacity-50 ${currentVariant.button}`}
           >
             {isSubmitting ? '...' : confirmLabel}
           </button>
           <button
             disabled={isSubmitting}
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all active:scale-[0.98] border border-slate-100"
+            className="flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all active:scale-[0.98] border-2 border-slate-100 shadow-none"
           >
             {cancelLabel}
           </button>

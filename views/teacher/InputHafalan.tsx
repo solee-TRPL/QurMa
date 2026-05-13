@@ -1002,7 +1002,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
     return (
         <div className="flex flex-col lg:flex-row h-[calc(100vh-140px)] gap-4 lg:gap-6 animate-fade-in overflow-hidden no-scrollbar">
             {/* Sidebar Santri (Desktop Only) */}
-            <div className="hidden lg:flex w-64 bg-white rounded-t-[32px] rounded-b-none border border-slate-200 flex flex-col overflow-hidden shadow-sm">
+            <div className="hidden lg:flex w-64 bg-white rounded-xl border-2 border-slate-300 flex flex-col overflow-hidden shadow-none shrink-0 h-full">
                 <div className="p-5 border-b border-slate-100 space-y-4">
                     <div className="flex items-center justify-between">
                         <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
@@ -1020,20 +1020,20 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                             placeholder="Cari santri..." 
                             value={search}
                             onChange={e => setSearch(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 text-[11px] font-bold bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-jade-500/10 focus:bg-white transition-all outline-none"
+                            className="w-full pl-9 pr-4 py-2 text-[10px] font-black uppercase tracking-widest bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-slate-400 transition-all outline-none placeholder:font-black placeholder:text-slate-300"
                         />
                     </div>
                 </div>
                 
-                <div className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                <div className="flex-1 overflow-y-auto py-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
                     {filteredStudents.map(student => (
                         <button
                             key={student.id}
                             onClick={() => handleStudentSwitch(student)}
-                            className={`w-full flex items-center p-3.5 rounded-2xl transition-all text-left group ${
+                            className={`w-full flex items-center px-4 py-4 transition-all text-left group border-b border-slate-50 ${
                                 selectedStudent?.id === student.id 
-                                ? 'bg-jade-50 border-jade-100 text-jade-700 shadow-sm ring-1 ring-jade-100/50' 
-                                : 'hover:bg-slate-50 text-slate-600 border border-transparent hover:border-slate-100'
+                                ? 'bg-jade-50/80 border-jade-100 text-jade-700' 
+                                : 'hover:bg-slate-50 text-slate-600 border-transparent'
                             }`}
                         >
                             <div className="flex-1 overflow-hidden">
@@ -1068,7 +1068,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col gap-4 lg:gap-6 overflow-hidden min-h-0">
                 {/* Mobile Student Selector (Visible only on mobile) */}
-                <div className="lg:hidden shrink-0 bg-white border border-slate-200 rounded-[24px] p-2 shadow-sm">
+                <div className="lg:hidden shrink-0 bg-white border border-slate-200 overflow-hidden shadow-sm">
                     <div className="flex flex-col gap-2">
                         {/* Selected Student Display / Toggle Button */}
                         <div className="relative">
@@ -1077,7 +1077,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                     const dropdown = document.getElementById('student-mobile-dropdown');
                                     if(dropdown) dropdown.classList.toggle('hidden');
                                 }}
-                                className="w-full flex items-center justify-between p-2 bg-jade-50 border border-jade-100 rounded-xl text-jade-700 shadow-sm"
+                                className="w-full flex items-center justify-between p-3 lg:p-4 bg-emerald-50/50 border-b border-emerald-100 text-emerald-700"
                             >
                                 <div className="flex items-center gap-2">
                                     <div className="w-7 h-7 bg-jade-600 rounded-lg flex items-center justify-center text-white shadow-sm">
@@ -1132,7 +1132,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                 {selectedStudent ? (
                     <>
                         {/* Log Table Area */}
-                        <div className="flex-1 bg-white rounded-t-[32px] rounded-b-none border border-slate-200 flex flex-col overflow-hidden shadow-sm relative">
+                        <div className="flex-1 bg-white rounded-xl border-2 border-slate-300 flex flex-col overflow-hidden shadow-none relative min-h-0">
                             {/* Table Header Filter / Title - MADE SOLID AND SEAMLESS */}
                             <div className="px-4 lg:px-6 py-2 lg:py-4 border-b border-slate-100 flex flex-col lg:flex-row items-center justify-between bg-white relative z-20 gap-2 lg:gap-0">
                                 <div className="hidden lg:flex items-center gap-3">
@@ -1145,10 +1145,10 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between lg:justify-end gap-1.5 lg:gap-4 w-full lg:w-auto">
-                                    <div className="flex bg-white p-0.5 rounded-lg border border-slate-100 shadow-sm ring-1 ring-white scale-90 lg:scale-100 origin-left">
+                                    <div className="flex bg-white p-0.5 rounded-xl border-2 border-slate-300 ring-1 ring-white scale-90 lg:scale-100 origin-left">
                                         <button 
                                             onClick={() => setCurrentWeekOffset(prev => prev - 1)}
-                                            className="p-1 px-1.5 lg:px-2 hover:bg-slate-50 rounded-lg transition-colors text-slate-400"
+                                            className="p-1 px-1.5 lg:px-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
                                         >
                                             <ChevronLeft className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
                                         </button>
@@ -1167,7 +1167,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                         </div>
                                         <button 
                                             onClick={() => setCurrentWeekOffset(prev => prev + 1)}
-                                            className="p-1 px-1.5 lg:px-2 hover:bg-slate-50 rounded-lg transition-colors text-slate-400"
+                                            className="p-1 px-1.5 lg:px-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
                                         >
                                             <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
                                         </button>
@@ -1176,7 +1176,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                     <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                                         <button 
                                             onClick={() => setIsInfoModalOpen(true)}
-                                            className="p-1.5 lg:p-2.5 bg-white border border-slate-200/60 rounded-xl text-slate-400 hover:text-jade-600 hover:border-jade-100 transition-all shadow-sm group"
+                                            className="p-1.5 lg:p-2.5 bg-white border-2 border-slate-300 rounded-xl text-slate-400 hover:text-jade-600 hover:border-jade-100 transition-all group"
                                             title="Informasi Target Harian"
                                         >
                                             <HelpCircle className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
@@ -1184,7 +1184,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
 
                                         <button 
                                             onClick={() => setIsProgressModalOpen(true)}
-                                            className="p-1.5 lg:p-2.5 bg-white border border-slate-200/60 rounded-xl text-slate-400 hover:text-jade-600 hover:border-jade-100 transition-all shadow-sm group"
+                                            className="p-1.5 lg:p-2.5 bg-white border-2 border-slate-300 rounded-xl text-slate-400 hover:text-jade-600 hover:border-jade-100 transition-all group"
                                             title="Informasi Jumlah Hafalan"
                                         >
                                             <Activity className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
@@ -1192,7 +1192,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
 
                                         <button 
                                             onClick={() => handleMassSave(true)}
-                                            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 lg:px-5 py-1.5 lg:py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg shadow-lg shadow-primary-200 transition-all active:scale-95 group"
+                                            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 lg:px-5 py-1.5 lg:py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl shadow-none transition-all active:scale-95 group border-2 border-primary-600"
                                         >
                                             <Save className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
                                             <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Simpan</span>
@@ -1209,17 +1209,17 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                             >
                                 {/* DESKTOP VIEW - ORIGINAL TABLE */}
                                 <div className="hidden lg:block">
-                                    <table className="w-full border-collapse">
-                                    <thead className="sticky top-0 z-50 shadow-[0_1px_0_0_rgba(226,232,240,1)]">
+                                    <table className="w-full border-separate border-spacing-0">
+                                    <thead className="sticky top-0 z-50">
                                         <tr>
-                                            <th className="px-2 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center w-[75px] min-w-[75px] sticky left-0 z-50 bg-slate-50 border-b border-slate-200 after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1.5px] after:bg-slate-200">Tanggal</th>
-                                            <th className="px-2 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center w-[65px] min-w-[65px] sticky left-[75px] z-50 bg-slate-50 border-b border-slate-200 shadow-[4px_0_8px_rgba(0,0,0,0.05)] after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1.5px] after:bg-slate-300">Setoran</th>
-                                            <th className="px-6 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center border border-slate-200 bg-slate-50">Surat / Ayat</th>
-                                            <th className="px-2 lg:px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center w-12 lg:w-48 border border-slate-200 bg-slate-50">
-                                                <span className="lg:hidden">Ket</span>
-                                                <span className="hidden lg:inline">Keterangan</span>
+                                            <th className="px-2 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-[75px] min-w-[75px] sticky left-0 z-50 bg-slate-300 border-t border-b border-l border-r border-black">TANGGAL</th>
+                                            <th className="px-2 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-[65px] min-w-[65px] sticky left-[75px] z-50 bg-slate-300 border-t border-b border-r border-black">JENIS</th>
+                                            <th className="px-6 py-4 text-[9px] lg:text-[10px] font-black text-emerald-700 uppercase tracking-widest text-center border-t border-b border-r border-emerald-700 bg-emerald-50">SURAT / AYAT</th>
+                                            <th className="px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-black text-blue-700 uppercase tracking-widest text-center w-12 lg:w-48 border-t border-b border-r border-blue-700 bg-blue-50">
+                                                <span className="lg:hidden">KET</span>
+                                                <span className="hidden lg:inline">KETERANGAN / STATUS</span>
                                             </th>
-                                            <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center w-24 border border-slate-200 bg-slate-50">Paraf</th>
+                                            <th className="px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-24 border-t border-b border-r border-black bg-slate-300">PARAF</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white">
@@ -1264,12 +1264,12 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                         const isToday = date === getLocalDateString(new Date());
 
                                                         return (
-                                                            <tr key={`${date}-${type}`} className={`group transition-all ${isToday ? 'bg-emerald-50/30' : 'hover:bg-slate-50/50'}`}>
+                                                            <tr key={`${date}-${type}`} className={`group transition-all ${isToday ? 'bg-emerald-50/40' : 'hover:bg-emerald-50/40'}`}>
                                                                 {idx === 0 && (
                                                                     <td 
                                                                         id={`row-${date}`}
                                                                         rowSpan={3} 
-                                                                        className={`px-2 py-5 align-middle w-[75px] min-w-[75px] sticky left-0 z-20 border-b border-slate-200 shadow-sm opacity-100 !opacity-100 after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1.5px] after:bg-slate-100 ${isToday ? 'bg-[#ECFDF5]' : isFuture ? 'bg-[#FDFDFD]' : 'bg-white'}`}
+                                                                        className={`px-2 py-5 align-middle w-[75px] min-w-[75px] sticky left-0 z-20 border-l border-r border-b border-slate-200 opacity-100 !opacity-100 after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[0.5px] after:bg-slate-100 ${isToday ? 'bg-[#ECFDF5]' : isFuture ? 'bg-[#FDFDFD]' : 'bg-white'} group-hover:bg-emerald-50/60`}
                                                                     >
                                                                         {isToday && (
                                                                             <div className="absolute top-0 bottom-0 left-0 w-1 bg-emerald-500 shadow-[2px_0_8px_rgba(16,185,129,0.3)]"></div>
@@ -1287,7 +1287,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                                         </div>
                                                                     </td>
                                                                 )}
-                                                                <td className={`px-2 py-3 sticky left-[75px] z-20 w-[65px] min-w-[65px] border-b border-slate-200 text-center transition-colors shadow-[4px_0_8px_rgba(0,0,0,0.05)] opacity-100 !opacity-100 after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1.5px] after:bg-slate-200 ${isToday ? 'bg-[#ECFDF5]' : isFuture ? 'bg-[#FDFDFD]' : 'bg-white group-hover:bg-slate-50'}`}>
+                                                                <td className={`px-2 py-3 sticky left-[75px] z-20 w-[65px] min-w-[65px] border-r border-b border-slate-200 text-center transition-colors shadow-[4px_0_8px_rgba(0,0,0,0.05)] opacity-100 !opacity-100 after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[0.5px] after:bg-slate-200 ${isToday ? 'bg-[#ECFDF5]' : isFuture ? 'bg-[#FDFDFD]' : 'bg-white group-hover:bg-emerald-50/60'}`}>
                                                                     <span className={`text-[8px] font-black ${isToday ? 'text-emerald-600' : 'text-slate-500'} uppercase tracking-tighter ${isFuture ? 'opacity-60' : ''}`}>
                                                                         {getTypeLabel(type)}
                                                                     </span>
@@ -1964,67 +1964,70 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
             {/* Information Modal */}
             {isInfoModalOpen && (
                 <div 
-                    className="fixed inset-0 z-999999 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-fade-in lg:pl-64 pt-20"
+                    className="fixed inset-0 z-999999 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in lg:pl-64 pt-16"
                     onClick={() => setIsInfoModalOpen(false)}
                 >
                     <div 
-                        className="relative bg-white rounded-[24px] shadow-2xl w-full max-w-[340px] overflow-hidden animate-scale-in border border-white flex flex-col max-h-[70vh]"
+                        className="relative bg-white rounded-xl shadow-none w-full max-w-sm overflow-hidden animate-scale-in border-2 border-slate-300 flex flex-col max-h-[85vh]"
                         onClick={e => e.stopPropagation()}
                     >
-                        <div className="p-6 overflow-y-auto scrollbar-hide">
-                            <div className="flex items-center justify-between mb-5">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-jade-50 rounded-xl flex items-center justify-center text-jade-500 shadow-sm">
-                                        <HelpCircle className="w-4 h-4" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-widest leading-none">Informasi Target</h3>
-                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1 opacity-70">Acuan Sabaq Harian</p>
-                                    </div>
+                        {/* Header */}
+                        <div className="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-jade-50 rounded-lg flex items-center justify-center text-jade-500 border border-jade-100">
+                                    <HelpCircle className="w-4 h-4" />
                                 </div>
-                                <button onClick={() => setIsInfoModalOpen(false)} className="p-1.5 hover:bg-slate-50 rounded-lg transition-colors">
-                                    <X className="w-3.5 h-3.5 text-slate-300" />
-                                </button>
-                            </div>
-
-                            <div className="space-y-3.5">
-                                <div className="bg-slate-50/50 rounded-2xl border border-slate-100 p-3.5 space-y-2.5">
-                                    {tenant?.curriculum_config?.target_info ? (
-                                        tenant.curriculum_config.target_info.map((item: any, idx: number) => (
-                                            <div key={idx} className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
-                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{item.label}</span>
-                                                <span className="px-2 py-0.5 bg-jade-50 text-jade-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-jade-100/50">{item.value}</span>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <>
-                                            <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
-                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Kelas 1 - 2</span>
-                                                <span className="px-2 py-0.5 bg-jade-50 text-jade-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-jade-100/50">3 Baris</span>
-                                            </div>
-                                            <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
-                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Kelas 3 - 4</span>
-                                                <span className="px-2 py-0.5 bg-jade-50 text-jade-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-jade-100/50">5 Baris</span>
-                                            </div>
-                                            <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
-                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Kelas 5 - 6</span>
-                                                <span className="px-2 py-0.5 bg-jade-50 text-jade-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-jade-100/50">7 Baris</span>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-
-                                <div className="p-3 bg-amber-50/50 rounded-xl border border-amber-100/50 flex items-start gap-2.5">
-                                    <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                                    <p className="text-[9px] font-bold text-amber-700 leading-relaxed uppercase tracking-wide opacity-80">
-                                        Gunakan acuan ini sebagai standar minimal pencapaian harian santri.
-                                    </p>
+                                <div>
+                                    <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest leading-none">Informasi Target</h3>
+                                    <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest mt-1 opacity-70">Acuan Sabaq Harian</p>
                                 </div>
                             </div>
+                            <button onClick={() => setIsInfoModalOpen(false)} className="p-1.5 hover:bg-slate-50 rounded-full transition-colors">
+                                <X className="w-4 h-4 text-slate-400" />
+                            </button>
+                        </div>
 
+                        {/* Content */}
+                        <div className="p-5 overflow-y-auto scrollbar-hide space-y-4">
+                            <div className="space-y-2">
+                                {tenant?.curriculum_config?.target_info ? (
+                                    tenant.curriculum_config.target_info.map((item: any, idx: number) => (
+                                        <div key={idx} className="flex items-center justify-between p-3.5 bg-white rounded-2xl border-2 border-slate-100 transition-colors hover:border-slate-200">
+                                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">{item.label}</span>
+                                            <span className="px-3.5 py-1.5 bg-white text-jade-600 border-2 border-jade-600 rounded-xl text-[10px] font-black uppercase tracking-wider">{item.value}</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <>
+                                        <div className="flex items-center justify-between p-3.5 bg-white rounded-2xl border-2 border-slate-100">
+                                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">Kelas 1 - 2</span>
+                                            <span className="px-3.5 py-1.5 bg-white text-jade-600 border-2 border-jade-600 rounded-xl text-[10px] font-black uppercase tracking-wider">3 Baris</span>
+                                        </div>
+                                        <div className="flex items-center justify-between p-3.5 bg-white rounded-2xl border-2 border-slate-100">
+                                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">Kelas 3 - 4</span>
+                                            <span className="px-3.5 py-1.5 bg-white text-jade-600 border-2 border-jade-600 rounded-xl text-[10px] font-black uppercase tracking-wider">5 Baris</span>
+                                        </div>
+                                        <div className="flex items-center justify-between p-3.5 bg-white rounded-2xl border-2 border-slate-100">
+                                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">Kelas 5 - 6</span>
+                                            <span className="px-3.5 py-1.5 bg-white text-jade-600 border-2 border-jade-600 rounded-xl text-[10px] font-black uppercase tracking-wider">7 Baris</span>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            <div className="p-3 bg-amber-50 rounded-xl border-2 border-amber-100 flex items-start gap-2.5">
+                                <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                                <p className="text-[8.5px] font-black text-amber-700 leading-relaxed uppercase tracking-wide">
+                                    Gunakan acuan ini sebagai standar minimal pencapaian harian santri.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-5 border-t border-slate-100 bg-white">
                             <button 
                                 onClick={() => setIsInfoModalOpen(false)}
-                                className="w-full mt-6 py-3 bg-slate-900 border border-slate-800 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-100"
+                                className="w-full py-3.5 bg-slate-800 text-white rounded-xl text-[9.5px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 transition-all active:scale-95 shadow-none border-2 border-slate-800"
                             >
                                 Mengerti
                             </button>
@@ -2036,61 +2039,64 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
             {/* Progress Information Modal - Compact Version */}
             {isProgressModalOpen && (
                 <div 
-                    className="fixed inset-0 z-999999 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in lg:pl-64"
+                    className="fixed inset-0 z-999999 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in lg:pl-64 pt-16"
                     onClick={() => setIsProgressModalOpen(false)}
                 >
                     <div 
-                        className="relative bg-white rounded-[20px] shadow-2xl w-full max-w-[300px] overflow-hidden animate-scale-in border border-white flex flex-col"
+                        className="relative bg-white rounded-xl shadow-none w-full max-w-sm overflow-hidden animate-scale-in border-2 border-slate-300 flex flex-col"
                         onClick={e => e.stopPropagation()}
                     >
-                        <div className="p-5">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-7 h-7 bg-jade-50 rounded-lg flex items-center justify-center text-jade-500 shadow-sm border border-jade-100/50">
-                                        <Activity className="w-3.5 h-3.5" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest leading-none">Jumlah Hafalan</h3>
-                                        <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mt-0.5 opacity-70">Akumulasi Progress</p>
-                                    </div>
+                        {/* Header */}
+                        <div className="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 bg-jade-50 rounded-lg flex items-center justify-center text-jade-500 border border-jade-100">
+                                    <Activity className="w-4 h-4" />
                                 </div>
-                                <button onClick={() => setIsProgressModalOpen(false)} className="p-1 hover:bg-slate-50 rounded-lg transition-colors">
-                                    <X className="w-3 h-3 text-slate-300" />
-                                </button>
+                                <div>
+                                    <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest leading-none">Jumlah Hafalan</h3>
+                                    <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest mt-1 opacity-70">Akumulasi Progress</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setIsProgressModalOpen(false)} className="p-1.5 hover:bg-slate-50 rounded-full transition-colors">
+                                <X className="w-4 h-4 text-slate-400" />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-5 space-y-4">
+                            <div className="py-2.5 px-4 bg-jade-50 rounded-xl border-2 border-jade-100 flex items-center justify-center gap-2">
+                                <Calendar className="w-3.5 h-3.5 text-jade-600" />
+                                <span className="text-[9.5px] font-black text-jade-700 uppercase tracking-widest">{weekDisplayRange}</span>
                             </div>
 
-                            <div className="space-y-2.5">
-                                <div className="py-1.5 px-3 bg-jade-50/30 rounded-lg border border-jade-100/30 flex items-center justify-center gap-1.5">
-                                    <Calendar className="w-2.5 h-2.5 text-jade-500" />
-                                    <span className="text-[8px] font-black text-jade-700 uppercase tracking-wider">{weekDisplayRange}</span>
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between p-3.5 bg-white rounded-2xl border-2 border-slate-100 transition-colors hover:border-slate-200">
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">Sabaq</span>
+                                    <span className="px-3.5 py-1.5 bg-white text-emerald-600 border-2 border-emerald-600 rounded-xl text-[10px] font-black uppercase tracking-wider">{weekTotals.sabaqLines} Baris</span>
                                 </div>
-
-                                <div className="bg-slate-50/50 rounded-xl border border-slate-100 p-2 space-y-1.5">
-                                    <div className="flex items-center justify-between p-2 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">Sabaq</span>
-                                        <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 rounded-md text-[8px] font-black uppercase tracking-tighter ring-1 ring-emerald-100/50">{weekTotals.sabaqLines} Baris</span>
-                                    </div>
-                                    <div className="flex items-center justify-between p-2 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">Sabqi</span>
-                                        <span className="px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded-md text-[8px] font-black uppercase tracking-tighter ring-1 ring-amber-100/50">{weekTotals.sabqiPages} Hal</span>
-                                    </div>
-                                    <div className="flex items-center justify-between p-2 bg-white rounded-lg border border-slate-100 shadow-sm">
-                                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight">Manzil</span>
-                                        <span className="px-1.5 py-0.5 bg-rose-50 text-rose-600 rounded-md text-[8px] font-black uppercase tracking-tighter ring-1 ring-rose-100/50">{weekTotals.manzilPages} Hal</span>
-                                    </div>
+                                <div className="flex items-center justify-between p-3.5 bg-white rounded-2xl border-2 border-slate-100 transition-colors hover:border-slate-200">
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">Sabqi</span>
+                                    <span className="px-3.5 py-1.5 bg-white text-amber-600 border-2 border-amber-600 rounded-xl text-[10px] font-black uppercase tracking-wider">{weekTotals.sabqiPages} Halaman</span>
                                 </div>
-
-                                <div className="p-2 bg-blue-50/50 rounded-lg border border-blue-100/30 flex items-start gap-2">
-                                    <AlertCircle className="w-3 h-3 text-blue-500 shrink-0 mt-0.5" />
-                                    <p className="text-[7.5px] font-bold text-blue-700 leading-tight uppercase tracking-wide opacity-70">
-                                        Dihitung dari hafalan berstatus 'Lancar'.
-                                    </p>
+                                <div className="flex items-center justify-between p-3.5 bg-white rounded-2xl border-2 border-slate-100 transition-colors hover:border-slate-200">
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">Manzil</span>
+                                    <span className="px-3.5 py-1.5 bg-white text-rose-600 border-2 border-rose-600 rounded-xl text-[10px] font-black uppercase tracking-wider">{weekTotals.manzilPages} Halaman</span>
                                 </div>
                             </div>
 
+                            <div className="p-3 bg-blue-50 rounded-xl border-2 border-blue-100 flex items-start gap-2.5">
+                                <AlertCircle className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                                <p className="text-[8.5px] font-black text-blue-700 leading-tight uppercase tracking-wide">
+                                    Dihitung dari hafalan berstatus 'Lancar' pada pekan ini.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-5 border-t border-slate-100 bg-white">
                             <button 
                                 onClick={() => setIsProgressModalOpen(false)}
-                                className="w-full mt-4 py-2.5 bg-slate-900 border border-slate-800 text-white rounded-xl text-[8px] font-black uppercase tracking-[0.2em] hover:bg-slate-800 transition-all active:scale-95 shadow-md shadow-slate-100"
+                                className="w-full py-3.5 bg-slate-800 text-white rounded-xl text-[9.5px] font-black uppercase tracking-[0.2em] hover:bg-slate-800 transition-all active:scale-95 shadow-none border-2 border-slate-800"
                             >
                                 Tutup
                             </button>
@@ -2100,35 +2106,35 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
             )}
             {/* Local Unsaved Changes Modal (for Switching Students) */}
             {showLocalUnsavedModal && (
-                <div className="fixed inset-0 z-999999 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-fade-in shadow-2xl lg:pl-64">
-                    <div className="bg-white rounded-[28px] shadow-2xl w-full max-w-[380px] overflow-hidden animate-scale-in border border-white/50">
+                <div className="fixed inset-0 z-999999 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in lg:pl-64 pt-16">
+                    <div className="bg-white rounded-xl shadow-none w-full max-w-sm overflow-hidden animate-scale-in border-2 border-slate-300 flex flex-col">
                         <div className="p-8 text-center">
-                            <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-amber-500 shadow-sm border border-amber-100">
+                            <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-amber-500 border-2 border-amber-100">
                                 <AlertTriangle className="w-8 h-8" />
                             </div>
-                            <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest leading-normal mb-3">Tunggu Sebentar!</h3>
-                            <p className="text-[11px] font-bold text-slate-500 leading-relaxed uppercase tracking-wide opacity-80">
+                            <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-[0.2em] leading-normal mb-3">Tunggu Sebentar!</h3>
+                            <p className="text-[10.5px] font-black text-slate-500 leading-relaxed uppercase tracking-widest opacity-80">
                                 Anda memiliki perubahan data untuk <b>{selectedStudent?.full_name}</b> yang belum disimpan. Ingin menyimpannya dulu?
                             </p>
                         </div>
-                        <div className="px-6 pb-8 flex items-center gap-2">
+                        <div className="px-6 pb-8 flex items-center gap-2.5">
                             <button 
                                 onClick={() => { setShowLocalUnsavedModal(false); setPendingStudent(null); }}
-                                className="flex-1 py-3 bg-white text-slate-400 border border-slate-100 rounded-xl text-[9px] font-black uppercase tracking-widest hover:text-slate-600 transition-all active:scale-95"
+                                className="flex-1 py-3 bg-white text-slate-400 border-2 border-slate-100 rounded-xl text-[9px] font-black uppercase tracking-widest hover:text-slate-600 transition-all active:scale-95"
                             >
                                 Batal
                             </button>
                             <button 
                                 onClick={proceedStudentSwitch}
-                                className="flex-1 py-3 bg-rose-50 text-rose-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all active:scale-95"
+                                className="flex-1 py-3 bg-rose-50 text-rose-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all active:scale-95 border-2 border-rose-100"
                             >
                                 Buang
                             </button>
                             <button 
                                 onClick={handleLocalSaveAndSwitch}
-                                className="flex-2 py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-jade-700 shadow-lg shadow-primary-100 transition-all active:scale-95 outline-none"
+                                className="flex-2 py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-jade-700 transition-all active:scale-95 outline-none border-2 border-jade-600"
                             >
-                                Simpan & Pindah
+                                Simpan
                             </button>
                         </div>
                     </div>
@@ -2136,40 +2142,40 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
             )}
             {/* Initialization Modal */}
             {isInitModalOpen && (
-                <div className="fixed inset-0 z-999999 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-fade-in shadow-2xl lg:pl-64">
-                    <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-[340px] overflow-hidden animate-scale-in border border-white/50">
+                <div className="fixed inset-0 z-999999 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in lg:pl-64 pt-16">
+                    <div className="bg-white rounded-xl shadow-none w-full max-w-sm overflow-hidden animate-scale-in border-2 border-slate-300 flex flex-col">
                         <div className="p-6 text-center pb-2">
-                            <div className="w-12 h-12 bg-jade-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-jade-500 shadow-sm border border-jade-100">
+                            <div className="w-12 h-12 bg-jade-50 rounded-xl flex items-center justify-center mx-auto mb-4 text-jade-500 border-2 border-jade-100">
                                 <BookOpen className="w-6 h-6" />
                             </div>
-                            <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-[0.2em] leading-normal mb-1">Santri Baru!</h3>
-                            <p className="text-[9px] font-bold text-slate-400 leading-relaxed uppercase tracking-widest mb-4 px-2">
+                            <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.2em] leading-normal mb-1">Santri Baru!</h3>
+                            <p className="text-[8px] font-black text-slate-400 leading-relaxed uppercase tracking-widest mb-5 px-2 opacity-70">
                                 Atur posisi hafalan terakhir <b>{selectedStudent?.full_name?.split(' ')[0]}</b>
                             </p>
 
                             <div className="space-y-4 text-left">
                                 {[
-                                    { type: MemorizationType.SABAQ, label: 'Sabaq', color: 'jade' },
-                                    { type: MemorizationType.SABQI, label: 'Sabqi', color: 'blue' },
-                                    { type: MemorizationType.MANZIL, label: 'Manzil', color: 'amber' }
+                                    { type: MemorizationType.SABAQ, label: 'Sabaq', color: 'emerald' },
+                                    { type: MemorizationType.SABQI, label: 'Sabqi', color: 'amber' },
+                                    { type: MemorizationType.MANZIL, label: 'Manzil', color: 'rose' }
                                 ].map((t) => (
                                     <div key={t.type} className="space-y-1.5">
                                         <div className="flex items-center gap-2 mb-1 px-1">
-                                            <span className={`text-[9px] font-black text-${t.color}-500 uppercase tracking-widest`}>{t.label}</span>
+                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t.label}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <div className="flex-1 relative">
                                                 <select
                                                     value={initForm[t.type].surah}
                                                     onChange={(e) => setInitForm(prev => ({ ...prev, [t.type]: { ...prev[t.type], surah: e.target.value, ayat: 1 } }))}
-                                                    className="w-full h-9 bg-slate-50 border border-slate-100 rounded-xl px-2.5 text-[10px] font-bold text-slate-700 outline-none focus:border-jade-400 focus:bg-white transition-all appearance-none shadow-sm"
+                                                    className="w-full h-10 bg-white border-2 border-slate-100 rounded-xl px-3 text-[10.5px] font-black text-slate-700 outline-none focus:border-jade-400 transition-all appearance-none shadow-none"
                                                 >
-                                                    <option value="">- Pilih Surat -</option>
+                                                    <option value="">- PILIH SURAT -</option>
                                                     {SURAH_DATA.slice(0, 114).map(s => (
-                                                        <option key={s.name} value={s.name}>{s.name}</option>
+                                                        <option key={s.name} value={s.name}>{s.name.toUpperCase()}</option>
                                                     ))}
                                                 </select>
-                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" />
+                                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 pointer-events-none" />
                                             </div>
                                             <span className="text-slate-300 font-bold">:</span>
                                             <div className="w-16">
@@ -2179,7 +2185,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                     max={SURAH_DATA.find(s => s.name === initForm[t.type].surah)?.totalAyah || 1000}
                                                     value={initForm[t.type].ayat || ''}
                                                     onChange={(e) => setInitForm(prev => ({ ...prev, [t.type]: { ...prev[t.type], ayat: parseInt(e.target.value) || 0 } }))}
-                                                    className="w-full h-9 bg-slate-50 border border-slate-100 rounded-xl px-2 text-[10px] font-black text-slate-800 focus:border-jade-400 focus:bg-white transition-all outline-none text-center shadow-sm"
+                                                    className="w-full h-10 bg-white border-2 border-slate-100 rounded-xl px-2 text-[10.5px] font-black text-slate-800 focus:border-jade-400 transition-all outline-none text-center shadow-none"
                                                     placeholder="0"
                                                 />
                                             </div>
@@ -2189,7 +2195,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                             </div>
                         </div>
 
-                        <div className="px-6 pb-8 pt-2 flex flex-col gap-2.5">
+                        <div className="px-6 pb-8 pt-4 flex flex-col gap-2.5">
                             {(() => {
                                 const types = [MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL];
                                 const isComplete = types.every(t => initForm[t].surah && initForm[t].ayat > 0);
@@ -2197,7 +2203,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                     <button 
                                         onClick={handleInitialize}
                                         disabled={!isComplete}
-                                        className={`w-full py-3 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] transition-all outline-none border-2 ${
+                                        className={`w-full py-3.5 rounded-xl text-[9.5px] font-black uppercase tracking-[0.2em] transition-all outline-none border-2 ${
                                             isComplete 
                                             ? 'bg-jade-600 text-white border-jade-600 hover:bg-jade-700 shadow-lg shadow-jade-100 active:scale-95' 
                                             : 'bg-slate-100 text-slate-300 border-slate-200 cursor-not-allowed opacity-80'

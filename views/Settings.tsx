@@ -461,10 +461,10 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
     <div className="h-full flex flex-col animate-fade-in max-w-4xl mx-auto pb-2 overflow-hidden">
       {/* Control Strip TABS - Optimized for Mobile */}
       <div className="flex justify-start mb-4 lg:mb-6 shrink-0 px-2 lg:px-0">
-        <div className="flex items-center gap-0.5 lg:gap-1 p-0.5 lg:p-1 bg-slate-100/50 border border-slate-200/50 rounded-xl lg:rounded-[20px] w-full lg:w-fit shadow-sm overflow-hidden">
+        <div className="flex items-center gap-0.5 lg:gap-1 p-0.5 lg:p-1 bg-slate-100/50 border border-slate-200/50 rounded-lg w-full lg:w-fit overflow-hidden">
           <button 
             onClick={() => handleTabChange('profile')}
-            className={`flex-1 lg:flex-none px-2 lg:px-6 py-1.5 lg:py-2 text-[8.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-lg lg:rounded-2xl border-2 transition-all ${activeTab === 'profile' ? 'border-white bg-white text-jade-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
+            className={`flex-1 lg:flex-none px-2 lg:px-6 py-1.5 lg:py-2 text-[8.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-xl border-2 transition-all ${activeTab === 'profile' ? 'border-slate-300 bg-white text-jade-600' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
           >
             <div className="flex items-center justify-center gap-1 lg:gap-1.5">
                 <User className="w-2.5 lg:w-3.5 h-2.5 lg:h-3.5" />
@@ -473,7 +473,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
           </button>
           <button 
             onClick={() => handleTabChange('security')}
-            className={`flex-1 lg:flex-none px-2 lg:px-6 py-1.5 lg:py-2 text-[8.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-lg lg:rounded-2xl border-2 transition-all ${activeTab === 'security' ? 'border-white bg-white text-jade-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
+            className={`flex-1 lg:flex-none px-2 lg:px-6 py-1.5 lg:py-2 text-[8.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-xl border-2 transition-all ${activeTab === 'security' ? 'border-slate-300 bg-white text-jade-600' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
           >
             <div className="flex items-center justify-center gap-1 lg:gap-1.5">
                 <Shield className="w-2.5 lg:w-3.5 h-2.5 lg:h-3.5" />
@@ -483,7 +483,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
           {(user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) && (
             <button 
               onClick={() => handleTabChange('tenant')}
-              className={`flex-1 lg:flex-none px-2 lg:px-6 py-1.5 lg:py-2 text-[8.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-lg lg:rounded-2xl border-2 transition-all ${activeTab === 'tenant' ? 'border-white bg-white text-jade-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
+              className={`flex-1 lg:flex-none px-2 lg:px-6 py-1.5 lg:py-2 text-[8.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-xl border-2 transition-all ${activeTab === 'tenant' ? 'border-slate-300 bg-white text-jade-600' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
             >
               <div className="flex items-center justify-center gap-1 lg:gap-1.5">
                   <Building className="w-2.5 lg:w-3.5 h-2.5 lg:h-3.5" />
@@ -494,7 +494,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
           {(user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) && (
             <button 
               onClick={() => handleTabChange('system')}
-              className={`flex-1 lg:flex-none px-2 lg:px-6 py-1.5 lg:py-2 text-[8.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-lg lg:rounded-2xl border-2 transition-all ${activeTab === 'system' ? 'border-white bg-white text-jade-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
+              className={`flex-1 lg:flex-none px-2 lg:px-6 py-1.5 lg:py-2 text-[8.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-xl border-2 transition-all ${activeTab === 'system' ? 'border-slate-300 bg-white text-jade-600' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
             >
               <div className="flex items-center justify-center gap-1 lg:gap-1.5">
                   <Settings2 className="w-2.5 lg:w-3.5 h-2.5 lg:h-3.5" />
@@ -510,7 +510,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                 <form onSubmit={handleSaveProfile} className="flex-1 flex flex-col min-h-0 space-y-3 lg:space-y-6">
                     <div className="flex flex-row items-center gap-4 lg:gap-6 shrink-0">
                         <div className="relative group shrink-0">
-                            <div className="w-14 h-14 lg:w-20 lg:h-20 bg-white rounded-2xl lg:rounded-[24px] flex items-center justify-center text-slate-300 text-xl lg:text-2xl font-black border border-slate-200 lg:border-2 lg:border-slate-300 overflow-hidden group-hover:scale-95 transition-transform duration-500">
+                            <div className="w-14 h-14 lg:w-20 lg:h-20 bg-white rounded-lg lg:rounded-lg flex items-center justify-center text-slate-300 text-xl lg:text-2xl font-black border-2 border-slate-300 overflow-hidden group-hover:scale-95 transition-transform duration-500">
                                 {user.avatar_url ? (
                                     <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover" />
                                 ) : (
@@ -520,7 +520,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                             <button 
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="absolute -bottom-1 -right-1 p-1.5 lg:p-2 bg-jade-600 text-white rounded-lg lg:rounded-xl shadow-lg shadow-primary-200 hover:bg-jade-700 transition-all active:scale-90"
+                                className="absolute -bottom-1 -right-1 p-1.5 lg:p-2 bg-jade-600 text-white rounded-xl shadow-none hover:bg-jade-700 transition-all active:scale-90"
                             >
                                 <Upload className="w-2.5 lg:w-3.5 h-2.5 lg:h-3.5" />
                             </button>
@@ -528,7 +528,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                         <div className="text-left py-1 flex-1">
                             <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} accept="image/png, image/jpeg" style={{ display: 'none' }} />
                             <h3 className="text-lg lg:text-2xl font-black text-slate-800 tracking-tight leading-tight truncate max-w-[200px] lg:max-w-none">{user.full_name}</h3>
-                            <p className="text-[9px] lg:text-[11px] font-black text-jade-600 mt-1 uppercase tracking-widest leading-none px-2 lg:py-1.5 bg-jade-50 border border-jade-100/50 rounded-lg lg:rounded-xl w-fit">
+                            <p className="text-[9px] lg:text-[11px] font-black text-jade-600 mt-1 uppercase tracking-widest leading-none px-2 lg:py-1.5 bg-jade-50 border border-jade-100/50 rounded-lg w-fit">
                                 {user.role === UserRole.ADMIN ? 'Admin' : 
                                  user.role === UserRole.TEACHER ? 'Ustadz' :
                                  user.role === UserRole.SANTRI ? 'Santri' :
@@ -545,7 +545,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                 type="text" 
                                 value={profileForm.fullName} 
                                 onChange={e => setProfileForm({...profileForm, fullName: e.target.value})} 
-                                className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none" 
+                                className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl shadow-none focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none placeholder:font-black placeholder:text-slate-300" 
                             />
                         </div>
                         <div className="space-y-1.5">
@@ -554,7 +554,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                 type="email" 
                                 disabled 
                                 value={user.email} 
-                                className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-100/50 border border-slate-200/60 text-slate-400 rounded-xl lg:rounded-2xl cursor-not-allowed text-xs lg:text-sm font-bold opacity-70 outline-none" 
+                                className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50 border-2 border-slate-300 text-slate-400 rounded-lg cursor-not-allowed text-[10px] lg:text-[11px] font-black uppercase tracking-widest outline-none opacity-80" 
                             />
                         </div>
                         {user.role !== UserRole.SANTRI && (
@@ -564,7 +564,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                     type="tel" 
                                     value={profileForm.phone} 
                                     onChange={e => setProfileForm({...profileForm, phone: e.target.value})} 
-                                    className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none" 
+                                    className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl shadow-none focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none placeholder:font-black placeholder:text-slate-300" 
                                 />
                             </div>
                         )}
@@ -575,7 +575,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                     <select 
                                         value={profileForm.role}
                                         onChange={e => setProfileForm({...profileForm, role: e.target.value as UserRole})}
-                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-100/50 border border-slate-200/60 text-slate-400 rounded-xl lg:rounded-2xl cursor-not-allowed text-xs lg:text-sm font-bold outline-none appearance-none"
+                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50 border-2 border-slate-300 text-slate-400 rounded-lg cursor-not-allowed text-[10px] lg:text-[11px] font-black uppercase tracking-widest outline-none appearance-none"
                                         disabled
                                     >
                                         <option value={UserRole.ADMIN}>Admin</option>
@@ -598,7 +598,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                         type="text" 
                                         value={profileForm.father_name} 
                                         onChange={e => setProfileForm({...profileForm, father_name: e.target.value})} 
-                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none" 
+                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none placeholder:font-black placeholder:text-slate-300" 
                                     />
                                 </div>
                                 <div className="space-y-1.5">
@@ -607,7 +607,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                         type="text" 
                                         value={profileForm.mother_name} 
                                         onChange={e => setProfileForm({...profileForm, mother_name: e.target.value})} 
-                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none" 
+                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none placeholder:font-black placeholder:text-slate-300" 
                                     />
                                 </div>
                                 <div className="space-y-1.5">
@@ -616,7 +616,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                         type="tel" 
                                         value={profileForm.father_phone} 
                                         onChange={e => setProfileForm({...profileForm, father_phone: e.target.value})} 
-                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none" 
+                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none placeholder:font-black placeholder:text-slate-300" 
                                     />
                                 </div>
                                 <div className="space-y-1.5">
@@ -625,7 +625,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                         type="tel" 
                                         value={profileForm.mother_phone} 
                                         onChange={e => setProfileForm({...profileForm, mother_phone: e.target.value})} 
-                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none" 
+                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none placeholder:font-black placeholder:text-slate-300" 
                                     />
                                 </div>
                                 <div className="space-y-1.5">
@@ -637,7 +637,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                                 const name = regions.provinces.find(p => p.id === e.target.value)?.name || '';
                                                 onProvinceChange(e.target.value, name);
                                             }} 
-                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none appearance-none"
+                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none appearance-none"
                                         >
                                             <option value="">{profileForm.province || 'PILIH PROVINSI'}</option>
                                             {regions.provinces.map(prov => (
@@ -657,7 +657,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                                 const name = regions.regencies.find(r => r.id === e.target.value)?.name || '';
                                                 onRegencyChange(e.target.value, name);
                                             }} 
-                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none appearance-none disabled:opacity-50"
+                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none appearance-none disabled:opacity-50"
                                         >
                                             <option value="">{profileForm.city || 'PILIH KOTA/KABUPATEN'}</option>
                                             {regions.regencies.map(r => (
@@ -679,7 +679,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                                 const name = regions.districts.find(d => d.id === e.target.value)?.name || '';
                                                 onDistrictChange(e.target.value, name);
                                             }} 
-                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none appearance-none disabled:opacity-50"
+                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none appearance-none disabled:opacity-50"
                                         >
                                             <option value="">{profileForm.district || 'PILIH KECAMATAN'}</option>
                                             {regions.districts.map(d => (
@@ -699,7 +699,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                                 const name = regions.villages.find(v => v.id === e.target.value)?.name || '';
                                                 setProfileForm({...profileForm, villageId: e.target.value, village: name});
                                             }} 
-                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none appearance-none disabled:opacity-50"
+                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none appearance-none disabled:opacity-50"
                                         >
                                             <option value="">{profileForm.village || 'PILIH KELURAHAN/DESA'}</option>
                                             {regions.villages.map(v => (
@@ -716,7 +716,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                         value={profileForm.rt_rw} 
                                         placeholder="Contoh: 001/002"
                                         onChange={e => setProfileForm({...profileForm, rt_rw: e.target.value})} 
-                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none" 
+                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none placeholder:font-black placeholder:text-slate-300" 
                                     />
                                 </div>
                                 <div className="space-y-1.5 md:col-span-2">
@@ -725,7 +725,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                         value={profileForm.address} 
                                         placeholder="Nama jalan, nomor rumah, dsb."
                                         onChange={e => setProfileForm({...profileForm, address: e.target.value})} 
-                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none min-h-[80px]" 
+                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none min-h-[80px] placeholder:font-black placeholder:text-slate-300" 
                                     />
                                 </div>
                             </>
@@ -735,7 +735,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                     <div className="pt-2 lg:pt-2 flex justify-start shrink-0">
                         <button 
                           type="submit"
-                          className="w-full lg:w-auto flex items-center justify-center px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest lg:tracking-tight rounded-xl lg:rounded-2xl border-2 border-jade-600 bg-jade-600 text-white hover:bg-jade-700 transition-all active:scale-95"
+                          className="w-full lg:w-auto flex items-center justify-center px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white hover:bg-jade-700 transition-all active:scale-95"
                         >
                             Update Profil
                         </button>
@@ -746,7 +746,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
             {activeTab === 'security' && (
                 <form onSubmit={handleSaveSecurity} className="flex-1 flex flex-col min-h-0 space-y-4 lg:space-y-6">
                     <div className="max-w-2xl space-y-4 lg:space-y-6 overflow-y-auto lg:overflow-visible pr-1 custom-scrollbar">
-                        <div className="space-y-1.5 max-w-md">
+                        <div className="space-y-1.5">
                             <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Password Saat Ini</label>
                             <div className="relative">
                                 <Lock className="absolute left-3 lg:left-4 top-1/2 -translate-y-1/2 w-3.5 lg:w-4 h-3.5 lg:h-4 text-slate-400" />
@@ -755,13 +755,13 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                     required 
                                     value={passwordForm.oldPassword} 
                                     onChange={e => setPasswordForm({...passwordForm, oldPassword: e.target.value})} 
-                                    className="w-full pl-10 lg:pl-12 pr-4 lg:pr-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none" 
+                                    className="w-full pl-10 lg:pl-12 pr-4 lg:pr-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl shadow-none focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none placeholder:font-black placeholder:text-slate-300" 
                                     placeholder="••••••••"
                                 />
                             </div>
                         </div>
 
-                        <div className="w-full h-px bg-slate-100"></div>
+
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                             <div className="space-y-1.5">
@@ -772,7 +772,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                     minLength={6} 
                                     value={passwordForm.newPassword} 
                                     onChange={e => setPasswordForm({...passwordForm, newPassword: e.target.value})} 
-                                    className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none" 
+                                    className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl shadow-none focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none placeholder:font-black placeholder:text-slate-300" 
                                     placeholder="Min 6 karakter"
                                 />
                             </div>
@@ -784,13 +784,13 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                     minLength={6} 
                                     value={passwordForm.confirmPassword} 
                                     onChange={e => setPasswordForm({...passwordForm, confirmPassword: e.target.value})} 
-                                    className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50/80 border border-slate-200/60 rounded-xl lg:rounded-2xl shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none" 
+                                    className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl shadow-none focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none placeholder:font-black placeholder:text-slate-300" 
                                 />
                             </div>
                         </div>
                         
-                        <div className="bg-jade-50/50 p-3 lg:p-4 rounded-xl lg:rounded-[20px] border border-jade-100/50 flex gap-3 lg:gap-4">
-                             <div className="p-1.5 lg:p-2 bg-white rounded-lg lg:rounded-xl shadow-sm h-fit shrink-0">
+                        <div className="bg-jade-50/50 p-3 lg:p-4 rounded-lg border border-jade-100/50 flex gap-3 lg:gap-4">
+                             <div className="p-1.5 lg:p-2 bg-white rounded-lg h-fit shrink-0">
                                 <Shield className="w-3 lg:w-4 h-3 lg:h-4 text-jade-500" />
                              </div>
                              <div>
@@ -803,7 +803,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                     <div className="pt-2 lg:pt-2 flex justify-start shrink-0">
                         <button 
                           type="submit"
-                          className="w-full lg:w-auto flex items-center justify-center px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest lg:tracking-tight rounded-xl lg:rounded-2xl border-2 border-jade-600 bg-jade-600 text-white hover:bg-jade-700 transition-all active:scale-95"
+                          className="w-full lg:w-auto flex items-center justify-center px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white hover:bg-jade-700 transition-all active:scale-95"
                         >
                             Update Password
                         </button>
@@ -813,7 +813,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
 
             {activeTab === 'tenant' && (
                 <form onSubmit={handleSaveTenant} className="flex-1 flex flex-col min-h-0 space-y-4 lg:space-y-8">
-                    <section className="space-y-4 lg:space-y-6 overflow-y-auto lg:overflow-visible pr-1 custom-scrollbar">
+                    <section className="max-w-2xl space-y-4 lg:space-y-6 overflow-y-auto lg:overflow-visible pr-1 custom-scrollbar">
                         <div className="space-y-1 shrink-0">
                              <h3 className="text-lg lg:text-xl font-black text-slate-800 tracking-tight leading-tight">Sekolah</h3>
                              <p className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1.5 lg:pb-2">Identitas lembaga pendidikan</p>
@@ -821,7 +821,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                         
                         <div className="flex flex-row items-center gap-4 lg:gap-6 shrink-0">
                             <div className="relative group shrink-0">
-                                <div className="w-16 h-16 lg:w-24 lg:h-24 bg-white rounded-2xl lg:rounded-[32px] flex items-center justify-center text-slate-300 text-xl lg:text-3xl font-black border border-slate-100 lg:border-2 lg:border-slate-300 overflow-hidden group-hover:scale-95 transition-transform duration-500">
+                                <div className="w-16 h-16 lg:w-24 lg:h-24 bg-white rounded-lg flex items-center justify-center text-slate-300 text-xl lg:text-3xl font-black border-2 border-slate-300 overflow-hidden group-hover:scale-95 transition-transform duration-500">
                                     {tenant?.logo_url ? (
                                         <img src={tenant.logo_url} alt="Logo" className="w-full h-full object-contain p-2" />
                                     ) : (
@@ -832,7 +832,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                     <button 
                                         type="button"
                                         onClick={() => logoInputRef.current?.click()}
-                                        className="absolute -bottom-1 -right-1 p-1.5 lg:p-2 bg-emerald-600 text-white rounded-lg lg:rounded-xl shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-90"
+                                        className="absolute -bottom-1 -right-1 p-1.5 lg:p-2 bg-emerald-600 text-white rounded-xl shadow-none hover:bg-emerald-700 transition-all active:scale-90"
                                     >
                                         <Upload className="w-2.5 lg:w-3.5 h-2.5 lg:h-3.5" />
                                     </button>
@@ -852,7 +852,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                 disabled={isReadOnly}
                                 value={tenantForm.name} 
                                 onChange={e => setTenantForm({...tenantForm, name: e.target.value})} 
-                                className={`w-full px-4 lg:px-5 py-2 lg:py-2.5 ${isReadOnly ? 'bg-slate-100/50 border-slate-200/60 text-slate-400' : 'bg-slate-50/80 border-slate-200/60 shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white'} rounded-xl lg:rounded-2xl transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none`} 
+                                className={`w-full px-4 lg:px-5 py-2 lg:py-2.5 ${isReadOnly ? 'bg-slate-50 border-2 border-slate-200 text-slate-400' : 'bg-white border-2 border-slate-300 focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400'} rounded-lg transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none`} 
                             />
                         </div>
                     </section>
@@ -860,7 +860,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                         <div className="pt-2 lg:pt-2 flex justify-start shrink-0">
                             <button 
                               type="submit"
-                              className="w-full lg:w-auto flex items-center justify-center px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest lg:tracking-tight rounded-xl lg:rounded-2xl border-2 border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700 transition-all active:scale-95"
+                              className="w-full lg:w-auto flex items-center justify-center px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white hover:bg-jade-700 transition-all active:scale-95"
                             >
                                 Simpan Setting
                             </button>
@@ -871,14 +871,13 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
 
             {activeTab === 'system' && (
                 <form onSubmit={handleSaveSystem} className="flex-1 flex flex-col min-h-0 space-y-4 lg:space-y-8">
-                    {/* Awal Tahun Ajaran Section */}
-                    <section className="space-y-4 lg:space-y-6">
+                    <section className="max-w-2xl space-y-4 lg:space-y-6">
                         <div className="space-y-1 shrink-0">
                              <h3 className="text-lg lg:text-xl font-black text-slate-800 tracking-tight leading-tight">Sistem Akademik</h3>
                              <p className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1.5 lg:pb-2">Konfigurasi tahun ajaran & semester</p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                        <div className="space-y-6">
                             <div className="space-y-1.5">
                                 <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Mulai Tahun Ajaran</label>
                                 <div className="relative">
@@ -886,7 +885,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                         disabled={isReadOnly}
                                         value={systemForm.academicYearStartMonth} 
                                         onChange={e => setSystemForm({...systemForm, academicYearStartMonth: parseInt(e.target.value)})} 
-                                        className={`w-full px-4 lg:px-5 py-2 lg:py-2.5 ${isReadOnly ? 'bg-slate-100/50 border-slate-200/60 text-slate-400' : 'bg-slate-50/80 border-slate-200/60 shadow-inner focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white'} rounded-xl lg:rounded-2xl transition-all text-xs lg:text-sm font-bold text-slate-800 outline-none appearance-none`}
+                                        className={`w-full px-4 lg:px-5 py-2 lg:py-2.5 ${isReadOnly ? 'bg-slate-50 border-2 border-slate-200 text-slate-400' : 'bg-white border-2 border-slate-300 focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400'} rounded-lg transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none appearance-none`}
                                     >
                                         <option value={0}>JANUARI</option>
                                         <option value={1}>FEBRUARI</option>
@@ -905,21 +904,25 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                 </div>
                             </div>
 
-                            <div className="bg-slate-50/50 rounded-xl border-2 border-slate-100 p-4 lg:p-5 space-y-3 shadow-sm">
-                                <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-1">
-                                    <div className="w-1 h-1 rounded-full bg-jade-500" />
-                                    Hasil Pembagian Semester
-                                </h4>
-                                <div className="space-y-2">
-                                    <div className="flex items-center justify-between group">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Semester 1</span>
-                                        <span className="text-[11px] lg:text-xs font-black text-jade-700 bg-jade-50 px-3 py-1 rounded-lg border border-jade-100">{getSemesterInfo(systemForm.academicYearStartMonth).s1}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between group">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Semester 2</span>
-                                        <span className="text-[11px] lg:text-xs font-black text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100">{getSemesterInfo(systemForm.academicYearStartMonth).s2}</span>
-                                    </div>
-                                </div>
+                            <div className="bg-white rounded-xl border-2 border-slate-100 overflow-hidden">
+                                <table className="min-w-full border-separate border-spacing-0">
+                                    <thead>
+                                        <tr className="bg-slate-300">
+                                            <th className="px-4 py-2.5 text-left text-[9px] font-black text-slate-800 uppercase tracking-[0.2em] border-b border-r border-slate-200">Semester 1</th>
+                                            <th className="px-4 py-2.5 text-left text-[9px] font-black text-slate-800 uppercase tracking-[0.2em] border-b border-slate-200">Semester 2</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td className="px-4 py-3.5 text-[11px] font-black text-jade-700 bg-white border-r border-slate-100 uppercase tracking-tight">
+                                                {getSemesterInfo(systemForm.academicYearStartMonth).s1}
+                                            </td>
+                                            <td className="px-4 py-3.5 text-[11px] font-black text-emerald-700 bg-white uppercase tracking-tight">
+                                                {getSemesterInfo(systemForm.academicYearStartMonth).s2}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </section>
@@ -940,9 +943,9 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                         type="button"
                                         disabled={isReadOnly}
                                         onClick={() => toggleDay(day.id)}
-                                        className={`flex-1 lg:flex-none px-1.5 lg:px-6 py-2 lg:py-2.5 rounded-lg lg:rounded-2xl text-[9px] lg:text-[11px] font-black uppercase tracking-tighter lg:tracking-tight border-2 transition-all h-9 lg:h-auto flex items-center justify-center ${
+                                        className={`flex-1 lg:flex-none px-1.5 lg:px-6 py-2 lg:py-2.5 rounded-xl text-[9px] lg:text-[10px] font-black uppercase tracking-widest border-2 transition-all h-9 lg:h-auto flex items-center justify-center ${
                                             isActive 
-                                                ? 'bg-jade-600 border-jade-600 text-white shadow-md' 
+                                                ? 'bg-jade-600 border-jade-600 text-white' 
                                                 : 'bg-white border-slate-200 text-slate-400 hover:border-jade-200'
                                         }`}
                                     >
@@ -960,7 +963,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                         <div className="pt-2 lg:pt-2 flex justify-start shrink-0">
                             <button 
                               type="submit"
-                              className="w-full lg:w-auto flex items-center justify-center px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest lg:tracking-tight rounded-xl lg:rounded-2xl border-2 border-jade-600 bg-jade-600 text-white hover:bg-jade-700 transition-all active:scale-95 shadow-lg shadow-jade-100"
+                              className="w-full lg:w-auto flex items-center justify-center px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white hover:bg-jade-700 transition-all active:scale-95"
                             >
                                 Simpan Konfigurasi
                             </button>

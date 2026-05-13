@@ -47,15 +47,15 @@ const HalaqahFormModal: React.FC<HalaqahFormModalProps> = ({ isOpen, onClose, on
   };
 
   return (
-    <div className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in text-slate-800 lg:pl-64">
-      <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-sm overflow-hidden border border-white flex flex-col max-h-[80vh]">
+    <div className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in text-slate-800 lg:pl-64 pt-16">
+      <div className="bg-white rounded-xl shadow-none w-full max-w-sm overflow-hidden border-2 border-slate-300 flex flex-col max-h-[75vh]">
         {/* Header */}
-        <div className="px-6 py-3 bg-white border-b border-slate-50 flex justify-between items-center shrink-0">
+        <div className="px-5 py-2.5 border-b border-slate-50 flex justify-between items-center bg-white shrink-0">
           <div>
-            <h3 className="text-base font-black text-slate-800 tracking-tight leading-none mb-0.5">
+            <h3 className="text-sm font-black text-slate-800 tracking-tight leading-none mb-0.5 uppercase">
               {initialData ? 'Edit Halaqah' : 'Halaqah Baru'}
             </h3>
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Manajemen Kelompok</p>
+            <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none">Manajemen Kelompok</p>
           </div>
           <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
             <X className="w-5 h-5" />
@@ -64,32 +64,32 @@ const HalaqahFormModal: React.FC<HalaqahFormModalProps> = ({ isOpen, onClose, on
         
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div className="space-y-1">
-            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Halaqah</label>
+            <label className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Halaqah</label>
             <input 
               required
               type="text" 
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-xl text-xs font-black text-slate-800 outline-none focus:border-jade-400 focus:bg-white transition-all"
-              placeholder="Contoh: Abu Bakar"
+              className="w-full px-4 py-2 border-2 border-slate-300 rounded-xl bg-white text-[13px] font-bold text-slate-800 outline-none focus:border-jade-400 transition-all placeholder:text-slate-300"
+              placeholder="CONTOH: ABU BAKAR"
             />
           </div>
 
           <div className="space-y-1">
-             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Ustadz Pengampu</label>
+             <label className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Ustadz Pengampu</label>
              <div className="relative">
                <select
                   value={teacherId}
                   onChange={e => setTeacherId(e.target.value)}
-                  className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-xl text-xs font-black text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 focus:bg-white transition-all capitalize"
+                  className="w-full px-4 py-2 border-2 border-slate-300 rounded-xl bg-white text-[13px] font-bold text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 transition-all capitalize"
                >
-                  <option value="">PILIH USTADZ</option>
+                  <option value="">Pilih Ustadz</option>
                   {teachers.map(t => (
                     <option key={t.id} value={t.id} className="capitalize">{t.full_name}</option>
                   ))}
                </select>
                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
-                 <ChevronRight className="w-3.5 h-3.5 text-slate-300 rotate-90" />
+                 <ChevronRight className="w-4 h-4 text-slate-300 rotate-90" />
                </div>
              </div>
           </div>
@@ -98,13 +98,13 @@ const HalaqahFormModal: React.FC<HalaqahFormModalProps> = ({ isOpen, onClose, on
             <button 
                 type="button" 
                 onClick={onClose}
-                className="flex-1 px-4 py-2.5 font-black text-[9px] uppercase tracking-tight rounded-xl border-2 border-slate-100 text-slate-400 hover:bg-slate-50 transition-all active:scale-95"
+                className="flex-1 px-4 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-slate-300 text-slate-400 hover:bg-slate-50 transition-all active:scale-95"
             >
-              Batal
+              BATAL
             </button>
             <button 
                 type="submit"
-                className="flex-2 flex items-center justify-center px-4 py-2.5 font-black text-[9px] uppercase tracking-tight rounded-xl border-2 border-jade-600 bg-jade-600 text-white shadow-lg shadow-primary-100 hover:bg-jade-700 transition-all active:scale-95"
+                className="flex-2 flex items-center justify-center px-4 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white shadow-none hover:bg-jade-700 transition-all active:scale-95"
             >
               <Save className="w-4 h-4 mr-2" />
               {initialData ? 'SIMPAN' : 'BUAT HALAQAH'}
@@ -143,25 +143,25 @@ const HalaqahDetailModal: React.FC<HalaqahDetailModalProps> = ({ isOpen, onClose
 
   return (
     <div 
-        className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300 text-slate-800 lg:pl-64"
+        className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 text-slate-800 lg:pl-64 pt-16"
         onClick={onClose}
     >
       <div 
-        className="bg-white rounded-[28px] shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 border border-white/20"
+        className="bg-white rounded-xl shadow-none w-full max-w-md overflow-hidden flex flex-col max-h-[75vh] animate-in zoom-in-95 duration-200 border-2 border-slate-300 relative"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 pt-8 pb-5 bg-[#FCFDFE] border-b border-slate-100 flex justify-between items-center shrink-0">
+        <div className="px-5 py-2.5 border-b border-slate-50 flex justify-between items-center bg-white shrink-0">
           <div>
-            <h3 className="text-sm font-black text-slate-800 tracking-tight leading-none mb-2 flex items-center gap-2 uppercase">
-              <span className="p-1.5 bg-jade-50 rounded-lg"><BookOpen className="w-4 h-4 text-jade-600" /></span>
+            <h3 className="text-sm font-black text-slate-800 tracking-tight leading-none mb-0.5 flex items-center gap-2 uppercase">
+              <span className="p-1.5 bg-jade-50 rounded-lg border border-jade-100"><BookOpen className="w-4 h-4 text-jade-600" /></span>
               Daftar Santri {halaqah.name}
             </h3>
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none ml-10">
+            <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none ml-10">
                 Ustadz: <span className="text-jade-600 font-black">{halaqah.teacher_name}</span>
             </p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 -mt-6">
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -221,7 +221,7 @@ interface ImportModalProps {
 const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, progress }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-white/95 backdrop-blur-sm animate-in fade-in duration-500 lg:pl-64">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-white/95 backdrop-blur-sm animate-in fade-in duration-500 lg:pl-64 pt-16">
             <div className="flex flex-col items-center justify-center max-w-md w-full px-6">
                 {/* Branding Icon Container (Plek Ketiplek from GlobalLoader) */}
                 <div className="relative w-24 h-24 flex items-center justify-center mb-8">
@@ -250,7 +250,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, progress }) 
                 </div>
 
                 {/* Progress Details Card */}
-                <div className="w-full bg-white rounded-[32px] border border-slate-100 p-8 shadow-2xl shadow-jade-900/5 space-y-6">
+                <div className="w-full bg-white rounded-xl border-2 border-slate-300 p-8 shadow-none space-y-6">
                     <div className="space-y-3">
                         <div className="flex justify-between items-end">
                             <div className="space-y-1">
@@ -869,7 +869,7 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
       <div className="flex flex-row flex-wrap items-center w-full gap-3 lg:gap-4 py-3 bg-white shrink-0 z-70 sticky top-0 border-b border-slate-100 lg:static lg:border-none lg:py-0">
         
         {/* 1. STATS (Desktop: 1, Mobile: 2) */}
-        <div className="bg-slate-50/50 h-10 px-3 lg:px-4 border border-slate-100/50 flex items-center justify-center lg:justify-start gap-3 lg:gap-4 rounded-full shadow-inner flex-1 lg:flex-none order-4 lg:order-1">
+        <div className="bg-white h-10 px-3 lg:px-4 border-2 border-slate-300 flex items-center justify-center lg:justify-start gap-3 lg:gap-4 rounded-xl shadow-none flex-1 lg:flex-none order-4 lg:order-1">
             <div className="flex items-center gap-1.5">
                 <p className="text-[7.5px] lg:text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">HALAQAH</p>
                 <p className="text-[10.5px] lg:text-[11px] font-black text-slate-800 leading-none">{classes.length}</p>
@@ -889,7 +889,7 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
                 placeholder="CARI HALAQAH..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-full pl-10 pr-4 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 focus:bg-white transition-all text-[10px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-inner"
+                className="w-full h-full pl-10 pr-4 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 transition-all text-[10px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-none"
             />
         </div>
 
@@ -900,23 +900,23 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
         <button 
             onClick={fetchData}
             disabled={loading}
-            className="h-10 w-10 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 hover:bg-slate-50 transition-all active:scale-95 rounded-full shadow-sm disabled:opacity-50 order-3 lg:order-3"
+            className="h-10 w-10 shrink-0 flex items-center justify-center border-2 border-slate-300 bg-white text-slate-400 hover:text-jade-600 hover:bg-slate-50 transition-all active:scale-95 rounded-xl shadow-none disabled:opacity-50 order-3 lg:order-3"
         >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
         </button>
 
         {/* 4. IMPORT & EXPORT BUTTONS (Desktop: 4, Mobile: 2) */}
         {!isReadOnly && (
-            <div className="h-10 flex items-center bg-white border border-slate-100 rounded-full p-1 gap-1 shadow-sm px-2 order-3 lg:order-4">
+            <div className="h-10 flex items-center bg-white border-2 border-slate-300 rounded-xl p-1 gap-1 shadow-none px-2 order-3 lg:order-4">
                 <button 
                     onClick={handleExport}
-                    className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-all"
+                    className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
                     title="Ekspor Data Halaqah"
                 >
                     <Download className="w-4 h-4" />
                 </button>
-                <div className="w-px h-4 bg-slate-100 self-center" />
-                <label className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all cursor-pointer" title="Impor Data Halaqah">
+                <div className="w-px h-4 bg-slate-200 self-center" />
+                <label className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer" title="Impor Data Halaqah">
                     <Upload className="w-4 h-4" />
                     <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleImportExcel} />
                 </label>
@@ -927,12 +927,12 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
         {!isReadOnly ? (
             <button 
                 onClick={openCreateModal}
-                className="h-10 flex-none flex items-center justify-center px-4 lg:px-6 font-black text-[10px] uppercase tracking-widest rounded-full bg-jade-600 text-white shadow-lg shadow-primary-100/50 hover:bg-jade-700 transition-all active:scale-95 gap-2 whitespace-nowrap order-1 lg:order-5"
+                className="h-10 flex-none flex items-center justify-center px-4 lg:px-6 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white shadow-none hover:bg-jade-700 transition-all active:scale-95 gap-2 whitespace-nowrap order-1 lg:order-5"
             >
                 <Plus className="w-4 h-4" /> <span>TAMBAH <span className="hidden sm:inline">HALAQAH</span></span>
             </button>
         ) : (
-            <div className="h-10 flex-none flex items-center justify-center px-6 font-black text-[10px] uppercase tracking-widest rounded-full bg-slate-100 text-slate-400 gap-2 whitespace-nowrap order-1 lg:order-5">
+            <div className="h-10 flex-none flex items-center justify-center px-6 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-slate-300 bg-white text-slate-400 gap-2 whitespace-nowrap order-1 lg:order-5">
                 <Users className="w-4 h-4" /> <span className="hidden sm:inline">VIEW ONLY</span><span className="sm:hidden">VIEW</span>
             </div>
         )}
@@ -943,7 +943,7 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
           <div 
             key={cls.id} 
             onClick={() => handleCardClick(cls)}
-            className="group relative bg-white border-2 border-slate-200 rounded-[24px] p-5 hover:border-jade-400 hover:shadow-xl hover:shadow-jade-50/50 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col h-full"
+            className="group relative bg-white border-2 border-slate-300 rounded-xl p-5 hover:border-jade-400 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col h-full shadow-none"
           >
             <div className="flex items-center gap-3 md:gap-4 md:mb-4">
               <div className="min-w-0 flex-1 pb-1">

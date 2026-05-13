@@ -108,11 +108,12 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
   return (
     <div className="space-y-6">
       {/* Unified Control Bar - 2 Rows for Mobile */}
-      <div className="flex flex-col lg:flex-row w-full gap-2.5 py-2 bg-white sticky top-0 z-70 border-b border-slate-100 lg:border-none">
+      <div className="flex flex-col lg:flex-row w-full gap-2.5 py-2 bg-white sticky top-0 z-20 border-b border-slate-100 lg:border-none">
+
           {/* BARIS 1: Sort & Search */}
           <div className="flex flex-row items-center gap-2 w-full lg:flex-1">
               {/* 3. SORT FILTER */}
-              <div className="flex-none flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-2xl border-2 border-slate-100 shadow-sm min-w-[140px] md:min-w-[200px] h-10 lg:h-11">
+              <div className="flex-none flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-xl border-2 border-slate-300 shadow-none min-w-[140px] md:min-w-[200px] h-10 lg:h-11">
                   <div className="flex-1 relative group/sel-time">
                       <p className="text-[7.5px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Urutkan</p>
                       <div className="relative">
@@ -137,7 +138,7 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
                       placeholder="CARI AUDIT LOG..."
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      className="w-full h-full pl-10 pr-4 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 focus:bg-white transition-all text-[9.5px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-inner"
+                      className="w-full h-full pl-10 pr-4 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 transition-all text-[9.5px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-none"
                   />
               </div>
           </div>
@@ -148,7 +149,7 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
               <button 
                   onClick={fetchLogs}
                   disabled={loading}
-                  className="h-10 w-10 shrink-0 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 hover:bg-slate-50 transition-all active:scale-95 rounded-xl shadow-sm disabled:opacity-50"
+                  className="h-10 w-10 shrink-0 flex items-center justify-center border-2 border-slate-300 bg-white text-slate-400 hover:text-jade-600 hover:bg-slate-50 transition-all active:scale-95 rounded-xl shadow-none disabled:opacity-50"
                   title="Muat Ulang"
               >
                   <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -157,39 +158,39 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
               {/* 2. EXPORT CSV (Right-aligned / Fills space on mobile) */}
               <button 
                   onClick={handleExportCSV}
-                  className="h-10 flex-1 lg:flex-none flex items-center justify-center px-6 font-black text-[9px] md:text-[10px] uppercase tracking-widest rounded-xl bg-jade-600 text-white shadow-lg shadow-jade-100/50 hover:bg-jade-700 hover:scale-[1.02] transition-all active:scale-95 gap-2 whitespace-nowrap"
+                  className="h-10 flex-1 lg:flex-none flex items-center justify-center px-6 font-black text-[9px] md:text-[10px] uppercase tracking-widest rounded-xl bg-jade-600 text-white shadow-none hover:bg-jade-700 hover:scale-[1.02] transition-all active:scale-95 gap-2 whitespace-nowrap"
               >
-                  <Download className="w-4 h-4" /> <span>CSV</span><span className="hidden lg:inline">EXPORT</span>
+                  <Download className="w-4 h-4" /> <span>CSV</span>
               </button>
           </div>
       </div>
 
-      <div className="bg-white shadow-sm border-2 border-slate-200 overflow-hidden flex flex-col">
+      <div className="bg-white rounded-b-xl shadow-none border-2 border-slate-300 overflow-hidden flex flex-col">
         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
             <table className="min-w-full border-separate border-spacing-0">
-            <thead className="sticky top-0 z-40 bg-white">
+            <thead className="sticky top-0 z-10 bg-white">
                 <tr>
-                    <th className="hidden md:table-cell sticky left-0 z-60 bg-white px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[45px] min-w-[45px]">NO</th>
-                    <th className="sticky left-0 md:left-[45px] z-60 bg-white px-1.5 md:px-4 py-4 text-center md:text-left text-[9px] md:text-[9.5px] whitespace-nowrap font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[55px] md:w-[110px] min-w-[55px] md:min-w-[110px]">WAKTU</th>
-                    <th className="sticky left-[55px] md:left-[155px] z-60 bg-white px-2 md:px-6 py-4 text-left text-[9px] md:text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-[75px] md:w-[150px] min-w-[75px] md:min-w-[150px] whitespace-nowrap">AKTOR</th>
-                    <th className="px-6 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-24 whitespace-nowrap">AKSI</th>
-                    <th className="px-6 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 whitespace-nowrap min-w-[300px]">ENTITAS & DETAIL</th>
-                    <th className="px-6 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-slate-100 whitespace-nowrap w-32">IP ADDRESS</th>
+                    <th className="hidden md:table-cell sticky left-0 z-20 px-2 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-l border-r border-black w-[45px] min-w-[45px] bg-slate-300">NO</th>
+                    <th className="sticky left-0 md:left-[45px] z-20 px-1.5 md:px-4 py-4 text-center md:text-left text-[9px] md:text-[9.5px] whitespace-nowrap font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black w-[55px] md:w-[110px] min-w-[55px] md:min-w-[110px] bg-slate-300">WAKTU</th>
+                    <th className="sticky left-[55px] md:left-[155px] z-20 px-2 md:px-6 py-4 text-left text-[9px] md:text-[9.5px] font-black text-emerald-600 uppercase tracking-widest border-t border-b border-r border-emerald-600 w-[75px] md:w-[150px] min-w-[75px] md:min-w-[150px] whitespace-nowrap bg-emerald-50">AKTOR</th>
+                    <th className="px-6 py-4 text-left text-[9.5px] font-black text-amber-600 uppercase tracking-widest border-t border-b border-r border-amber-600 w-24 whitespace-nowrap bg-amber-50">AKSI</th>
+                    <th className="px-6 py-4 text-left text-[9.5px] font-black text-blue-600 uppercase tracking-widest border-t border-b border-r border-blue-600 whitespace-nowrap min-w-[300px] bg-blue-50">ENTITAS & DETAIL</th>
+                    <th className="px-6 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black whitespace-nowrap w-32 bg-slate-300">IP ADDRESS</th>
                 </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
                 {paginatedLogs.map((log, idx) => (
-                <tr key={log.id} className="hover:bg-slate-50/50 transition-colors group">
-                    <td className="hidden md:table-cell sticky left-0 z-20 bg-white px-2 py-4 whitespace-nowrap text-[10.5px] font-black text-slate-400 border-r-2 border-b border-slate-100 text-center uppercase transition-colors">
+                <tr key={log.id} className="hover:bg-slate-300 transition-colors group">
+                    <td className="hidden md:table-cell sticky left-0 z-20 bg-white px-2 py-4 whitespace-nowrap text-[10.5px] font-black text-slate-400 border-r border-b border-slate-100 text-center uppercase transition-colors">
                         {String((currentPage - 1) * itemsPerPage + idx + 1).padStart(2, '0')}
                     </td>
-                    <td className="sticky left-0 md:left-[45px] z-20 bg-white px-1.5 md:px-4 py-4 whitespace-nowrap text-[9.5px] md:text-[10.5px] text-slate-700 font-mono font-black border-r-2 border-b border-slate-100 text-center md:text-left">
+                    <td className="sticky left-0 md:left-[45px] z-20 bg-white px-1.5 md:px-4 py-4 whitespace-nowrap text-[9.5px] md:text-[10.5px] text-slate-700 font-mono font-black border-r border-b border-slate-100 text-center md:text-left">
                         <div className="flex flex-col items-center md:items-start leading-tight">
                             <span className="font-black text-slate-800 tracking-tighter truncate">{mounted ? new Date(log.timestamp).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' }) : '--/--'}</span>
                             <span className="text-[8.5px] md:text-[9.5px] opacity-50">{mounted ? new Date(log.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '--:--'}</span>
                         </div>
                     </td>
-                    <td className="sticky left-[55px] md:left-[155px] z-20 bg-white px-2 md:px-6 py-4 whitespace-nowrap border-r-2 border-b border-slate-100">
+                    <td className="sticky left-[55px] md:left-[155px] z-20 bg-white px-2 md:px-6 py-4 whitespace-nowrap border-r border-b border-slate-100">
                         <div className="flex flex-col">
                             <div className="text-[10px] md:text-[11px] font-black text-slate-800 capitalize tracking-tight leading-none mb-1 truncate max-w-[65px] md:max-w-[120px]">{log.actor_name}</div>
                             <div className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.1em] opacity-70">
@@ -197,7 +198,7 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
                             </div>
                         </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap border-r-2 border-b border-slate-100">
+                    <td className="px-6 py-4 whitespace-nowrap border-r border-b border-slate-100">
                         <span className={`px-2.5 py-1 inline-flex text-[9px] font-black uppercase tracking-tight rounded-md border ${getActionColor(log.action)} shadow-sm`}>
                             {log.action}
                         </span>
@@ -217,12 +218,12 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
 
         {/* PAGINATION CONTROLS */}
         {!loading && processedLogs.length > 0 && (
-            <div className="bg-[#F8FAFC] border-t border-slate-100 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 rounded-b-lg">
+            <div className="bg-slate-50 border-t border-slate-100 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 rounded-b-3xl">
                 <div className="flex items-center gap-2">
                     <select 
                         value={itemsPerPage}
                         onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                        className="bg-white border-2 border-slate-100 rounded-xl px-2 md:px-3 py-1 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-primary-50/50 cursor-pointer shadow-sm transition-all"
+                        className="bg-white border-2 border-slate-300 rounded-lg px-2 md:px-3 py-1 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-primary-50/50 cursor-pointer shadow-none transition-all"
                     >
                         {[10, 25, 50, 100].map(val => (
                             <option key={val} value={val}>{val}</option>
@@ -238,7 +239,7 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
                     <button 
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        className={`p-1.5 md:p-2 rounded-xl border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
+                        className={`p-1.5 md:p-2 rounded-lg border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-400 border-slate-300 bg-slate-50/80 cursor-not-allowed opacity-50' : 'text-slate-600 border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400 shadow-none'}`}
                     >
                         <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4 rotate-180" />
                     </button>
@@ -257,7 +258,7 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
                                 <button 
                                     key={pNum}
                                     onClick={() => setCurrentPage(pNum)}
-                                    className={`w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black transition-all active:scale-95 ${currentPage === pNum ? 'bg-primary-600 text-white shadow-lg shadow-primary-200 border-2 border-primary-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600 border-2 border-transparent'}`}
+                                    className={`w-7 h-7 md:w-9 md:h-9 rounded-lg text-[9px] md:text-[10px] font-black transition-all active:scale-95 ${currentPage === pNum ? 'bg-jade-600 text-white shadow-lg shadow-primary-100 border-2 border-jade-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600 border-2 border-transparent'}`}
                                 >
                                     {pNum}
                                 </button>
@@ -268,7 +269,7 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
                     <button 
                         disabled={currentPage === totalPages}
                         onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                        className={`p-1.5 md:p-2 rounded-xl border-2 transition-all active:scale-90 ${currentPage === totalPages ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
+                        className={`p-1.5 md:p-2 rounded-lg border-2 transition-all active:scale-90 ${currentPage === totalPages ? 'text-slate-400 border-slate-300 bg-slate-50/80 cursor-not-allowed opacity-50' : 'text-slate-600 border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400 shadow-none'}`}
                     >
                         <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     </button>

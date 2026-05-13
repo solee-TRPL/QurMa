@@ -99,16 +99,16 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     return (
         <div className="flex-1 h-[calc(100vh-110px)] lg:h-[calc(100vh-140px)] flex flex-col gap-2.5 lg:gap-3 animate-fade-in pb-0 overflow-hidden">
             {user.role === UserRole.TEACHER && !myHalaqah && !loading && (
-                <div className="bg-amber-50 border-2 border-amber-100 rounded-2xl p-4 flex items-center gap-3 text-amber-800 shadow-sm shadow-amber-50">
+                <div className="bg-amber-50 border-4 border-amber-200 rounded-xl p-4 flex items-center gap-3 text-amber-800">
                     <AlertCircle className="w-5 h-5 shrink-0 text-amber-500" />
                     <p className="text-xs font-bold uppercase tracking-tight">Anda belum ditugaskan ke halaqah manapun. Hubungi admin untuk pengaturan halaqah.</p>
                 </div>
             )}
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-3.5 shrink-0">
-                <div className="bg-white rounded-2xl p-3 lg:p-4 border border-slate-100 shadow-sm flex items-center gap-3 lg:gap-4 relative overflow-hidden group hover:border-jade-200 transition-all">
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-jade-50/40 rounded-full -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500" />
-                    <div className="w-8 h-8 lg:w-9 lg:h-9 bg-jade-50 text-jade-700 rounded-xl flex items-center justify-center shadow-sm relative z-10">
+                <div className="bg-white rounded-xl p-3 lg:p-4 border-2 border-slate-300 flex items-center gap-3 lg:gap-4 relative overflow-hidden group hover:border-jade-300 transition-all">
+                    <div className="absolute right-0 top-0 w-24 h-24 bg-jade-50/40 rounded-2xl -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500" />
+                    <div className="w-8 h-8 lg:w-9 lg:h-9 bg-jade-50 text-jade-700 rounded-xl flex items-center justify-center border-2 border-jade-100 relative z-10">
                         <Users className="w-4 h-4 lg:w-4.5 lg:h-4.5"/>
                     </div>
                     <div className="relative z-10">
@@ -117,9 +117,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-3 lg:p-4 border border-slate-100 shadow-sm flex items-center gap-3 lg:gap-4 relative overflow-hidden group hover:border-rose-200 transition-all">
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-rose-50/40 rounded-full -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500" />
-                    <div className="w-8 h-8 lg:w-9 lg:h-9 bg-rose-50 text-rose-700 rounded-xl flex items-center justify-center shadow-sm relative z-10">
+                <div className="bg-white rounded-xl p-3 lg:p-4 border-2 border-slate-300 flex items-center gap-3 lg:gap-4 relative overflow-hidden group hover:border-rose-300 transition-all">
+                    <div className="absolute right-0 top-0 w-24 h-24 bg-rose-50/40 rounded-2xl -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500" />
+                    <div className="w-8 h-8 lg:w-9 lg:h-9 bg-rose-50 text-rose-700 rounded-xl flex items-center justify-center border-2 border-rose-100 relative z-10">
                         <Book className="w-4 h-4 lg:w-4.5 lg:h-4.5"/>
                     </div>
                     <div className="relative z-10">
@@ -128,9 +128,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-3 lg:p-4 border border-slate-100 shadow-sm flex items-center gap-3 lg:gap-4 relative overflow-hidden group hover:border-amber-200 transition-all">
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-amber-50/40 rounded-full -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500" />
-                    <div className="w-8 h-8 lg:w-9 lg:h-9 bg-amber-50 text-amber-700 rounded-xl flex items-center justify-center shadow-sm relative z-10">
+                <div className="bg-white rounded-xl p-3 lg:p-4 border-2 border-slate-300 flex items-center gap-3 lg:gap-4 relative overflow-hidden group hover:border-amber-300 transition-all">
+                    <div className="absolute right-0 top-0 w-24 h-24 bg-amber-50/40 rounded-2xl -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500" />
+                    <div className="w-8 h-8 lg:w-9 lg:h-9 bg-amber-50 text-amber-700 rounded-xl flex items-center justify-center border-2 border-amber-100 relative z-10">
                         <Zap className="w-4 h-4 lg:w-4.5 lg:h-4.5"/>
                     </div>
                     <div className="relative z-10">
@@ -139,9 +139,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-3 lg:p-4 border border-slate-100 shadow-sm flex items-center gap-3 lg:gap-4 relative overflow-hidden group hover:border-emerald-200 transition-all">
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-emerald-50/40 rounded-full -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500" />
-                    <div className="w-8 h-8 lg:w-9 lg:h-9 bg-emerald-50 text-emerald-700 rounded-xl flex items-center justify-center shadow-sm relative z-10">
+                <div className="bg-white rounded-xl p-3 lg:p-4 border-2 border-slate-300 flex items-center gap-3 lg:gap-4 relative overflow-hidden group hover:border-emerald-300 transition-all">
+                    <div className="absolute right-0 top-0 w-24 h-24 bg-emerald-50/40 rounded-2xl -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500" />
+                    <div className="w-8 h-8 lg:w-9 lg:h-9 bg-emerald-50 text-emerald-700 rounded-xl flex items-center justify-center border-2 border-emerald-100 relative z-10">
                         <Activity className="w-4 h-4 lg:w-4.5 lg:h-4.5"/>
                     </div>
                     <div className="relative z-10">
@@ -152,7 +152,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             </div>
 
             <div className="flex-1 min-h-0">
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 lg:p-5 flex flex-col h-full relative">
+                <div className="bg-white rounded-xl border-2 border-slate-300 p-4 lg:p-5 flex flex-col h-full relative">
                     <div className="flex flex-row items-center justify-between gap-2 mb-3 lg:mb-6">
                         <div className="flex items-start gap-3">
                             <h3 className="text-[9.5px] lg:text-[10px] ps-2 font-black text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">
@@ -162,7 +162,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                         
                         <div className="flex items-center gap-2 ml-auto">
                             <div className="hidden lg:flex items-center gap-2 ml-auto">
-                                <div className="flex flex-none bg-white p-1 rounded-full border border-slate-200 shadow-sm ring-1 ring-white group hover:border-jade-100 transition-all h-9 lg:h-10">
+                                <div className="flex flex-none bg-white p-1 rounded-xl border-2 border-slate-300 ring-1 ring-white group hover:border-jade-200 transition-all h-9 lg:h-10">
                                     {[
                                         { id: 'all', label: 'Semua' },
                                         { id: MemorizationType.SABAQ, label: 'Sabaq' },
@@ -172,8 +172,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                                         <button 
                                             key={type.id}
                                             onClick={() => setPerfType(type.id as any)}
-                                            className={`px-4 py-1.5 text-[8px] font-black uppercase tracking-widest rounded-full transition-all whitespace-nowrap ${
-                                                perfType === type.id ? 'bg-jade-700 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'
+                                            className={`px-4 py-1.5 text-[8px] font-black uppercase tracking-widest rounded-lg transition-all whitespace-nowrap ${
+                                                perfType === type.id ? 'bg-jade-700 text-white' : 'text-slate-400 hover:text-slate-600'
                                             }`}
                                         >
                                             {type.label}
@@ -181,7 +181,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                                     ))}
                                 </div>
 
-                                <div className="flex flex-none bg-white p-1 rounded-full border border-slate-200 shadow-sm ring-1 ring-white group hover:border-jade-100 transition-all h-9 lg:h-10">
+                                <div className="flex flex-none bg-white p-1 rounded-xl border-2 border-slate-300 ring-1 ring-white group hover:border-jade-200 transition-all h-9 lg:h-10">
                                     {[
                                         { id: 'pekanan', label: 'Pekan' },
                                         { id: 'bulanan', label: 'Bulan' }
@@ -189,8 +189,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                                         <button 
                                             key={tf.id}
                                             onClick={() => setPerfTimeframe(tf.id as any)}
-                                            className={`px-4 py-1.5 text-[8px] font-black uppercase tracking-widest rounded-full transition-all whitespace-nowrap ${
-                                                perfTimeframe === tf.id ? 'bg-jade-700 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'
+                                            className={`px-4 py-1.5 text-[8px] font-black uppercase tracking-widest rounded-lg transition-all whitespace-nowrap ${
+                                                perfTimeframe === tf.id ? 'bg-jade-700 text-white' : 'text-slate-400 hover:text-slate-600'
                                             }`}
                                         >
                                             {tf.label}
@@ -201,14 +201,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                             <button 
                                 onClick={() => refreshData(false)}
                                 disabled={isRefreshing}
-                                className={`h-9 w-9 lg:h-10 lg:w-10 bg-white text-slate-400 rounded-full border border-slate-200 hover:text-jade-600 hover:border-jade-100 transition-all shadow-sm flex items-center justify-center ${isRefreshing ? 'opacity-50' : 'active:scale-90 lg:active:scale-95'}`}
+                                className={`h-9 w-9 lg:h-10 lg:w-10 bg-white text-slate-400 rounded-xl border-2 border-slate-300 hover:text-jade-600 hover:border-jade-200 transition-all flex items-center justify-center ${isRefreshing ? 'opacity-50' : 'active:scale-90 lg:active:scale-95'}`}
                             >
                                 <RotateCcw className={`w-3.5 h-3.5 lg:w-3.5 lg:h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
                             </button>
 
                             <button 
                                 onClick={() => setIsActivityModalOpen(true)}
-                                className="bg-white hover:bg-slate-50 px-4 h-9 lg:h-10 rounded-full text-[8.5px] font-black text-jade-700 uppercase tracking-widest transition-all active:scale-95 border border-slate-200 shadow-sm flex items-center justify-center min-w-[50px]"
+                                className="bg-white hover:bg-slate-50 px-4 h-9 lg:h-10 rounded-xl text-[8.5px] font-black text-jade-700 uppercase tracking-widest transition-all active:scale-95 border-2 border-slate-300 flex items-center justify-center min-w-[50px]"
                             >
                                 LOG
                             </button>
@@ -216,23 +216,23 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                     </div>
 
                     <div className="lg:hidden flex flex-col gap-2.5 mb-4">
-                        <div className="flex bg-white p-1 rounded-full border border-slate-200 shadow-sm w-full divide-x divide-slate-100 ring-1 ring-white h-10">
+                        <div className="flex bg-white p-1 rounded-xl border-2 border-slate-300 w-full divide-x-2 divide-slate-100 ring-1 ring-white h-10">
                             {['all', MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL].map(t => (
                                 <button 
                                     key={t} 
                                     onClick={() => setPerfType(t as any)}
-                                    className={`flex-1 py-1 text-[8px] font-black uppercase rounded-full transition-all ${perfType === t ? 'bg-jade-600 text-white shadow-md' : 'text-slate-400'}`}
+                                    className={`flex-1 py-1 text-[8px] font-black uppercase rounded-lg transition-all ${perfType === t ? 'bg-jade-600 text-white' : 'text-slate-400'}`}
                                 >
                                     {String(t).replace('all', 'Semua')}
                                 </button>
                             ))}
                         </div>
-                        <div className="flex bg-white p-1 rounded-full border border-slate-200 shadow-sm w-full divide-x divide-slate-100 ring-1 ring-white h-10">
+                        <div className="flex bg-white p-1 rounded-xl border-2 border-slate-300 w-full divide-x-2 divide-slate-100 ring-1 ring-white h-10">
                             {['pekanan', 'bulanan'].map(tf => (
                                 <button 
                                     key={tf} 
                                     onClick={() => setPerfTimeframe(tf as any)}
-                                    className={`flex-1 py-1 text-[8px] font-black uppercase rounded-full transition-all ${perfTimeframe === tf ? 'bg-jade-600 text-white shadow-md' : 'text-slate-400'}`}
+                                    className={`flex-1 py-1 text-[8px] font-black uppercase rounded-lg transition-all ${perfTimeframe === tf ? 'bg-jade-600 text-white' : 'text-slate-400'}`}
                                 >
                                     {tf === 'pekanan' ? 'Pekan' : 'Bulan'}
                                 </button>
@@ -256,11 +256,11 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                                                 animationDuration={1500}
                                             >
                                                 {teacherPieData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={entry.color} strokeWidth={5} stroke="#fff" className="focus:outline-none" />
+                                                    <Cell key={`cell-${index}`} fill={entry.color} strokeWidth={10} stroke="#fff" className="focus:outline-none" />
                                                 ))}
                                             </Pie>
                                             <Tooltip 
-                                                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                                                contentStyle={{ borderRadius: '12px', border: '2px solid #e2e8f0', boxShadow: 'none' }}
                                                 itemStyle={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase' }}
                                             />
                                         </PieChart>
@@ -273,7 +273,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                                         const isNoData = entry.name === 'Belum Ada Data';
 
                                         return (
-                                            <div key={entry.name} className={`bg-white rounded-2xl py-1.5 px-2 border border-slate-200 flex flex-col items-center justify-center group hover:shadow-md transition-all ${isNoData ? 'min-w-[120px]' : ''}`}>
+                                            <div key={entry.name} className={`bg-white rounded-xl py-1.5 px-2 border-2 border-slate-300 flex flex-col items-center justify-center transition-all ${isNoData ? 'min-w-[120px]' : ''}`}>
                                                 <div className="flex items-center gap-1 mb-0.5">
                                                     <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full shrink-0" style={{ backgroundColor: entry.color }}></div>
                                                     <span className="text-[7px] lg:text-[8px] font-black text-slate-400 uppercase tracking-tight whitespace-nowrap">{entry.name}</span>

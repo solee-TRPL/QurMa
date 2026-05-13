@@ -169,16 +169,16 @@ export const StudentProgress: React.FC<{ user: UserProfile }> = ({ user }) => {
                 <div className="overflow-x-auto rounded-xl border-2 border-slate-200/60 shadow-sm bg-white overflow-hidden">
                     <table className="w-full text-center border-separate border-spacing-0">
                         <thead className="sticky top-0 z-10">
-                            <tr className="bg-slate-50">
-                                <th className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-50/50 w-12 rounded-tl-xl">No. Data</th>
-                                <th className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-50/50 w-12">Kelas</th>
-                                <th className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-50/50 w-12">Semester</th>
-                                <th className="px-4 py-2 text-[9px] font-black text-jade-600 uppercase tracking-widest border-b border-r border-slate-200 bg-jade-50/20 min-w-[110px]">Hafalan</th>
-                                <th className="px-4 py-2 text-[9px] font-black text-blue-600 uppercase tracking-widest border-b border-r border-slate-200 bg-blue-50/20 min-w-[110px]">Sabaq</th>
-                                <th className="px-4 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-50/30 min-w-[110px]">Target Hafalan</th>
-                                <th className="px-4 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-50/30 min-w-[110px]">Ket</th>
-                                <th className="px-4 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-50/30 min-w-[110px]">Target Sabaq</th>
-                                <th className="px-4 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200 bg-slate-50/30 min-w-[110px] rounded-tr-xl">Ket</th>
+                            <tr className="bg-slate-300">
+                                <th className="px-3 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-300 w-12">No. Data</th>
+                                <th className="px-3 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-300 w-12">Kelas</th>
+                                <th className="px-3 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-300 w-12">Semester</th>
+                                <th className="px-4 py-2 text-[9px] font-black text-jade-700 uppercase tracking-widest border-b border-r border-slate-200 bg-jade-50/20 min-w-[110px]">Hafalan</th>
+                                <th className="px-4 py-2 text-[9px] font-black text-blue-700 uppercase tracking-widest border-b border-r border-slate-200 bg-blue-50/20 min-w-[110px]">Sabaq</th>
+                                <th className="px-4 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-300 min-w-[110px]">Target Hafalan</th>
+                                <th className="px-4 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-300 min-w-[110px]">Ket</th>
+                                <th className="px-4 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-300 min-w-[110px]">Target Sabaq</th>
+                                <th className="px-4 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-slate-200 bg-slate-300 min-w-[110px]">Ket</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white">

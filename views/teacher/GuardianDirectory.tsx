@@ -105,7 +105,7 @@ export const GuardianDirectory: React.FC<{ tenantId: string, user: UserProfile }
                                 placeholder="Cari nama santri..." 
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all bg-white text-slate-900 shadow-sm"
+                                className="w-full pl-10 pr-4 py-2.5 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all bg-white text-slate-900"
                             />
                         </div>
                     </div>
@@ -113,7 +113,7 @@ export const GuardianDirectory: React.FC<{ tenantId: string, user: UserProfile }
             </div>
 
             {/* Guardian List Container */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden max-w-7xl mx-auto">
+            <div className="bg-white rounded-xl border-2 border-slate-300 overflow-hidden max-w-7xl mx-auto">
                 {loading ? (
                     <div className="p-16 flex flex-col items-center justify-center">
                         <div className="w-12 h-12 border-4 border-jade-100 border-t-jade-600 rounded-full animate-spin mb-4"></div>
@@ -157,7 +157,7 @@ export const GuardianDirectory: React.FC<{ tenantId: string, user: UserProfile }
                                 <div className="w-full md:w-2/3 flex-1 pl-4 md:pl-6 border-l-0 md:border-l-2 border-slate-100/80">
                                     <div className="space-y-3">
                                         {students.map(student => (
-                                            <div key={student.id} className="bg-slate-50 border border-slate-200/80 rounded-lg p-3 flex items-center justify-between">
+                                            <div key={student.id} className="bg-slate-50 border-2 border-slate-300 rounded-lg p-3 flex items-center justify-between">
                                                 <div className="flex items-center gap-3">
                                                     <GraduationCap className="w-5 h-5 text-slate-400" />
                                                     <div>

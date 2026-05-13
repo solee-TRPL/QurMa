@@ -47,6 +47,29 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
     const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
 
+    // --- Unread Notes Logic ---
+    const [lastSeenNoteId, setLastSeenNoteId] = useState<string | null>(() => {
+        if (typeof window !== 'undefined') return localStorage.getItem(`lastSeenNote_${user.id}`);
+        return null;
+    });
+
+    const hasUnreadNotes = useMemo(() => {
+        if (notes.length === 0) return false;
+        // If notes exist but no lastSeenNoteId is saved, it's considered unread
+        if (!lastSeenNoteId) return true;
+        // If the latest note ID is different from what we've seen, it's unread
+        return notes[0].id !== lastSeenNoteId;
+    }, [notes, lastSeenNoteId]);
+
+    // Mark notes as read when modal opens
+    React.useEffect(() => {
+        if (isNotesModalOpen && notes.length > 0) {
+            const latestId = notes[0].id;
+            localStorage.setItem(`lastSeenNote_${user.id}`, latestId);
+            setLastSeenNoteId(latestId);
+        }
+    }, [isNotesModalOpen, notes, user.id]);
+
     const isMatch = (recDate: string | undefined, targetY: number, targetM: number, targetD?: number) => {
         if (!recDate) return false;
         const parts = recDate.split(/[-T ]/).map(p => parseInt(p));
@@ -179,18 +202,18 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     }
 
     return (
-        <div className="flex-1 h-auto flex flex-col gap-3 lg:gap-4 animate-fade-in pb-20 lg:pb-8">
+        <div className="flex-1 h-[calc(100vh-110px)] lg:h-[calc(100vh-140px)] flex flex-col gap-2.5 lg:gap-3 animate-fade-in pb-0 overflow-hidden">
 
 
             {/* Header Chartboxes */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-3.5 shrink-0">
                 {/* Chartbox 1: Halaqoh/Pengampu */}
-                <div className="bg-white rounded-2xl p-3.5 lg:p-4 border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden group transition-all hover:border-jade-200 hover:shadow-md">
-                    <div className="absolute right-0 top-0 w-16 h-16 bg-slate-50/30 rounded-full -translate-y-6 translate-x-6 group-hover:scale-110 transition-transform duration-500" />
+                <div className="bg-white rounded-xl p-3 lg:p-4 border-2 border-slate-300 flex items-center justify-between relative overflow-hidden group transition-all hover:border-jade-300">
+                    <div className="absolute right-0 top-0 w-24 h-24 bg-jade-50/40 rounded-2xl -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500" />
                     
                     <div className="flex items-center gap-4 relative z-10">
-                        <div className="w-9 h-9 rounded-xl bg-jade-50 text-jade-700 flex items-center justify-center shadow-sm border border-jade-100">
-                            <School className="w-4.5 h-4.5" />
+                        <div className="w-8 h-8 lg:w-9 lg:h-9 bg-jade-50 text-jade-700 rounded-xl flex items-center justify-center border-2 border-jade-100">
+                            <School className="w-4 h-4 lg:w-4.5 lg:h-4.5" />
                         </div>
                         <div>
                             <p className="text-[7.5px] lg:text-[8.5px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 lg:mb-1.5">Halaqoh / Pengampu</p>
@@ -207,19 +230,19 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 {/* Chartbox 3: Catatan Guru */}
                 <div 
                     onClick={() => setIsNotesModalOpen(true)}
-                    className="bg-white rounded-2xl p-3.5 lg:p-4 border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden group transition-all hover:border-jade-200 hover:shadow-md cursor-pointer"
+                    className="bg-white rounded-xl p-3 lg:p-4 border-2 border-slate-300 flex items-center justify-between relative overflow-hidden group transition-all hover:border-jade-300 cursor-pointer"
                 >
-                    <div className="absolute right-0 top-0 w-16 h-16 bg-jade-50/30 rounded-full -translate-y-6 translate-x-6 group-hover:scale-110 transition-transform duration-500" />
+                    <div className="absolute right-0 top-0 w-24 h-24 bg-jade-50/40 rounded-2xl -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500" />
                     
                     <div className="flex items-center gap-4 relative z-10">
-                        <div className="w-9 h-9 rounded-xl bg-jade-50 text-jade-700 flex items-center justify-center shadow-sm border border-jade-100 group-hover:bg-jade-600 group-hover:text-white transition-all">
-                            <MessageSquare className="w-4.5 h-4.5" />
+                        <div className="w-8 h-8 lg:w-9 lg:h-9 bg-jade-50 text-jade-700 rounded-xl flex items-center justify-center border-2 border-jade-100 group-hover:bg-jade-600 group-hover:text-white transition-all">
+                            <MessageSquare className="w-4 h-4 lg:w-4.5 lg:h-4.5" />
                         </div>
                         <div>
                             <p className="text-[7.5px] lg:text-[8.5px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 lg:mb-1.5">Catatan Guru</p>
                             <h4 className="text-xs lg:text-sm font-black text-slate-800 leading-tight uppercase flex items-center gap-2">
                                 {notes.length} Catatan
-                                {notes.length > 0 && <div className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />}
+                                {hasUnreadNotes && <div className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />}
                             </h4>
                         </div>
                     </div>
@@ -229,13 +252,13 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 {/* Chartbox 4: Pencapaian Santri */}
                 <div 
                     onClick={() => setIsAchievementModalOpen(true)}
-                    className="bg-white rounded-2xl p-3.5 lg:p-4 border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden group transition-all hover:border-amber-200 hover:shadow-md cursor-pointer"
+                    className="bg-white rounded-xl p-3 lg:p-4 border-2 border-slate-300 flex items-center justify-between relative overflow-hidden group transition-all hover:border-amber-300 cursor-pointer"
                 >
-                    <div className="absolute right-0 top-0 w-16 h-16 bg-amber-50/20 rounded-full -translate-y-6 translate-x-6 group-hover:scale-110 transition-transform duration-500" />
+                    <div className="absolute right-0 top-0 w-24 h-24 bg-amber-50/40 rounded-2xl -translate-y-8 translate-x-8 group-hover:scale-110 transition-transform duration-500" />
                     
                     <div className="flex items-center gap-4 relative z-10">
-                        <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shadow-sm border border-amber-100 group-hover:bg-amber-500 group-hover:text-white transition-all">
-                            <Trophy className="w-4.5 h-4.5" />
+                        <div className="w-8 h-8 lg:w-9 lg:h-9 bg-amber-50 text-amber-700 rounded-xl flex items-center justify-center border-2 border-amber-100 group-hover:bg-amber-500 group-hover:text-white transition-all">
+                            <Trophy className="w-4 h-4 lg:w-4.5 lg:h-4.5" />
                         </div>
                         <div>
                             <p className="text-[7.5px] lg:text-[8.5px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 lg:mb-1.5">Pencapaian</p>
@@ -249,66 +272,102 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             </div>
 
             {/* Main Progress Chart */}
-            <div className="bg-white rounded-2xl border border-slate-200/60 shadow-[0_4px_20px_rgb(0,0,0,0.03)] p-5 lg:p-6 flex flex-col min-h-[340px]">
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4 shrink-0">
-                    <div className="flex flex-col">
-                        <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.2em] flex items-center gap-2">
+            <div className="bg-white rounded-xl border-2 border-slate-300 p-4 lg:p-5 flex flex-col h-full relative">
+                <div className="flex flex-row items-center justify-between gap-2 mb-3 lg:mb-6">
+                    <div className="flex items-start gap-3">
+                        <h3 className="text-[9.5px] lg:text-[10px] ps-2 font-black text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">
                             Grafik Progress Hafalan
                         </h3>
-                        <p className="text-[7.5px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total: {chartTotal} {lineChartType === MemorizationType.SABAQ ? 'Baris' : lineChartType === MemorizationType.SABQI ? 'Halaman' : 'Kali'}</p>
                     </div>
                     
-                    <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full lg:w-auto">
-                        <div className="flex items-center w-full lg:w-72 bg-slate-50 p-1 rounded-full border border-slate-200 shadow-sm h-9 lg:h-10 shrink-0">
-                            {[MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL].map((type) => (
-                                <button 
-                                    key={type}
-                                    onClick={() => setLineChartType(type)}
-                                    className={`flex-1 px-4 py-1.5 lg:py-2 rounded-full text-[8px] font-black uppercase tracking-wider transition-all ${
-                                        lineChartType === type 
-                                        ? 'bg-jade-600 text-white shadow-sm' 
-                                        : 'text-slate-400 hover:text-slate-600'
-                                    }`}
-                                >
-                                    {type}
-                                </button>
-                            ))}
-                        </div>
-                        
-                        <div className="flex items-center gap-1 bg-emerald-600 p-1 rounded-full shadow-[0_4px_12px_rgba(16,185,129,0.15)] h-9 lg:h-10 justify-between min-w-[130px]">
-                            <button 
-                                onClick={() => {
-                                    if (lineChartRange === 'pekanan') setChartWeekOffset(prev => prev - 1);
-                                    else if (lineChartRange === 'bulanan') {
-                                        if (chartMonth === 0) { setChartMonth(11); setChartYear(prev => prev - 1); }
-                                        else setChartMonth(prev => prev - 1);
-                                    }
-                                    else setChartYear(prev => prev - 1);
-                                }}
-                                className="w-7 h-7 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all text-white"
-                            >
-                                <ChevronLeft className="w-3 h-3" />
-                            </button>
-                            <div className="flex flex-col items-center justify-center flex-1 min-w-[110px]">
-                                <span className="text-[7.5px] font-black text-white uppercase tracking-widest leading-none mb-0.5">{chartTimeframeInfo.range}</span>
-                                <span className="text-[5.5px] font-bold text-white/60 uppercase tracking-[0.2em] leading-none">{chartTimeframeInfo.relative}</span>
+                    <div className="flex items-center gap-2 ml-auto">
+                        <div className="hidden lg:flex items-center gap-2 ml-auto">
+                            <div className="flex flex-none bg-white p-1 rounded-xl border-2 border-slate-300 ring-1 ring-white group hover:border-jade-200 transition-all h-9 lg:h-10">
+                                {[MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL].map(type => (
+                                    <button 
+                                        key={type}
+                                        onClick={() => setLineChartType(type)}
+                                        className={`px-4 py-1.5 text-[8px] font-black uppercase tracking-widest rounded-lg transition-all whitespace-nowrap ${
+                                            lineChartType === type ? 'bg-jade-700 text-white' : 'text-slate-400 hover:text-slate-600'
+                                        }`}
+                                    >
+                                        {type}
+                                    </button>
+                                ))}
                             </div>
-                            <button 
-                                onClick={() => {
-                                    if (lineChartRange === 'pekanan') setChartWeekOffset(prev => prev + 1);
-                                    else if (lineChartRange === 'bulanan') {
-                                        if (chartMonth === 11) { setChartMonth(0); setChartYear(prev => prev + 1); }
-                                        else setChartMonth(prev => prev + 1);
-                                    }
-                                    else setChartYear(prev => prev + 1);
-                                }}
-                                className="w-7 h-7 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all text-white"
-                            >
-                                <ChevronRight className="w-3 h-3" />
-                            </button>
+
+                            <div className="flex items-center gap-1 bg-jade-600 p-1 rounded-xl shadow-none h-9 lg:h-10 justify-between min-w-[130px] border-2 border-jade-600">
+                                <button 
+                                    onClick={() => {
+                                        if (lineChartRange === 'pekanan') setChartWeekOffset(prev => prev - 1);
+                                        else if (lineChartRange === 'bulanan') {
+                                            if (chartMonth === 0) { setChartMonth(11); setChartYear(prev => prev - 1); }
+                                            else setChartMonth(prev => prev - 1);
+                                        }
+                                        else setChartYear(prev => prev - 1);
+                                    }}
+                                    className="w-7 h-7 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg transition-all text-white"
+                                >
+                                    <ChevronLeft className="w-3 h-3" />
+                                </button>
+                                <div className="flex flex-col items-center justify-center flex-1 min-w-[110px]">
+                                    <span className="text-[7.5px] font-black text-white uppercase tracking-widest leading-none mb-0.5">{chartTimeframeInfo.range}</span>
+                                    <span className="text-[5.5px] font-bold text-white/60 uppercase tracking-[0.2em] leading-none">{chartTimeframeInfo.relative}</span>
+                                </div>
+                                <button 
+                                    onClick={() => {
+                                        if (lineChartRange === 'pekanan') setChartWeekOffset(prev => prev + 1);
+                                        else if (lineChartRange === 'bulanan') {
+                                            if (chartMonth === 11) { setChartMonth(0); setChartYear(prev => prev + 1); }
+                                            else setChartMonth(prev => prev + 1);
+                                        }
+                                        else setChartYear(prev => prev + 1);
+                                    }}
+                                    className="w-7 h-7 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg transition-all text-white"
+                                >
+                                    <ChevronRight className="w-3 h-3" />
+                                </button>
+                            </div>
                         </div>
+
+                        <button 
+                            onClick={() => refreshData(false)}
+                            disabled={isRefreshing}
+                            className={`h-9 w-9 lg:h-10 lg:w-10 bg-white text-slate-400 rounded-xl border-2 border-slate-300 hover:text-jade-600 hover:border-jade-200 transition-all flex items-center justify-center ${isRefreshing ? 'opacity-50' : 'active:scale-90 lg:active:scale-95'}`}
+                        >
+                            <RotateCcw className={`w-3.5 h-3.5 lg:w-3.5 lg:h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        </button>
+
+                        <button 
+                            onClick={() => setIsActivityModalOpen(true)}
+                            className="bg-white hover:bg-slate-50 px-4 h-9 lg:h-10 rounded-xl text-[8.5px] font-black text-jade-700 uppercase tracking-widest transition-all active:scale-95 border-2 border-slate-300 flex items-center justify-center min-w-[50px]"
+                        >
+                            LOG
+                        </button>
                     </div>
                 </div>
+
+                <div className="lg:hidden flex flex-col gap-2.5 mb-4">
+                    <div className="flex bg-white p-1 rounded-xl border-2 border-slate-300 w-full divide-x-2 divide-slate-100 ring-1 ring-white h-10">
+                        {[MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL].map(t => (
+                            <button 
+                                key={t} 
+                                onClick={() => setLineChartType(t as any)}
+                                className={`flex-1 py-1 text-[8px] font-black uppercase rounded-lg transition-all ${lineChartType === t ? 'bg-jade-600 text-white' : 'text-slate-400'}`}
+                            >
+                                {t}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="flex-1 flex flex-col items-center justify-center min-h-0 w-full overflow-hidden">
+                    <div className="w-full flex-1 min-h-0">
+                        <div className="flex items-center justify-end mb-4 px-2">
+                            <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                Total: <span className="text-slate-800">{chartTotal} {lineChartType === MemorizationType.SABAQ ? 'Baris' : lineChartType === MemorizationType.SABQI ? 'Halaman' : 'Kali'}</span>
+                            </div>
+                        </div>
 
                     <div className="flex-1 w-full min-h-[300px]">
                         <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
@@ -333,7 +392,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                                     tick={{ fontSize: 9, fontWeight: 900, fill: '#94a3b8' }}
                                 />
                                 <Tooltip 
-                                    contentStyle={{ borderRadius: '1.25rem', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '12px' }}
+                                    contentStyle={{ borderRadius: '12px', border: '2px solid #e2e8f0', boxShadow: 'none' }}
                                     itemStyle={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase' }}
                                 />
                                 <Area 
@@ -349,6 +408,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                         </ResponsiveContainer>
                     </div>
                 </div>
+            </div>
+        </div>
 
 
             <ExamScheduleModal 

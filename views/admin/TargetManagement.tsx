@@ -175,7 +175,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
   return (
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="flex items-center gap-1.5 p-1 bg-slate-50/50 border border-slate-100/50 rounded-[20px] w-fit shadow-sm">
+        <div className="flex items-center gap-1.5 p-1 bg-slate-300 border border-slate-100/50 rounded-[20px] w-fit shadow-sm">
           <button 
             onClick={() => handleTabChange('sabaq')}
             className={`px-6 py-2 text-[11px] font-black uppercase tracking-tight rounded-2xl border-2 transition-all ${activeTab === 'sabaq' ? 'border-white bg-white text-jade-600 shadow-md' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
@@ -210,28 +210,28 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         {/* Main Content Area - Table (Left) */}
         <div className="lg:col-span-3">
-            <div className="bg-white shadow-sm border-2 border-slate-200 overflow-hidden flex flex-col">
+            <div className="bg-white shadow-sm border-2 border-slate-200 rounded-b-xl overflow-hidden flex flex-col">
                 {activeTab === 'sabaq' && (
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
                             <table className="min-w-full border-separate border-spacing-0">
                                 <thead className="sticky top-0 z-40 bg-white">
                                       <tr>
-                                          <th className="px-6 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-20">KELAS</th>
-                                          <th className="px-4 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-24">SEMESTER</th>
-                                          <th className="px-6 py-4 text-center text-[9.5px] font-black text-jade-600 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-jade-50/30 w-1/3">TARGET SABAQ (SEMESTER)</th>
-                                          <th className="px-6 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-slate-100 w-1/3">TARGET TOTAL</th>
+                                          <th className="px-6 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-l border-r border-black w-20 bg-slate-300">KELAS</th>
+                                          <th className="px-4 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black w-24 bg-slate-300">SEMESTER</th>
+                                          <th className="px-6 py-4 text-center text-[9.5px] font-black text-emerald-600 uppercase tracking-widest border-t border-b border-r border-emerald-600 bg-emerald-50 w-1/3">TARGET SABAQ (SEMESTER)</th>
+                                          <th className="px-6 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black bg-slate-300 w-1/3">TARGET TOTAL</th>
                                       </tr>
                                   </thead>
                                 <tbody className="bg-white">
                                     {sabaqTargets.map((st, i) => (
                                         <tr key={i} className="group transition-colors hover:bg-slate-50/30">
                                             {i % 2 === 0 && (
-                                                <td rowSpan={2} className="px-4 py-4 whitespace-nowrap text-[15px] font-black text-slate-800 text-center border-r-2 border-b border-slate-100 bg-slate-50/20">
+                                                <td rowSpan={2} className="px-4 py-4 whitespace-nowrap text-[15px] font-black text-slate-800 text-center border-r border-b border-slate-100 bg-slate-50/20">
                                                     {st.kelas}
                                                 </td>
                                             )}
-                                            <td className="px-4 py-4 whitespace-nowrap text-[11px] font-black text-slate-600 text-center border-r-2 border-b border-slate-100 relative group/sem">
+                                            <td className="px-4 py-4 whitespace-nowrap text-[11px] font-black text-slate-600 text-center border-r border-b border-slate-100 relative group/sem">
                                                 {st.semester}
                                                 {!isReadOnly && (
                                                     <button 
@@ -254,7 +254,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                             </td>
 
                                             {st.total === null ? (
-                                                <td colSpan={2} className={`px-6 py-4 text-[10.5px] font-black text-slate-400 text-center bg-slate-50/5 border-b border-slate-100 uppercase tracking-widest ${!isReadOnly && 'cursor-pointer hover:bg-slate-50/50'} transition-all`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'sabaq-target' })}>
+                                                <td colSpan={2} className={`px-6 py-4 text-[10.5px] font-black text-slate-400 text-center bg-slate-50/5 border-b border-slate-100 uppercase tracking-widest ${!isReadOnly && 'cursor-pointer hover:bg-slate-300'} transition-all`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'sabaq-target' })}>
                                                     {editingCell?.row === i && editingCell?.field === 'sabaq-target' ? (
                                                       <input 
                                                           autoFocus
@@ -275,7 +275,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                                                 </td>
                                             ) : (
                                                 <>
-                                                    <td className={`px-6 py-4 text-[13px] text-jade-700 font-black text-center ${!isReadOnly && 'cursor-pointer hover:bg-jade-50/30'} transition-all border-r-2 border-b border-slate-100 bg-jade-50/5`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'sabaq-target' })}>
+                                                    <td className={`px-6 py-4 text-[13px] text-jade-700 font-black text-center ${!isReadOnly && 'cursor-pointer hover:bg-jade-50/30'} transition-all border-r border-b border-slate-100 bg-jade-50/5`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'sabaq-target' })}>
                                                         {editingCell?.row === i && editingCell?.field === 'sabaq-target' ? (
                                                             <div className="flex items-center justify-center gap-1 animate-in zoom-in-95 duration-100">
                                                               <input 
@@ -334,18 +334,18 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                             <table className="min-w-full border-separate border-spacing-0">
                                 <thead className="sticky top-0 z-40 bg-white">
                                     <tr>
-                                        <th className="px-4 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 w-24">LEVEL</th>
-                                        <th className="px-6 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100">JUMLAH HAFALAN</th>
-                                        <th className="px-6 py-4 text-center text-[9.5px] font-black text-jade-600 uppercase tracking-widest border-b-2 border-slate-100 bg-jade-50/30">ACUAN TARGET MURAJA'AH (ATM/HARI)</th>
+                                        <th className="px-4 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-l border-r border-black w-24 bg-slate-300">LEVEL</th>
+                                        <th className="px-6 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black bg-slate-300">JUMLAH HAFALAN</th>
+                                        <th className="px-6 py-4 text-center text-[9.5px] font-black text-emerald-600 uppercase tracking-widest border-t border-b border-r border-emerald-600 bg-emerald-50">ACUAN TARGET MURAJA'AH (ATM/HARI)</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white">
                                     {manzilAcuan.map((m, i) => (
                                         <tr key={i} className="group transition-colors hover:bg-slate-50/30">
-                                            <td className="px-4 py-4 whitespace-nowrap text-[15px] font-black text-slate-800 text-center border-r-2 border-b border-slate-100 bg-slate-50/20 w-24">
+                                            <td className="px-4 py-4 whitespace-nowrap text-[15px] font-black text-slate-800 text-center border-r border-b border-slate-100 bg-slate-50/20 w-24">
                                                 {m.id}
                                             </td>
-                                            <td className={`px-6 py-4 text-[13px] text-slate-700 border-r-2 border-b border-slate-100 text-center transition-all ${!isReadOnly && 'cursor-pointer hover:bg-slate-50/50'}`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'manzil-jumlah' })}>
+                                            <td className={`px-6 py-4 text-[13px] text-slate-700 border-r border-b border-slate-100 text-center transition-all ${!isReadOnly && 'cursor-pointer hover:bg-slate-300'}`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'manzil-jumlah' })}>
                                                 {editingCell?.row === i && editingCell?.field === 'manzil-jumlah' ? (
                                                   <div 
                                                     className="flex items-center justify-center gap-2 animate-in zoom-in-95 duration-100" 
@@ -491,14 +491,14 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                             <table className="min-w-full border-separate border-spacing-0">
                                 <thead className="sticky top-0 z-40 bg-white">
                                     <tr>
-                                        <th className="px-6 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100">JUMLAH HAFALAN BARU</th>
-                                        <th className="px-6 py-4 text-center text-[9.5px] font-black text-jade-600 uppercase tracking-widest border-b-2 border-slate-100 bg-jade-50/30">TARGET MURAJA'AH SABQI</th>
+                                        <th className="px-6 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-l border-r border-black bg-slate-300">JUMLAH HAFALAN BARU</th>
+                                        <th className="px-6 py-4 text-center text-[9.5px] font-black text-emerald-600 uppercase tracking-widest border-t border-b border-r border-emerald-600 bg-emerald-50">TARGET MURAJA'AH SABQI</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white">
                                     {sabqiAcuan.map((s, i) => (
                                         <tr key={i} className="group transition-colors hover:bg-slate-50/30">
-                                             <td className={`px-6 py-4 whitespace-nowrap text-[13px] font-black text-slate-700 border-r-2 border-b border-slate-100 transition-all text-center bg-slate-50/20 ${!isReadOnly && 'cursor-pointer hover:bg-slate-50/50'}`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'sabqi-hafalan' })}>
+                                             <td className={`px-6 py-4 whitespace-nowrap text-[13px] font-black text-slate-700 border-r border-b border-slate-100 transition-all text-center bg-slate-50/20 ${!isReadOnly && 'cursor-pointer hover:bg-jade-50/30'}`} onClick={() => !isReadOnly && setEditingCell({ row: i, field: 'sabqi-hafalan' })}>
                                                 {editingCell?.row === i && editingCell?.field === 'sabqi-hafalan' ? (
                                                   <div 
                                                     className="flex items-center justify-center gap-2 animate-in zoom-in-95 duration-100" 
@@ -726,7 +726,7 @@ export const TargetManagement: React.FC<{ tenantId: string, user: UserProfile }>
                          </div>
                          <p className="text-[10px] font-bold text-slate-600">Pilih tab acuan di bagian kiri atas halaman.</p>
                      </div>
-                     <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors bg-slate-50/50 border border-slate-100">
+                     <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors bg-slate-300 border border-slate-100">
                          <div className="w-6 h-6 bg-jade-50 text-jade-600 rounded-lg flex items-center justify-center shrink-0">
                              <Save className="w-3 h-3" />
                          </div>

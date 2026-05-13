@@ -191,9 +191,9 @@ export const Layout: React.FC<LayoutProps> = ({
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
     
     if (diffInSeconds < 60) return 'Baru saja';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m lalu`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}j lalu`;
-    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} M LALU`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} J LALU`;
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }).toUpperCase();
   };
 
   const renderFormattedMessage = (msg: string) => {
@@ -427,9 +427,9 @@ export const Layout: React.FC<LayoutProps> = ({
 
             {/* TOTAL HAFALAN FOR SANTRI */}
             {user.role === UserRole.SANTRI && (
-                <div className="flex bg-jade-50/50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl border border-jade-100 shadow-sm animate-in fade-in slide-in-from-left-4 duration-500 order-2 lg:order-4 shrink-0">
+                <div className="flex bg-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl border-2 border-jade-100 animate-in fade-in slide-in-from-left-4 duration-500 order-2 lg:order-4 shrink-0">
                     <div className="flex flex-col items-start justify-center">
-                        <span className="text-[6px] sm:text-[7px] text-jade-400 uppercase tracking-widest font-black leading-none mb-0.5 sm:mb-1 opacity-70">
+                        <span className="text-[6px] sm:text-[7px] text-jade-500 uppercase tracking-[0.2em] font-black leading-none mb-1">
                             Hafalan
                         </span>
                         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none">
@@ -441,9 +441,9 @@ export const Layout: React.FC<LayoutProps> = ({
 
             {/* HALAQAH NAME FOR TEACHER & SANTRI ROLE */}
             {(user.role === UserRole.TEACHER || user.role === UserRole.SANTRI) && halaqahName && (
-                <div className="flex bg-jade-50/50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl border border-jade-100 shadow-sm animate-in fade-in slide-in-from-right-4 duration-500 order-3 lg:order-5 shrink-0">
+                <div className="flex bg-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl border-2 border-jade-100 animate-in fade-in slide-in-from-right-4 duration-500 order-3 lg:order-5 shrink-0">
                     <div className="flex flex-col items-start justify-center">
-                        <span className="text-[6px] sm:text-[7px] text-jade-400 uppercase tracking-widest font-black leading-none mb-0.5 sm:mb-1 opacity-70 whitespace-nowrap">
+                        <span className="text-[6px] sm:text-[7px] text-jade-500 uppercase tracking-[0.2em] font-black leading-none mb-1 whitespace-nowrap">
                             Halaqah
                         </span>
                         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none whitespace-nowrap">
@@ -455,9 +455,9 @@ export const Layout: React.FC<LayoutProps> = ({
 
             {/* WEEKLY DATE FOR SANTRI ROLE */}
             {user.role === UserRole.SANTRI && (
-                <div className="hidden xl:flex bg-jade-50/50 px-3 py-1.5 rounded-xl border border-jade-100 shadow-sm animate-in fade-in slide-in-from-right-4 duration-500 order-6 shrink-0">
+                <div className="hidden xl:flex bg-white px-3 py-1.5 rounded-xl border-2 border-jade-100 animate-in fade-in slide-in-from-right-4 duration-500 order-6 shrink-0">
                     <div className="flex flex-col items-start justify-center">
-                        <span className="text-[7px] text-jade-400 uppercase tracking-widest font-black leading-none mb-1 opacity-70">
+                        <span className="text-[7px] text-jade-500 uppercase tracking-[0.2em] font-black leading-none mb-1">
                             Pekan Ini
                         </span>
                         <span className="text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none">
@@ -488,10 +488,10 @@ export const Layout: React.FC<LayoutProps> = ({
                                 setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
                             }
                         }}
-                        className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all border ${
+                        className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all border-2 ${
                             isNotificationsOpen 
                             ? 'bg-jade-50 text-jade-600 border-jade-100 shadow-inner' 
-                            : 'bg-white text-jade-600 border-slate-100 hover:bg-jade-50 hover:text-jade-700 shadow-sm'
+                            : 'bg-white text-jade-600 border-slate-100 hover:bg-jade-50 hover:text-jade-700'
                         }`}
                     >
                         <Bell className={`w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 ${unreadCount > 0 ? 'animate-bounce' : ''}`} />
@@ -504,52 +504,61 @@ export const Layout: React.FC<LayoutProps> = ({
 
                     {/* Notification Dropdown */}
                     {isNotificationsOpen && (
-                        <div className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-20 sm:top-full mt-0 sm:mt-4 w-auto sm:w-80 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 ring-1 ring-slate-900/5 z-[110] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top sm:origin-top-right">
-                            <div className="p-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                                <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Pemberitahuan</h4>
-                                <span className="text-[9px] font-black bg-jade-50 text-jade-600 px-2 py-0.5 rounded-full">Terbaru</span>
+                        <div className="fixed sm:absolute left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto top-20 sm:top-full mt-2 w-auto sm:w-80 bg-white rounded-xl shadow-2xl border-2 border-slate-300 z-[110] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top">
+                            <div className="p-4 border-b-2 border-slate-100 bg-white flex items-center justify-between">
+                                <div>
+                                    <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.2em]">Pemberitahuan</h4>
+                                    <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Info & Aktivitas Terbaru</p>
+                                </div>
+                                <span className="text-[8.5px] font-black bg-jade-600 text-white px-2.5 py-0.5 rounded-lg shadow-sm shadow-jade-100">NEW</span>
                             </div>
 
-                            <div className="max-h-[255px] overflow-y-auto no-scrollbar">
+                            <div className="max-h-[300px] overflow-y-auto scrollbar-hide bg-slate-50/30">
                                 {notifications.length > 0 ? (
                                     notifications.slice(0, 10).map((notif) => (
                                         <div 
                                             key={notif.id} 
                                             onClick={() => handleNotificationClick(notif)}
-                                            className={`p-4 border-b border-slate-50 hover:bg-slate-50/80 transition-all flex gap-3.5 group cursor-pointer relative ${!notif.is_read ? 'bg-jade-50/20' : ''}`}
+                                            className={`p-4 border-b-2 border-slate-100 hover:bg-white transition-all flex gap-3.5 group cursor-pointer relative ${!notif.is_read ? 'bg-jade-50/10' : ''}`}
                                         >
                                             {!notif.is_read && (
-                                                <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
+                                                <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-3 bg-jade-500 rounded-full" />
                                             )}
-                                            <div className={`w-10 h-10 rounded-2xl shrink-0 flex items-center justify-center transition-transform group-hover:scale-105 duration-300 ${
-                                                notif.type === 'success' ? 'bg-emerald-50 text-emerald-600 shadow-sm shadow-emerald-100' :
-                                                notif.type === 'error' ? 'bg-rose-50 text-rose-600 shadow-sm shadow-rose-100' :
-                                                'bg-jade-50 text-jade-600 shadow-sm shadow-primary-100'
+                                            <div className={`w-9 h-9 rounded-xl shrink-0 flex items-center justify-center transition-transform group-hover:scale-105 duration-300 border-2 ${
+                                                notif.type === 'success' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                notif.type === 'error' ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                                                'bg-jade-50 text-jade-600 border-jade-100'
                                             }`}>
-                                                {notif.title.includes('Hafalan') ? <BookOpen className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
+                                                {notif.title.includes('Hafalan') ? <BookOpen className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between gap-2 mb-1">
-                                                    <p className="text-[11px] font-black text-slate-900 leading-none truncate">{notif.title}</p>
-                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter shrink-0" suppressHydrationWarning>{formatTime(notif.created_at)}</span>
+                                                    <p className="text-[10.5px] font-black text-slate-900 leading-none truncate uppercase tracking-tight">{notif.title}</p>
+                                                    <span className="text-[7.5px] font-black text-slate-400 uppercase tracking-tighter shrink-0" suppressHydrationWarning>{formatTime(notif.created_at)}</span>
                                                 </div>
-                                                <p className="text-[10.5px] font-medium text-slate-500 leading-relaxed line-clamp-2">
+                                                <div className="text-[9.5px] font-black text-slate-500 leading-tight opacity-80 uppercase tracking-tight">
                                                     {renderFormattedMessage(notif.message)}
-                                                </p>
+                                                </div>
                                             </div>
                                             <div className="self-center opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
-                                                <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+                                                <ChevronRight className="w-3 h-3 text-slate-300" />
                                             </div>
                                         </div>
                                     ))
                                 ) : (
                                     <div className="py-12 px-6 text-center">
-                                        <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                            <Bell className="w-6 h-6 text-slate-300" />
+                                        <div className="w-10 h-10 bg-white border-2 border-slate-200 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-sm">
+                                            <Bell className="w-5 h-5 text-slate-200" />
                                         </div>
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Belum ada pemberitahuan</p>
+                                        <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Belum ada info</p>
                                     </div>
                                 )}
+                            </div>
+                            
+                            <div className="p-3 bg-white border-t-2 border-slate-100">
+                                <button className="w-full py-2 bg-slate-50 hover:bg-slate-100 rounded-lg text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] transition-all">
+                                    LIHAT SEMUA
+                                </button>
                             </div>
                         </div>
                     )}

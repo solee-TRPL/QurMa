@@ -380,7 +380,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
           {/* BARIS 1: Halaqah / Teacher Selector & Search Bar */}
           <div className="flex flex-row items-center gap-2 w-full lg:flex-1">
               {/* Halaqah Selector */}
-              <div className="flex-1 lg:flex-none flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-2xl border border-slate-200 shadow-sm lg:min-w-[340px] focus-within:ring-4 focus-within:ring-jade-50/50 focus-within:border-jade-400 transition-all h-10 lg:h-11">
+              <div className="flex-1 lg:flex-none flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-xl border-2 border-slate-300 shadow-none lg:min-w-[340px] focus-within:ring-4 focus-within:ring-jade-50/50 focus-within:border-jade-400 transition-all h-10 lg:h-11">
                   <div className="p-1.5 bg-primary-500 rounded-lg text-white shrink-0">
                       <GraduationCap className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   </div>
@@ -412,7 +412,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                       placeholder="CARI SANTRI..."
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      className="w-full h-full pl-9 pr-3 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 focus:bg-white transition-all text-[9.5px] font-black uppercase tracking-widest placeholder:text-slate-300 outline-none shadow-inner"
+                      className="w-full h-full pl-9 pr-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[9.5px] font-black uppercase tracking-widest placeholder:text-slate-300 outline-none shadow-none"
                   />
               </div>
           </div>
@@ -420,10 +420,10 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
           {/* BARIS 2: Date Selector & ReadOnly Label */}
           <div className="flex flex-row items-center gap-2 w-full lg:w-auto">
               {/* Date Selector */}
-              <div className="flex-1 lg:flex-none flex bg-white p-1 rounded-[20px] border border-slate-100 shadow-sm ring-1 ring-white h-10 lg:h-11 justify-center items-center">
+              <div className="flex-1 lg:flex-none flex bg-white p-1 rounded-xl border-2 border-slate-300 shadow-none h-10 lg:h-11 justify-center items-center">
                   <button 
                       onClick={() => setCurrentWeekOffset(prev => prev - 1)}
-                      className="p-1 px-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
+                      className="p-1 px-2 hover:bg-slate-50 rounded-lg transition-colors text-slate-400"
                   >
                       <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -442,14 +442,14 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                   </div>
                   <button 
                       onClick={() => setCurrentWeekOffset(prev => prev + 1)}
-                      className="p-1 px-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
+                      className="p-1 px-2 hover:bg-slate-50 rounded-lg transition-colors text-slate-400"
                   >
                       <ChevronRight className="w-4 h-4" />
                   </button>
               </div>
 
               {/* READ-ONLY */}
-              <div className="px-3 md:px-5 py-2 font-black text-[8px] md:text-[9.5px] uppercase tracking-widest rounded-xl border border-slate-100 bg-white/50 text-slate-400 shadow-sm h-10 lg:h-11 flex items-center whitespace-nowrap">
+              <div className="px-3 md:px-5 py-2 font-black text-[8px] md:text-[9.5px] uppercase tracking-widest rounded-xl border-2 border-slate-300 bg-white text-slate-400 shadow-none h-10 lg:h-11 flex items-center whitespace-nowrap">
                   (READ-ONLY)
               </div>
           </div>
@@ -461,7 +461,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => setShowNisKelas(!showNisKelas)}
-                  className={`hidden sm:flex items-center justify-center px-3 h-8 rounded-xl transition-all text-[9.5px] font-black uppercase tracking-widest min-w-[30px] border ${showNisKelas ? 'bg-jade-50/50 text-jade-600 border-jade-100 shadow-sm' : 'bg-white text-slate-400 border-slate-100'}`}
+                  className={`hidden sm:flex items-center justify-center px-3 h-8 rounded-xl transition-all text-[9.5px] font-black uppercase tracking-widest min-w-[30px] border-2 ${showNisKelas ? 'bg-jade-50/50 text-jade-600 border-jade-300 shadow-none' : 'bg-white text-slate-400 border-slate-300'}`}
                 >
                   <span className="hidden sm:inline">{showNisKelas ? 'Sembunyikan Identitas' : 'Tampilkan Identitas'}</span>
                   <span className="sm:hidden">IDENTITAS</span>
@@ -474,7 +474,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                         setShowNotes(!showNotes);
                     }
                   }}
-                  className={`flex-none items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all text-[9.5px] font-black uppercase tracking-widest ${showNotes ? 'bg-amber-50/50 text-amber-600 border border-amber-100 shadow-sm' : 'bg-white text-slate-400 border border-slate-100 hover:bg-slate-50'}`}
+                  className={`flex-none items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all text-[9.5px] font-black uppercase tracking-widest border-2 ${showNotes ? 'bg-amber-50/50 text-amber-600 border-amber-300 shadow-none' : 'bg-white text-slate-400 border-slate-300 hover:bg-slate-50'}`}
                 >
                   <span>{showNotes ? 'Sembunyikan Catatan' : 'Catatan'}</span>
                 </button>
@@ -487,44 +487,45 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
               </div>
           </div>
 
-          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent bg-white border-2 border-slate-200 shadow-sm">
+          <div className="bg-white border-2 border-slate-300 shadow-none rounded-b-xl overflow-hidden flex flex-col">
+              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
             <table className="w-full border-separate border-spacing-0">
                 <thead className="sticky top-0 z-40">
-                    <tr className="bg-white">
-                        <th rowSpan={2} className="w-[40px] md:w-[45px] min-w-[40px] md:min-w-[45px] hidden sm:table-cell sticky sm:left-0 bg-white z-50 px-1 md:px-2 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100">NO</th>
-                        {showNisKelas && (
-                            <th rowSpan={2} className="w-[65px] md:w-[100px] min-w-[65px] md:min-w-[100px] sticky sm:left-[45px] left-0 bg-white z-50 px-1 md:px-3 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100 animate-in slide-in-from-left-1 duration-300">NIS</th>
-                        )}
-                        <th rowSpan={2} className={`w-[115px] md:w-[200px] min-w-[115px] md:min-w-[200px] sticky ${showNisKelas ? 'sm:left-[145px] left-[65px]' : 'sm:left-[45px] left-0'} bg-white z-50 px-2 md:px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-left border-b-2 border-r-2 border-slate-100 shadow-[2px_0_5px_rgba(0,0,0,0.05)] transition-all duration-300`}>NAMA SANTRI</th>
-                        <th rowSpan={2} className="hidden lg:table-cell px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100 bg-white min-w-[180px]">HALAQOH ( PENGAMPU )</th>
-                        
-                        {!showNotes ? (
-                          <>
-                            <th colSpan={2} className="px-4 py-3 text-[9.5px] font-black text-emerald-700 uppercase tracking-[0.1em] border-b-2 border-r-2 border-slate-100 bg-emerald-50/80 shadow-inner whitespace-nowrap">HAFALAN SAAT INI</th>
-                            <th colSpan={3} className="px-4 py-3 text-[9.5px] font-black text-black uppercase tracking-[0.1em] border-b-2 border-r-2 border-slate-100 bg-blue-50/80 shadow-inner whitespace-nowrap">ATM</th>
-                            <th colSpan={6} className="px-4 py-3 text-[9px] font-black text-emerald-600 uppercase tracking-widest text-center border-b-2 border-slate-100 bg-emerald-50/50 whitespace-nowrap">TARGET PEKANAN</th>
-                          </>
-                        ) : (
-                          <th className="px-4 py-3 text-[9.5px] font-black text-amber-600 uppercase tracking-widest border-b-2 border-slate-100 bg-amber-50/30 text-left whitespace-nowrap">CATATAN USTADZ</th>
-                        )}
-                    </tr>
+                        <tr className="bg-white">
+                            <th rowSpan={2} className="w-[40px] md:w-[45px] min-w-[40px] md:min-w-[45px] hidden sm:table-cell sticky sm:left-0 bg-slate-300 z-50 px-1 md:px-2 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-l border-r border-black">NO</th>
+                            {showNisKelas && (
+                                <th rowSpan={2} className="w-[65px] md:w-[100px] min-w-[65px] md:min-w-[100px] sticky sm:left-[45px] left-0 bg-slate-300 z-50 px-1 md:px-3 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r border-black animate-in slide-in-from-left-1 duration-300">NIS</th>
+                            )}
+                            <th rowSpan={2} className={`w-[115px] md:w-[200px] min-w-[115px] md:min-w-[200px] sticky ${showNisKelas ? 'sm:left-[145px] left-[65px]' : 'sm:left-[45px] left-0'} bg-slate-300 z-50 px-2 md:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-left border-t border-b border-r border-black transition-all duration-300`}>NAMA SANTRI</th>
+                            <th rowSpan={2} className="hidden lg:table-cell px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r border-black bg-slate-300 min-w-[180px]">HALAQOH ( PENGAMPU )</th>
+                            
+                            {!showNotes ? (
+                              <>
+                                <th colSpan={2} className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-emerald-700 uppercase tracking-[0.1em] border-t border-b border-r border-emerald-700 bg-emerald-50 shadow-inner whitespace-nowrap text-center">HAFALAN SAAT INI</th>
+                                <th colSpan={3} className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-blue-700 uppercase tracking-[0.1em] border-t border-b border-r border-blue-700 bg-blue-50 shadow-inner whitespace-nowrap text-center">ATM</th>
+                                <th colSpan={6} className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-emerald-600 uppercase tracking-widest text-center border-t border-b border-r border-emerald-600 bg-emerald-50/50 whitespace-nowrap">TARGET PEKANAN</th>
+                              </>
+                            ) : (
+                              <th className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-amber-600 uppercase tracking-widest border-t border-b border-r border-amber-600 bg-amber-50/30 text-left whitespace-nowrap">CATATAN USTADZ</th>
+                            )}
+                        </tr>
                     {!showNotes ? (
                         <tr className="bg-white">
-                            <th className="px-2 py-3 text-[8.5px] font-black text-slate-500 uppercase text-center border-b-2 border-r-2 border-slate-100 bg-white min-w-[60px]">JUZ</th>
-                            <th className="px-2 py-3 text-[8.5px] font-black text-slate-500 uppercase text-center border-b-2 border-r-2 border-slate-100 bg-white min-w-[70px]">HAL</th>
-                            <th className="px-2 py-3 text-[8.5px] font-black text-amber-500 uppercase text-center border-b-2 border-r-2 border-slate-100 bg-white min-w-[70px]">MANZIL</th>
-                            <th className="px-2 py-3 text-[8.5px] font-black text-amber-500 uppercase text-center border-b-2 border-r-2 border-slate-100 bg-white min-w-[60px]">BERPUTAR</th>
-                            <th className="px-2 py-3 text-[8.5px] font-black text-blue-500 uppercase text-center border-b-2 border-r-2 border-slate-100 bg-white min-w-[70px]">SABQI</th>
-                            <th className="px-2 py-3 text-[8.5px] font-black text-slate-500 uppercase text-center border-b-2 border-r-2 border-slate-100 bg-white min-w-[160px]">MANZIL (HAL/JUZ)</th>
-                            <th className="px-2 py-3 text-[8.5px] font-black text-slate-500 uppercase text-center border-b-2 border-r-2 border-slate-100 bg-white min-w-[40px]">KET</th>
-                            <th className="px-2 py-3 text-[8.5px] font-black text-slate-500 uppercase text-center border-b-2 border-r-2 border-slate-100 bg-white min-w-[160px]">SABQI (HAL)</th>
-                            <th className="px-2 py-3 text-[8.5px] font-black text-slate-500 uppercase text-center border-b-2 border-r-2 border-slate-100 bg-white min-w-[40px]">KET</th>
-                            <th className="px-2 py-3 text-[8.5px] font-black text-slate-500 uppercase text-center border-b-2 border-r-2 border-slate-100 bg-white min-w-[160px]">SABAQ (BARIS)</th>
-                            <th className="px-2 py-3 text-[8.5px] font-black text-slate-500 uppercase text-center border-b-2 border-slate-100 bg-white min-w-[40px]">KET</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-emerald-600 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50/30 min-w-[60px]">JUZ</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-emerald-600 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50/30 min-w-[70px]">HAL</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-blue-600 uppercase text-center border-b border-r border-blue-700 bg-blue-50 min-w-[70px]">MANZIL</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-blue-600 uppercase text-center border-b border-r border-blue-700 bg-blue-50 min-w-[60px]">BERPUTAR</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-blue-600 uppercase text-center border-b border-r border-blue-700 bg-blue-50 min-w-[70px]">SABQI</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-[160px]">MANZIL (HAL/JUZ)</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-[40px]">KET</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-[160px]">SABQI (HAL)</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-[40px]">KET</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-[160px]">SABAQ (BARIS)</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-[40px]">KET</th>
                         </tr>
                     ) : (
                         <tr className="bg-white">
-                            <th className="px-4 py-3 text-[8.5px] font-black text-slate-400 uppercase text-left border-b-2 border-slate-100 bg-amber-50/5">CATATAN PERKEMBANGAN HAFALAN SANTRI</th>
+                            <th className="px-4 py-3 text-[8.5px] font-black text-amber-600 uppercase text-left border-b border-r border-amber-600 bg-amber-50/5">CATATAN PERKEMBANGAN HAFALAN SANTRI</th>
                         </tr>
                     )}
                 </thead>
@@ -542,18 +543,18 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
 
                         return (
                             <tr key={s.id} className="group transition-colors hover:bg-slate-50/30">
-                                <td className="hidden sm:table-cell sticky sm:left-0 bg-white px-1 md:px-3 py-1.5 text-[10px] md:text-[10.5px] font-black text-slate-400 text-center border-r-2 border-b border-slate-100 z-20 transition-colors uppercase w-[40px] md:w-[45px]">
+                                <td className="hidden sm:table-cell sticky sm:left-0 bg-white px-1 md:px-3 py-1.5 text-[10px] md:text-[10.5px] font-black text-slate-400 text-center border-r border-b border-slate-100 z-20 transition-colors uppercase w-[40px] md:w-[45px]">
                                     <div className="h-10 flex items-center justify-center">{actualIdx}</div>
                                 </td>
                                 {showNisKelas && (
-                                    <td className="sticky sm:left-[45px] left-0 bg-white px-1 md:px-3 py-1.5 text-[9.5px] md:text-[10.5px] font-black text-slate-500 text-center border-r-2 border-b border-slate-100 z-20 transition-all duration-300 w-[65px] md:w-[100px] tracking-tighter">
+                                    <td className="sticky sm:left-[45px] left-0 bg-white px-1 md:px-3 py-1.5 text-[9.5px] md:text-[10.5px] font-black text-slate-500 text-center border-r border-b border-slate-100 z-20 transition-all duration-300 w-[65px] md:w-[100px] tracking-tighter">
                                         <div className="h-10 flex items-center justify-center">{target.nis}</div>
                                     </td>
                                 )}
-                                <td className={`sticky ${showNisKelas ? 'sm:left-[145px] left-[65px]' : 'sm:left-[45px] left-0'} bg-white px-2 md:px-4 py-1.5 text-[10.5px] md:text-[11px] font-bold text-slate-800 border-r-2 border-b border-slate-100 z-20 transition-all duration-300 truncate shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-[115px] md:w-[200px]`}>
+                                <td className={`sticky ${showNisKelas ? 'sm:left-[145px] left-[65px]' : 'sm:left-[45px] left-0'} bg-white px-2 md:px-4 py-1.5 text-[10.5px] md:text-[11px] font-bold text-slate-800 border-r border-b border-slate-100 z-20 transition-all duration-300 truncate shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-[115px] md:w-[200px]`}>
                                     <div className="h-10 flex items-center">{target.name}</div>
                                 </td>
-                                <td className="hidden lg:table-cell px-4 py-1.5 border-r-2 border-b border-slate-100 text-start bg-white">
+                                <td className="hidden lg:table-cell px-4 py-1.5 border-r border-b border-slate-100 text-start bg-white">
                                     <div className="h-10 flex items-center text-[10px] font-black text-slate-500 uppercase tracking-tight truncate">{target.halaqahName}</div>
                                 </td>
                                 
@@ -562,7 +563,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                                         <td className="px-1 py-1.5 border-r border-b border-slate-100 text-center bg-emerald-50/10">
                                             <div className={`w-full text-center text-[11px] font-black h-10 flex items-center justify-center ${target.hafalanJuz ? 'text-emerald-700' : 'text-emerald-200'}`}>{target.hafalanJuz || '-'}</div>
                                         </td>
-                                        <td className="px-1 py-1.5 border-r-2 border-b border-slate-100 text-center bg-emerald-50/10">
+                                        <td className="px-1 py-1.5 border-r border-b border-slate-100 text-center bg-emerald-50/10">
                                             <div className={`w-full text-center text-[11px] font-black h-10 flex items-center justify-center ${target.hafalanHal ? 'text-emerald-700' : 'text-emerald-200'}`}>{target.hafalanHal || '-'}</div>
                                         </td>
                                         <td className="px-1 py-1.5 border-r border-b border-slate-100 text-center bg-blue-50/10">
@@ -571,7 +572,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                                         <td className="px-1 py-1.5 border-r border-b border-slate-100 text-center bg-blue-50/10">
                                             <div className={`w-full text-center text-[11px] font-black h-10 flex items-center justify-center ${target.hariAtm ? 'text-amber-500' : 'text-amber-200'}`}>{target.hariAtm || '-'} Hari</div>
                                         </td>
-                                        <td className="px-1 py-1.5 border-r-2 border-b border-slate-100 text-center bg-blue-50/10">
+                                        <td className="px-1 py-1.5 border-r border-b border-slate-100 text-center bg-blue-50/10">
                                             <div className={`w-full text-center text-[11px] font-black h-10 flex items-center justify-center ${target.sabqiAtm ? 'text-blue-600' : 'text-blue-200'}`}>{target.sabqiAtm || '-'}</div>
                                         </td>
 
@@ -640,18 +641,13 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
             </table>
           </div>
           
-          <div className="bg-slate-50/50 border-t border-slate-100 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 rounded-b-lg">
+          <div className="bg-slate-50 border-t border-slate-100 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 rounded-b-xl">
               <div className="flex items-center gap-2 md:gap-4">
-                  {/* Legend inside the bar (Desktop Only) */}
-                  <div className="hidden xl:flex items-center gap-4 text-[9px] font-black text-slate-400 uppercase tracking-widest border-r border-slate-200 pr-6 mr-2">
-                    <div className="flex items-center gap-2"><div className="w-2 h-2 bg-primary-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.3)]"></div> MANZIL</div>
-                    <div className="flex items-center gap-2"><div className="w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.3)]"></div> SABQI</div>
-                  </div>
 
                   <select 
                       value={itemsPerPage}
                       onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                      className="bg-white border-2 border-slate-100 rounded-xl px-2 md:px-3 py-1 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-primary-50/50 cursor-pointer shadow-sm transition-all"
+                      className="bg-white border-2 border-slate-300 rounded-lg px-2 md:px-3 py-1 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-primary-50/50 cursor-pointer shadow-none transition-all"
                   >
                       {[10, 25, 50, 100].map(val => (
                           <option key={val} value={val}>{val}</option>
@@ -667,7 +663,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                   <button 
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      className={`p-1.5 md:p-2 rounded-xl border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
+                      className={`p-1.5 md:p-2 rounded-lg border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-400 border-slate-300 bg-slate-50/80 cursor-not-allowed opacity-50' : 'text-slate-600 border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400 shadow-none'}`}
                   >
                       <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4 rotate-180" />
                   </button>
@@ -686,7 +682,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                               <button 
                                   key={pNum}
                                   onClick={() => setCurrentPage(pNum)}
-                                  className={`w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black transition-all active:scale-95 ${currentPage === pNum ? 'bg-primary-600 text-white shadow-lg shadow-primary-200 border-2 border-primary-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600 border-2 border-transparent'}`}
+                                  className={`w-7 h-7 md:w-9 md:h-9 rounded-lg text-[9px] md:text-[10px] font-black transition-all active:scale-95 ${currentPage === pNum ? 'bg-jade-600 text-white shadow-lg shadow-primary-100 border-2 border-jade-600' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600 border-2 border-transparent'}`}
                                 >
                                   {pNum}
                               </button>
@@ -697,11 +693,12 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                   <button 
                       disabled={currentPage === totalPages}
                       onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                      className={`p-1.5 md:p-2 rounded-xl border-2 transition-all active:scale-90 ${currentPage === totalPages ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
+                      className={`p-1.5 md:p-2 rounded-lg border-2 transition-all active:scale-90 ${currentPage === totalPages ? 'text-slate-400 border-slate-300 bg-slate-50/80 cursor-not-allowed opacity-50' : 'text-slate-600 border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400 shadow-none'}`}
                   >
                       <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   </button>
               </div>
+          </div>
           </div>
       </div>
 

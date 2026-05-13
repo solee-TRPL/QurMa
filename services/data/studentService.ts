@@ -79,7 +79,7 @@ export const createStudentNote = async (note: Omit<TeacherNote, 'id'>, actor: Us
                 user_id: recipientId,
                 tenant_id: actor.tenant_id!,
                 title: "Catatan Baru dari Ustadz",
-                message: `Ustadz ${actor.full_name} telah menambahkan catatan kategori ${note.category} untuk ${student?.full_name || studentName}.`,
+                message: `Ada catatan ${note.category} untuk Ananda ${student?.full_name?.split(' ')[0] || studentName.split(' ')[0]}.`,
                 type: 'info',
                 metadata: { student_id: note.student_id, type: 'note' }
             })
@@ -115,6 +115,23 @@ export const replyStudentNote = async (noteId: string, replyContent: string, act
     await logAudit(actor, 'UPDATE', `Balasan Catatan`, `Santri membalas catatan ustadz.`);
 };
 
+export const deleteNoteReply = async (noteId: string, actor: UserProfile): Promise<void> => {
+    const { error } = await supabase
+        .from('teacher_notes')
+        .update({ 
+            reply_content: null, 
+            replied_at: null 
+        })
+        .eq('id', noteId);
+    
+    if (error) {
+        console.error("Error deleting reply:", error);
+        throw error;
+    }
+
+    await logAudit(actor, 'UPDATE', `Hapus Balasan Catatan`, `Santri menghapus balasan catatan.`);
+};
+
 // Achievements
 export const getAchievements = async (studentId: string): Promise<Achievement[]> => {
     const { data, error } = await supabase.from('achievements').select('*').eq('student_id', studentId).order('date', { ascending: false });
@@ -140,7 +157,7 @@ export const createAchievement = async (data: Omit<Achievement, 'id'>, actor: Us
                 user_id: recipientId,
                 tenant_id: actor.tenant_id!,
                 title: "Pencapaian Baru! 🎉",
-                message: `${student?.full_name || studentName} mendapatkan pencapaian baru: ${res.title}. Barakallah!`,
+                message: `Barakallah! Ananda ${student?.full_name?.split(' ')[0] || studentName.split(' ')[0]} meraih: ${res.title}.`,
                 type: 'success',
                 metadata: { student_id: data.student_id, type: 'achievement' }
             })

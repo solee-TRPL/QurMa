@@ -146,7 +146,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
     <div className={`relative ${className}`} ref={containerRef}>
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 cursor-pointer outline-none"
+        className="flex items-center justify-center w-full gap-2 cursor-pointer outline-none"
       >
          <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">
             {mounted ? (displayValue || placeholder) : placeholder}
@@ -154,16 +154,16 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
       </div>
 
       {isOpen && (
-        <div className={`absolute top-full mt-2 z-[9999] w-[215px] sm:w-[240px] bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-100 p-3 sm:p-4 animate-in fade-in zoom-in-95 duration-200 
+        <div className={`absolute top-full mt-2 z-[9999] w-[215px] sm:w-[240px] bg-white rounded-xl shadow-none border-2 border-slate-300 p-3 sm:p-4 animate-in fade-in zoom-in-95 duration-200 
           ${align === 'left' ? 'left-0' : align === 'right' ? 'right-0 left-auto translate-x-0' : 'left-1/2 -translate-x-1/2'}`}
         >
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex flex-col">
-                <span className="text-[10px] font-black text-jade-600 uppercase tracking-widest leading-none mb-1">
+                <span className="text-[11px] font-black text-jade-600 uppercase tracking-widest leading-none mb-1">
                     {monthNames[viewDate.getMonth()]}
                 </span>
-                <span className="text-[11px] font-black text-slate-400 tracking-wider leading-none">
+                <span className="text-[12px] font-black text-slate-400 tracking-widest leading-none">
                     {viewDate.getFullYear()}
                 </span>
             </div>
@@ -217,13 +217,13 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
           <div className="mt-4 pt-3 border-t border-slate-50 flex items-center justify-between">
             <button 
                 onClick={() => { onChange(""); setIsOpen(false); }}
-                className="text-[8px] font-black text-rose-400 uppercase tracking-widest hover:text-rose-500 transition-colors"
+                className="text-[9px] font-black text-rose-500 uppercase tracking-widest hover:text-rose-600 transition-colors"
             >
                 Bersihkan
             </button>
             <button 
                 onClick={() => handleDateSelect(new Date())}
-                className="text-[8px] font-black text-jade-600 uppercase tracking-widest hover:text-jade-800 transition-colors"
+                className="text-[9px] font-black text-jade-600 uppercase tracking-widest hover:text-jade-800 transition-colors"
             >
                 Hari Ini
             </button>

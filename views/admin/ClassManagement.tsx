@@ -51,8 +51,8 @@ const ClassFormModal: React.FC<ClassFormModalProps> = ({ isOpen, onClose, onSubm
   };
 
   return (
-    <div className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in text-slate-800">
-      <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-xs overflow-hidden border border-white flex flex-col max-h-[80vh] relative">
+    <div className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in text-slate-800 lg:pl-64 pt-16">
+      <div className="bg-white rounded-xl shadow-none w-full max-w-xs overflow-hidden border-2 border-slate-300 flex flex-col max-h-[80vh] relative">
         {/* Close Button UI */}
         <button 
           onClick={onClose}
@@ -61,26 +61,26 @@ const ClassFormModal: React.FC<ClassFormModalProps> = ({ isOpen, onClose, onSubm
           <X className="w-3.5 h-3.5" />
         </button>
         {/* Header */}
-        <div className="px-6 py-3 bg-white border-b border-slate-50 flex justify-between items-center shrink-0">
+        <div className="px-5 py-2.5 border-b border-slate-50 flex justify-between items-center bg-white shrink-0">
           <div>
-            <h3 className="text-base font-black text-slate-800 tracking-tight leading-none mb-0.5">
+            <h3 className="text-sm font-black text-slate-800 tracking-tight leading-none mb-0.5 uppercase">
               {initialData ? 'Edit Kelas' : 'Kelas Baru'}
             </h3>
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Manajemen Kelas</p>
+            <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none">Manajemen Kelas</p>
           </div>
         </div>
         
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
             <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Input Nama Kelas</label>
+                <label className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Kelas</label>
                 <input 
                     autoFocus
                     required
                     type="text" 
                     value={className}
                     onChange={e => setClassName(e.target.value)}
-                    className="w-full px-4 py-2 border-2 border-slate-100 bg-slate-50/30 rounded-xl text-xs font-black text-slate-800 outline-none uppercase focus:border-jade-400 focus:bg-white transition-all"
-                    placeholder="7"
+                    className="w-full px-4 py-2 border-2 border-slate-300 rounded-xl bg-white text-[13px] font-bold text-slate-800 outline-none uppercase focus:border-jade-400 transition-all placeholder:text-slate-300"
+                    placeholder="CONTOH: 7A"
                 />
             </div>
 
@@ -91,20 +91,20 @@ const ClassFormModal: React.FC<ClassFormModalProps> = ({ isOpen, onClose, onSubm
                 </div>
             )}
 
-            <div className="flex gap-2 pt-2 shrink-0">
+            <div className="flex gap-3 pt-2 shrink-0">
                 <button 
                     type="button" 
-                    className="flex-1 px-4 py-2.5 font-black text-[9px] uppercase tracking-tight rounded-xl border-2 border-slate-100 text-slate-400 hover:bg-slate-50 transition-all active:scale-95" 
+                    className="flex-1 px-4 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-slate-300 text-slate-400 hover:bg-slate-50 transition-all active:scale-95" 
                     onClick={onClose}
                 >
-                    Batal
+                    BATAL
                 </button>
                 <button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="flex-2 flex items-center justify-center px-4 py-2.5 font-black text-[9px] uppercase tracking-tight rounded-xl border-2 border-jade-600 bg-jade-600 text-white shadow-lg shadow-primary-100 hover:bg-jade-700 transition-all active:scale-95 disabled:opacity-50"
+                    className="flex-2 flex items-center justify-center px-4 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white shadow-none hover:bg-jade-700 transition-all active:scale-95 disabled:opacity-50"
                 >
-                    {isSubmitting ? '...' : (initialData ? 'SIMPAN' : 'BUAT KELAS')}
+                    {isSubmitting ? '...' : (initialData ? 'SIMPAN PERUBAHAN' : 'BUAT KELAS BARU')}
                 </button>
             </div>
         </form>
@@ -702,7 +702,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
       {/* System Settings Panel */}
       <div className="transition-all">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <div className="flex items-center gap-4 bg-slate-50/50 p-2 pr-6 rounded-2xl border-2 border-slate-100">
+              <div className="flex items-center gap-4 bg-slate-300 p-2 pr-6 rounded-2xl border-2 border-slate-100">
                   <div className="w-12 h-12 bg-white border-2 border-slate-100 shadow-sm rounded-xl flex items-center justify-center text-jade-600">
                       <RefreshCw className="w-6 h-6" />
                   </div>
@@ -712,7 +712,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
                   </div>
               </div>
               
-              <div className="flex items-center gap-3 bg-slate-50/50 p-1.5 rounded-2xl border-2 border-slate-100">
+              <div className="flex items-center gap-3 bg-slate-300 p-1.5 rounded-2xl border-2 border-slate-100">
                   <div className="flex items-center gap-2">
                       <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border-2 border-slate-100 shadow-sm">
                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Mulai</p>
@@ -886,7 +886,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
               className={`bg-white rounded-2xl shadow-sm border-2 overflow-hidden flex flex-col hover:shadow-md transition-all border-b-4 ${allSelected ? 'border-primary-500 shadow-primary-50' : 'border-slate-100 border-b-primary-500/20'}`}
             >
               {/* Group Header */}
-              <div className="px-5 py-4 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
+              <div className="px-5 py-4 bg-slate-300 border-b border-slate-100 flex justify-between items-center">
                   <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-primary-100 text-primary-600 rounded-xl flex items-center justify-center">
                           <School className="w-5 h-5" />
@@ -1065,7 +1065,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
 
       {/* Alumni Full-Page View */}
       {showAlumniView && (
-        <div className="animate-in slide-in-from-top-4 duration-300 bg-white rounded-lg border border-amber-100 shadow-lg shadow-amber-50 overflow-hidden">
+        <div className="animate-in slide-in-from-top-4 duration-300 bg-white rounded-b-lg border border-amber-100 shadow-lg shadow-amber-50 overflow-hidden">
           {/* Alumni Header */}
           <div className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-400 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -1115,13 +1115,13 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
             <table className="w-full border-separate border-spacing-0">
               <thead className="bg-[#FCFDFE] sticky top-0 z-10">
                 <tr>
-                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100 w-[50px]">NO</th>
-                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-left border-b-2 border-r-2 border-slate-100">NAMA SANTRI</th>
-                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100 w-24">NIS</th>
-                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100 w-20">JK</th>
-                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100 w-24">KELAS AKHIR</th>
-                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-r-2 border-slate-100 w-28">TGL LULUS</th>
-                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-500 uppercase tracking-widest text-center border-b-2 border-slate-100 w-24">ANGKATAN</th>
+                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-l border-r border-black w-[50px] bg-slate-300">NO</th>
+                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-800 uppercase tracking-widest text-left border-t border-b border-r border-black bg-slate-300">NAMA SANTRI</th>
+                  <th className="px-4 py-4 text-[9.5px] font-black text-amber-600 uppercase tracking-widest text-center border-t border-b border-r border-amber-600 w-24 bg-amber-50">NIS</th>
+                  <th className="px-4 py-4 text-[9.5px] font-black text-amber-600 uppercase tracking-widest text-center border-t border-b border-r border-amber-600 w-20 bg-amber-50">JK</th>
+                  <th className="px-4 py-4 text-[9.5px] font-black text-emerald-600 uppercase tracking-widest text-center border-t border-b border-r border-emerald-600 w-24 bg-emerald-50">KELAS AKHIR</th>
+                  <th className="px-4 py-4 text-[9.5px] font-black text-blue-600 uppercase tracking-widest text-center border-t border-b border-r border-blue-600 w-28 bg-blue-50">TGL LULUS</th>
+                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r border-black w-24 bg-slate-300">ANGKATAN</th>
                 </tr>
               </thead>
               <tbody className="bg-white">
@@ -1331,8 +1331,8 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
 
       {/* Roster Modal */}
       {isStudentsModalOpen && selectedClass && (
-          <div className="fixed inset-0 z-160 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-              <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 border border-white/20 relative">
+          <div className="fixed inset-0 z-160 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 lg:pl-64 pt-16">
+              <div className="bg-white rounded-xl shadow-none w-full max-w-md overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 border-2 border-slate-300 relative">
                   {/* Close Button UI */}
                   <button 
                     onClick={() => setIsStudentsModalOpen(false)}
@@ -1341,41 +1341,38 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
                     <X className="w-3.5 h-3.5" />
                   </button>
                   {/* Modal Header */}
-                  <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-[#FCFDFE]">
+                  <div className="px-5 py-2.5 border-b border-slate-50 flex justify-between items-center bg-white shrink-0">
                       <div>
-                        <h3 className="text-sm font-black text-slate-800 tracking-tight flex items-center gap-2">
+                        <h3 className="text-sm font-black text-slate-800 tracking-tight flex items-center gap-2 uppercase leading-none mb-0.5">
                             <Users className="w-4 h-4 text-primary-600" />
                             Daftar Santri {selectedClass.name}
                         </h3>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                            Total {allStudents.filter(s => s.class_id === selectedClass.id).length} Santri Berada Di Kelas Ini
+                        <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none">
+                            Total {allStudents.filter(s => s.class_id === selectedClass.id).length} Santri Di Kelas Ini
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
                         {!isReadOnly && allStudents.filter(s => s.class_id === selectedClass.id).length > 0 && (
                             <button 
                                 onClick={() => toggleSelectAll(allStudents.filter(s => s.class_id === selectedClass.id))}
-                                className="text-[9px] font-black text-primary-600 uppercase tracking-widest bg-primary-50 px-3 py-1.5 rounded-xl hover:bg-primary-100 transition-all active:scale-95"
+                                className="text-[9px] font-black text-primary-600 uppercase tracking-widest bg-primary-50 border-2 border-primary-100 px-3 py-1.5 rounded-xl hover:bg-primary-100 transition-all active:scale-95"
                             >
-                                {selectedStudentIds.length === allStudents.filter(s => s.class_id === selectedClass.id).length ? 'Lepas Semua' : 'Pilih Semua'}
+                                {selectedStudentIds.length === allStudents.filter(s => s.class_id === selectedClass.id).length ? 'LEPAS SEMUA' : 'PILIH SEMUA'}
                             </button>
                         )}
-                        <button onClick={() => setIsStudentsModalOpen(false)} className="p-1.5 hover:bg-slate-100 rounded-full transition-colors text-slate-400 invisible">
-                            <X className="w-4 h-4" />
-                        </button>
                       </div>
                   </div>
                   
                   {/* Search/Filter placeholder (Optional, but keeps high density) */}
-                  <div className="px-5 py-3 bg-slate-50/30 border-b border-slate-50">
+                  <div className="px-5 py-3 bg-white border-b border-slate-50">
                       <div className="relative">
                           <input 
                             type="text" 
-                            placeholder="Cari nama santri di kelas ini..." 
-                            className="w-full bg-white border border-slate-100 rounded-xl px-9 py-2 text-[11px] font-bold text-slate-600 outline-none focus:border-primary-400 transition-all"
+                            placeholder="CARI NAMA SANTRI..." 
+                            className="w-full bg-white border-2 border-slate-300 rounded-xl px-9 py-2 text-[11px] font-bold text-slate-600 outline-none focus:border-primary-400 transition-all placeholder:text-slate-300"
                             onChange={(e) => {/* Add local filter if needed */}}
                           />
-                          <Users className="w-3.5 h-3.5 text-slate-300 absolute left-3 top-1/2 -translate-y-1/2" />
+                          <Users className="w-4 h-4 text-slate-300 absolute left-3 top-1/2 -translate-y-1/2" />
                       </div>
                   </div>
 
@@ -1418,21 +1415,21 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
                   </div>
 
                   {/* Modal Footer */}
-                  <div className="px-6 py-5 bg-[#FCFDFE] border-t border-slate-100">
+                  <div className="px-6 py-5 bg-white border-t border-slate-100">
                       {selectedStudentIds.length > 0 && !isReadOnly ? (
                         <div className="space-y-4 animate-in slide-in-from-bottom-2 duration-300">
-                            <div className="flex flex-col gap-1.5 p-3.5 bg-slate-50 border border-slate-100 rounded-[20px]">
+                            <div className="flex flex-col gap-1.5 p-4 bg-white border-2 border-slate-300 rounded-xl">
                                 <div className="flex items-center justify-between mb-1.5">
                                     <div className="flex items-center gap-2">
-                                        <div className="bg-primary-600 text-white text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-sm">
+                                        <div className="bg-primary-600 text-white text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-none">
                                             {selectedStudentIds.length}
                                         </div>
-                                        <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Santri Terpilih</span>
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Santri Terpilih</span>
                                     </div>
-                                    <TrendingUp className="w-3.5 h-3.5 text-slate-300" />
+                                    <TrendingUp className="w-4 h-4 text-slate-300" />
                                 </div>
                                 <select 
-                                    className="w-full text-[10px] font-black text-slate-700 bg-white border-2 border-slate-100 rounded-xl px-3 py-2.5 focus:border-primary-400 outline-none transition-all shadow-sm"
+                                    className="w-full text-[13px] font-bold text-slate-800 bg-white border-2 border-slate-300 rounded-xl px-3 py-2.5 focus:border-primary-400 outline-none transition-all shadow-none appearance-none cursor-pointer"
                                     value={targetClassId}
                                     onChange={(e) => setTargetClassId(e.target.value)}
                                 >
@@ -1445,18 +1442,18 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
                             <button 
                                 onClick={handleMoveStudents}
                                 disabled={!targetClassId}
-                                className={`w-full py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 flex items-center justify-center gap-2 ${targetClassId ? 'bg-primary-600 text-white shadow-lg shadow-primary-200 hover:bg-primary-700' : 'bg-slate-100 text-slate-300 cursor-not-allowed'}`}
+                                className={`w-full py-3.5 rounded-xl border-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 flex items-center justify-center gap-2 ${targetClassId ? 'bg-primary-600 text-white border-primary-600 shadow-none hover:bg-primary-700' : 'bg-slate-100 text-slate-300 border-slate-200 cursor-not-allowed'}`}
                             >
                                 <ArrowRight className="w-4 h-4" />
-                                Pindahkan Sekarang
+                                PINDAHKAN SEKARANG
                             </button>
                         </div>
                       ) : (
                         <button 
                             onClick={() => setIsStudentsModalOpen(false)}
-                            className="w-full py-3.5 bg-white border-2 border-slate-100 rounded-2xl text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] hover:bg-slate-50 hover:text-slate-700 transition-all active:scale-95 shadow-sm"
+                            className="w-full py-3.5 bg-white border-2 border-slate-300 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] hover:bg-slate-50 transition-all active:scale-95 shadow-none"
                         >
-                            Tutup Panel
+                            TUTUP PANEL
                         </button>
                       )}
                   </div>
@@ -1466,18 +1463,18 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
 
       {/* Promotion Confirmation Modal */}
       {showPromoteModal && (
-          <div className="fixed inset-0 z-200 flex items-center justify-center lg:pl-64 lg:pt-20 p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
-              <div className="bg-white rounded-[28px] shadow-2xl max-w-sm w-full overflow-hidden relative border border-white/20 animate-in zoom-in-95 duration-200">
+          <div className="fixed inset-0 z-200 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 lg:pl-64 pt-16">
+              <div className="bg-white rounded-xl shadow-none max-w-sm w-full overflow-hidden relative border-2 border-slate-300 animate-in zoom-in-95 duration-200">
                   
                   {/* Header */}
-                  <div className="px-5 py-3.5 border-b border-slate-50 flex justify-between items-center bg-[#FCFDFE]">
+                  <div className="px-5 py-2.5 border-b border-slate-50 flex justify-between items-center bg-white shrink-0">
                       <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 bg-orange-50 text-orange-500 rounded-xl flex items-center justify-center shrink-0">
+                          <div className="w-8 h-8 bg-orange-50 text-orange-500 rounded-xl flex items-center justify-center shrink-0 border border-orange-100">
                               <TrendingUp className="w-4 h-4" />
                           </div>
                           <div>
-                              <h3 className="text-sm font-black text-slate-800 tracking-tight leading-none">Siklus Kenaikan Kelas</h3>
-                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                              <h3 className="text-sm font-black text-slate-800 tracking-tight flex items-center gap-2 leading-none mb-0.5 uppercase">Siklus Kenaikan Kelas</h3>
+                              <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none">
                                   {selectedClassIds.length} Kelas Dipilih
                               </p>
                           </div>
@@ -1518,18 +1515,18 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex gap-2.5 pt-1">
+                      <div className="flex gap-3 pt-1">
                           <button 
                             onClick={() => setShowPromoteModal(false)}
-                            className="flex-1 py-2.5 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-2 border-slate-100 hover:bg-slate-50 hover:text-slate-600 transition-all active:scale-[0.98]"
+                            className="flex-1 py-2.5 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-widest border-2 border-slate-300 hover:bg-slate-50 transition-all active:scale-[0.98]"
                           >
-                              Batal
+                              BATAL
                           </button>
                           <button 
                             onClick={handleBulkPromote}
-                            className="flex-2 py-2.5 rounded-xl text-[10px] font-black text-white uppercase tracking-[0.15em] bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-100 border-2 border-orange-500 transition-all active:scale-98"
+                            className="flex-2 py-2.5 rounded-xl text-[10px] font-black text-white uppercase tracking-widest bg-orange-500 hover:bg-orange-600 shadow-none border-2 border-orange-500 transition-all active:scale-98"
                           >
-                              Proses Sekarang
+                              PROSES SEKARANG
                           </button>
                       </div>
                   </div>

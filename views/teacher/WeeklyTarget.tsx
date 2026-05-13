@@ -466,11 +466,11 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
   return (
     <div className="space-y-4">
       {/* Top Utility Strip */}
-      <div className="flex flex-col gap-2 py-2 lg:flex-row lg:justify-between lg:items-center rounded-28px">
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2 lg:gap-4 py-2 lg:py-3">
           {/* Row 1: Week & Halaqah */}
-          <div className="flex items-stretch gap-2 w-full lg:w-auto">
+          <div className="flex items-stretch gap-2 shrink-0">
               {/* Week Selector */}
-              <div className="flex-1 lg:flex-none flex bg-white p-0.5 lg:p-1 rounded-2xl border border-slate-200 shadow-sm ring-1 ring-white">
+              <div className="flex-1 lg:flex-none flex bg-white p-0.5 lg:p-1 rounded-xl border-2 border-slate-300 ring-1 ring-white">
                   <button 
                       onClick={() => setCurrentWeekOffset(prev => prev - 1)}
                       className="p-1 px-1.5 lg:px-2.5 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
@@ -499,7 +499,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
               </div>
 
               {/* Halaqah Info */}
-              <div className="flex items-center gap-2 lg:gap-3 bg-white px-2.5 lg:px-4 py-1.5 lg:py-2 rounded-2xl border border-slate-200 shadow-sm">
+              <div className="flex items-center gap-2 lg:gap-3 bg-white px-2.5 lg:px-4 py-1.5 lg:py-2 rounded-2xl border border-slate-200">
                   <div className="p-1 lg:p-1.5 bg-slate-50 rounded-lg text-slate-400">
                       <BookOpen className="w-3 h-3 lg:w-4 lg:h-4" />
                   </div>
@@ -513,39 +513,30 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
           </div>
           
           {/* Row 2: Search & Actions */}
-          <div className="flex items-stretch gap-2 w-full lg:w-auto">
+          <div className="flex-1 flex items-stretch gap-2">
               <div className="relative flex-1 group">
                   <Search className="absolute left-3 lg:left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3 h-3 lg:w-4 lg:h-4 group-focus-within:text-jade-500 transition-colors" />
                   <input 
                       type="text" 
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      placeholder="Cari..." 
-                      className="w-full pl-8 lg:pl-11 pr-3 lg:pr-4 py-2 lg:py-2.5 text-[10px] lg:text-xs font-black border border-slate-200 rounded-2xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 focus:outline-none bg-white text-slate-900 transition-all placeholder:font-bold placeholder:text-slate-300 shadow-sm"
+                      placeholder="Cari santri..." 
+                      className="w-full pl-8 lg:pl-11 pr-2 lg:pr-4 py-1.5 lg:py-2.5 text-[10px] font-black uppercase tracking-widest border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-slate-400 focus:outline-none bg-white text-slate-500 transition-all placeholder:font-black placeholder:text-slate-300 h-8 lg:h-11"
                   />
               </div>
               
               <div className="flex items-center gap-1.5 lg:gap-2">
-                  <button 
-                    onClick={() => {
-                        handleReset();
-                        addNotification({type: 'info', title: 'Reset', message: 'Form direset.'});
-                    }}
-                    className="h-full px-3 lg:px-6 py-2 lg:py-2.5 font-black text-[9px] lg:text-[10px] uppercase tracking-widest rounded-xl border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all active:scale-95 shadow-sm"
-                  >
-                      <span className="hidden lg:inline">RESET</span>
-                      <RotateCcw className="w-3.5 h-3.5 lg:hidden" />
-                  </button>
+    
                   <button 
                     onClick={() => setIsInfoModalOpen(true)}
-                    className="h-full p-2 lg:p-2.5 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-jade-600 hover:border-jade-100 transition-all shadow-sm group"
+                    className="h-full p-2 lg:p-2.5 bg-white border-2 border-slate-300 rounded-xl text-slate-400 hover:text-jade-600 hover:border-jade-300 transition-all group shadow-none"
                     title="Informasi Target Harian"
                   >
                       <HelpCircle className="w-3.5 h-3.5 lg:w-4 lg:h-4 group-hover:scale-110 transition-transform" />
                   </button>
                   <button 
                     onClick={() => handleSave()}
-                    className="h-full flex items-center justify-center px-3 lg:px-6 py-2 lg:py-2.5 font-black text-[9px] lg:text-[10px] uppercase tracking-widest rounded-xl bg-emerald-600 text-white shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all active:scale-95 border border-emerald-600"
+                    className="h-full flex items-center justify-center px-3 lg:px-6 py-2 lg:py-2.5 font-black text-[9px] lg:text-[10px] uppercase tracking-widest rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-all active:scale-95 border-2 border-emerald-600"
                   >
                       <Save className="w-3.5 h-3.5 lg:mr-2" />
                       <span className="hidden lg:inline">SIMPAN LAPORAN</span>
@@ -555,44 +546,45 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
           </div>
       </div>
 
-      {/* Main Table Grid */}
-      <div className="bg-transparent rounded-none overflow-hidden flex flex-col">
-          <div className="py-2 lg:py-4 bg-transparent flex flex-row items-center justify-between gap-2 overflow-x-auto no-scrollbar mb-1 lg:mb-0">
-              <div className="hidden sm:flex items-center gap-2">
-                <button 
-                  onClick={() => setShowAtm(!showAtm)}
-                  className={`flex-none items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all text-[8.5px] lg:text-[10px] font-black uppercase tracking-tight ${showAtm ? 'bg-jade-50/50 text-jade-600 border border-jade-100' : 'bg-white text-slate-400 border border-slate-200 hover:bg-slate-50'}`}
-                >
-                  <span>{showAtm ? 'Sembunyikan ATM' : 'Tampilkan ATM'}</span>
-                </button>
-                <button 
-                  onClick={() => {
-                    if (onNavigate) {
-                        onNavigate(showNotes ? 'weekly-target' : 'weekly-target-notes');
-                    } else {
-                        setShowNotes(!showNotes);
-                    }
-                  }}
-                  className={`flex-none items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all text-[8.5px] lg:text-[10px] font-black uppercase tracking-tight ${showNotes ? 'bg-amber-50/50 text-amber-600 border border-amber-100' : 'bg-white text-slate-400 border border-slate-200 hover:bg-slate-50'}`}
-                >
-                  <span>{showNotes ? 'Sembunyikan Catatan' : 'Catatan'}</span>
-                </button>
-              </div>
-
-              <div className="flex items-center gap-2 lg:gap-4 flex-nowrap whitespace-nowrap py-1">
-                  <span className="flex items-center gap-1 text-[7.5px] lg:text-[9px] font-black text-amber-500 uppercase tracking-tighter"><CheckCircle2 className="w-2.5 h-2.5" /> A: Terlampaui</span>
-                  <span className="flex items-center gap-1 text-[7.5px] lg:text-[9px] font-black text-emerald-600 uppercase tracking-tighter"><CheckCircle2 className="w-2.5 h-2.5" /> B: Tercapai</span>
-                  <span className="flex items-center gap-1 text-[7.5px] lg:text-[9px] font-black text-rose-500 uppercase tracking-tighter"><XCircle className="w-2.5 h-2.5" /> C: Tidak Tercapai</span>
-              </div>
+      {/* Top Utility Strip (Outside bordered container) */}
+      <div className="py-2 lg:py-4 bg-transparent flex flex-row items-center justify-between gap-2 overflow-x-auto no-scrollbar mb-1 lg:mb-0 px-1">
+          <div className="hidden sm:flex items-center gap-2">
+            <button 
+              onClick={() => setShowAtm(!showAtm)}
+              className={`flex-none items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all text-[8.5px] lg:text-[10px] font-black uppercase tracking-tight border-2 shadow-none ${showAtm ? 'bg-jade-50/50 text-jade-600 border-jade-300' : 'bg-white text-slate-400 border-slate-300 hover:bg-slate-50'}`}
+            >
+              <span>{showAtm ? 'Sembunyikan ATM' : 'Tampilkan ATM'}</span>
+            </button>
+            <button 
+              onClick={() => {
+                if (onNavigate) {
+                    onNavigate(showNotes ? 'weekly-target' : 'weekly-target-notes');
+                } else {
+                    setShowNotes(!showNotes);
+                }
+              }}
+              className={`flex-none items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all text-[8.5px] lg:text-[10px] font-black uppercase tracking-tight border-2 shadow-none ${showNotes ? 'bg-amber-50/50 text-amber-600 border-amber-300' : 'bg-white text-slate-400 border-slate-300 hover:bg-slate-50'}`}
+            >
+              <span>{showNotes ? 'Sembunyikan Catatan' : 'Catatan'}</span>
+            </button>
           </div>
 
-          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent min-h-[500px]">
+          <div className="flex items-center gap-2 lg:gap-4 flex-nowrap whitespace-nowrap py-1">
+              <span className="flex items-center gap-1 text-[7.5px] lg:text-[9px] font-black text-amber-500 uppercase tracking-tighter"><CheckCircle2 className="w-2.5 h-2.5" /> A: Terlampaui</span>
+              <span className="flex items-center gap-1 text-[7.5px] lg:text-[9px] font-black text-emerald-600 uppercase tracking-tighter"><CheckCircle2 className="w-2.5 h-2.5" /> B: Tercapai</span>
+              <span className="flex items-center gap-1 text-[7.5px] lg:text-[9px] font-black text-rose-500 uppercase tracking-tighter"><XCircle className="w-2.5 h-2.5" /> C: Tidak Tercapai</span>
+          </div>
+      </div>
+
+      {/* Main Table Grid (With Borders) */}
+      <div className="bg-transparent rounded-none overflow-hidden border-2 border-t-0 border-slate-300 flex flex-col">
+          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
             <table className="w-full border-separate border-spacing-0">
                 <thead className="sticky top-0 z-40">
-                    <tr className="bg-white">
+                    <tr className="bg-slate-300">
                         {/* Frozen Headers */}
-                        <th rowSpan={2} className="w-[35px] lg:w-[50px] min-w-[35px] lg:min-w-[50px] hidden sm:table-cell sticky sm:left-0 bg-white z-50 px-1 lg:px-3 py-4 text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">No</th>
-                        <th rowSpan={2} className={`w-[95px] lg:w-[220px] min-w-[95px] lg:min-w-[220px] sticky sm:left-[50px] left-0 bg-white z-50 px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)] transition-all duration-300`}>Nama Santri</th>
+                        <th rowSpan={2} className="w-[35px] lg:w-[50px] min-w-[35px] lg:min-w-[50px] hidden sm:table-cell sticky sm:left-0 bg-slate-300 z-50 px-1 lg:px-3 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-wider text-center border-t border-b border-l border-r border-black">No</th>
+                        <th rowSpan={2} className={`w-[95px] lg:w-[220px] min-w-[95px] lg:min-w-[220px] sticky sm:left-[50px] left-0 bg-slate-300 z-50 px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-wider text-left border-t border-b border-r border-black shadow-[2px_0_5_rgba(0,0,0,0.05)] transition-all duration-300`}>Nama Santri</th>
                         {/* {showNisKelas && (
                             <th rowSpan={2} className="w-[80px] min-w-[80px] sticky left-[370px] bg-white z-50 px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)] animate-in slide-in-from-left-1 duration-300">Kelas</th>
                         )} */}
@@ -600,41 +592,41 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                         {/* Scrollable Group Headers */}
                         {!showNotes ? (
                           <>
-                            <th colSpan={2} className="px-4 py-3 text-[9px] lg:text-[10px] font-bold text-emerald-600 uppercase tracking-tighter lg:tracking-widest text-center border-b border-r border-slate-100 bg-jade-50/30 whitespace-nowrap">Hafalan Saat Ini</th>
+                            <th colSpan={2} className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-emerald-700 uppercase tracking-tighter lg:tracking-widest text-center border-t border-b border-r border-emerald-700 bg-emerald-50 whitespace-nowrap">Hafalan Saat Ini</th>
                             {showAtm && (
-                                <th colSpan={3} className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-black uppercase tracking-tighter lg:tracking-widest text-center border-b border-r border-slate-100 bg-blue-50/30 whitespace-nowrap">ATM</th>
+                                <th colSpan={3} className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-blue-700 uppercase tracking-tighter lg:tracking-widest text-center border-t border-b border-r border-blue-700 bg-blue-50 whitespace-nowrap">ATM</th>
                             )}
-                            <th colSpan={6} className="px-4 py-3 text-[9px] lg:text-[10px] font-bold text-emerald-600 uppercase tracking-tighter lg:tracking-widest text-center border-b border-slate-100 bg-emerald-50/30 whitespace-nowrap">Target Pekanan</th>
+                            <th colSpan={6} className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-blue-700 uppercase tracking-tighter lg:tracking-widest text-center border-t border-b border-blue-700 bg-blue-50 whitespace-nowrap">Target Pekanan</th>
                           </>
                         ) : (
-                          <th className="px-2 py-3 text-[9px] lg:text-[10px] font-bold text-amber-600 uppercase tracking-tighter lg:tracking-widest text-start border-b border-slate-100 bg-amber-50/30 whitespace-nowrap">Catatan Ustadz</th>
+                          <th className="px-2 py-3 text-[9px] lg:text-[10px] font-black text-amber-700 uppercase tracking-tighter lg:tracking-widest text-start border-t border-b border-r border-amber-700 bg-amber-50 whitespace-nowrap">Catatan Ustadz</th>
                         )}
                     </tr>
-                    <tr className="bg-white">
+                    <tr className="bg-slate-300">
                         {!showNotes ? (
                           <>
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-jade-50/10 min-w-[45px] lg:min-w-[60px]">Juz</th>
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-jade-50/10 min-w-[55px] lg:min-w-[80px]">Halaman</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50/50 min-w-[45px] lg:min-w-[60px]">Juz</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50/50 min-w-[55px] lg:min-w-[80px]">Halaman</th>
                             {showAtm && (
                                 <>
-                                    <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-amber-500 uppercase text-center border-b border-r border-slate-100 bg-blue-50/10 min-w-[55px] lg:min-w-[80px]">Manzil</th>
-                                    <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-amber-500 uppercase text-center border-b border-r border-slate-100 bg-blue-50/10 min-w-[45px] lg:min-w-[60px]">Berputar</th>
-                                    <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-600 uppercase text-center border-b border-r border-slate-100 bg-blue-50/10 min-w-[55px] lg:min-w-[80px]">Sabqi</th>
+                                    <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-amber-600 uppercase text-center border-b border-r border-amber-600 bg-amber-50/50 min-w-[55px] lg:min-w-[80px]">Manzil</th>
+                                    <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-amber-600 uppercase text-center border-b border-r border-amber-600 bg-amber-50/50 min-w-[45px] lg:min-w-[60px]">Berputar</th>
+                                    <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-600 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-[55px] lg:min-w-[80px]">Sabqi</th>
                                 </>
                             )}
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[130px] lg:min-w-[180px]">Manzil (Hal/Juz)</th>
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[40px] lg:min-w-[50px]">Ket</th>
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[130px] lg:min-w-[180px]">Sabqi (Hal)</th>
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[40px] lg:min-w-[50px]">Ket</th>
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b border-r border-slate-100 bg-emerald-50/10 min-w-[130px] lg:min-w-[180px]">Sabaq (Baris)</th>
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-center border-b bg-emerald-50/10 min-w-[40px] lg:min-w-[50px]">Ket</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-[130px] lg:min-w-[180px]">Manzil (Hal/Juz)</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-[40px] lg:min-w-[50px]">Ket</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-[130px] lg:min-w-[180px]">Sabqi (Hal)</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-[40px] lg:min-w-[50px]">Ket</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-[130px] lg:min-w-[180px]">Sabaq (Baris)</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-blue-700 bg-blue-50/50 min-w-[40px] lg:min-w-[50px]">Ket</th>
                           </>
                         ) : (
-                          <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-bold text-slate-500 uppercase text-start border-b bg-amber-50/10">Input Catatan Perkembangan Santri</th>
+                          <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-amber-700 uppercase text-start border-b border-amber-700 bg-amber-50/50">Input Catatan Perkembangan Santri</th>
                         )}
                     </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-slate-100">
+                <tbody className="bg-white divide-y divide-slate-200">
                     {filteredStudents.length === 0 ? (
                         <tr>
                             <td colSpan={15} className="py-24 text-center">
@@ -651,9 +643,9 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                         } as TargetRow;
 
                         return (
-                            <tr key={s.id} className="group transition-colors h-[62px]">
+                            <tr key={s.id} className="group transition-colors h-[62px] hover:bg-emerald-50/40">
                                 {/* Frozen Body Cells */}
-                                <td className="hidden sm:table-cell sticky sm:left-0 bg-white px-1 lg:px-3 py-4 text-[10px] lg:text-[11px] font-bold text-slate-400 text-center border-r border-slate-50 z-20 transition-colors">{idx + 1}</td>
+                                <td className="hidden sm:table-cell sticky sm:left-0 bg-white px-1 lg:px-3 py-4 text-[10px] lg:text-[11px] font-bold text-slate-400 text-center border-l-2 border-r border-slate-300 z-20 transition-colors">{idx + 1}</td>
                                 <td className={`sticky sm:left-[50px] left-0 bg-white px-2 lg:px-4 py-4 text-[9.5px] lg:text-xs font-bold text-slate-800 border-r border-slate-100 z-20 transition-all duration-300 whitespace-normal leading-tight break-words shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-[95px] lg:w-[220px]`}>{target.name}</td>
                                 {/* {showNisKelas && (
                                     <td className="sticky left-[370px] bg-white px-3 py-4 text-[11px] font-bold text-slate-600 text-center border-r border-slate-100 z-20 transition-all duration-300 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">{target.className}</td>
@@ -662,7 +654,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                 {/* Scrollable Content */}
                                 {!showNotes ? (
                                   <>
-                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-jade-50/5">
+                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-100 border-b border-slate-200 text-center bg-jade-50/5">
                                         <input 
                                             type="number" 
                                             min="1" 
@@ -677,11 +669,11 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                                     handleInputChange(s.id, 'hafalanJuz', val.toString());
                                                 }
                                             }} 
-                                            className="w-full text-center text-[9px] lg:text-[10px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-jade-300 rounded h-8 appearance-none" 
+                                            className="w-full text-center text-[9px] lg:text-[10px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-jade-300 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                                             placeholder="Juz" 
                                         />
                                     </td>
-                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-jade-50/5">
+                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-100 border-b border-slate-200 text-center bg-jade-50/5">
                                         <input 
                                             type="number" 
                                             min="1" 
@@ -696,28 +688,28 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                                     handleInputChange(s.id, 'hafalanHal', val.toString());
                                                 }
                                             }} 
-                                            className="w-full text-center text-[9px] lg:text-[10px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-jade-300 rounded h-8 appearance-none" 
+                                            className="w-full text-center text-[9px] lg:text-[10px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-jade-300 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                                             placeholder="Halaman" 
                                         />
                                     </td>
                                     {showAtm && (
                                         <>
-                                            <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
+                                            <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-100 border-b border-slate-200 text-center bg-blue-50/5">
                                                 <input readOnly type="text" value={target.manzilAtm ? `${target.manzilAtm} Hlm` : ''} className="w-full text-center text-[9px] lg:text-[10px] font-black text-amber-500 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
                                             </td>
-                                            <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
+                                            <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-100 border-b border-slate-200 text-center bg-blue-50/5">
                                                 <input readOnly type="text" value={target.hariAtm ? `${target.hariAtm} Hari` : ''} className="w-full text-center text-[9px] lg:text-[10px] font-black text-amber-500 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
                                             </td>
-                                            <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 text-center bg-blue-50/5">
+                                            <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-100 border-b border-slate-200 text-center bg-blue-50/5">
                                                 <input readOnly type="text" value={target.sabqiAtm} className="w-full text-center text-[9px] lg:text-[10px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
                                             </td>
                                         </>
                                     )}
 
-                                    <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-50 bg-emerald-50/5">
+                                    <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-100 border-b border-slate-200 bg-emerald-50/5">
                                         <div className="flex items-center gap-0.5">
                                             {/* Manzil Surah & Ayat */}
-                                            <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 shadow-sm focus-within:border-emerald-300">
+                                            <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 focus-within:border-emerald-300">
                                                 <select 
                                                     value={target.manzilTarget.split(':')[0] || ''} 
                                                     onChange={e => {
@@ -754,7 +746,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                                     placeholder="0"
                                                 />
                                             </div>
-                                            <div className="flex items-center bg-slate-50 border border-slate-100 rounded-lg px-0.5 lg:px-1 shadow-sm">
+                                            <div className="flex items-center bg-slate-50 border border-slate-100 rounded-lg px-0.5 lg:px-1">
                                                 <input 
                                                     type="number" 
                                                     readOnly
@@ -766,12 +758,12 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 bg-emerald-50/5">
+                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-100 border-b border-slate-200 bg-emerald-50/5">
                                         <input 
                                             type="text"
                                             readOnly
                                             value={target.manzilKet || '-'} 
-                                            className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-slate-50/50 border border-slate-100 rounded-lg focus:ring-0 text-center shadow-sm cursor-default ${
+                                            className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-slate-50/50 border border-slate-100 rounded-lg focus:ring-0 text-center cursor-default ${
                                                 target.manzilKet === 'A' ? 'text-amber-500' : 
                                                 target.manzilKet === 'C' ? 'text-rose-500' : 
                                                 target.manzilKet === 'B' ? 'text-emerald-600' : 'text-slate-300'
@@ -779,10 +771,10 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                         />
                                     </td>
 
-                                    <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-50 bg-emerald-50/5">
+                                    <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-100 border-b border-slate-200 bg-emerald-50/5">
                                         <div className="flex items-center gap-0.5 animate-in zoom-in-95 duration-100">
                                             {/* Sabqi Surah & Ayat */}
-                                            <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 shadow-sm focus-within:border-emerald-300">
+                                            <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 focus-within:border-emerald-300">
                                                 <select 
                                                     value={target.sabqiTargetSurat.split(':')[0] || ''} 
                                                     onChange={e => {
@@ -819,7 +811,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                                     placeholder="0"
                                                 />
                                             </div>
-                                            <div className="flex items-center bg-slate-50 border border-slate-100 rounded-lg px-0.5 lg:px-1 shadow-sm">
+                                            <div className="flex items-center bg-slate-50 border border-slate-100 rounded-lg px-0.5 lg:px-1">
                                                 <input 
                                                     type="number" 
                                                     readOnly
@@ -831,12 +823,12 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-50 bg-emerald-50/5">
+                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-100 border-b border-slate-200 bg-emerald-50/5">
                                         <input 
                                             type="text"
                                             readOnly
                                             value={target.sabqiKet || '-'} 
-                                            className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-slate-50/50 border border-slate-100 rounded-lg focus:ring-0 text-center shadow-sm cursor-default ${
+                                            className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-slate-50/50 border border-slate-100 rounded-lg focus:ring-0 text-center cursor-default ${
                                                 target.sabqiKet === 'A' ? 'text-amber-500' : 
                                                 target.sabqiKet === 'C' ? 'text-rose-500' : 
                                                 target.sabqiKet === 'B' ? 'text-emerald-600' : 'text-slate-300'
@@ -844,10 +836,10 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                         />
                                     </td>
 
-                                    <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-50 bg-emerald-50/5">
+                                    <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-100 border-b border-slate-200 bg-emerald-50/5">
                                         <div className="flex items-center justify-center gap-0.5 animate-in zoom-in-95 duration-100 text-left">
                                             {/* Sabaq Surah & Ayat */}
-                                            <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 shadow-sm focus-within:border-emerald-300">
+                                            <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 focus-within:border-emerald-300">
                                                 <select 
                                                     value={target.sabaqTargetSurat.split(':')[0] || ''} 
                                                     onChange={e => {
@@ -884,7 +876,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                                     placeholder="0"
                                                 />
                                             </div>
-                                            <div className="flex items-center bg-slate-50 border border-slate-100 rounded-lg px-0.5 lg:px-1 shadow-sm">
+                                            <div className="flex items-center bg-slate-50 border border-slate-100 rounded-lg px-0.5 lg:px-1">
                                                 <input 
                                                     type="number" 
                                                     readOnly
@@ -901,7 +893,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                             type="text"
                                             readOnly
                                             value={target.sabaqKet || '-'} 
-                                            className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-slate-50/50 border border-slate-100 rounded-lg focus:ring-0 text-center shadow-sm cursor-default ${
+                                            className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-slate-50/50 border border-slate-100 rounded-lg focus:ring-0 text-center cursor-default ${
                                                 target.sabaqKet === 'A' ? 'text-amber-500' : 
                                                 target.sabaqKet === 'C' ? 'text-rose-500' : 
                                                 target.sabaqKet === 'B' ? 'text-emerald-600' : 'text-slate-300'
@@ -915,7 +907,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                       value={target.teacherNote}
                                       onChange={e => handleInputChange(s.id, 'teacherNote', e.target.value)}
                                       placeholder="Tambahkan catatan..."
-                                      className="w-full h-10 pb-1 pt-1.5 px-2 text-[10px] lg:text-[11px] font-bold text-slate-700 bg-white border border-slate-100 rounded-lg focus:ring-0 focus:border-amber-300 outline-none transition-all resize-none shadow-sm placeholder:font-bold placeholder:text-slate-300 leading-tight text-start"
+                                      className="w-full h-10 pb-1 pt-1.5 px-2 text-[10px] lg:text-[11px] font-bold text-slate-700 bg-white border border-slate-100 rounded-lg focus:ring-0 focus:border-amber-300 outline-none transition-all resize-none placeholder:font-bold placeholder:text-slate-300 leading-tight text-start"
                                     />
                                   </td>
                                 )}
@@ -926,7 +918,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
             </table>
           </div>
           
-          <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex flex-col md:flex-row justify-between lg:items-center gap-6">
+          <div className="px-6 py-4 bg-slate-50/30 border-t border-slate-100 flex flex-col md:flex-row justify-between lg:items-center gap-4">
               <div className="flex flex-col lg:flex-row lg:flex-wrap gap-x-8 gap-y-2 lg:gap-y-4 text-[9px] lg:text-[10px] font-bold text-slate-400">
                   <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-primary-500 rounded-full shrink-0"></div> Manzil ideal rotasi 15 hari</div>
                   <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full shrink-0"></div> Sabqi ideal rotasi 5 hari</div>
@@ -944,67 +936,70 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
       {/* Info Modal */}
       {isInfoModalOpen && (
           <div 
-              className="fixed inset-0 z-999999 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300 lg:pl-64 pt-20"
+              className="fixed inset-0 z-999999 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in lg:pl-64 pt-16"
               onClick={() => setIsInfoModalOpen(false)}
           >
               <div 
-                  className="relative bg-white rounded-3xl shadow-2xl w-full max-w-[340px] overflow-hidden animate-in zoom-in-95 duration-200 border border-white flex flex-col max-h-[70vh]"
+                  className="relative bg-white rounded-xl shadow-none w-full max-w-sm overflow-hidden animate-scale-in border-2 border-slate-300 flex flex-col max-h-[85vh]"
                   onClick={e => e.stopPropagation()}
               >
-                  <div className="p-6 overflow-y-auto scrollbar-hide">
-                      <div className="flex items-center justify-between mb-5">
-                          <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-jade-50 rounded-xl flex items-center justify-center text-jade-500 shadow-sm">
-                                  <HelpCircle className="w-4 h-4" />
-                              </div>
-                              <div>
-                                  <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-widest leading-none">Informasi Target</h3>
-                                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1 opacity-70">Acuan Sabaq Harian</p>
-                              </div>
+                  {/* Header */}
+                  <div className="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
+                      <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-jade-50 rounded-lg flex items-center justify-center text-jade-500 border border-jade-100">
+                              <HelpCircle className="w-4 h-4" />
                           </div>
-                          <button onClick={() => setIsInfoModalOpen(false)} className="p-1.5 hover:bg-slate-50 rounded-lg transition-colors">
-                              <X className="w-3.5 h-3.5 text-slate-300" />
-                          </button>
-                      </div>
-
-                      <div className="space-y-3.5">
-                          <div className="bg-slate-50/50 rounded-2xl border border-slate-100 p-3.5 space-y-2.5">
-                              {tenant?.curriculum_config?.target_info ? (
-                                  tenant.curriculum_config.target_info.map((item: any, idx: number) => (
-                                      <div key={idx} className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
-                                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{item.label}</span>
-                                          <span className="px-2 py-0.5 bg-jade-50 text-jade-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-jade-100/50">{item.value}</span>
-                                      </div>
-                                  ))
-                              ) : (
-                                  <>
-                                      <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
-                                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Kelas 1 - 2</span>
-                                          <span className="px-2 py-0.5 bg-jade-50 text-jade-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-jade-100/50">3 Baris</span>
-                                      </div>
-                                      <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
-                                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Kelas 3 - 4</span>
-                                          <span className="px-2 py-0.5 bg-jade-50 text-jade-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-jade-100/50">5 Baris</span>
-                                      </div>
-                                      <div className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100 shadow-sm">
-                                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Kelas 5 - 6</span>
-                                          <span className="px-2 py-0.5 bg-jade-50 text-jade-600 rounded-md text-[9px] font-black uppercase tracking-tighter ring-1 ring-jade-100/50">7 Baris</span>
-                                      </div>
-                                  </>
-                              )}
-                          </div>
-
-                          <div className="p-3 bg-amber-50/50 rounded-xl border border-amber-100/50 flex items-start gap-2.5">
-                              <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                              <p className="text-[9px] font-bold text-amber-700 leading-relaxed uppercase tracking-wide opacity-80">
-                                  Gunakan acuan ini sebagai standar minimal pencapaian harian santri.
-                              </p>
+                          <div>
+                              <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest leading-none">Informasi Target</h3>
+                              <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest mt-1 opacity-70">Acuan Sabaq Harian</p>
                           </div>
                       </div>
+                      <button onClick={() => setIsInfoModalOpen(false)} className="p-1.5 hover:bg-slate-50 rounded-full transition-colors">
+                          <X className="w-4 h-4 text-slate-400" />
+                      </button>
+                  </div>
 
+                  {/* Content */}
+                  <div className="p-5 overflow-y-auto scrollbar-hide space-y-4">
+                      <div className="space-y-2">
+                          {tenant?.curriculum_config?.target_info ? (
+                              tenant.curriculum_config.target_info.map((item: any, idx: number) => (
+                                  <div key={idx} className="flex items-center justify-between p-3.5 bg-white rounded-2xl border-2 border-slate-100 transition-colors hover:border-slate-200">
+                                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">{item.label}</span>
+                                      <span className="px-3.5 py-1.5 bg-white text-jade-600 border-2 border-jade-600 rounded-xl text-[10px] font-black uppercase tracking-wider">{item.value}</span>
+                                  </div>
+                              ))
+                          ) : (
+                              <>
+                                  <div className="flex items-center justify-between p-3.5 bg-white rounded-2xl border-2 border-slate-100">
+                                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">Kelas 1 - 2</span>
+                                      <span className="px-3.5 py-1.5 bg-white text-jade-600 border-2 border-jade-600 rounded-xl text-[10px] font-black uppercase tracking-wider">3 Baris</span>
+                                  </div>
+                                  <div className="flex items-center justify-between p-3.5 bg-white rounded-2xl border-2 border-slate-100">
+                                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">Kelas 3 - 4</span>
+                                      <span className="px-3.5 py-1.5 bg-white text-jade-600 border-2 border-jade-600 rounded-xl text-[10px] font-black uppercase tracking-wider">5 Baris</span>
+                                  </div>
+                                  <div className="flex items-center justify-between p-3.5 bg-white rounded-2xl border-2 border-slate-100">
+                                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">Kelas 5 - 6</span>
+                                      <span className="px-3.5 py-1.5 bg-white text-jade-600 border-2 border-jade-600 rounded-xl text-[10px] font-black uppercase tracking-wider">7 Baris</span>
+                                  </div>
+                              </>
+                          )}
+                      </div>
+
+                      <div className="p-3 bg-amber-50 rounded-xl border-2 border-amber-100 flex items-start gap-2.5">
+                          <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                          <p className="text-[8.5px] font-black text-amber-700 leading-relaxed uppercase tracking-wide">
+                              Gunakan acuan ini sebagai standar minimal pencapaian harian santri.
+                          </p>
+                      </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="p-5 border-t border-slate-100 bg-white">
                       <button 
                           onClick={() => setIsInfoModalOpen(false)}
-                          className="w-full mt-6 py-3 bg-slate-900 border border-slate-800 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-100"
+                          className="w-full py-3.5 bg-slate-800 text-white rounded-xl text-[9.5px] font-black uppercase tracking-[0.2em] hover:bg-slate-900 transition-all active:scale-95 shadow-none border-2 border-slate-800"
                       >
                           Mengerti
                       </button>

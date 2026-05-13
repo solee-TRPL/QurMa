@@ -148,20 +148,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Unsaved Changes Confirmation Modal */}
       {showUnsavedModal && (
           <div className="fixed inset-0 z-[99999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in lg:pl-64">
-              <div className="bg-white rounded-[28px] shadow-2xl w-full max-w-[380px] overflow-hidden animate-scale-in border border-white/50">
+              <div className="bg-white rounded-xl shadow-none w-full max-w-[380px] overflow-hidden animate-scale-in border-2 border-slate-300">
                   <div className="p-8 text-center">
-                      <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-amber-500 shadow-sm border border-amber-100">
+                      <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-amber-500 shadow-none border-2 border-amber-100">
                           <AlertTriangle className="w-8 h-8" />
                       </div>
                       <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest leading-normal mb-3">Tunggu Sebentar!</h3>
-                      <p className="text-[11px] font-bold text-slate-500 leading-relaxed uppercase tracking-wide opacity-80">
+                      <p className="text-[11px] font-black text-slate-500 leading-relaxed uppercase tracking-wide opacity-80">
                           Anda memiliki perubahan data yang belum disimpan. Ingin menyimpannya sebelum pindah halaman?
                       </p>
                   </div>
                   <div className="px-6 pb-8 flex items-center gap-2">
                       <button 
                           onClick={() => { setShowUnsavedModal(false); }}
-                          className="flex-1 py-3 bg-white text-slate-400 border border-slate-100 rounded-xl text-[9px] font-black uppercase tracking-widest hover:text-slate-600 transition-all active:scale-95"
+                          className="flex-1 py-3 bg-white text-slate-400 border-2 border-slate-300 rounded-xl text-[9px] font-black uppercase tracking-widest hover:text-slate-600 transition-all active:scale-95"
                       >
                           Batal
                       </button>
@@ -171,7 +171,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                               setShowUnsavedModal(false);
                               proceedNavigation();
                           }}
-                          className="flex-1 py-3 bg-rose-50 text-rose-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all active:scale-95"
+                          className="flex-1 py-3 bg-rose-50 text-rose-600 rounded-xl border-2 border-rose-200 text-[9px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all active:scale-95"
                       >
                           Buang
                       </button>
@@ -180,7 +180,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                               triggerSave();
                               setShowUnsavedModal(false);
                           }}
-                          className="flex-[2] py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-jade-700 shadow-lg shadow-jade-100 transition-all active:scale-95 outline-none"
+                          className="flex-[2] py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-jade-700 shadow-none border-2 border-jade-600 transition-all active:scale-95 outline-none"
                       >
                           Simpan & Pindah
                       </button>

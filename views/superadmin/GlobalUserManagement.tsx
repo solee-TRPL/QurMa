@@ -46,13 +46,13 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSubmit
         onClick={onClose}
     >
       <div 
-        className="bg-white rounded-[32px] shadow-2xl w-full max-w-xl overflow-hidden border border-white/20 transform animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] relative"
+        className="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden border-2 border-slate-300 transform animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] relative"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 py-3 border-b border-slate-100 flex justify-between items-center bg-[#FCFDFE] sticky top-0 z-10 transition-all">
+        <div className="px-6 py-3 border-b-2 border-slate-300 flex justify-between items-center bg-[#FCFDFE] sticky top-0 z-10 transition-all">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-jade-50 flex items-center justify-center text-jade-600 border border-jade-100 shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-jade-50 flex items-center justify-center text-jade-600 border-2 border-jade-100 shadow-none">
                 <Edit className="w-4 h-4" />
             </div>
             <div>
@@ -80,7 +80,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSubmit
                             type="text" 
                             value={formData.full_name}
                             onChange={e => setFormData({...formData, full_name: e.target.value})}
-                            className="w-full pl-11 pr-5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 font-bold text-sm focus:bg-white focus:border-jade-400 focus:ring-4 focus:ring-jade-50/20 outline-none transition-all placeholder:text-slate-300"
+                            className="w-full pl-11 pr-5 py-2.5 bg-white border-2 border-slate-300 rounded-xl text-slate-800 font-bold text-sm focus:border-jade-400 focus:ring-4 focus:ring-jade-50/20 outline-none transition-all placeholder:text-slate-300"
                             placeholder="Contoh: Abdullah bin Ahmad"
                         />
                     </div>
@@ -137,18 +137,18 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSubmit
             </form>
         </div>
 
-        <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/30 flex gap-3">
+        <div className="px-6 py-3 border-t-2 border-slate-300 bg-slate-50/30 flex gap-3">
              <button 
                 type="button" 
                 onClick={onClose} 
-                className="flex-1 px-5 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 transition-all active:scale-95"
+                className="flex-1 px-5 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-slate-300 bg-white text-slate-400 hover:bg-slate-50 transition-all active:scale-95 shadow-none"
             >
                 Batal
             </button>
             <button 
                 form="editUserForm"
                 type="submit" 
-                className="flex-2 px-5 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl bg-jade-600 text-white hover:bg-jade-700 shadow-lg shadow-primary-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="flex-2 px-5 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl bg-jade-600 text-white hover:bg-jade-700 shadow-none transition-all active:scale-95 flex items-center justify-center gap-2 border-2 border-jade-700"
             >
                 <Save className="w-3.5 h-3.5" />
                 Simpan Profil
@@ -262,7 +262,7 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
   return (
     <div className="space-y-4 animate-fade-in">
       {/* Top Utility Strip - Optimized for Mobile Density */}
-      <div className="flex flex-row items-center gap-1.5 lg:gap-4 bg-white/40 p-1.5 lg:p-2 rounded-2xl lg:rounded-[24px] border border-white/20 backdrop-blur-md">
+      <div className="flex flex-row items-center gap-1.5 lg:gap-4">
           {/* Search Area */}
           <div className="relative flex-1 group">
               <Search className="absolute left-3 lg:left-5 top-1/2 -translate-y-1/2 w-3.5 lg:w-4 h-3.5 lg:h-4 text-slate-300 group-focus-within:text-emerald-600 transition-colors" />
@@ -271,7 +271,7 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                   placeholder="Cari..." 
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-8 lg:pl-12 pr-4 py-1.5 lg:py-3 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-emerald-50/50 focus:border-emerald-500 focus:bg-white transition-all text-[10px] lg:text-[12px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none h-8 lg:h-12 shadow-inner"
+                  className="w-full pl-8 lg:pl-12 pr-4 py-1.5 lg:py-3 bg-white border-2 border-slate-300 rounded-xl focus:border-emerald-500 focus:bg-white transition-all text-[10px] lg:text-[12px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none h-8 lg:h-12 shadow-none"
               />
           </div>
           
@@ -281,7 +281,7 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                   <select 
                     value={selectedRole}
                     onChange={(e) => setSelectedRole(e.target.value)}
-                    className="pl-3 lg:pl-6 pr-6 lg:pr-10 py-1.5 lg:py-3 bg-white border border-slate-100 lg:border-2 lg:border-slate-50 rounded-xl lg:rounded-2xl text-[8.5px] lg:text-[10px] font-black uppercase tracking-tighter lg:tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none min-w-[70px] lg:min-w-[120px] h-8 lg:h-12 shadow-sm"
+                    className="pl-3 lg:pl-6 pr-6 lg:pr-10 py-1.5 lg:py-3 bg-white border-2 border-slate-300 rounded-xl text-[8.5px] lg:text-[10px] font-black uppercase tracking-tighter lg:tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none min-w-[70px] lg:min-w-[120px] h-8 lg:h-12 shadow-none"
                   >
                       <option value="all">SEMUA ROLE</option>
                       {Object.values(UserRole).map(role => (
@@ -296,7 +296,7 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                   <select 
                     value={selectedTenant}
                     onChange={(e) => setSelectedTenant(e.target.value)}
-                    className="pl-3 lg:pl-6 pr-6 lg:pr-10 py-1.5 lg:py-3 bg-white border border-slate-100 lg:border-2 lg:border-slate-50 rounded-xl lg:rounded-2xl text-[8.5px] lg:text-[10px] font-black uppercase tracking-tighter lg:tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none min-w-[80px] lg:min-w-[180px] h-8 lg:h-12 shadow-sm max-w-[200px] truncate"
+                    className="pl-3 lg:pl-6 pr-6 lg:pr-10 py-1.5 lg:py-3 bg-white border-2 border-slate-300 rounded-xl text-[8.5px] lg:text-[10px] font-black uppercase tracking-tighter lg:tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none min-w-[80px] lg:min-w-[180px] h-8 lg:h-12 shadow-none max-w-[200px] truncate"
                   >
                       <option value="all">SEMUA SEKOLAH</option>
                       <option value="platform">SYSTEM</option>
@@ -309,7 +309,7 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
 
               <button 
                 onClick={resetFilters} 
-                className="p-2 lg:p-3 rounded-xl border border-slate-100 lg:border-2 lg:border-slate-50 bg-white text-slate-400 hover:text-emerald-600 transition-all active:scale-95 shadow-sm h-8 lg:h-12 flex items-center justify-center shrink-0"
+                className="p-2 lg:p-3 rounded-xl border-2 border-slate-300 bg-white text-slate-400 hover:text-emerald-600 transition-all active:scale-95 shadow-none h-8 lg:h-12 flex items-center justify-center shrink-0"
                 title="Reset Filter"
               >
                   <RefreshCcw className="w-3.5 h-3.5" />
@@ -317,32 +317,32 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
           </div>
       </div>
 
-      <div className="bg-white shadow-sm border-2 border-slate-200 overflow-hidden flex flex-col">
+      <div className="bg-white shadow-none border-2 border-slate-300 overflow-hidden flex flex-col rounded-b-xl">
         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
             <table className="w-full table-fixed divide-y divide-slate-100 border-separate border-spacing-0">
             <thead>
-                <tr className="bg-white">
-                <th className="hidden lg:table-cell w-[35px] min-w-[35px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-white z-30 px-2 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100">NO</th>
-                <th className="w-[130px] min-w-[130px] lg:w-[250px] lg:min-w-[250px] sticky left-0 lg:left-[45px] bg-white z-30 px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">PENGGUNA</th>
-                <th className="w-[120px] min-w-[120px] px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">ROLE</th>
-                <th className="w-[180px] min-w-[180px] px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">INSTITUSI</th>
-                <th className="w-[200px] min-w-[200px] px-4 py-4 text-left text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-r-2 border-slate-100 bg-white">EMAIL ADDRESS</th>
-                <th className="w-[100px] min-w-[100px] px-4 py-4 text-center text-[9.5px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-slate-100 bg-white">AKSI</th>
+                <tr className="bg-slate-300">
+                <th className="hidden lg:table-cell w-[35px] min-w-[35px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-slate-300 z-10 px-2 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-l border-b border-r border-slate-400">NO</th>
+                <th className="w-[130px] min-w-[130px] lg:w-[250px] lg:min-w-[250px] sticky left-0 lg:left-[45px] bg-slate-300 z-10 px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 shadow-none">PENGGUNA</th>
+                <th className="w-[120px] min-w-[120px] px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">ROLE</th>
+                <th className="w-[180px] min-w-[180px] px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">INSTITUSI</th>
+                <th className="w-[200px] min-w-[200px] px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">EMAIL ADDRESS</th>
+                <th className="w-[100px] min-w-[100px] px-4 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">AKSI</th>
                 </tr>
             </thead>
             <tbody key={currentPage} className="bg-white divide-y divide-slate-50 animate-fade-in">
                 {paginatedUsers.map((u, index) => (
                 <tr key={u.id} className="group transition-colors hover:bg-slate-50/30">
-                    <td className="hidden lg:table-cell sticky left-0 bg-white px-2 py-4 text-[10.5px] font-black text-slate-400 text-center border-r-2 border-b border-slate-100 z-10 transition-colors uppercase">
+                    <td className="hidden lg:table-cell sticky left-0 bg-white px-2 py-4 text-[10.5px] font-black text-slate-400 text-center border-r border-b border-slate-100 z-10 transition-colors uppercase">
                         {String(index + 1 + (currentPage - 1) * itemsPerPage)}
                     </td>
-                    <td className="sticky left-0 lg:left-[45px] bg-white px-4 py-4 border-r-2 border-b border-slate-100 z-10 transition-colors">
+                    <td className="sticky left-0 lg:left-[45px] bg-white px-4 py-4 border-r border-b border-slate-100 z-10 transition-colors">
                         <div className="flex flex-col gap-0.5 min-w-0">
                             <span className="text-[11px] font-bold text-slate-800 group-hover:text-jade-600 transition-colors truncate max-w-[110px] lg:max-w-none capitalize">{u.full_name}</span>
                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter truncate max-w-[110px] lg:max-w-none opacity-60 sm:hidden">{u.email}</span>
                         </div>
                     </td>
-                    <td className="px-4 py-4 border-r-2 border-b border-slate-100">
+                    <td className="px-4 py-4 border-r border-b border-slate-100">
                         <span className={`px-2.5 py-1 text-[9px] font-black uppercase tracking-tight rounded-md border shadow-sm whitespace-nowrap
                             ${u.role === UserRole.SUPERADMIN ? 'bg-slate-50 text-slate-600 border-slate-100' :
                             u.role === UserRole.ADMIN ? 'bg-jade-50 text-jade-600 border-jade-100' : 
@@ -355,12 +355,12 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                              u.role === UserRole.SUPERADMIN ? 'Superadmin' : (u.role as string).replace('_', ' ')}
                         </span>
                     </td>
-                    <td className="px-4 py-4 border-r-2 border-b border-slate-100">
+                    <td className="px-4 py-4 border-r border-b border-slate-100">
                         <span className="text-[11px] font-black text-slate-700 tracking-tight truncate block">
                             {u.tenant_name || 'System Platform'}
                         </span>
                     </td>
-                    <td className="px-4 py-4 border-r-2 border-b border-slate-100">
+                    <td className="px-4 py-4 border-r border-b border-slate-100">
                         <div className="flex flex-col gap-0.5 truncate">
                             <span className="text-[11.5px] font-black text-slate-700 tracking-tight">{u.email}</span>
                         </div>
@@ -378,7 +378,7 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                              )}
                              <button 
                                 onClick={() => handleEdit(u)}
-                                className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm"
+                                className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border-2 border-slate-300 hover:border-jade-300 transition-all bg-white shadow-none"
                                 title="Edit"
                             >
                                 <Edit className="w-4 h-4"/>
@@ -398,7 +398,7 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                     <select 
                         value={itemsPerPage}
                         onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                        className="bg-white border-2 border-slate-100 rounded-xl px-2 md:px-3 py-1.5 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-emerald-50/50 cursor-pointer shadow-sm transition-all h-8"
+                        className="bg-white border-2 border-slate-300 rounded-xl px-2 md:px-3 py-1.5 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-emerald-50/50 cursor-pointer shadow-none transition-all h-8"
                     >
                         {[10, 25, 50, 100].map(val => (
                             <option key={val} value={val}>{val}</option>
@@ -414,7 +414,7 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                     <button 
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        className={`p-1.5 lg:p-2 rounded-lg lg:rounded-xl border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
+                        className={`p-1.5 lg:p-2 rounded-lg lg:rounded-xl border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-200 border-slate-200 cursor-not-allowed' : 'text-slate-600 border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400 shadow-none'}`}
                     >
                         <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4 rotate-180" />
                     </button>

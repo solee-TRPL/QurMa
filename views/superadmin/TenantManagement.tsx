@@ -53,13 +53,13 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSu
         onClick={onClose}
     >
       <div 
-        className="bg-white rounded-[32px] shadow-2xl w-full max-w-xl overflow-hidden border border-white/20 transform animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] relative"
+        className="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden border-2 border-slate-300 transform animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] relative"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 py-3 border-b border-slate-100 flex justify-between items-center bg-[#FCFDFE] sticky top-0 z-10 transition-all">
+        <div className="px-6 py-3 border-b-2 border-slate-300 flex justify-between items-center bg-[#FCFDFE] sticky top-0 z-10 transition-all">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-jade-50 flex items-center justify-center text-jade-600 border border-jade-100 shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-jade-50 flex items-center justify-center text-jade-600 border-2 border-jade-100 shadow-none">
                 <Building className="w-4 h-4" />
             </div>
             <div>
@@ -106,7 +106,7 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSu
                                     disabled
                                     type="text" 
                                     value={formData.code} 
-                                    className="w-full pl-9 pr-4 py-2 bg-slate-100/50 border border-slate-200 rounded-xl text-slate-500 font-black text-[13px] outline-none font-mono cursor-not-allowed" 
+                                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-500 font-black text-[13px] outline-none font-mono cursor-not-allowed" 
                                     placeholder="0001" 
                                 />
                             </div>
@@ -128,14 +128,14 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSu
                                     <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">Administrator</label>
                                     <div className="relative">
                                         <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-jade-600" />
-                                        <input required type="text" value={adminData.full_name} onChange={e => setAdminData({ ...adminData, full_name: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 focus:ring-4 focus:ring-jade-50/20 outline-none transition-all" placeholder="Nama Admin" />
+                                        <input required type="text" value={adminData.full_name} onChange={e => setAdminData({ ...adminData, full_name: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border-2 border-slate-300 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 focus:ring-4 focus:ring-jade-50/20 outline-none transition-all" placeholder="Nama Admin" />
                                     </div>
                                 </div>
                                 <div className="group/field">
                                     <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">WhatsApp</label>
                                     <div className="relative">
                                         <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-jade-600" />
-                                        <input required type="tel" value={adminData.whatsapp_number} onChange={e => setAdminData({ ...adminData, whatsapp_number: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 focus:ring-4 focus:ring-jade-50/20 outline-none transition-all placeholder:text-slate-300" placeholder="08123456789" />
+                                        <input required type="tel" value={adminData.whatsapp_number} onChange={e => setAdminData({ ...adminData, whatsapp_number: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border-2 border-slate-300 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 focus:ring-4 focus:ring-jade-50/20 outline-none transition-all placeholder:text-slate-300" placeholder="08123456789" />
                                     </div>
                                 </div>
                             </div>
@@ -144,14 +144,14 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSu
                                     <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">Email</label>
                                     <div className="relative">
                                         <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-jade-600" />
-                                        <input required type="email" value={adminData.email} onChange={e => setAdminData({ ...adminData, email: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 outline-none transition-all" placeholder="email@gmail.com" />
+                                        <input required type="email" value={adminData.email} onChange={e => setAdminData({ ...adminData, email: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border-2 border-slate-300 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 outline-none transition-all" placeholder="email@gmail.com" />
                                     </div>
                                 </div>
                                 <div className="group/field">
                                     <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">Password</label>
                                     <div className="relative">
                                         <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-jade-600" />
-                                        <input required minLength={6} type="text" value={adminData.password} onChange={e => setAdminData({ ...adminData, password: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-800 font-black text-[13px] outline-none font-mono" placeholder="••••••••" />
+                                        <input required minLength={6} type="text" value={adminData.password} onChange={e => setAdminData({ ...adminData, password: e.target.value })} className="w-full pl-9 pr-4 py-2 bg-white border-2 border-slate-300 rounded-xl text-slate-800 font-black text-[13px] outline-none font-mono" placeholder="••••••••" />
                                     </div>
                                 </div>
                             </div>
@@ -162,18 +162,18 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSu
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex gap-3">
+        <div className="px-6 py-3 border-t-2 border-slate-300 bg-slate-50/50 flex gap-3">
             <button 
                 type="button" 
                 onClick={onClose} 
-                className="px-6 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all flex-1"
+                className="px-6 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl border-2 border-slate-300 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all flex-1 shadow-none"
             >
                 Batalkan
             </button>
             <button 
                 form="tenantForm"
                 type="submit" 
-                className="px-8 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl bg-jade-600 text-white hover:bg-jade-700 shadow-lg shadow-primary-100 transition-all active:scale-95 flex items-center justify-center gap-3 flex-1"
+                className="px-8 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl bg-jade-600 text-white hover:bg-jade-700 shadow-none transition-all active:scale-95 flex items-center justify-center gap-3 flex-1 border-2 border-jade-700"
             >
                 <Save className="w-4 h-4" />
                 {initialData ? 'PERBARUI DATA' : 'BUAT SEKOLAH'}
@@ -289,13 +289,13 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
             onClick={onClose}
         >
             <div 
-                className="bg-white rounded-[32px] shadow-2xl w-full max-w-xl overflow-hidden border border-white/20 transform animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] relative text-slate-800"
+                className="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden border-2 border-slate-300 transform animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] relative text-slate-800"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="px-6 py-3 border-b border-slate-100 flex justify-between items-center bg-[#FCFDFE] sticky top-0 z-10">
+                <div className="px-6 py-3 border-b-2 border-slate-300 flex justify-between items-center bg-[#FCFDFE] sticky top-0 z-10">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-jade-50 flex items-center justify-center text-jade-600 border border-jade-100 shadow-sm">
+                        <div className="w-8 h-8 rounded-xl bg-jade-50 flex items-center justify-center text-jade-600 border-2 border-jade-100 shadow-none">
                             <UserCog className="w-4 h-4" />
                         </div>
                         <div>
@@ -336,7 +336,7 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
                                                 required 
                                                 value={form.full_name} 
                                                 onChange={e => setForm({...form, full_name: e.target.value})} 
-                                                className="w-full pl-9 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:bg-white focus:border-jade-400 focus:ring-4 focus:ring-jade-50/20 outline-none transition-all" 
+                                                className="w-full pl-9 pr-4 py-2 bg-white border-2 border-slate-300 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 focus:ring-4 focus:ring-jade-50/20 outline-none transition-all shadow-none" 
                                                 placeholder="Nama Admin"
                                             />
                                         </div>
@@ -349,7 +349,7 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
                                                 type="tel" 
                                                 value={form.whatsapp_number} 
                                                 onChange={e => setForm({...form, whatsapp_number: e.target.value})} 
-                                                className="w-full pl-9 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 font-bold text-[13px] focus:bg-white focus:border-jade-400 outline-none transition-all" 
+                                                className="w-full pl-9 pr-4 py-2 bg-white border-2 border-slate-300 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 outline-none transition-all shadow-none" 
                                                 placeholder="0812..." 
                                             />
                                         </div>
@@ -371,8 +371,8 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
 
                             {/* Security Section - Reset to Initial Flow */}
                             <div className="pt-3 border-t border-slate-100">
-                                <div className="bg-gradient-to-r from-emerald-50/50 to-slate-50/30 p-3 rounded-2xl border border-emerald-100/50 flex items-center gap-4">
-                                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-100 flex-shrink-0">
+                                <div className="bg-gradient-to-r from-emerald-50/50 to-slate-50/30 p-3 rounded-xl border-2 border-slate-300 flex items-center gap-4">
+                                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-emerald-500 shadow-none border-2 border-emerald-100 flex-shrink-0">
                                         <Lock className="w-4 h-4" />
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -488,11 +488,11 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex gap-3">
+                <div className="px-6 py-3 border-t-2 border-slate-300 bg-slate-50/50 flex gap-3">
                     <button 
                         type="button" 
                         onClick={onClose} 
-                        className="px-6 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all flex-1"
+                        className="px-6 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl border-2 border-slate-300 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all flex-1 shadow-none"
                     >
                         TUTUP
                     </button>
@@ -500,7 +500,7 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
                         form="adminForm"
                         type="submit" 
                         disabled={isLoading}
-                        className="px-8 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl bg-jade-600 text-white hover:bg-jade-700 shadow-lg shadow-primary-100 transition-all active:scale-95 flex items-center justify-center gap-3 flex-1 disabled:opacity-50"
+                        className="px-8 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl bg-jade-600 text-white hover:bg-jade-700 shadow-none transition-all active:scale-95 flex items-center justify-center gap-3 flex-1 disabled:opacity-50 border-2 border-jade-700"
                     >
                         <Save className="w-4 h-4" />
                         {adminProfile ? 'SIMPAN PROFIL' : 'BUAT ADMIN BARU'}
@@ -692,7 +692,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
   return (
     <div className="space-y-4 animate-fade-in">
       {/* Action Bar - Optimized for Mobile Density */}
-      <div className="flex flex-row items-center gap-1.5 lg:gap-4 bg-white/40 p-1.5 lg:p-2 rounded-2xl lg:rounded-[24px] border border-white/20 backdrop-blur-md">
+      <div className="flex flex-row items-center gap-1.5 lg:gap-4">
           <div className="relative flex-1 group">
               <Search className="absolute left-3 lg:left-5 top-1/2 -translate-y-1/2 w-3.5 lg:w-4 h-3.5 lg:h-4 text-slate-300 group-focus-within:text-jade-600 transition-colors" />
               <input 
@@ -700,14 +700,14 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                   placeholder="Cari sekolah..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 lg:pl-12 pr-4 py-1.5 lg:py-3 bg-slate-50/80 border border-slate-200/60 rounded-full focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 focus:bg-white transition-all text-[10px] lg:text-[12px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none h-8 lg:h-12 shadow-inner"
+                  className="w-full pl-8 lg:pl-12 pr-4 py-1.5 lg:py-3 bg-white border-2 border-slate-300 rounded-xl focus:border-jade-400 focus:bg-white transition-all text-[10px] lg:text-[12px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none h-8 lg:h-12 shadow-none"
               />
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
               <button 
                   onClick={openCreateModal}
-                  className="px-3 lg:px-6 h-8 lg:h-12 font-black text-[9px] lg:text-[11px] uppercase tracking-tighter lg:tracking-widest rounded-xl lg:rounded-2xl border-2 border-jade-400 bg-jade-50 text-jade-700 hover:bg-jade-100 shadow-xl shadow-primary-100/30 transition-all active:scale-95 flex items-center justify-center gap-1.5 lg:gap-2"
+                  className="px-3 lg:px-6 h-8 lg:h-12 font-black text-[9px] lg:text-[11px] uppercase tracking-tighter lg:tracking-widest rounded-xl border-2 border-jade-400 bg-jade-50 text-jade-700 hover:bg-jade-100 shadow-none transition-all active:scale-95 flex items-center justify-center gap-1.5 lg:gap-2"
               >
                   <Plus className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Tambah Sekolah</span>
@@ -716,37 +716,37 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
           </div>
       </div>
 
-      <div className="bg-white shadow-sm border-2 border-slate-200 overflow-hidden flex flex-col">
+      <div className="bg-white shadow-none border-2 border-slate-300 overflow-hidden flex flex-col rounded-b-xl">
         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
           <table className="min-w-full divide-y divide-slate-100 border-separate border-spacing-0">
             <thead>
-              <tr className="bg-white">
-                <th className="hidden lg:table-cell w-[40px] min-w-[40px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-white z-30 px-3 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100">NO</th>
+              <tr className="bg-slate-300">
+                <th className="hidden lg:table-cell w-[40px] min-w-[40px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-slate-300 z-10 px-3 py-4 text-center text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-l border-b border-r border-slate-400">NO</th>
                 
-                <th className="hidden lg:table-cell w-[80px] min-w-[80px] lg:w-[150px] lg:min-w-[150px] lg:sticky lg:left-[45px] bg-white z-30 px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100">KODE</th>
+                <th className="hidden lg:table-cell w-[80px] min-w-[80px] lg:w-[150px] lg:min-w-[150px] lg:sticky lg:left-[45px] bg-slate-300 z-10 px-4 py-4 text-left text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-slate-400">KODE</th>
                 
-                <th className="w-[120px] min-w-[120px] lg:w-[auto] lg:min-w-[300px] sticky left-0 lg:left-[195px] bg-white z-30 px-4 py-4 text-left text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 shadow-[2px_0_5px_rgba(0,0,0,0.02)] transition-all">NAMA SEKOLAH</th>
-                <th className="px-6 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-r-2 border-slate-100 bg-white min-w-[120px]">REGISTRASI</th>
-                <th className="px-6 py-4 text-center text-slate-500 font-black uppercase text-[9.5px] tracking-widest border-b-2 border-slate-100 bg-white">AKSI</th>
+                <th className="w-[120px] min-w-[120px] lg:w-[auto] lg:min-w-[300px] sticky left-0 lg:left-[195px] bg-slate-300 z-10 px-4 py-4 text-left text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-slate-400 shadow-none transition-all">NAMA SEKOLAH</th>
+                <th className="px-6 py-4 text-center text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-slate-400 bg-slate-300 min-w-[120px]">REGISTRASI</th>
+                <th className="px-6 py-4 text-center text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">AKSI</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-50" key={currentPage}>
               {paginatedTenants.map((tenant, index) => (
                 <tr key={tenant.id} className="group transition-colors hover:bg-slate-50/30">
-                  <td className="hidden lg:table-cell sticky left-0 bg-white px-2 py-4 text-[10.5px] font-black text-slate-400 text-center border-r-2 border-b border-slate-100 z-10 transition-colors uppercase">
+                  <td className="hidden lg:table-cell sticky left-0 bg-white px-2 py-4 text-[10.5px] font-black text-slate-400 text-center border-r border-b border-slate-100 z-10 transition-colors uppercase">
                       {String((currentPage - 1) * itemsPerPage + index + 1)}
                   </td>
                   
-                  <td className="hidden lg:table-cell lg:sticky lg:left-[45px] bg-white px-4 py-4 border-r-2 border-b border-slate-100 z-10 transition-colors">
+                  <td className="hidden lg:table-cell lg:sticky lg:left-[45px] bg-white px-4 py-4 border-r border-b border-slate-100 z-10 transition-colors">
                       <span className="px-2 py-1 bg-slate-100/50 border border-slate-100 rounded-lg font-mono text-[10px] text-slate-500 font-bold group-hover:bg-white transition-colors">
                         {tenant.code || '-'}
                       </span>
                   </td>
                   
-                  <td className="sticky left-0 lg:left-[195px] bg-white px-4 py-4 border-r-2 border-b border-slate-100 z-10 transition-all">
+                  <td className="sticky left-0 lg:left-[195px] bg-white px-4 py-4 border-r border-b border-slate-100 z-10 transition-all">
                       <span className="text-[11px] font-bold text-slate-800 group-hover:text-jade-600 transition-colors block break-words leading-tight">{tenant.name}</span>
                   </td>
-                  <td className="px-6 py-4 border-r-2 border-b border-slate-100">
+                  <td className="px-6 py-4 border-r border-b border-slate-100">
                     <span className="text-[11px] font-black text-slate-700 tracking-tight whitespace-nowrap">
                         {new Date(tenant.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
@@ -756,21 +756,21 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                         <button 
                             onClick={() => openAdminManager(tenant)} 
                             title="Kelola Admin Sekolah"
-                            className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-orange-600 hover:border-orange-100 hover:bg-orange-50 transition-all active:scale-90 shadow-sm"
+                            className="p-2.5 rounded-xl bg-white border-2 border-slate-300 text-slate-400 hover:text-orange-600 hover:border-orange-300 hover:bg-orange-50 transition-all active:scale-90 shadow-none"
                         >
                             <UserCog className="w-4 h-4" />
                         </button>
                         <button 
                             onClick={() => openEditModal(tenant)} 
                             title="Edit Sekolah"
-                            className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-jade-600 hover:border-jade-100 hover:bg-jade-50 transition-all active:scale-90 shadow-sm"
+                            className="p-2.5 rounded-xl bg-white border-2 border-slate-300 text-slate-400 hover:text-jade-600 hover:border-jade-300 hover:bg-jade-50 transition-all active:scale-90 shadow-none"
                         >
                             <Edit className="w-4 h-4" />
                         </button>
                         <button 
                             onClick={() => confirmDelete(tenant)}
                             title="Hapus Sekolah"
-                            className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-100 hover:bg-rose-50 transition-all active:scale-90 shadow-sm"
+                            className="p-2.5 rounded-xl bg-white border-2 border-slate-300 text-slate-400 hover:text-rose-600 hover:border-rose-300 hover:bg-rose-50 transition-all active:scale-90 shadow-none"
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
@@ -795,12 +795,12 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
 
         {/* PAGINATION FOOTER */}
         {!loading && filteredTenants.length > 0 && (
-            <div className="bg-[#F8FAFC] border-t border-slate-100 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 lg:gap-4">
+            <div className="bg-[#F8FAFC] border-t-2 border-slate-300 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 lg:gap-4">
                 <div className="flex items-center gap-2 lg:gap-4">
                     <select 
                         value={itemsPerPage}
                         onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                        className="bg-white border-2 border-slate-100 rounded-xl px-2 md:px-3 py-1.5 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-jade-50/50 cursor-pointer shadow-sm transition-all h-8"
+                        className="bg-white border-2 border-slate-300 rounded-xl px-2 md:px-3 py-1.5 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-jade-50/50 cursor-pointer shadow-none transition-all h-8"
                     >
                         {[10, 25, 50, 100].map(val => (
                             <option key={val} value={val}>{val}</option>
@@ -819,7 +819,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                     <button 
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        className={`p-1.5 lg:p-2 rounded-lg lg:rounded-xl border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
+                        className={`p-1.5 lg:p-2 rounded-lg lg:rounded-xl border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-200 border-slate-200 cursor-not-allowed' : 'text-slate-600 border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400 shadow-none'}`}
                     >
                         <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4 rotate-180" />
                     </button>

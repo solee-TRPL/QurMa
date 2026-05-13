@@ -353,15 +353,15 @@ export const ManageStudentProgress: React.FC<{ user: UserProfile }> = ({ user })
                             <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm overflow-hidden overflow-x-auto min-h-[400px]">
                                 <table className="w-full text-center border-separate border-spacing-0">
                                     <thead>
-                                        <tr className="bg-slate-50 text-[9px] font-black uppercase tracking-widest">
-                                            <th className="px-3 py-2 text-slate-400 border-b border-r border-slate-200 bg-slate-50/50 w-12 rounded-tl-lg">Kelas</th>
-                                            <th className="px-3 py-2 text-slate-400 border-b border-r border-slate-200 bg-slate-50/50 w-12">Semester</th>
-                                            <th className="px-4 py-2 text-jade-600 border-b border-r border-slate-200 bg-jade-50/20 min-w-[90px]">Hafalan</th>
-                                            <th className="px-4 py-2 text-blue-600 border-b border-r border-slate-200 bg-blue-50/20 min-w-[90px]">Sabaq</th>
-                                            <th className="px-4 py-2 text-slate-400 border-b border-r border-slate-200 bg-slate-50/30 min-w-[110px]">Target Hafalan</th>
-                                            <th className="px-4 py-2 text-slate-400 border-b border-r border-slate-200 bg-slate-50/30 min-w-[120px]">Ket</th>
-                                            <th className="px-4 py-2 text-slate-400 border-b border-r border-slate-200 bg-slate-50/30 min-w-[110px]">Target Sabaq</th>
-                                            <th className="px-4 py-2 text-slate-400 border-b border-slate-200 bg-slate-50/30 min-w-[120px] rounded-tr-lg">Ket</th>
+                                        <tr className="bg-slate-300 text-[9px] font-black uppercase tracking-widest">
+                                            <th className="px-3 py-2 text-slate-800 border-b border-r border-slate-200 bg-slate-300 w-12">Kelas</th>
+                                            <th className="px-3 py-2 text-slate-800 border-b border-r border-slate-200 bg-slate-300 w-12">Semester</th>
+                                            <th className="px-4 py-2 text-jade-700 border-b border-r border-slate-200 bg-jade-50/20 min-w-[90px]">Hafalan</th>
+                                            <th className="px-4 py-2 text-blue-700 border-b border-r border-slate-200 bg-blue-50/20 min-w-[90px]">Sabaq</th>
+                                            <th className="px-4 py-2 text-slate-800 border-b border-r border-slate-200 bg-slate-300 min-w-[110px]">Target Hafalan</th>
+                                            <th className="px-4 py-2 text-slate-800 border-b border-r border-slate-200 bg-slate-300 min-w-[120px]">Ket</th>
+                                            <th className="px-4 py-2 text-slate-800 border-b border-r border-slate-200 bg-slate-300 min-w-[110px]">Target Sabaq</th>
+                                            <th className="px-4 py-2 text-slate-800 border-b border-slate-200 bg-slate-300 min-w-[120px]">Ket</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white">

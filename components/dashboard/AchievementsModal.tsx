@@ -14,11 +14,11 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ isOpen, on
 
     const getColorClass = (color?: string) => {
         switch (color) {
-            case 'emerald': return 'bg-emerald-100 text-emerald-600 border-emerald-200';
-            case 'blue': return 'bg-blue-50 text-blue-600 border-blue-200';
-            case 'orange': return 'bg-orange-50 text-orange-600 border-orange-200';
-            case 'purple': return 'bg-purple-50 text-purple-600 border-purple-200';
-            case 'pink': return 'bg-pink-50 text-pink-600 border-pink-200';
+            case 'emerald': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+            case 'blue': return 'bg-blue-50 text-blue-600 border-blue-100';
+            case 'orange': return 'bg-orange-50 text-orange-600 border-orange-100';
+            case 'purple': return 'bg-purple-50 text-purple-600 border-purple-100';
+            case 'pink': return 'bg-pink-50 text-pink-600 border-pink-100';
             default: return 'bg-slate-50 text-slate-600 border-slate-200';
         }
     };
@@ -29,42 +29,61 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ isOpen, on
             onClick={onClose}
         >
             <div 
-                className="bg-white rounded-[28px] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 shadow-primary-100/50"
+                className="bg-white rounded-xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border-2 border-slate-300"
                 onClick={e => e.stopPropagation()}
             >
-                <div className="px-5 py-3.5 border-b border-slate-100 flex justify-between items-center bg-[#FCFDFE]">
-                    <div>
-                        <h3 className="text-base font-black text-slate-800 tracking-tight flex items-center gap-2">
-                             <Trophy className="w-4 h-4 text-amber-500" />
-                             Semua Pencapaian
-                        </h3>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Daftar prestasi santri</p>
+                {/* Standardized Header */}
+                <div className="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-xl">
+                    <div className="flex items-center gap-3">
+                        <div>
+                            <h3 className="text-[11px] font-black uppercase flex items-center gap-2">
+                                <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                                Semua Pencapaian
+                            </h3>
+                            <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Daftar prestasi santri</p>
+                        </div>
                     </div>
-                    <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-full transition-colors">
-                        <X className="w-4 h-4 text-slate-400" />
+                    <button 
+                        onClick={onClose} 
+                        className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-slate-600 transition-all active:scale-90"
+                    >
+                        <X className="w-4 h-4" />
                     </button>
                 </div>
 
-                <div className="p-4 overflow-y-auto scrollbar-hide max-h-[60vh]">
-                    <div className="space-y-2">
-                        {achievements.map((item) => (
-                            <div key={item.id} className="flex items-center gap-3 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
-                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs border-2 border-white shadow-sm shrink-0 ${getColorClass(item.color)}`}>
-                                    {item.rank}
+                <div className="p-4 overflow-y-auto scrollbar-hide max-h-[60vh] bg-slate-50/30">
+                    <div className="space-y-2.5">
+                        {achievements.length === 0 ? (
+                            <div className="py-12 flex flex-col items-center justify-center opacity-30 text-center">
+                                <Trophy className="w-12 h-12 mb-2 text-slate-300" />
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Belum ada pencapaian</p>
+                            </div>
+                        ) : achievements.map((item) => (
+                            <div key={item.id} className="flex items-center gap-3 bg-white p-3.5 rounded-xl border-2 border-slate-200 group hover:border-slate-300 transition-all shadow-none">
+                                <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center border-2 shrink-0 ${getColorClass(item.color)}`}>
+                                    <span className="text-[7px] font-black leading-none uppercase opacity-60">Rank</span>
+                                    <span className="text-xs font-black leading-tight">{item.rank}</span>
                                 </div>
-                                <div>
-                                    <p className="text-[9px] font-black text-slate-800 uppercase tracking-tight leading-tight">{item.title}</p>
-                                    <p className="text-[7px] font-bold text-slate-400 mt-0.5 uppercase tracking-widest">{new Date(item.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric'})}</p>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10.5px] font-black text-slate-800 uppercase tracking-tight leading-tight">{item.title}</p>
+                                    <div className="flex items-center gap-2 mt-1.5">
+                                        <div className="flex items-center gap-1 text-slate-400">
+                                            <Calendar className="w-2.5 h-2.5" />
+                                            <span className="text-[7.5px] font-black uppercase tracking-widest leading-none">
+                                                {new Date(item.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric'}).toUpperCase()}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                <div className="p-5 border-t border-slate-100 bg-white flex justify-end shrink-0">
+                <div className="p-4 border-t border-slate-100 bg-white flex justify-end shrink-0">
                     <button 
                         onClick={onClose}
-                        className="px-6 py-2.5 bg-slate-100 text-slate-500 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95 border border-slate-200"
+                        className="w-full py-3 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-200"
                     >
                         Tutup
                     </button>

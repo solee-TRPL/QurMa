@@ -114,7 +114,7 @@ const StudentDetailModal: React.FC<StudentDetailModalProps> = ({ isOpen, onClose
                 </div>
                 
                 <div className="p-5 space-y-3 overflow-hidden">
-                    <div className="bg-slate-50/50 rounded-2xl p-4 border border-slate-100 space-y-4">
+                    <div className="bg-slate-300 rounded-2xl p-4 border border-slate-100 space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
                                 <label className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Profil Santri</label>
@@ -215,6 +215,8 @@ interface AchievementModalProps {
 const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, student, user, onUpdate }) => {
     const [achievements, setAchievements] = useState<Achievement[]>([]);
     const [title, setTitle] = useState('');
+    const [rank, setRank] = useState<number>(1);
+    const [color, setColor] = useState<string>('emerald');
     const [achToDelete, setAchToDelete] = useState<{id: string, title: string} | null>(null);
     const { addNotification } = useNotification();
     
@@ -232,7 +234,13 @@ const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, st
         e.preventDefault();
         if (!title.trim()) return;
         try {
-            await createAchievement({ title, student_id: student.id, date: new Date().toISOString(), rank: (achievements?.length || 0) + 1 }, user, student.full_name);
+            await createAchievement({ 
+                title, 
+                student_id: student.id, 
+                date: new Date().toISOString(), 
+                rank: Number(rank),
+                color: color
+            }, user, student.full_name);
             onUpdate();
             setTitle('');
             getAchievements(student.id).then(res => {
@@ -288,11 +296,19 @@ const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, st
                     ) : achievements.map(ach => (
                         <div key={ach.id} className="group relative flex justify-between items-center bg-slate-50/30 p-2.5 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-md hover:border-jade-100 ring-1 ring-transparent hover:ring-jade-50/50">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-amber-50 rounded-xl border border-amber-100/50 shadow-sm transition-transform group-hover:scale-110">
-                                    <Trophy className="w-3 h-3 text-amber-500" />
+                                <div className={`w-9 h-9 rounded-xl flex flex-col items-center justify-center border-2 shrink-0 ${
+                                    ach.color === 'emerald' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                    ach.color === 'blue' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                    ach.color === 'orange' ? 'bg-orange-50 text-orange-600 border-orange-100' :
+                                    ach.color === 'purple' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                                    ach.color === 'pink' ? 'bg-pink-50 text-pink-600 border-pink-100' :
+                                    'bg-slate-50 text-slate-600 border-slate-200'
+                                }`}>
+                                    <span className="text-[6px] font-black leading-none uppercase opacity-60">Rank</span>
+                                    <span className="text-[10px] font-black leading-tight">{ach.rank}</span>
                                 </div>
-                                <div>
-                                    <p className="text-[11px] font-black text-slate-700 uppercase tracking-tight leading-none">{ach.title}</p>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10.5px] font-black text-slate-700 uppercase tracking-tight leading-none truncate">{ach.title}</p>
                                     <div className="flex items-center gap-1.5 mt-1 opacity-40">
                                         <Calendar className="w-2.5 h-2.5" />
                                         <span className="text-[7.5px] font-black uppercase tracking-widest">{ach.date ? new Date(ach.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</span>
@@ -308,19 +324,57 @@ const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, st
                         </div>
                     ))}
                 </div>
-                <form onSubmit={handleAdd} className="p-5 border-t border-slate-100 bg-slate-50/30 flex gap-2.5">
-                    <input 
-                        value={title} 
-                        onChange={e => setTitle(e.target.value)} 
-                        placeholder="Tulis pencapaian baru..." 
-                        className="w-full px-5 py-2.5 border-2 border-slate-50 bg-white rounded-2xl focus:ring-0 focus:border-jade-400 shadow-sm transition-all text-sm font-bold text-slate-800 outline-none" 
-                    />
-                    <button 
-                        type="submit"
-                        className="p-3 bg-jade-600 text-white rounded-2xl hover:bg-jade-700 shadow-lg shadow-primary-100 transition-all active:scale-95"
-                    >
-                        <Plus className="w-5 h-5"/>
-                    </button>
+                <form onSubmit={handleAdd} className="p-5 border-t border-slate-100 bg-slate-50/30 space-y-3">
+                    <div className="flex gap-2">
+                        <div className="flex-1 space-y-1.5">
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Pencapaian</label>
+                            <input 
+                                value={title} 
+                                onChange={e => setTitle(e.target.value)} 
+                                placeholder="Contoh: Juara 1 Lomba Adzan" 
+                                className="w-full px-4 py-2.5 border-2 border-slate-100 bg-white rounded-2xl focus:ring-0 focus:border-jade-400 shadow-sm transition-all text-xs font-bold text-slate-800 outline-none placeholder:text-slate-300" 
+                            />
+                        </div>
+                        <div className="w-20 space-y-1.5 text-center">
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Rank</label>
+                            <input 
+                                type="number"
+                                value={rank} 
+                                onChange={e => setRank(parseInt(e.target.value) || 1)} 
+                                className="w-full px-1 py-2.5 border-2 border-slate-100 bg-white rounded-2xl focus:ring-0 focus:border-jade-400 shadow-sm transition-all text-xs font-black text-center text-slate-800 outline-none" 
+                            />
+                        </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 shrink-0">Pilih Warna</label>
+                        <div className="flex-1 flex gap-2 overflow-x-auto no-scrollbar py-1">
+                            {['emerald', 'blue', 'orange', 'purple', 'pink'].map(c => (
+                                <button
+                                    key={c}
+                                    type="button"
+                                    onClick={() => setColor(c)}
+                                    className={`w-6 h-6 rounded-full border-2 transition-all ${
+                                        color === c 
+                                        ? `ring-2 ring-offset-1 ring-${c}-500 border-white bg-${c}-500` 
+                                        : `bg-${c}-400 border-transparent opacity-40 hover:opacity-100`
+                                    } ${
+                                        c === 'emerald' ? 'bg-emerald-500' :
+                                        c === 'blue' ? 'bg-blue-500' :
+                                        c === 'orange' ? 'bg-orange-500' :
+                                        c === 'purple' ? 'bg-purple-500' :
+                                        'bg-pink-500'
+                                    }`}
+                                />
+                            ))}
+                        </div>
+                        <button 
+                            type="submit"
+                            className="px-6 py-2.5 bg-jade-600 text-white rounded-2xl hover:bg-jade-700 shadow-lg shadow-jade-100 transition-all active:scale-95 flex items-center justify-center"
+                        >
+                            <Plus className="w-4 h-4"/>
+                        </button>
+                    </div>
                 </form>
                 <ConfirmModal
                     isOpen={!!achToDelete}
@@ -702,14 +756,14 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                   type="text" 
                   value={search} 
                   onChange={e => setSearch(e.target.value)} 
-                  placeholder="Cari..." 
-                  className="w-full pl-8 lg:pl-11 pr-2 lg:pr-4 py-1.5 lg:py-2.5 text-[10px] lg:text-xs font-black border border-slate-200 rounded-xl lg:rounded-2xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 focus:outline-none bg-white text-slate-900 transition-all placeholder:font-bold placeholder:text-slate-300 shadow-sm h-8 lg:h-11"
+                  placeholder="Cari santri..." 
+                  className="w-full pl-8 lg:pl-11 pr-2 lg:pr-4 py-1.5 lg:py-2.5 text-[10px] font-black uppercase tracking-widest border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-slate-400 focus:outline-none bg-white text-slate-500 transition-all placeholder:font-black placeholder:text-slate-300 h-8 lg:h-11"
               />
           </div>
           
           <div className="flex items-center gap-1.5 lg:gap-2">
               {/* Gender Filter */}
-              <div className="flex items-center gap-1 bg-white px-2 lg:px-4 py-1 rounded-xl lg:rounded-2xl border border-slate-200 shadow-sm h-8 lg:h-11 ring-1 ring-slate-100/50">
+              <div className="flex items-center gap-1 bg-white px-2 lg:px-4 py-1 rounded-xl border-2 border-slate-300 h-8 lg:h-11 ring-1 ring-slate-100/50">
                   <User className="w-3 lg:w-3.5 h-3 lg:h-3.5 text-slate-400 shrink-0" />
                   <select 
                       value={genderFilter} 
@@ -725,7 +779,7 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                {/* Toggle NIS Visibility */}
                <button 
                   onClick={() => setShowNIS(!showNIS)}
-                  className="hidden lg:flex p-2 lg:px-4 lg:py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all active:scale-95 shadow-sm h-8 lg:h-11 items-center justify-center shrink-0"
+                  className="hidden lg:flex p-2 lg:px-4 lg:py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all active:scale-95 h-8 lg:h-11 items-center justify-center shrink-0"
                   title={showNIS ? "Sembunyikan NIS" : "Tampilkan NIS"}
                >
                   {showNIS ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
@@ -734,7 +788,7 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                {/* Refresh Action */}
               <button 
                   onClick={() => fetchData()}
-                  className="p-2 lg:px-6 lg:py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all active:scale-95 shadow-sm h-8 lg:h-11 flex items-center justify-center shrink-0"
+                  className="p-2 lg:px-6 lg:py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-slate-300 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all active:scale-95 h-8 lg:h-11 flex items-center justify-center shrink-0"
                   title="Refresh Data"
               >
                   <RotateCcw className="w-3.5 h-3.5 lg:hidden" />
@@ -743,20 +797,20 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
           </div>
       </div>
 
-      <div className="bg-transparent rounded-none overflow-hidden border border-slate-200/60 flex flex-col">
+      <div className="bg-transparent border-2 border-t-0 border-slate-300 rounded-none overflow-hidden flex flex-col">
           <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
             <table className="w-full border-separate border-spacing-0">
                 <thead className="sticky top-0 z-40">
                     <tr className="bg-white">
-                        <th className="hidden lg:table-cell w-[50px] min-w-[50px] sticky left-0 bg-white z-50 px-2 lg:px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">No</th>
-                        {showNIS && <th className="hidden lg:table-cell w-[100px] min-w-[100px] sticky lg:left-[50px] bg-white z-50 px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100">NIS</th>}
-                        <th className={`w-[100px] min-w-[100px] lg:w-[300px] lg:min-w-[300px] sticky ${showNIS ? 'left-0 lg:left-[150px]' : 'left-0 lg:left-[50px]'} bg-white z-50 px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.02)]`}>Nama Santri</th>
-                        <th className="px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-100 bg-white">Jenis Kelamin</th>
-                        <th className="px-3 py-4 text-[10px] font-bold text-emerald-600 uppercase tracking-widest text-center border-b border-r border-slate-100 bg-jade-50/30 whitespace-nowrap">Hafalan Saat Ini</th>
-                        <th className="w-[140px] min-w-[140px] px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center border-b border-slate-100 bg-slate-50/30">Aksi</th>
+                        <th className="hidden lg:table-cell w-[50px] min-w-[50px] sticky left-0 bg-slate-300 z-50 px-2 lg:px-3 py-4 text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-l border-r border-black">No</th>
+                        {showNIS && <th className="hidden lg:table-cell w-[100px] min-w-[100px] sticky lg:left-[50px] bg-slate-300 z-50 px-3 py-4 text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r-black border-r">NIS</th>}
+                        <th className={`w-[100px] min-w-[100px] lg:w-[300px] lg:min-w-[300px] sticky ${showNIS ? 'left-0 lg:left-[150px]' : 'left-0 lg:left-[50px]'} bg-slate-300 z-50 px-4 py-4 text-[10px] font-black text-slate-800 uppercase tracking-widest text-left border-t border-b border-r border-black shadow-[2px_0_5px_rgba(0,0,0,0.05)]`}>Nama Santri</th>
+                        <th className="px-3 py-4 text-[10px] font-black text-amber-600 uppercase tracking-widest text-center border-t border-b border-r border-amber-600 bg-amber-50">Jenis Kelamin</th>
+                        <th className="px-3 py-4 text-[10px] font-black text-emerald-700 uppercase tracking-widest text-center border-t border-b border-r border-emerald-700 bg-emerald-50 whitespace-nowrap">Hafalan Saat Ini</th>
+                        <th className="w-[140px] min-w-[140px] px-4 py-3 text-[10px] font-black text-blue-700 uppercase tracking-widest text-center border-t border-b border-r border-blue-700 bg-blue-50">Aksi</th>
                     </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-slate-100">
+                <tbody className="bg-white divide-y divide-slate-200">
                     {paginatedStudents.length === 0 ? (
                         <tr>
                             <td colSpan={7} className="py-24 text-center">
@@ -764,38 +818,38 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                             </td>
                         </tr>
                     ) : paginatedStudents.map((student, idx) => (
-                        <tr key={student.id} className="group transition-colors hover:bg-slate-50/50 cursor-pointer" onClick={() => openModal('detail', student)}>
-                            <td className="hidden lg:table-cell sticky left-0 bg-white group-hover:bg-[#F8FAFC] px-2 lg:px-3 py-3 text-[11px] font-bold text-slate-400 text-center border-r border-slate-50 z-20 transition-colors">{(currentPage - 1) * itemsPerPage + idx + 1}</td>
-                            {showNIS && <td className="hidden lg:table-cell sticky lg:left-[50px] bg-white group-hover:bg-[#F8FAFC] px-3 py-3 text-[11px] font-bold text-slate-600 text-center border-r border-slate-50 z-20 transition-colors">{student.nis || '-'}</td>}
-                             <td className={`sticky ${showNIS ? 'left-0 lg:left-[150px]' : 'left-0 lg:left-[50px]'} bg-white group-hover:bg-[#F8FAFC] px-4 py-3 text-xs font-bold text-slate-800 border-r border-slate-100 z-20 transition-colors`}>
+                        <tr key={student.id} className="group transition-colors hover:bg-emerald-50/40 cursor-pointer" onClick={() => openModal('detail', student)}>
+                            <td className="hidden lg:table-cell sticky left-0 bg-white group-hover:bg-emerald-50/60 px-2 lg:px-3 py-3 text-[11px] font-bold text-slate-400 text-center border-r border-slate-200 border-b border-slate-200 z-20 transition-colors">{(currentPage - 1) * itemsPerPage + idx + 1}</td>
+                            {showNIS && <td className="hidden lg:table-cell sticky lg:left-[50px] bg-white group-hover:bg-emerald-50/60 px-3 py-3 text-[11px] font-bold text-slate-600 text-center border-r border-slate-200 border-b border-slate-200 z-20 transition-colors">{student.nis || '-'}</td>}
+                             <td className={`sticky ${showNIS ? 'left-0 lg:left-[150px]' : 'left-0 lg:left-[50px]'} bg-white group-hover:bg-emerald-50/60 px-4 py-3 text-xs font-bold text-slate-800 border-r border-slate-200 border-b border-slate-200 z-20 transition-colors`}>
                                 <div className="flex items-center gap-2">
                                     <span className="leading-tight">{student.full_name}</span>
                                 </div>
                             </td>
-                             <td className="px-3 py-3 text-[11px] font-bold text-slate-600 text-center border-r border-slate-100">
+                             <td className="px-3 py-3 text-[11px] font-bold text-slate-600 text-center border-r border-slate-200 border-b border-slate-200">
                                  <span className={`px-6 py-2 rounded-lg text-[9px] ${student.gender === 'L' ? 'bg-blue-50 border border-blue-100 text-blue-600' : 'bg-pink-50 border border-pink-100 text-pink-600'}`}>
                                      {student.gender === 'L' ? 'PUTRA' : student.gender === 'P' ? 'PUTRI' : '-'}
                                  </span>
                              </td>
                             
-                            <td className="px-4 py-3 text-center border-r border-slate-50 bg-jade-50/5">
+                            <td className="px-4 py-3 text-center border-r border-slate-200 border-b border-slate-200 bg-jade-50/5 group-hover:bg-emerald-50/60">
                                 <span className="text-[11px] font-black text-slate-800">
                                     {student.current_juz || 0} Juz 
                                 </span>
                             </td>
 
-                            <td className="px-4 py-3 text-center bg-slate-50/5">
+                            <td className="px-4 py-3 text-center bg-slate-50/5 border-b border-slate-200 group-hover:bg-emerald-50/60">
                                 <div className="flex justify-center gap-1">
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); openModal('notes', student); }} 
-                                        className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm" 
+                                        className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 transition-all shadow-none" 
                                         title="Catatan"
                                     >
                                         <MessageSquare className="w-3.5 h-3.5" />
                                     </button>
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); openModal('achievement', student); }} 
-                                        className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm" 
+                                        className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 transition-all shadow-none" 
                                         title="Pencapaian"
                                     >
                                         <Trophy className="w-3.5 h-3.5" />
@@ -815,7 +869,7 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                     <select 
                         value={itemsPerPage}
                         onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                        className="bg-white border-2 border-slate-50 rounded-xl px-2 md:px-3 py-1 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-jade-50/50 cursor-pointer shadow-sm transition-all"
+                        className="bg-white border-2 border-slate-50 rounded-xl px-2 md:px-3 py-1 text-[10px] font-black text-slate-700 outline-none focus:ring-4 focus:ring-jade-50/50 cursor-pointer transition-all"
                     >
                         {[10, 25, 50, 100].map(val => (
                             <option key={val} value={val}>{val}</option>
@@ -831,7 +885,7 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                     <button 
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        className={`p-1.5 md:p-2 rounded-xl border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
+                        className={`p-1.5 md:p-2 rounded-xl border-2 transition-all active:scale-90 ${currentPage === 1 ? 'text-slate-400 border-slate-200 bg-slate-300 cursor-not-allowed opacity-60' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200'}`}
                     >
                         <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4 rotate-180" />
                     </button>
@@ -861,7 +915,7 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string }>
                     <button 
                         disabled={currentPage === totalPages || totalPages === 0}
                         onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                        className={`p-1.5 md:p-2 rounded-xl border-2 transition-all active:scale-90 ${currentPage === totalPages || totalPages === 0 ? 'text-slate-200 border-slate-50 cursor-not-allowed' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200 shadow-sm'}`}
+                        className={`p-1.5 md:p-2 rounded-xl border-2 transition-all active:scale-90 ${currentPage === totalPages || totalPages === 0 ? 'text-slate-400 border-slate-200 bg-slate-300 cursor-not-allowed opacity-60' : 'text-slate-600 border-slate-50 bg-white hover:bg-slate-50 hover:border-slate-200'}`}
                     >
                         <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     </button>

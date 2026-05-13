@@ -70,16 +70,20 @@ export const createRecord = async (record: Omit<MemorizationRecord, 'id' | 'crea
         // Notifications are sent to parents/guardians. 
         // Direct student notifications are disabled because most students do not have user accounts.
 
-        await Promise.all(recipients.map(recipientId => 
-            createNotification({
+        await Promise.all(recipients.map(recipientId => {
+            const status = record.status.replace('_', ' ');
+            const detail = (record.keterangan && record.keterangan !== record.status) ? ` - ${record.keterangan}` : '';
+            const unit = record.type === MemorizationType.SABAQ ? 'BARIS' : 'HAL';
+            
+            return createNotification({
                 user_id: recipientId,
                 tenant_id: actor.tenant_id!,
                 title: "Update Hafalan Baru",
-                message: `Ustadz ${actor.full_name} telah memperbarui catatan ${record.type} untuk ${student?.full_name || studentName}.`,
+                message: `Ananda ${student?.full_name?.split(' ')[0] || studentName.split(' ')[0]} setor ${record.type.toUpperCase()}: ${record.jumlah} ${unit} (${status}${detail})`,
                 type: 'info',
                 metadata: { student_id: record.student_id, date: record.record_date }
-            })
-        ));
+            });
+        }));
     } catch (notifErr) {
         console.warn("Could not send notification:", notifErr);
     }

@@ -71,20 +71,20 @@ export const EmailSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
         
         {/* Left Column: Template Editor */}
         <div className="lg:col-span-2 flex flex-col gap-5 min-h-0 lg:overflow-hidden">
-            <div className="bg-white rounded-3xl border border-slate-100 lg:border-2 lg:border-slate-50 shadow-sm flex flex-col min-h-0 lg:overflow-hidden flex-1">
+            <div className="bg-white rounded-xl border-2 border-slate-300 shadow-none flex flex-col min-h-0 lg:overflow-hidden flex-1">
                 {/* Navigation Tabs */}
-                <div className="flex bg-[#F8FAFC] border-b border-slate-100 p-1.5 gap-1.5 shrink-0">
+                <div className="flex bg-[#F8FAFC] border-b-2 border-slate-300 p-1.5 gap-1.5 shrink-0">
                     <button 
                         type="button" 
                         onClick={() => setActiveTab('welcome')} 
-                        className={`flex-1 py-2.5 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all ${activeTab === 'welcome' ? 'bg-white text-jade-700 shadow-sm border border-jade-100' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                        className={`flex-1 py-2.5 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all ${activeTab === 'welcome' ? 'bg-white text-jade-700 shadow-none border-2 border-jade-100' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                     >
                         Penerimaan Santri
                     </button>
                     <button 
                         type="button" 
                         onClick={() => setActiveTab('reset')} 
-                        className={`flex-1 py-2.5 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all ${activeTab === 'reset' ? 'bg-white text-jade-700 shadow-sm border border-jade-100' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                        className={`flex-1 py-2.5 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all ${activeTab === 'reset' ? 'bg-white text-jade-700 shadow-none border-2 border-jade-100' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                     >
                         Pemulihan Akses
                     </button>
@@ -102,7 +102,7 @@ export const EmailSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                                 placeholder="Contoh: Selamat Datang di Platform QurMa"
                                 value={activeTab === 'welcome' ? (settings.welcome_email_subject || '') : (settings.reset_password_subject || '')}
                                 onChange={e => handleInputChange(activeTab === 'welcome' ? 'welcome_email_subject' : 'reset_password_subject', e.target.value)}
-                                className="w-full pl-12 pr-5 py-3 bg-slate-50/50 border-2 border-transparent rounded-[18px] text-slate-800 font-bold text-sm focus:bg-white focus:border-jade-100 focus:ring-4 focus:ring-jade-50/30 outline-none transition-all shadow-sm shadow-slate-200/50"
+                                className="w-full pl-12 pr-5 py-3 bg-white border-2 border-slate-300 rounded-xl text-slate-800 font-bold text-sm focus:border-jade-300 focus:ring-4 focus:ring-jade-50/30 outline-none transition-all shadow-none"
                             />
                         </div>
                     </div>
@@ -113,7 +113,7 @@ export const EmailSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                             placeholder="Tuliskan format email di sini..."
                             value={activeTab === 'welcome' ? (settings.welcome_email_body || '') : (settings.reset_password_body || '')}
                             onChange={e => handleInputChange(activeTab === 'welcome' ? 'welcome_email_body' : 'reset_password_body', e.target.value)}
-                            className="w-full flex-1 min-h-[200px] lg:min-h-0 px-5 lg:px-6 py-4 lg:py-5 bg-slate-50/50 border-2 border-transparent rounded-[24px] text-slate-700 font-medium text-[12px] lg:text-[13px] focus:bg-white focus:border-jade-100 focus:ring-4 focus:ring-jade-50/30 outline-none transition-all font-mono leading-relaxed shadow-inner lg:scrollbar-thin lg:scrollbar-thumb-slate-200"
+                            className="w-full flex-1 min-h-[200px] lg:min-h-0 px-5 lg:px-6 py-4 lg:py-5 bg-white border-2 border-slate-300 rounded-xl text-slate-700 font-medium text-[12px] lg:text-[13px] focus:border-jade-300 focus:ring-4 focus:ring-jade-50/30 outline-none transition-all font-mono leading-relaxed shadow-none lg:scrollbar-thin lg:scrollbar-thumb-slate-200"
                         />
                     </div>
                 </div>
@@ -122,9 +122,9 @@ export const EmailSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
 
         {/* Right Column: Actions & Variable Selection */}
         <div className="flex flex-col gap-5 min-h-0 lg:overflow-y-auto lg:pr-2 custom-scrollbar">
-            <div className="bg-white p-5 lg:p-6 rounded-3xl border border-slate-100 lg:border-2 lg:border-slate-50 shadow-sm flex flex-col gap-5 shrink-0">
+            <div className="bg-white p-5 lg:p-6 rounded-xl border-2 border-slate-300 shadow-none flex flex-col gap-5 shrink-0">
                 <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-jade-50 flex items-center justify-center text-jade-600 border border-jade-100">
+                    <div className="w-9 h-9 rounded-xl bg-jade-50 flex items-center justify-center text-jade-600 border-2 border-jade-100">
                         <Sparkles className="w-5 h-5" />
                     </div>
                     <div>
@@ -142,7 +142,7 @@ export const EmailSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                                 navigator.clipboard.writeText(p);
                                 addNotification({ type: 'success', title: 'Token Copied', message: `Variabel ${p} siap ditempel.` });
                             }}
-                            className="w-full flex justify-between items-center bg-slate-50/80 border border-slate-100 px-4 py-3 rounded-xl text-[11px] font-black text-jade-600 hover:bg-white hover:border-jade-200 transition-all group/token"
+                            className="w-full flex justify-between items-center bg-slate-50 border-2 border-slate-200 px-4 py-3 rounded-xl text-[11px] font-black text-jade-700 hover:bg-jade-50 hover:border-jade-300 transition-all group/token shadow-none"
                         >
                             <code className="font-mono">{p}</code>
                             <Send className="w-3 h-3 text-slate-300 group-hover/token:text-jade-400" />
@@ -150,25 +150,25 @@ export const EmailSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                     ))}
                 </div>
                 
-                <div className="p-4 bg-amber-50 rounded-xl border border-amber-100">
-                    <p className="text-[9px] font-bold text-amber-700 leading-relaxed text-center">
+                <div className="p-4 bg-amber-50 rounded-xl border-2 border-amber-200">
+                    <p className="text-[9px] font-bold text-amber-700 leading-relaxed text-center uppercase tracking-tighter">
                         Variabel di atas akan otomatis digantikan oleh sistem saat pengiriman email berlangsung.
                     </p>
                 </div>
             </div>
 
-            <div className="bg-white p-5 lg:p-6 rounded-3xl border border-slate-100 lg:border-2 lg:border-slate-50 shadow-sm flex flex-col gap-4 lg:mt-auto">
+            <div className="bg-white p-5 lg:p-6 rounded-xl border-2 border-slate-300 shadow-none flex flex-col gap-4 lg:mt-auto">
                  <button 
                     type="button" 
                     onClick={handleTestSimulation}
-                    className="w-full py-3 px-6 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    className="w-full py-3 px-6 font-black text-[11px] uppercase tracking-tight rounded-xl border-2 border-slate-300 bg-white text-slate-500 hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center gap-2"
                 >
                     <PlayCircle className="w-4 h-4" />
                     Simulation Test
                 </button>
                 <button 
                     type="submit"
-                    className="w-full py-3 px-6 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-jade-400 bg-jade-50 text-jade-700 hover:bg-jade-100 shadow-lg shadow-primary-100/50 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    className="w-full py-3 px-6 font-black text-[11px] uppercase tracking-tight rounded-xl border-2 border-jade-400 bg-jade-50 text-jade-700 hover:bg-jade-100 shadow-none transition-all active:scale-95 flex items-center justify-center gap-2"
                 >
                     <Send className="w-4 h-4" />
                     Save Template

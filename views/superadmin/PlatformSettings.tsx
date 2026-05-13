@@ -67,9 +67,9 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
         
         {/* Left Column: Essential Branding */}
         <div className="lg:col-span-2 flex flex-col gap-5 min-h-0 lg:overflow-y-auto lg:pr-2 custom-scrollbar">
-            <div className="bg-white p-5 lg:p-6 rounded-2xl border border-slate-100 lg:border-2 lg:border-slate-50 shadow-sm flex flex-col gap-5">
+            <div className="bg-white p-5 lg:p-6 rounded-xl border-2 border-slate-300 shadow-none flex flex-col gap-5">
                 <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-jade-50 flex items-center justify-center text-jade-600 border border-jade-100">
+                    <div className="w-10 h-10 rounded-xl bg-jade-50 flex items-center justify-center text-jade-600 border-2 border-jade-100">
                         <Monitor className="w-5 h-5" />
                     </div>
                     <div>
@@ -85,7 +85,7 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                         placeholder="Contoh: QurMa - Management Tahfidz Digital"
                         value={settings.platform_name || ''}
                         onChange={e => handleInputChange('platform_name', e.target.value)}
-                        className="w-full px-5 py-3 bg-slate-50/50 border-2 border-transparent rounded-2xl text-slate-800 font-bold text-sm focus:bg-white focus:border-jade-100 focus:ring-4 focus:ring-jade-50/30 outline-none transition-all shadow-sm shadow-slate-200/50"
+                        className="w-full px-5 py-3 bg-white border-2 border-slate-300 rounded-xl text-slate-800 font-bold text-sm focus:border-jade-300 focus:ring-4 focus:ring-jade-50/30 outline-none transition-all shadow-none"
                     />
                     <p className="text-[10px] text-slate-400 font-bold mt-3 leading-relaxed px-1">
                         Nama ini akan muncul sebagai judul aplikasi, footer laporan, dan subject otomatis pada notifikasi email.
@@ -93,9 +93,9 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                 </div>
             </div>
 
-            <div className="bg-white p-5 lg:p-6 rounded-2xl border border-slate-100 lg:border-2 lg:border-slate-50 shadow-sm flex-1 flex flex-col gap-5 min-h-0">
+            <div className="bg-white p-5 lg:p-6 rounded-xl border-2 border-slate-300 shadow-none flex-1 flex flex-col gap-5 min-h-0">
                 <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 border-2 border-emerald-100">
                         <Globe className="w-5 h-5" />
                     </div>
                     <div>
@@ -105,7 +105,7 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                 </div>
 
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl hover:bg-white hover:border-emerald-100 transition-all cursor-pointer group/toggle" onClick={() => handleInputChange('public_registration_enabled', !settings.public_registration_enabled)}>
+                    <div className="flex items-center justify-between p-4 bg-slate-50 border-2 border-slate-300 rounded-xl hover:bg-white hover:border-emerald-300 transition-all cursor-pointer group/toggle" onClick={() => handleInputChange('public_registration_enabled', !settings.public_registration_enabled)}>
                         <div className="flex flex-col gap-1">
                             <span className="text-[11px] font-black uppercase text-slate-700 tracking-tight">Pendaftaran Mandiri</span>
                             <span className="text-[10px] font-bold text-slate-400">Izinkan publik mendaftarkan diri otomatis</span>
@@ -122,7 +122,7 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                                 value={settings.default_tenant_id || ''}
                                 onChange={e => handleInputChange('default_tenant_id', e.target.value)}
                                 disabled={!settings.public_registration_enabled}
-                                className="w-full pl-5 pr-12 py-3.5 bg-slate-50/50 border-2 border-transparent rounded-2xl text-slate-800 font-bold text-sm focus:bg-white focus:border-jade-100 focus:ring-4 focus:ring-jade-50/30 outline-none transition-all appearance-none cursor-pointer shadow-sm shadow-slate-200/50"
+                                className="w-full pl-5 pr-12 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-slate-800 font-bold text-sm focus:border-jade-300 focus:ring-4 focus:ring-jade-50/30 outline-none transition-all appearance-none cursor-pointer shadow-none"
                             >
                                 <option value="">-- PILIH INSTITUSI TUJUAN REGISTRASI --</option>
                                 {tenants.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -137,9 +137,9 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
 
         {/* Right Column: Actions */}
         <div className="flex flex-col gap-5">
-            <div className="bg-white p-5 lg:p-6 rounded-2xl border border-slate-100 lg:border-2 lg:border-slate-50 shadow-sm flex flex-col gap-6">
+            <div className="bg-white p-5 lg:p-6 rounded-xl border-2 border-slate-300 shadow-none flex flex-col gap-6">
                 <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 border-2 border-slate-200">
                         <ShieldCheck className="w-5 h-5" />
                     </div>
                     <div>
@@ -157,9 +157,9 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
 
                 <button 
                     type="submit"
-                    className="w-full py-3.5 px-6 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-jade-400 bg-jade-50 text-jade-700 hover:bg-jade-100 shadow-lg shadow-primary-100/50 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    className="w-full py-3.5 px-6 font-black text-[11px] uppercase tracking-tight rounded-xl border-2 border-jade-400 bg-jade-50 text-jade-700 hover:bg-jade-100 shadow-none transition-all active:scale-95 flex items-center justify-center gap-2"
                 >
-                    <Settings className="w-4 h-4" />
+                    <RefreshCcw className="w-4 h-4" />
                     Simpan Perubahan
                 </button>
             </div>
