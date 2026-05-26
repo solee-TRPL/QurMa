@@ -1359,16 +1359,16 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                                     <div className="h-4 bg-slate-200 rounded w-12 mx-auto"></div>
                                                                 </td>
                                                                 <td className="px-4 py-3 border border-slate-200">
-                                                                    <div className="h-8 bg-slate-50 rounded-lg w-14 mx-auto"></div>
+                                                                    <div className="h-8 bg-slate-50 rounded-lg w-full max-w-[200px] mx-auto"></div>
                                                                 </td>
                                                                 <td className="px-4 py-3 border border-slate-200">
-                                                                    <div className="h-8 bg-slate-50 rounded-lg w-14 mx-auto"></div>
+                                                                    <div className="h-7 bg-slate-50 rounded-full w-full mx-auto"></div>
                                                                 </td>
                                                                 <td className="px-4 py-3 border border-slate-200">
-                                                                    <div className="w-7 h-7 bg-slate-50 rounded-full mx-auto"></div>
-                                                                </td>
-                                                                <td className="px-4 py-3 border border-slate-200">
-                                                                    <div className="w-6 h-6 bg-slate-50 rounded-full mx-auto"></div>
+                                                                    <div className="flex justify-center gap-2">
+                                                                        <div className="w-7 h-7 bg-slate-50 rounded-md"></div>
+                                                                        <div className="w-7 h-7 bg-slate-50 rounded-md"></div>
+                                                                    </div>
                                                                 </td>
                                                             </tr>
                                                         ))
@@ -1845,12 +1845,12 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                         </tbody>
                                     </table>
                                     ) : (
-                                        <div className="flex flex-col items-center justify-center p-8 bg-slate-50/30 min-h-[300px] w-full max-w-sm mx-auto">
+                                        <div className="flex flex-col items-center justify-center p-8 bg-slate-50/30 min-h-75 w-full max-w-sm mx-auto">
                                             <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-3 text-slate-300 ring-1 ring-slate-200 shadow-sm">
                                                 <BookOpen className="w-7 h-7 opacity-50" />
                                             </div>
                                             <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5">Masa Liburan</h4>
-                                            <p className="text-[10px] font-bold text-slate-400 text-center max-w-[200px] leading-relaxed">
+                                            <p className="text-[10px] font-bold text-slate-400 text-center max-w-50 leading-relaxed">
                                                 Tidak ada hari efektif yang dikonfigurasi pada periode ini.
                                             </p>
                                             {holidayBlock && (
