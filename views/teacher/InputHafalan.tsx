@@ -1180,9 +1180,9 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                         <button
                             key={student.id}
                             onClick={() => handleStudentSwitch(student)}
-                            className={`w-full flex items-center px-4 py-4 transition-all text-left group border-b border-slate-50 ${
+                            className={`w-full flex items-center px-4 py-4 transition-all text-left group ${
                                 selectedStudent?.id === student.id 
-                                ? 'bg-jade-50/80 border-jade-100 text-jade-700' 
+                                ? 'bg-jade-100 border border-jade-400 rounded-xs text-jade-700' 
                                 : 'hover:bg-slate-50 text-slate-600 border-transparent'
                             }`}
                         >
@@ -1193,7 +1193,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                     {student.full_name}
                                 </p>
                                 <p className={`text-[9px] font-bold uppercase tracking-widest mt-0.5 ${
-                                    selectedStudent?.id === student.id ? 'text-jade-400' : 'text-slate-400'
+                                    selectedStudent?.id === student.id ? 'text-jade-600' : 'text-slate-400'
                                 }`}>
                                     NIS: {student.nis || '-'}
                                 </p>
@@ -1389,12 +1389,12 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                         [MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL].map((type, idx) => (
                                                             <tr key={`${date}-${type}-loading`} className="animate-pulse">
                                                                 {idx === 0 && (
-                                                                    <td rowSpan={3} className="px-2 py-5 align-middle sticky left-0 z-20 border-b border-slate-200 bg-slate-50 after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1.5px] after:bg-slate-200">
+                                                                    <td rowSpan={3} className="px-2 py-5 align-middle w-18.75 min-w-18.75 sticky left-0 z-20 border-b border-slate-200 bg-slate-50 after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1.5px] after:bg-slate-200">
                                                                         <div className="h-4 bg-slate-200 rounded w-12 mx-auto"></div>
                                                                     </td>
                                                                 )}
-                                                                <td className="px-4 py-3 sticky left-18.75 z-20 border-b border-slate-200 bg-white shadow-[4px_0_8px_rgba(0,0,0,0.05)] after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1.5px] after:bg-slate-300">
-                                                                    <div className="h-4 bg-slate-200 rounded w-12 mx-auto"></div>
+                                                                <td className="px-2 py-3 w-16.25 min-w-16.25 sticky left-18.75 z-20 border-b border-slate-200 bg-white shadow-[4px_0_8px_rgba(0,0,0,0.05)] after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1.5px] after:bg-slate-300">
+                                                                    <div className="h-4 bg-slate-200 rounded w-10 mx-auto"></div>
                                                                 </td>
                                                                 <td className="px-4 py-3 border border-slate-200">
                                                                     <div className="h-8 bg-slate-50 rounded-lg w-full max-w-50 mx-auto"></div>
@@ -1902,7 +1902,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                             <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5">
                                                 {holidayBlock?.isOutsideActive ? 'Belum ada Tanggal Aktif' : 'Masa Liburan'}
                                             </h4>
-                                            <p className="text-[10px] font-bold text-slate-400 text-center max-w-[200px] leading-relaxed">
+                                            <p className="text-[10px] font-bold text-slate-400 text-center max-w-50 leading-relaxed">
                                                 {holidayBlock?.isOutsideActive 
                                                     ? 'Tanggal yang dipilih berada di luar periode aktif yang telah dikonfigurasi.' 
                                                     : 'Tidak ada hari efektif yang dikonfigurasi pada periode ini.'}
