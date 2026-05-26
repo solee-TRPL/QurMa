@@ -286,7 +286,7 @@ export const MemorizationRecap: React.FC<MemorizationRecapProps> = ({ user }) =>
                             >
                                 <ChevronLeft className="w-4 h-4" />
                             </button>
-                            <div className="px-3 text-[10px] font-black text-jade-700 uppercase tracking-widest whitespace-nowrap min-w-[120px] text-center">
+                            <div className="px-3 text-[10px] font-black text-jade-700 uppercase tracking-widest whitespace-nowrap min-30 text-center">
                                 PEKAN INI
                             </div>
                             <button 
@@ -345,7 +345,7 @@ export const MemorizationRecap: React.FC<MemorizationRecapProps> = ({ user }) =>
                             {/* Table Area */}
                             <div className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
                                 <table className="w-full border-separate border-spacing-0">
-                                    <thead className="sticky top-0 z-40 bg-white">
+                                    <thead className="sticky top-0 z-40 bg-slate-300">
                                         <tr>
                                             <th className="px-4 py-4 text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-24 sticky left-0 z-50 bg-slate-300 border-r border-b border-slate-200">TANGGAL</th>
                                             <th className="px-4 py-4 text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-24 sticky left-24 z-50 bg-slate-300 border-r border-b border-slate-200">SETORAN</th>

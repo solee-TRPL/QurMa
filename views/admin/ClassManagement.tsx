@@ -920,7 +920,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
                </div>
 
               {/* Sub-Classes List Area (Vertical) */}
-              <div className="p-5 flex flex-col gap-2 min-h-[100px] items-stretch">
+              <div className="p-5 flex flex-col gap-2 min-25 items-stretch">
                   {groupMembers.sort((a, b) => a.name.localeCompare(b.name)).map(cls => (
                       <div 
                           key={cls.id}
@@ -1115,7 +1115,7 @@ export const ClassManagement: React.FC<{ tenantId: string, user: UserProfile }> 
             <table className="w-full border-separate border-spacing-0">
               <thead className="bg-[#FCFDFE] sticky top-0 z-10">
                 <tr>
-                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-l border-r border-black w-[50px] bg-slate-300">NO</th>
+                  <th className="px-4 py-4 text-[9.5px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-l border-r border-black w-12.5 bg-slate-300">NO</th>
                   <th className="px-4 py-4 text-[9.5px] font-black text-slate-800 uppercase tracking-widest text-left border-t border-b border-r border-black bg-slate-300">NAMA SANTRI</th>
                   <th className="px-4 py-4 text-[9.5px] font-black text-amber-600 uppercase tracking-widest text-center border-t border-b border-r border-amber-600 w-24 bg-amber-50">NIS</th>
                   <th className="px-4 py-4 text-[9.5px] font-black text-amber-600 uppercase tracking-widest text-center border-t border-b border-r border-amber-600 w-20 bg-amber-50">JK</th>

@@ -173,12 +173,12 @@ export const StudentProgress: React.FC<{ user: UserProfile }> = ({ user }) => {
                                 <th className="px-3 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-300 w-12">No. Data</th>
                                 <th className="px-3 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-300 w-12">Kelas</th>
                                 <th className="px-3 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-300 w-12">Semester</th>
-                                <th className="px-4 py-2 text-[9px] font-black text-jade-700 uppercase tracking-widest border-b border-r border-slate-200 bg-jade-50/20 min-w-[110px]">Hafalan</th>
-                                <th className="px-4 py-2 text-[9px] font-black text-blue-700 uppercase tracking-widest border-b border-r border-slate-200 bg-blue-50/20 min-w-[110px]">Sabaq</th>
-                                <th className="px-4 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-300 min-w-[110px]">Target Hafalan</th>
-                                <th className="px-4 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-300 min-w-[110px]">Ket</th>
-                                <th className="px-4 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-300 min-w-[110px]">Target Sabaq</th>
-                                <th className="px-4 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-slate-200 bg-slate-300 min-w-[110px]">Ket</th>
+                                <th className="px-4 py-2 text-[9px] font-black text-jade-700 uppercase tracking-widest border-b border-r border-slate-200 bg-jade-50/20 min-27.5">Hafalan</th>
+                                <th className="px-4 py-2 text-[9px] font-black text-blue-700 uppercase tracking-widest border-b border-r border-slate-200 bg-blue-50/20 min-27.5">Sabaq</th>
+                                <th className="px-4 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-300 min-27.5">Target Hafalan</th>
+                                <th className="px-4 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-300 min-27.5">Ket</th>
+                                <th className="px-4 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-r border-slate-200 bg-slate-300 min-27.5">Target Sabaq</th>
+                                <th className="px-4 py-2 text-[9px] font-black text-slate-800 uppercase tracking-widest border-b border-slate-200 bg-slate-300 min-27.5">Ket</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white">

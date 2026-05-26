@@ -11,7 +11,7 @@ import {
     getTenant,
     getLatestMemorizationBaselines
 } from '../../services/dataService';
-import { calculateLines, calculatePages, getNextAyah } from '../../lib/quranUtils';
+import { calculateLines, calculatePages, getNextAyah, validateMemorizationSequence } from '../../lib/quranUtils';
 import { 
   ClipboardList, 
   Calendar, 
@@ -71,6 +71,7 @@ interface TargetRow {
 
 export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSetUnsavedChanges, saveTrigger, onSaveSuccess, isGlobalModalOpen, showNotesMode = false, onNavigate }) => {
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const { setLoading: setGlobalLoading } = useLoading();
   const { addNotification } = useNotification();
@@ -114,6 +115,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
     return `${year}-${month}-${day}`;
   };
 
+  const activePeriodsStr = JSON.stringify(tenant?.cycle_config?.activePeriods || []);
   const weekDates = useMemo(() => {
     const today = new Date();
     const day = today.getDay(); // 0-6
@@ -121,13 +123,28 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
     const start = new Date(today);
     start.setDate(today.getDate() + diff);
     const dates: string[] = [];
+    const activePeriods = JSON.parse(activePeriodsStr);
+
     for (let i = 0; i < 5; i++) {
         const current = new Date(start);
         current.setDate(start.getDate() + i);
-        dates.push(getLocalDateString(current));
+        const currentDateStr = getLocalDateString(current);
+
+        let isWithinActiveRange = true;
+        if (activePeriods.length > 0) {
+            isWithinActiveRange = activePeriods.some((period: any) => {
+                const startOk = !period.startDate || currentDateStr >= period.startDate;
+                const endOk = !period.endDate || currentDateStr <= period.endDate;
+                return startOk && endOk;
+            });
+        }
+
+        if (isWithinActiveRange) {
+            dates.push(currentDateStr);
+        }
     }
     return dates;
-  }, [currentWeekOffset]);
+  }, [currentWeekOffset, activePeriodsStr]);
 
   const weekDisplayRange = useMemo(() => {
     if (weekDates.length === 0) return '';
@@ -149,13 +166,9 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
     setEndDate(weekDates[4]);
   }, [weekDates]);
 
-  useEffect(() => { 
-    // Sync URL when week offset changes
-    const url = new URL(window.location.href);
-    url.searchParams.set('weekOffset', currentWeekOffset.toString());
-    window.history.replaceState({}, '', url.toString());
-
-    fetchData(); 
+  useEffect(() => {
+    // When week offset changes, simply fetch new data without altering the URL to avoid full page reloads
+    fetchData();
   }, [user.id, weekDates, currentWeekOffset]);
 
   // ATM Calculation Helpers
@@ -191,8 +204,8 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
     return 'C';
   };
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (silentLoad: boolean = false) => {
+    if (!silentLoad) setLoading(true);
     try {
         const [halaqahData, studentData, classData, tenantData] = await Promise.all([
             getHalaqahs(user.tenant_id!),
@@ -213,8 +226,8 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
             
             // NEW: Fetch existing targets AND actual weekly totals AND latest baselines
             const [existingTargets, weeklyTotals, baselines] = await Promise.all([
-              getWeeklyTargets(hStudents.map(s => s.id), weekDates[0]),
-              getWeeklyAllTypeTotals(hStudents.map(s => s.id), weekDates[0]),
+              weekDates.length > 0 ? getWeeklyTargets(hStudents.map(s => s.id), weekDates[0]) : Promise.resolve([]),
+              weekDates.length > 0 ? getWeeklyAllTypeTotals(hStudents.map(s => s.id), weekDates[0]) : Promise.resolve({}),
               getLatestMemorizationBaselines(hStudents.map(s => s.id))
             ]);
             setWeeklyActualTotals(weeklyTotals);
@@ -262,7 +275,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
     } catch (error) {
         addNotification({ type: 'error', title: 'Gagal', message: 'Gagal memuat data.' });
     } finally {
-        setLoading(false);
+        if (!silentLoad) setLoading(false);
     }
   };
 
@@ -380,7 +393,49 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
   }, [students, searchQuery]);
 
   const handleSave = async (isSilent: boolean = false) => {
-    setGlobalLoading(true);
+    if (!isDirty && !isSilent) {
+        addNotification({
+            type: 'info',
+            title: 'Info',
+            message: 'Tidak ada data yang berubah.'
+        });
+        return;
+    }
+
+    // 0. Validate Sabaq Sequence (Hard Block)
+    if (!isSilent) {
+        const invalidTargets: string[] = [];
+        for (const [studentId, target] of Object.entries(targets)) {
+            if (target.sabaqTargetSurat) {
+                const [surahName, ayahStr] = target.sabaqTargetSurat.split(':');
+                const ayah = parseInt(ayahStr) || 1;
+                
+                const baseline = latestBaselines[studentId]?.sabaq;
+                if (baseline && baseline.surah_name) {
+                    const isValid = validateMemorizationSequence(
+                        baseline.surah_name,
+                        baseline.ayat_start || 1,
+                        surahName,
+                        ayah
+                    );
+                    if (!isValid) {
+                        invalidTargets.push(target.name);
+                    }
+                }
+            }
+        }
+
+        if (invalidTargets.length > 0) {
+            addNotification({
+                type: 'error',
+                title: 'Validasi Gagal',
+                message: `Alur target Sabaq tidak valid (Juz harus mundur, Surat harus maju) untuk: ${invalidTargets.join(', ')}`
+            });
+            return;
+        }
+    }
+
+    setIsSaving(true);
     try {
         const updatePromises = Object.values(targets).map(async (target) => {
             const juzVal = parseInt(target.hafalanJuz);
@@ -427,7 +482,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
           });
         }
         
-        await fetchData(); // Refresh local data from DB
+        await fetchData(true); // Refresh local data from DB without triggering full page loading state
         setIsDirty(false);
     } catch (error) {
         console.error("Failed to save targets:", error);
@@ -437,7 +492,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
             message: 'Terjadi kesalahan saat menyimpan data.' 
         });
     } finally {
-        setGlobalLoading(false);
+        setIsSaving(false);
     }
   };
 
@@ -451,17 +506,6 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
         });
     }
   }, [saveTrigger]);
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[400px] bg-white rounded-32px border-2 border-slate-50 shadow-sm animate-fade-in">
-        <div className="flex flex-col items-center justify-center space-y-4 opacity-40">
-            <div className="w-10 h-10 border-2 border-jade-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 ml-[0.3em]">Memuat Data Target</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
@@ -477,17 +521,19 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                   >
                       <ChevronLeft className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
                   </button>
-                  <div className="flex-1 flex flex-col items-center justify-center px-1 lg:px-4 py-1 text-center min-w-[120px] lg:min-w-[160px]">
+                  <div className="flex-1 flex flex-col items-center justify-center px-1 lg:px-4 py-1 text-center min-w-30 lg:min-w-40">
                       <span className="flex items-center gap-1.5 text-[8.5px] lg:text-[10px] font-black uppercase tracking-widest text-jade-600 whitespace-nowrap">
-                          <Calendar className="w-2.5 h-2.5 lg:w-3.5 lg:h-3.5" />
-                          {weekDisplayRange}
+                          {loading ? <div className="w-2.5 h-2.5 lg:w-3.5 lg:h-3.5 border-2 border-jade-600 border-t-transparent rounded-full animate-spin" /> : <Calendar className="w-2.5 h-2.5 lg:w-3.5 lg:h-3.5" />}
+                          {loading ? 'MEMUAT...' : weekDisplayRange}
                       </span>
                       <span className="text-[6px] lg:text-[7px] text-jade-300 mt-0.5 opacity-80 uppercase tracking-[0.2em] font-black leading-none">
-                          {currentWeekOffset === 0 ? 'Pekan Ini' : 
+                          {loading ? 'MOHON TUNGGU' : (
+                           currentWeekOffset === 0 ? 'Pekan Ini' : 
                            currentWeekOffset === -1 ? 'Pekan Lalu' : 
                            currentWeekOffset === 1 ? 'Pekan Depan' : 
                            currentWeekOffset < 0 ? `${Math.abs(currentWeekOffset)} Pekan Lalu` : 
-                           `${currentWeekOffset} Pekan Depan`}
+                           `${currentWeekOffset} Pekan Depan`
+                          )}
                       </span>
                   </div>
                   <button 
@@ -505,7 +551,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                   </div>
                   <div className="text-left">
                       <p className="hidden lg:block text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Halaqah</p>
-                      <p className="text-[8.5px] lg:text-[10px] font-black text-slate-800 uppercase tracking-tight truncate max-w-[70px] lg:max-w-none">
+                      <p className="text-[8.5px] lg:text-[10px] font-black text-slate-800 uppercase tracking-tight truncate max-w-17.5 lg:max-w-none">
                           {myHalaqah?.name || '-'}
                       </p>
                   </div>
@@ -534,14 +580,19 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                   >
                       <HelpCircle className="w-3.5 h-3.5 lg:w-4 lg:h-4 group-hover:scale-110 transition-transform" />
                   </button>
-                  <button 
-                    onClick={() => handleSave()}
-                    className="h-full flex items-center justify-center px-3 lg:px-6 py-2 lg:py-2.5 font-black text-[9px] lg:text-[10px] uppercase tracking-widest rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-all active:scale-95 border-2 border-emerald-600"
-                  >
-                      <Save className="w-3.5 h-3.5 lg:mr-2" />
-                      <span className="hidden lg:inline">SIMPAN LAPORAN</span>
-                      <span className="lg:hidden ml-1.5">SIMPAN</span>
-                  </button>
+                  <button type="button"
+                      disabled={isSaving}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSave(); }}
+                      className="h-full flex items-center justify-center px-3 lg:px-6 py-2 lg:py-2.5 font-black text-[9px] lg:text-[10px] uppercase tracking-widest rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-all active:scale-95 border-2 border-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSaving ? (
+                        <div className="w-3.5 h-3.5 lg:mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Save className="w-3.5 h-3.5 lg:mr-2" />
+                      )}
+                      <span className="hidden lg:inline">{isSaving ? 'MENYIMPAN...' : 'SIMPAN LAPORAN'}</span>
+                      <span className="lg:hidden ml-1.5">{isSaving ? 'MENYIMPAN...' : 'SIMPAN'}</span>
+                    </button>
               </div>
           </div>
       </div>
@@ -551,7 +602,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
           <div className="hidden sm:flex items-center gap-2">
             <button 
               onClick={() => setShowAtm(!showAtm)}
-              className={`flex-none items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all text-[8.5px] lg:text-[10px] font-black uppercase tracking-tight border-2 shadow-none ${showAtm ? 'bg-jade-50/50 text-jade-600 border-jade-300' : 'bg-white text-slate-400 border-slate-300 hover:bg-slate-50'}`}
+              className={`flex-none flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all text-[8.5px] lg:text-[10px] font-black uppercase tracking-tight border-2 shadow-none ${showAtm ? 'bg-jade-50/50 text-jade-600 border-jade-300' : 'bg-white text-slate-400 border-slate-300 hover:bg-slate-50'}`}
             >
               <span>{showAtm ? 'Sembunyikan ATM' : 'Tampilkan ATM'}</span>
             </button>
@@ -563,7 +614,11 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                     setShowNotes(!showNotes);
                 }
               }}
-              className={`flex-none items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all text-[8.5px] lg:text-[10px] font-black uppercase tracking-tight border-2 shadow-none ${showNotes ? 'bg-amber-50/50 text-amber-600 border-amber-300' : 'bg-white text-slate-400 border-slate-300 hover:bg-slate-50'}`}
+              className={`flex-none flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all text-[8.5px] lg:text-[10px] font-black uppercase tracking-tight border-2 shadow-none ${
+                showNotes 
+                  ? 'bg-amber-50/50 text-amber-600 border-amber-300' 
+                  : 'bg-white text-slate-400 border-slate-300 hover:bg-slate-50'
+              }`}
             >
               <span>{showNotes ? 'Sembunyikan Catatan' : 'Catatan'}</span>
             </button>
@@ -576,6 +631,8 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
           </div>
       </div>
 
+      {weekDates.length > 0 ? (
+      <>
       {/* Main Table Grid (With Borders) */}
       <div className="bg-transparent rounded-none overflow-hidden border-2 border-t-0 border-slate-300 flex flex-col">
           <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
@@ -583,10 +640,10 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                 <thead className="sticky top-0 z-40">
                     <tr className="bg-slate-300">
                         {/* Frozen Headers */}
-                        <th rowSpan={2} className="w-[35px] lg:w-[50px] min-w-[35px] lg:min-w-[50px] hidden sm:table-cell sticky sm:left-0 bg-slate-300 z-50 px-1 lg:px-3 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-wider text-center border-t border-b border-l border-r border-black">No</th>
-                        <th rowSpan={2} className={`w-[95px] lg:w-[220px] min-w-[95px] lg:min-w-[220px] sticky sm:left-[50px] left-0 bg-slate-300 z-50 px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-wider text-left border-t border-b border-r border-black shadow-[2px_0_5_rgba(0,0,0,0.05)] transition-all duration-300`}>Nama Santri</th>
+                        <th rowSpan={2} className="w-8.75 lg:w-12.5 min-w-8.75 lg:min-w-12.5 hidden sm:table-cell sticky sm:left-0 bg-slate-300 z-50 px-1 lg:px-3 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-wider text-center border-t border-b border-l border-r border-black">No</th>
+                        <th rowSpan={2} className={`w-23.75 lg:w-55 min-w-23.75 lg:min-w-55 sticky sm:left-12.5 left-0 bg-slate-300 z-50 px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-wider text-left border-t border-b border-r border-black shadow-[2px_0_5_rgba(0,0,0,0.05)] transition-all duration-300`}>Nama Santri</th>
                         {/* {showNisKelas && (
-                            <th rowSpan={2} className="w-[80px] min-w-[80px] sticky left-[370px] bg-white z-50 px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)] animate-in slide-in-from-left-1 duration-300">Kelas</th>
+                            <th rowSpan={2} className="w-20 min-20 sticky left-92.5 bg-white z-50 px-3 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center border-b border-r border-slate-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)] animate-in slide-in-from-left-1 duration-300">Kelas</th>
                         )} */}
                         
                         {/* Scrollable Group Headers */}
@@ -605,21 +662,21 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                     <tr className="bg-slate-300">
                         {!showNotes ? (
                           <>
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50/50 min-w-[45px] lg:min-w-[60px]">Juz</th>
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50/50 min-w-[55px] lg:min-w-[80px]">Halaman</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50/50 min-w-11.25 lg:min-w-15">Juz</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50/50 min-w-13.75 lg:min-w-20">Halaman</th>
                             {showAtm && (
                                 <>
-                                    <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-amber-600 uppercase text-center border-b border-r border-amber-600 bg-amber-50/50 min-w-[55px] lg:min-w-[80px]">Manzil</th>
-                                    <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-amber-600 uppercase text-center border-b border-r border-amber-600 bg-amber-50/50 min-w-[45px] lg:min-w-[60px]">Berputar</th>
-                                    <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-600 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-[55px] lg:min-w-[80px]">Sabqi</th>
+                                    <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-amber-600 uppercase text-center border-b border-r border-amber-600 bg-amber-50/50 min-w-13.75 lg:min-w-20">Manzil</th>
+                                    <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-amber-600 uppercase text-center border-b border-r border-amber-600 bg-amber-50/50 min-w-11.25 lg:min-w-15">Berputar</th>
+                                    <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-600 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-13.75 lg:min-w-20">Sabqi</th>
                                 </>
                             )}
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-[130px] lg:min-w-[180px]">Manzil (Hal/Juz)</th>
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-[40px] lg:min-w-[50px]">Ket</th>
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-[130px] lg:min-w-[180px]">Sabqi (Hal)</th>
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-[40px] lg:min-w-[50px]">Ket</th>
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-[130px] lg:min-w-[180px]">Sabaq (Baris)</th>
-                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-blue-700 bg-blue-50/50 min-w-[40px] lg:min-w-[50px]">Ket</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-32.5 lg:min-w-45">Manzil (Hal/Juz)</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-10 lg:min-w-12.5">Ket</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-32.5 lg:min-w-45">Sabqi (Hal)</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-10 lg:min-w-12.5">Ket</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-r border-blue-700 bg-blue-50/50 min-w-32.5 lg:min-w-45">Sabaq (Baris)</th>
+                            <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-blue-700 uppercase text-center border-b border-blue-700 bg-blue-50/50 min-w-10 lg:min-w-12.5">Ket</th>
                           </>
                         ) : (
                           <th className="px-1 lg:px-2 py-2 text-[8.5px] lg:text-[9px] font-black text-amber-700 uppercase text-start border-b border-amber-700 bg-amber-50/50">Input Catatan Perkembangan Santri</th>
@@ -643,18 +700,18 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                         } as TargetRow;
 
                         return (
-                            <tr key={s.id} className="group transition-colors h-[62px] hover:bg-emerald-50/40">
+                            <tr key={s.id} className="group transition-colors h-15.5 hover:bg-emerald-50/40">
                                 {/* Frozen Body Cells */}
                                 <td className="hidden sm:table-cell sticky sm:left-0 bg-white px-1 lg:px-3 py-4 text-[10px] lg:text-[11px] font-bold text-slate-400 text-center border-l-2 border-r border-slate-300 z-20 transition-colors">{idx + 1}</td>
-                                <td className={`sticky sm:left-[50px] left-0 bg-white px-2 lg:px-4 py-4 text-[9.5px] lg:text-xs font-bold text-slate-800 border-r border-slate-100 z-20 transition-all duration-300 whitespace-normal leading-tight break-words shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-[95px] lg:w-[220px]`}>{target.name}</td>
+                                <td className={`sticky sm:left-12.5 left-0 bg-white px-2 lg:px-4 py-4 text-[9.5px] lg:text-xs font-bold text-slate-800 z-20 transition-all duration-300 whitespace-normal leading-tight wrap-break-words shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-23.75 lg:w-55`}>{target.name}</td>
                                 {/* {showNisKelas && (
-                                    <td className="sticky left-[370px] bg-white px-3 py-4 text-[11px] font-bold text-slate-600 text-center border-r border-slate-100 z-20 transition-all duration-300 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">{target.className}</td>
+                                    <td className="sticky left-92.5 bg-white px-3 py-4 text-[11px] font-bold text-slate-600 text-center border-r z-20 transition-all duration-300 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">{target.className}</td>
                                 )} */}
                                 
                                 {/* Scrollable Content */}
                                 {!showNotes ? (
                                   <>
-                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-100 border-b border-slate-200 text-center bg-jade-50/5">
+                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-b border-slate-200 text-center bg-jade-50/5">
                                         <input 
                                             type="number" 
                                             min="1" 
@@ -673,7 +730,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                             placeholder="Juz" 
                                         />
                                     </td>
-                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-100 border-b border-slate-200 text-center bg-jade-50/5">
+                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-b border-slate-200 text-center bg-jade-50/5">
                                         <input 
                                             type="number" 
                                             min="1" 
@@ -694,22 +751,22 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                     </td>
                                     {showAtm && (
                                         <>
-                                            <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-100 border-b border-slate-200 text-center bg-blue-50/5">
-                                                <input readOnly type="text" value={target.manzilAtm ? `${target.manzilAtm} Hlm` : ''} className="w-full text-center text-[9px] lg:text-[10px] font-black text-amber-500 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
+                                            <td className="px-0.5 lg:px-1 py-1.5 border-r border-b border-slate-200 text-center bg-blue-50/5">
+                                                <input readOnly type="text" value={target.manzilAtm ? `${target.manzilAtm} Hal` : ''} className="w-full text-center text-[9px] lg:text-[10px] font-black text-amber-500 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
                                             </td>
-                                            <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-100 border-b border-slate-200 text-center bg-blue-50/5">
+                                            <td className="px-0.5 lg:px-1 py-1.5 border-r border-b border-slate-200 text-center bg-blue-50/5">
                                                 <input readOnly type="text" value={target.hariAtm ? `${target.hariAtm} Hari` : ''} className="w-full text-center text-[9px] lg:text-[10px] font-black text-amber-500 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
                                             </td>
-                                            <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-100 border-b border-slate-200 text-center bg-blue-50/5">
-                                                <input readOnly type="text" value={target.sabqiAtm} className="w-full text-center text-[9px] lg:text-[10px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
+                                            <td className="px-0.5 lg:px-1 py-1.5 border-r border-b border-slate-200 text-center bg-blue-50/5">
+                                                <input readOnly type="text" value={target.sabqiAtm ? `${target.sabqiAtm} Hal` : ''} className="w-full text-center text-[9px] lg:text-[10px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
                                             </td>
                                         </>
                                     )}
 
-                                    <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-100 border-b border-slate-200 bg-emerald-50/5">
+                                    <td className="px-1 lg:px-1.5 py-1.5 border-r border-b border-slate-200 bg-emerald-50/5">
                                         <div className="flex items-center gap-0.5">
                                             {/* Manzil Surah & Ayat */}
-                                            <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 focus-within:border-emerald-300">
+                                            <div className="flex items-center bg-white border border-slate-300 rounded-lg p-0.5 focus-within:border-emerald-300">
                                                 <select 
                                                     value={target.manzilTarget.split(':')[0] || ''} 
                                                     onChange={e => {
@@ -718,7 +775,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                                         const ayah = surahName ? '1' : '';
                                                         handleInputChange(s.id, 'manzilTarget', surahName ? `${surahName}:${ayah}` : '');
                                                     }}
-                                                    className="w-[75px] lg:w-[100px] bg-transparent border-none focus:ring-0 text-[9px] lg:text-[10px] font-bold text-slate-700 outline-none appearance-none px-1 text-center"
+                                                    className="w-18.75 lg:w-25 bg-transparent border-none focus:ring-0 text-[9px] lg:text-[10px] font-bold text-slate-700 outline-none appearance-none px-1 text-center"
                                                 >
                                                     <option value="">- Surat -</option>
                                                     {SURAH_DATA.map(surah => (
@@ -746,7 +803,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                                     placeholder="0"
                                                 />
                                             </div>
-                                            <div className="flex items-center bg-slate-50 border border-slate-100 rounded-lg px-0.5 lg:px-1">
+                                            <div className="flex items-center bg-slate-50 border border-slate-300 rounded-lg px-0.5 lg:px-1">
                                                 <input 
                                                     type="number" 
                                                     readOnly
@@ -758,12 +815,12 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-100 border-b border-slate-200 bg-emerald-50/5">
+                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-b border-slate-200 bg-emerald-50/5">
                                         <input 
                                             type="text"
                                             readOnly
                                             value={target.manzilKet || '-'} 
-                                            className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-slate-50/50 border border-slate-100 rounded-lg focus:ring-0 text-center cursor-default ${
+                                            className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-slate-50/50 border rounded-lg focus:ring-0 text-center cursor-default ${
                                                 target.manzilKet === 'A' ? 'text-amber-500' : 
                                                 target.manzilKet === 'C' ? 'text-rose-500' : 
                                                 target.manzilKet === 'B' ? 'text-emerald-600' : 'text-slate-300'
@@ -771,10 +828,10 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                         />
                                     </td>
 
-                                    <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-100 border-b border-slate-200 bg-emerald-50/5">
+                                    <td className="px-1 lg:px-1.5 py-1.5 border-r border-b border-slate-200 bg-emerald-50/5">
                                         <div className="flex items-center gap-0.5 animate-in zoom-in-95 duration-100">
                                             {/* Sabqi Surah & Ayat */}
-                                            <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 focus-within:border-emerald-300">
+                                            <div className="flex items-center bg-white border border-slate-300 rounded-lg p-0.5 focus-within:border-emerald-300">
                                                 <select 
                                                     value={target.sabqiTargetSurat.split(':')[0] || ''} 
                                                     onChange={e => {
@@ -783,7 +840,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                                         const ayah = surahName ? '1' : '';
                                                         handleInputChange(s.id, 'sabqiTargetSurat', surahName ? `${surahName}:${ayah}` : '');
                                                     }}
-                                                    className="w-[75px] lg:w-[100px] bg-transparent border-none focus:ring-0 text-[9px] lg:text-[10px] font-bold text-slate-700 outline-none appearance-none px-1 text-center"
+                                                    className="w-18.75 lg:w-25 bg-transparent border-none focus:ring-0 text-[9px] lg:text-[10px] font-bold text-slate-700 outline-none appearance-none px-1 text-center"
                                                 >
                                                     <option value="">- Surat -</option>
                                                     {SURAH_DATA.map(surah => (
@@ -811,7 +868,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                                     placeholder="0"
                                                 />
                                             </div>
-                                            <div className="flex items-center bg-slate-50 border border-slate-100 rounded-lg px-0.5 lg:px-1">
+                                            <div className="flex items-center bg-slate-50 border border-slate-300 rounded-lg px-0.5 lg:px-1">
                                                 <input 
                                                     type="number" 
                                                     readOnly
@@ -823,12 +880,12 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-slate-100 border-b border-slate-200 bg-emerald-50/5">
+                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-b border-slate-200 bg-emerald-50/5">
                                         <input 
                                             type="text"
                                             readOnly
                                             value={target.sabqiKet || '-'} 
-                                            className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-slate-50/50 border border-slate-100 rounded-lg focus:ring-0 text-center cursor-default ${
+                                            className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-slate-50/50 border rounded-lg focus:ring-0 text-center cursor-default ${
                                                 target.sabqiKet === 'A' ? 'text-amber-500' : 
                                                 target.sabqiKet === 'C' ? 'text-rose-500' : 
                                                 target.sabqiKet === 'B' ? 'text-emerald-600' : 'text-slate-300'
@@ -836,10 +893,10 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                         />
                                     </td>
 
-                                    <td className="px-1 lg:px-1.5 py-1.5 border-r border-slate-100 border-b border-slate-200 bg-emerald-50/5">
+                                    <td className="px-1 lg:px-1.5 py-1.5 border-r border-b border-slate-200 bg-emerald-50/5">
                                         <div className="flex items-center justify-center gap-0.5 animate-in zoom-in-95 duration-100 text-left">
                                             {/* Sabaq Surah & Ayat */}
-                                            <div className="flex items-center bg-white border border-slate-100 rounded-lg p-0.5 focus-within:border-emerald-300">
+                                            <div className="flex items-center bg-white border border-slate-300 rounded-lg p-0.5 focus-within:border-emerald-300">
                                                 <select 
                                                     value={target.sabaqTargetSurat.split(':')[0] || ''} 
                                                     onChange={e => {
@@ -848,7 +905,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                                         const ayah = surahName ? '1' : '';
                                                         handleInputChange(s.id, 'sabaqTargetSurat', surahName ? `${surahName}:${ayah}` : '');
                                                     }}
-                                                    className="w-[75px] lg:w-[100px] bg-transparent border-none focus:ring-0 text-[9px] lg:text-[10px] font-bold text-slate-700 outline-none appearance-none px-1 text-center"
+                                                    className="w-18.75 lg:w-25 bg-transparent border-none focus:ring-0 text-[9px] lg:text-[10px] font-bold text-slate-700 outline-none appearance-none px-1 text-center"
                                                 >
                                                     <option value="">- Surat -</option>
                                                     {SURAH_DATA.map(surah => (
@@ -876,7 +933,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                                     placeholder="0"
                                                 />
                                             </div>
-                                            <div className="flex items-center bg-slate-50 border border-slate-100 rounded-lg px-0.5 lg:px-1">
+                                            <div className="flex items-center bg-slate-50 border border-slate-300 rounded-lg px-0.5 lg:px-1">
                                                 <input 
                                                     type="number" 
                                                     readOnly
@@ -893,7 +950,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                             type="text"
                                             readOnly
                                             value={target.sabaqKet || '-'} 
-                                            className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-slate-50/50 border border-slate-100 rounded-lg focus:ring-0 text-center cursor-default ${
+                                            className={`w-full h-9 text-[10px] lg:text-[11px] font-black bg-slate-50/50 border rounded-lg focus:ring-0 text-center cursor-default ${
                                                 target.sabaqKet === 'A' ? 'text-amber-500' : 
                                                 target.sabaqKet === 'C' ? 'text-rose-500' : 
                                                 target.sabaqKet === 'B' ? 'text-emerald-600' : 'text-slate-300'
@@ -902,12 +959,13 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                     </td>
                                   </>
                                 ) : (
-                                  <td className="px-2 py-1.5 bg-amber-50/5 h-[62px]">
+                                  <td className="px-2 py-1.5 bg-amber-50/5 h-15.5">
                                     <textarea 
+                                      spellCheck={false}
                                       value={target.teacherNote}
                                       onChange={e => handleInputChange(s.id, 'teacherNote', e.target.value)}
                                       placeholder="Tambahkan catatan..."
-                                      className="w-full h-10 pb-1 pt-1.5 px-2 text-[10px] lg:text-[11px] font-bold text-slate-700 bg-white border border-slate-100 rounded-lg focus:ring-0 focus:border-amber-300 outline-none transition-all resize-none placeholder:font-bold placeholder:text-slate-300 leading-tight text-start"
+                                      className="w-full h-10 pb-1 pt-1.5 px-2 text-[10px] lg:text-[11px] font-bold text-slate-700 bg-white border rounded-lg focus:ring-0 focus:border-amber-300 outline-none transition-all resize-none placeholder:font-bold placeholder:text-slate-300 leading-tight text-start"
                                     />
                                   </td>
                                 )}
@@ -932,6 +990,18 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
               </div>
           </div>
       </div>
+      </>
+      ) : (
+          <div className="flex flex-col items-center justify-center p-12 text-center bg-white border-2 border-slate-300 rounded-xl mt-4">
+              <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 text-slate-400 border border-slate-100">
+                  <Calendar className="w-8 h-8" />
+              </div>
+              <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-widest mb-1">Di Luar Masa Aktif</h3>
+              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                  Tahun ajaran tidak aktif pada minggu ini.
+              </p>
+          </div>
+      )}
 
       {/* Info Modal */}
       {isInfoModalOpen && (

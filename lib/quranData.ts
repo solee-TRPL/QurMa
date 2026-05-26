@@ -116,3 +116,28 @@ export const SURAH_DATA = [
   { name: "Al-Falaq", juz: [30], totalAyah: 5 },
   { name: "An-Nas", juz: [30], totalAyah: 6 },
 ];
+
+export const SURAH_PROGRESSION: string[] = (() => {
+  const juzMap: Record<number, typeof SURAH_DATA> = {};
+  SURAH_DATA.forEach((s) => {
+    s.juz.forEach(j => {
+      if (!juzMap[j]) juzMap[j] = [];
+      juzMap[j].push(s);
+    });
+  });
+  
+  const progression: string[] = [];
+  const seenSurahs = new Set<string>();
+  
+  for (let j = 30; j >= 1; j--) {
+    if (juzMap[j]) {
+      juzMap[j].forEach(s => {
+        if (!seenSurahs.has(s.name)) {
+          progression.push(s.name);
+          seenSurahs.add(s.name);
+        }
+      });
+    }
+  }
+  return progression;
+})();

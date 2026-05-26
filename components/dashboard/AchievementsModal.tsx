@@ -60,10 +60,6 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ isOpen, on
                             </div>
                         ) : achievements.map((item) => (
                             <div key={item.id} className="flex items-center gap-3 bg-white p-3.5 rounded-xl border-2 border-slate-200 group hover:border-slate-300 transition-all shadow-none">
-                                <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center border-2 shrink-0 ${getColorClass(item.color)}`}>
-                                    <span className="text-[7px] font-black leading-none uppercase opacity-60">Rank</span>
-                                    <span className="text-xs font-black leading-tight">{item.rank}</span>
-                                </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-[10.5px] font-black text-slate-800 uppercase tracking-tight leading-tight">{item.title}</p>
                                     <div className="flex items-center gap-2 mt-1.5">

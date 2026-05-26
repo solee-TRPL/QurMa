@@ -721,12 +721,12 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
           <table className="min-w-full divide-y divide-slate-100 border-separate border-spacing-0">
             <thead>
               <tr className="bg-slate-300">
-                <th className="hidden lg:table-cell w-[40px] min-w-[40px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-slate-300 z-10 px-3 py-4 text-center text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-l border-b border-r border-slate-400">NO</th>
+                <th className="hidden lg:table-cell w-10 min-10 lg:w-11.25 lg:min-11.25 sticky left-0 bg-slate-300 z-10 px-3 py-4 text-center text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-l border-b border-r border-slate-400">NO</th>
                 
-                <th className="hidden lg:table-cell w-[80px] min-w-[80px] lg:w-[150px] lg:min-w-[150px] lg:sticky lg:left-[45px] bg-slate-300 z-10 px-4 py-4 text-left text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-slate-400">KODE</th>
+                <th className="hidden lg:table-cell w-20 min-20 lg:w-37.5 lg:min-37.5 lg:sticky lg:left-11.25 bg-slate-300 z-10 px-4 py-4 text-left text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-slate-400">KODE</th>
                 
-                <th className="w-[120px] min-w-[120px] lg:w-[auto] lg:min-w-[300px] sticky left-0 lg:left-[195px] bg-slate-300 z-10 px-4 py-4 text-left text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-slate-400 shadow-none transition-all">NAMA SEKOLAH</th>
-                <th className="px-6 py-4 text-center text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-slate-400 bg-slate-300 min-w-[120px]">REGISTRASI</th>
+                <th className="w-30 min-30 lg:w-[auto] lg:min-75 sticky left-0 lg:left-48.75 bg-slate-300 z-10 px-4 py-4 text-left text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-slate-400 shadow-none transition-all">NAMA SEKOLAH</th>
+                <th className="px-6 py-4 text-center text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-slate-400 bg-slate-300 min-30">REGISTRASI</th>
                 <th className="px-6 py-4 text-center text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">AKSI</th>
               </tr>
             </thead>
@@ -737,13 +737,13 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                       {String((currentPage - 1) * itemsPerPage + index + 1)}
                   </td>
                   
-                  <td className="hidden lg:table-cell lg:sticky lg:left-[45px] bg-white px-4 py-4 border-r border-b border-slate-100 z-10 transition-colors">
+                  <td className="hidden lg:table-cell lg:sticky lg:left-11.25 bg-white px-4 py-4 border-r border-b border-slate-100 z-10 transition-colors">
                       <span className="px-2 py-1 bg-slate-100/50 border border-slate-100 rounded-lg font-mono text-[10px] text-slate-500 font-bold group-hover:bg-white transition-colors">
                         {tenant.code || '-'}
                       </span>
                   </td>
                   
-                  <td className="sticky left-0 lg:left-[195px] bg-white px-4 py-4 border-r border-b border-slate-100 z-10 transition-all">
+                  <td className="sticky left-0 lg:left-48.75 bg-white px-4 py-4 border-r border-b border-slate-100 z-10 transition-all">
                       <span className="text-[11px] font-bold text-slate-800 group-hover:text-jade-600 transition-colors block break-words leading-tight">{tenant.name}</span>
                   </td>
                   <td className="px-6 py-4 border-r border-b border-slate-100">

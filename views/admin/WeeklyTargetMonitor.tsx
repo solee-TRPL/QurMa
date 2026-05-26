@@ -8,7 +8,9 @@ import {
     getWeeklyAllTypeTotals,
     getUsers,
     getTenant,
-    updateTenant
+    updateTenant,
+    upsertWeeklyTarget,
+    createNotification
 } from '../../services/dataService';
 import { 
   ClipboardList, 
@@ -27,7 +29,9 @@ import {
   User,
   ChevronDown,
   Filter,
-  Check
+  Check,
+  Edit3,
+  X
 } from 'lucide-react';
 import { useNotification } from '../../lib/NotificationContext';
 import { useLoading } from '../../lib/LoadingContext';
@@ -60,7 +64,9 @@ interface TargetRow {
   sabaqTargetSurat: string;
   sabaqKet: 'A' | 'B' | 'C' | '';
   teacherNote: string;
+  supervisorNote: string;
   halaqahName: string;
+  halaqahId: string;
 }
 
 export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, tenantId, showNotesMode = false, onNavigate }) => {
@@ -88,6 +94,57 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
   useEffect(() => {
     setShowNotes(showNotesMode);
   }, [showNotesMode]);
+  
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [tempSupervisorNote, setTempSupervisorNote] = useState('');
+
+  const handleSaveSupervisorNote = async (targetRow: TargetRow) => {
+      try {
+          setLoading(true);
+          const existingTargets = await getWeeklyTargets([targetRow.studentId], weekDates[0] || "");
+          let target = existingTargets[0];
+          if (!target) {
+              target = {
+                  student_id: targetRow.studentId,
+                  week_start: weekDates[0] || "",
+                  target_data: {}
+              };
+          }
+          target.target_data = {
+              ...(target.target_data || {}),
+              supervisor_note: tempSupervisorNote
+          };
+          await upsertWeeklyTarget(target, user, targetRow.name);
+          
+          if (tempSupervisorNote.trim().length > 0) {
+              const halaqah = allHalaqahs.find(h => h.id === targetRow.halaqahId);
+              if (halaqah && halaqah.teacher_id) {
+                  await createNotification({
+                      user_id: halaqah.teacher_id,
+                      tenant_id: tenantId,
+                      title: "Catatan Supervisor Baru",
+                      message: `Supervisor memberikan catatan untuk ananda ${targetRow.name}.`,
+                      type: 'info'
+                  });
+              }
+          }
+
+          setTargets(prev => ({
+              ...prev,
+              [targetRow.studentId]: {
+                  ...prev[targetRow.studentId],
+                  supervisorNote: tempSupervisorNote
+              }
+          }));
+          addNotification({ type: 'success', title: 'Berhasil', message: 'Catatan supervisor berhasil disimpan' });
+          setEditingNoteId(null);
+      } catch (err) {
+          console.error(err);
+          addNotification({ type: 'error', title: 'Gagal', message: 'Gagal menyimpan catatan' });
+      } finally {
+          setLoading(false);
+      }
+  };
   
   const [activeDays, setActiveDays] = useState<number[]>([1, 2, 3, 4, 5]); // Default Mon-Fri
 
@@ -264,11 +321,13 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                         sabaqTargetSurat: data.sabaq_target_surat || '',
                         sabaqKet: calculateABCStatus(weeklyTotals[s.id]?.sabaq || 0, data.sabaq_target || 0),
                         teacherNote: data.teacher_note || '',
+                        supervisorNote: data.supervisor_note || '',
                         halaqahName: (() => {
                             const h = hList.find(h => h.id === s.halaqah_id);
                             if (!h) return '-';
                             return `${h.name.toUpperCase()} ( ${h.teacher_name?.toUpperCase() || '-'} )`;
-                        })()
+                        })(),
+                        halaqahId: s.halaqah_id || ''
                     };
                 });
                 setTargets(initialTargets);
@@ -380,17 +439,17 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
           {/* BARIS 1: Halaqah / Teacher Selector & Search Bar */}
           <div className="flex flex-row items-center gap-2 w-full lg:flex-1">
               {/* Halaqah Selector */}
-              <div className="flex-1 lg:flex-none flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-xl border-2 border-slate-300 shadow-none lg:min-w-[340px] focus-within:ring-4 focus-within:ring-jade-50/50 focus-within:border-jade-400 transition-all h-10 lg:h-11">
+              <div className="flex-1 lg:flex-none flex items-center gap-2.5 md:gap-3 bg-white px-3 md:px-4 rounded-xl border-2 border-slate-300 shadow-none lg:min-w-85 focus-within:ring-4 focus-within:ring-jade-50/50 focus-within:border-jade-400 transition-all h-10 lg:h-11">
                   <div className="p-1.5 bg-primary-500 rounded-lg text-white shrink-0">
                       <GraduationCap className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   </div>
-                  <div className="flex-1 relative group/sel-unified min-w-0">
-                      <p className="text-[7.5px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Halaqoh / Pengampu</p>
+                  <div className="flex-1 flex flex-col justify-center relative group/sel-unified min-w-0 h-full">
+                      <p className="text-[7.5px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-0.5 mt-0.5">Halaqoh / Pengampu</p>
                       <div className="relative">
                           <select 
                             value={selectedHalaqahId}
                             onChange={(e) => handleHalaqahChange(e.target.value)}
-                            className="w-full bg-transparent text-[8.5px] md:text-[10px] font-black text-slate-800 uppercase tracking-tight focus:outline-none appearance-none cursor-pointer p-0 pr-5 relative z-10 truncate"
+                            className="w-full bg-transparent text-[9px] md:text-[10px] font-black text-slate-800 uppercase tracking-tight focus:outline-none appearance-none cursor-pointer p-0 pr-5 relative z-10 truncate leading-none"
                           >
                               <option value="all">SEMUA HALAQOH</option>
                               {allHalaqahs.map(h => (
@@ -427,7 +486,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                   >
                       <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <div className="px-2 md:px-4 py-1 text-[8px] md:text-[10px] font-black uppercase tracking-widest text-jade-600 flex flex-col items-center justify-center min-w-[130px] md:min-w-[170px]">
+                  <div className="px-2 md:px-4 py-1 text-[8px] md:text-[10px] font-black uppercase tracking-widest text-jade-600 flex flex-col items-center justify-center min-w-32.5 md:min-w-42.5">
                       <span className="flex items-center gap-1 md:gap-2 whitespace-nowrap">
                           <Calendar className="w-3 h-3 md:w-3.5 md:h-3.5" />
                           {weekDisplayRange}
@@ -447,11 +506,6 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                       <ChevronRight className="w-4 h-4" />
                   </button>
               </div>
-
-              {/* READ-ONLY */}
-              <div className="px-3 md:px-5 py-2 font-black text-[8px] md:text-[9.5px] uppercase tracking-widest rounded-xl border-2 border-slate-300 bg-white text-slate-400 shadow-none h-10 lg:h-11 flex items-center whitespace-nowrap">
-                  (READ-ONLY)
-              </div>
           </div>
       </div>
 
@@ -461,10 +515,10 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => setShowNisKelas(!showNisKelas)}
-                  className={`hidden sm:flex items-center justify-center px-3 h-8 rounded-xl transition-all text-[9.5px] font-black uppercase tracking-widest min-w-[30px] border-2 ${showNisKelas ? 'bg-jade-50/50 text-jade-600 border-jade-300 shadow-none' : 'bg-white text-slate-400 border-slate-300'}`}
+                  className={`hidden sm:flex items-center justify-center px-3 h-8 rounded-xl transition-all text-[9.5px] font-black uppercase tracking-widest min-w-7.5 border-2 ${showNisKelas ? 'bg-jade-50/50 text-jade-600 border-jade-300 shadow-none' : 'bg-white text-slate-400 border-slate-300'}`}
                 >
-                  <span className="hidden sm:inline">{showNisKelas ? 'Sembunyikan Identitas' : 'Tampilkan Identitas'}</span>
-                  <span className="sm:hidden">IDENTITAS</span>
+                  <span className="hidden sm:inline">{showNisKelas ? 'Sembunyikan NIS' : 'Tampilkan NIS'}</span>
+                  <span className="sm:hidden">NIS</span>
                 </button>
                 <button 
                   onClick={() => {
@@ -492,36 +546,36 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
             <table className="w-full border-separate border-spacing-0">
                 <thead className="sticky top-0 z-40">
                         <tr className="bg-white">
-                            <th rowSpan={2} className="w-[40px] md:w-[45px] min-w-[40px] md:min-w-[45px] hidden sm:table-cell sticky sm:left-0 bg-slate-300 z-50 px-1 md:px-2 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-l border-r border-black">NO</th>
+                            <th rowSpan={2} className="w-10 md:w-11.25 min-w-10 md:min-w-11.25 hidden sm:table-cell sticky sm:left-0 bg-slate-300 z-50 px-1 md:px-2 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-l border-r border-black">NO</th>
                             {showNisKelas && (
-                                <th rowSpan={2} className="w-[65px] md:w-[100px] min-w-[65px] md:min-w-[100px] sticky sm:left-[45px] left-0 bg-slate-300 z-50 px-1 md:px-3 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r border-black animate-in slide-in-from-left-1 duration-300">NIS</th>
+                                <th rowSpan={2} className="w-16.25 md:w-25 min-w-16.25 md:min-w-25 sticky sm:left-11.25 left-0 bg-slate-300 z-50 px-1 md:px-3 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r border-black animate-in slide-in-from-left-1 duration-300">NIS</th>
                             )}
-                            <th rowSpan={2} className={`w-[115px] md:w-[200px] min-w-[115px] md:min-w-[200px] sticky ${showNisKelas ? 'sm:left-[145px] left-[65px]' : 'sm:left-[45px] left-0'} bg-slate-300 z-50 px-2 md:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-left border-t border-b border-r border-black transition-all duration-300`}>NAMA SANTRI</th>
-                            <th rowSpan={2} className="hidden lg:table-cell px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r border-black bg-slate-300 min-w-[180px]">HALAQOH ( PENGAMPU )</th>
+                            <th rowSpan={2} className={`w-28.75 md:w-50 min-w-28.75 md:min-w-50 sticky ${showNisKelas ? 'sm:left-36.25 left-16.25' : 'sm:left-11.25 left-0'} bg-slate-300 z-50 px-2 md:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-left border-t border-b border-r border-black transition-all duration-300`}>NAMA SANTRI</th>
+                            <th rowSpan={2} className="hidden lg:table-cell px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r border-black bg-slate-300 min-w-45">HALAQOH ( PENGAMPU )</th>
                             
                             {!showNotes ? (
                               <>
-                                <th colSpan={2} className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-emerald-700 uppercase tracking-[0.1em] border-t border-b border-r border-emerald-700 bg-emerald-50 shadow-inner whitespace-nowrap text-center">HAFALAN SAAT INI</th>
-                                <th colSpan={3} className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-blue-700 uppercase tracking-[0.1em] border-t border-b border-r border-blue-700 bg-blue-50 shadow-inner whitespace-nowrap text-center">ATM</th>
+                                <th colSpan={2} className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-emerald-700 uppercase tracking-widest border-t border-b border-r border-emerald-700 bg-emerald-50 shadow-inner whitespace-nowrap text-center">HAFALAN SAAT INI</th>
+                                <th colSpan={3} className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-blue-700 uppercase tracking-widest border-t border-b border-r border-blue-700 bg-blue-50 shadow-inner whitespace-nowrap text-center">ATM</th>
                                 <th colSpan={6} className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-emerald-600 uppercase tracking-widest text-center border-t border-b border-r border-emerald-600 bg-emerald-50/50 whitespace-nowrap">TARGET PEKANAN</th>
                               </>
                             ) : (
-                              <th className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-amber-600 uppercase tracking-widest border-t border-b border-r border-amber-600 bg-amber-50/30 text-left whitespace-nowrap">CATATAN USTADZ</th>
+                              <th className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-amber-600 uppercase tracking-widest border-t border-b border-r border-amber-600 bg-amber-50/30 text-left whitespace-nowrap">CATATAN USTADZ & SUPERVISOR</th>
                             )}
                         </tr>
                     {!showNotes ? (
                         <tr className="bg-white">
-                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-emerald-600 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50/30 min-w-[60px]">JUZ</th>
-                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-emerald-600 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50/30 min-w-[70px]">HAL</th>
-                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-blue-600 uppercase text-center border-b border-r border-blue-700 bg-blue-50 min-w-[70px]">MANZIL</th>
-                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-blue-600 uppercase text-center border-b border-r border-blue-700 bg-blue-50 min-w-[60px]">BERPUTAR</th>
-                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-blue-600 uppercase text-center border-b border-r border-blue-700 bg-blue-50 min-w-[70px]">SABQI</th>
-                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-[160px]">MANZIL (HAL/JUZ)</th>
-                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-[40px]">KET</th>
-                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-[160px]">SABQI (HAL)</th>
-                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-[40px]">KET</th>
-                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-[160px]">SABAQ (BARIS)</th>
-                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-[40px]">KET</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-emerald-600 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50/30 min-w-15">JUZ</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-emerald-600 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50/30 min-w-17.5">HAL</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-blue-600 uppercase text-center border-b border-r border-blue-700 bg-blue-50 min-w-17.5">MANZIL</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-blue-600 uppercase text-center border-b border-r border-blue-700 bg-blue-50 min-w-15">BERPUTAR</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-blue-600 uppercase text-center border-b border-r border-blue-700 bg-blue-50 min-w-17.5">SABQI</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-40">MANZIL (HAL/JUZ)</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-10">KET</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-40">SABQI (HAL)</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-10">KET</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-40">SABAQ (BARIS)</th>
+                            <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-slate-500 uppercase text-center border-b border-r border-emerald-700 bg-emerald-50 min-w-10">KET</th>
                         </tr>
                     ) : (
                         <tr className="bg-white">
@@ -543,15 +597,15 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
 
                         return (
                             <tr key={s.id} className="group transition-colors hover:bg-slate-50/30">
-                                <td className="hidden sm:table-cell sticky sm:left-0 bg-white px-1 md:px-3 py-1.5 text-[10px] md:text-[10.5px] font-black text-slate-400 text-center border-r border-b border-slate-100 z-20 transition-colors uppercase w-[40px] md:w-[45px]">
+                                <td className="hidden sm:table-cell sticky sm:left-0 bg-white px-1 md:px-3 py-1.5 text-[10px] md:text-[10.5px] font-black text-slate-400 text-center border-r border-b border-slate-100 z-20 transition-colors uppercase w-10 md:w-11.25">
                                     <div className="h-10 flex items-center justify-center">{actualIdx}</div>
                                 </td>
                                 {showNisKelas && (
-                                    <td className="sticky sm:left-[45px] left-0 bg-white px-1 md:px-3 py-1.5 text-[9.5px] md:text-[10.5px] font-black text-slate-500 text-center border-r border-b border-slate-100 z-20 transition-all duration-300 w-[65px] md:w-[100px] tracking-tighter">
+                                    <td className="sticky sm:left-11.25 left-0 bg-white px-1 md:px-3 py-1.5 text-[9.5px] md:text-[10.5px] font-black text-slate-500 text-center border-r border-b border-slate-100 z-20 transition-all duration-300 w-16.25 md:w-25 tracking-tighter">
                                         <div className="h-10 flex items-center justify-center">{target.nis}</div>
                                     </td>
                                 )}
-                                <td className={`sticky ${showNisKelas ? 'sm:left-[145px] left-[65px]' : 'sm:left-[45px] left-0'} bg-white px-2 md:px-4 py-1.5 text-[10.5px] md:text-[11px] font-bold text-slate-800 border-r border-b border-slate-100 z-20 transition-all duration-300 truncate shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-[115px] md:w-[200px]`}>
+                                <td className={`sticky ${showNisKelas ? 'sm:left-36.25 left-16.25' : 'sm:left-11.25 left-0'} bg-white px-2 md:px-4 py-1.5 text-[10.5px] md:text-[11px] font-bold text-slate-800 border-r border-b border-slate-100 z-20 transition-all duration-300 truncate shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-28.75 md:w-50`}>
                                     <div className="h-10 flex items-center">{target.name}</div>
                                 </td>
                                 <td className="hidden lg:table-cell px-4 py-1.5 border-r border-b border-slate-100 text-start bg-white">
@@ -561,28 +615,50 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                                 {!showNotes ? (
                                     <>
                                         <td className="px-1 py-1.5 border-r border-b border-slate-100 text-center bg-emerald-50/10">
-                                            <div className={`w-full text-center text-[11px] font-black h-10 flex items-center justify-center ${target.hafalanJuz ? 'text-emerald-700' : 'text-emerald-200'}`}>{target.hafalanJuz || '-'}</div>
+                                            <div className={`w-full text-center text-[11px] font-black h-10 flex items-center justify-center ${target.hafalanJuz && target.hafalanJuz !== '0' ? 'text-emerald-700' : 'text-emerald-200'}`}>
+                                                {target.hafalanJuz && target.hafalanJuz !== '0' ? target.hafalanJuz : '-'}
+                                            </div>
                                         </td>
                                         <td className="px-1 py-1.5 border-r border-b border-slate-100 text-center bg-emerald-50/10">
-                                            <div className={`w-full text-center text-[11px] font-black h-10 flex items-center justify-center ${target.hafalanHal ? 'text-emerald-700' : 'text-emerald-200'}`}>{target.hafalanHal || '-'}</div>
+                                            <div className={`w-full text-center text-[11px] font-black h-10 flex items-center justify-center ${target.hafalanHal && target.hafalanHal !== '0' ? 'text-emerald-700' : 'text-emerald-200'}`}>
+                                                {target.hafalanHal && target.hafalanHal !== '0' ? target.hafalanHal : '-'}
+                                            </div>
                                         </td>
                                         <td className="px-1 py-1.5 border-r border-b border-slate-100 text-center bg-blue-50/10">
-                                            <div className={`w-full text-center text-[11px] font-black h-10 flex items-center justify-center ${target.manzilAtm ? 'text-amber-500' : 'text-amber-200'}`}>{target.manzilAtm || '-'} Hlm</div>
+                                            <div className={`w-full text-center text-[11px] font-black h-10 flex items-center justify-center ${target.manzilAtm && target.manzilAtm !== '0' ? 'text-amber-500' : 'text-amber-200'}`}>
+                                                {target.manzilAtm && target.manzilAtm !== '0' ? `${target.manzilAtm} Hal` : '-'}
+                                            </div>
                                         </td>
                                         <td className="px-1 py-1.5 border-r border-b border-slate-100 text-center bg-blue-50/10">
-                                            <div className={`w-full text-center text-[11px] font-black h-10 flex items-center justify-center ${target.hariAtm ? 'text-amber-500' : 'text-amber-200'}`}>{target.hariAtm || '-'} Hari</div>
+                                            <div className={`w-full text-center text-[11px] font-black h-10 flex items-center justify-center ${target.hariAtm && target.hariAtm !== '0' ? 'text-amber-500' : 'text-amber-200'}`}>
+                                                {target.hariAtm && target.hariAtm !== '0' ? `${target.hariAtm} Hari` : '-'}
+                                            </div>
                                         </td>
                                         <td className="px-1 py-1.5 border-r border-b border-slate-100 text-center bg-blue-50/10">
-                                            <div className={`w-full text-center text-[11px] font-black h-10 flex items-center justify-center ${target.sabqiAtm ? 'text-blue-600' : 'text-blue-200'}`}>{target.sabqiAtm || '-'}</div>
+                                            <div className={`w-full text-center text-[11px] font-black h-10 flex items-center justify-center ${target.sabqiAtm && target.sabqiAtm !== '0' ? 'text-blue-600' : 'text-blue-200'}`}>
+                                                {target.sabqiAtm && target.sabqiAtm !== '0' ? `${target.sabqiAtm} Hal` : '-'}
+                                            </div>
                                         </td>
 
                                         <td className="px-1.5 py-1.5 border-r border-b border-slate-100 bg-emerald-50/5">
                                             <div className="flex items-center justify-center gap-1">
-                                                <div className="w-[85px] px-1 text-[8.5px] font-black bg-white border border-slate-100 rounded-lg h-9 shadow-sm flex items-center justify-center uppercase text-slate-800 whitespace-nowrap overflow-hidden tracking-tighter">{target.manzilTarget || '-'}</div>
-                                                <div className="flex items-center bg-white border border-slate-100 rounded-lg px-2 h-9 shadow-sm">
-                                                    <span className="text-xs font-bold text-slate-700">{target.manzilHal || '0'}</span>
-                                                    <span className="text-[8px] font-extrabold text-emerald-400 uppercase ml-1">Hal</span>
-                                                </div>
+                                                <div className="w-21.25 px-1 text-[8.5px] font-black bg-white border border-slate-100 rounded-lg h-9 shadow-sm flex items-center justify-center uppercase text-slate-800 whitespace-nowrap overflow-hidden tracking-tighter">{target.manzilTarget || '-'}</div>
+                                                {(() => {
+                                                    let isManzilTargetKurang = false;
+                                                    if (target.manzilAtm) {
+                                                        const atmPerHari = Number(target.manzilAtm);
+                                                        const targetHal = Number(target.manzilHal || 0);
+                                                        if (!isNaN(atmPerHari) && !isNaN(targetHal)) {
+                                                            isManzilTargetKurang = targetHal > 0 && targetHal < (atmPerHari * 5);
+                                                        }
+                                                    }
+                                                    return (
+                                                        <div className={`flex items-center border rounded-lg px-2 h-9 shadow-sm ${isManzilTargetKurang ? 'bg-red-50 border-red-200' : 'bg-white border-slate-100'}`} title={isManzilTargetKurang ? `Target kurang dari standar ATM (${Number(target.manzilAtm) * 5} Hal/Pekan)` : ''}>
+                                                            <span className={`text-xs font-bold ${isManzilTargetKurang ? 'text-red-600' : 'text-slate-700'}`}>{target.manzilHal || '0'}</span>
+                                                            <span className={`text-[8px] font-extrabold uppercase ml-1 ${isManzilTargetKurang ? 'text-red-400' : 'text-emerald-400'}`}>Hal</span>
+                                                        </div>
+                                                    );
+                                                })()}
                                             </div>
                                         </td>
                                         <td className="px-1 py-1.5 border-r-2 border-b border-slate-100 bg-emerald-50/5 text-center">
@@ -595,11 +671,23 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
 
                                         <td className="px-1 py-1.5 border-r border-b border-slate-100 text-center bg-emerald-50/5 h-10">
                                             <div className="flex items-center justify-center gap-1">
-                                                <div className="w-[85px] px-1 text-[8.5px] font-black bg-white border border-slate-100 rounded-lg h-9 shadow-sm flex items-center justify-center uppercase text-slate-800 whitespace-nowrap overflow-hidden tracking-tighter">{target.sabqiTargetSurat || '-'}</div>
-                                                <div className="flex items-center bg-white border border-slate-100 rounded-lg px-2 h-9 shadow-sm">
-                                                    <span className="text-xs font-bold text-slate-700">{target.sabqiTarget || '0'}</span>
-                                                    <span className="text-[8px] font-extrabold text-emerald-400 uppercase ml-1">Hal</span>
-                                                </div>
+                                                <div className="w-21.25 px-1 text-[8.5px] font-black bg-white border border-slate-100 rounded-lg h-9 shadow-sm flex items-center justify-center uppercase text-slate-800 whitespace-nowrap overflow-hidden tracking-tighter">{target.sabqiTargetSurat || '-'}</div>
+                                                {(() => {
+                                                    let isSabqiTargetKurang = false;
+                                                    if (target.sabqiAtm && target.sabqiAtm !== 'Rabth') {
+                                                        const atmPerHari = Number(target.sabqiAtm);
+                                                        const targetHal = Number(target.sabqiTarget || 0);
+                                                        if (!isNaN(atmPerHari) && !isNaN(targetHal)) {
+                                                            isSabqiTargetKurang = targetHal > 0 && targetHal < (atmPerHari * 5);
+                                                        }
+                                                    }
+                                                    return (
+                                                        <div className={`flex items-center border rounded-lg px-2 h-9 shadow-sm ${isSabqiTargetKurang ? 'bg-red-50 border-red-200' : 'bg-white border-slate-100'}`} title={isSabqiTargetKurang ? `Target kurang dari standar ATM (${Number(target.sabqiAtm) * 5} Hal/Pekan)` : ''}>
+                                                            <span className={`text-xs font-bold ${isSabqiTargetKurang ? 'text-red-600' : 'text-slate-700'}`}>{target.sabqiTarget || '0'}</span>
+                                                            <span className={`text-[8px] font-extrabold uppercase ml-1 ${isSabqiTargetKurang ? 'text-red-400' : 'text-emerald-400'}`}>Hal</span>
+                                                        </div>
+                                                    );
+                                                })()}
                                             </div>
                                         </td>
                                         <td className="px-1 py-1.5 border-r-2 border-b border-slate-100 bg-emerald-50/5 text-center">
@@ -612,7 +700,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
 
                                         <td className="px-1 py-1.5 border-r border-b border-slate-100 text-center bg-emerald-50/5 h-10">
                                             <div className="flex items-center justify-center gap-1">
-                                                <div className="w-[85px] px-1 text-[8.5px] font-black bg-white border border-slate-100 rounded-lg h-9 shadow-sm flex items-center justify-center uppercase text-slate-800 whitespace-nowrap overflow-hidden tracking-tighter">{target.sabaqTargetSurat || '-'}</div>
+                                                <div className="w-21.25 px-1 text-[8.5px] font-black bg-white border border-slate-100 rounded-lg h-9 shadow-sm flex items-center justify-center uppercase text-slate-800 whitespace-nowrap overflow-hidden tracking-tighter">{target.sabaqTargetSurat || '-'}</div>
                                                 <div className="flex items-center bg-white border border-slate-100 rounded-lg px-2 h-9 shadow-sm">
                                                     <span className="text-xs font-bold text-slate-700">{target.sabaqTarget || '0'}</span>
                                                     <span className="text-[8px] font-extrabold text-emerald-400 uppercase ml-1">Baris</span>
@@ -629,8 +717,63 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                                     </>
                                 ) : (
                                     <td className="px-2 lg:px-4 py-1.5 border-b border-slate-100 bg-amber-50/5">
-                                        <div className="w-full h-10 px-4 py-2 text-[10.5px] font-bold text-slate-700 bg-white border border-amber-100 rounded-2xl shadow-sm flex items-center truncate">
-                                            {target.teacherNote || <span className="text-slate-300 font-normal italic uppercase tracking-widest text-[9px]">Belum ada catatan dari ustadz...</span>}
+                                        <div className="w-full h-auto min-h-10 px-3 py-1 text-[10.5px] font-bold text-slate-700 bg-white border border-amber-100 rounded-2xl shadow-sm flex flex-col justify-center transition-all">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 shrink-0 w-18 inline-flex items-center justify-center">Ustadz</span>
+                                                <span className="truncate whitespace-normal leading-snug flex-1">{target.teacherNote || <span className="text-slate-300 font-normal italic uppercase tracking-widest text-[9px]">Belum ada catatan...</span>}</span>
+                                                
+                                                {isReadOnly && (
+                                                    <button 
+                                                        onClick={() => {
+                                                            if (editingNoteId === target.studentId) {
+                                                                setEditingNoteId(null);
+                                                            } else {
+                                                                setEditingNoteId(target.studentId);
+                                                                setTempSupervisorNote(target.supervisorNote || '');
+                                                            }
+                                                        }}
+                                                        className={`shrink-0 p-1.5 rounded-xl transition-colors border ${editingNoteId === target.studentId ? 'bg-amber-50 text-amber-600 border-amber-200' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 border-transparent hover:border-emerald-200'}`}
+                                                        title={editingNoteId === target.studentId ? "Tutup Catatan" : "Beri Catatan Supervisor"}
+                                                    >
+                                                        <Edit3 className="w-3 h-3" />
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            {(target.supervisorNote || editingNoteId === target.studentId) && (
+                                                <div className="flex items-start gap-2 pt-2 mt-2 border-t border-dashed border-amber-100 animate-in fade-in slide-in-from-top-2 duration-200">
+                                                    <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100 shrink-0 w-18 inline-flex items-center justify-center">Supervisor</span>
+                                                    
+                                                    {editingNoteId === target.studentId ? (
+                                                        <div className="flex-1 flex flex-col gap-2">
+                                                            <textarea
+                                                                autoFocus
+                                                                value={tempSupervisorNote}
+                                                                onChange={(e) => setTempSupervisorNote(e.target.value)}
+                                                                placeholder="Ketik catatan supervisor di sini..."
+                                                                className="w-full p-2 text-[10px] font-bold text-slate-700 bg-amber-50/30 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-100 focus:border-amber-400 outline-none transition-all resize-none min-h-15"
+                                                            />
+                                                            <div className="flex justify-end gap-2 pb-1">
+                                                                <button
+                                                                    onClick={() => setEditingNoteId(null)}
+                                                                    className="px-3 py-1 bg-red-500 hover:bg-red-600 text-[9px] font-black text-white uppercase tracking-widest rounded-lg transition-colors"
+                                                                >
+                                                                    Batal
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleSaveSupervisorNote(target)}
+                                                                    disabled={loading}
+                                                                    className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white text-[9px] font-black uppercase tracking-widest rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1 shadow-sm"
+                                                                >
+                                                                    {loading ? 'Menyimpan...' : 'Simpan'}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="truncate whitespace-normal leading-snug text-amber-700 flex-1 pb-1">{target.supervisorNote}</span>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     </td>
                                 )}

@@ -9,7 +9,7 @@ import { AccessDenied } from '@/components/ui/AccessDenied';
 export default function WeeklyTargetMonitorNotesPage() {
   const { user, tenant } = useAuth();
   
-  if (!user || user.role !== UserRole.ADMIN) {
+  if (!user || (user.role !== UserRole.ADMIN && user.role !== UserRole.SUPERVISOR)) {
     return <AccessDenied />;
   }
   

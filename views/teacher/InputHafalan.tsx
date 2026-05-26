@@ -86,6 +86,9 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
         return `${year}-${month}-${day}`;
     };
 
+        const activePeriodsStr = JSON.stringify(tenant?.cycle_config?.activePeriods || []);
+    const activeDaysStr = JSON.stringify(activeDays);
+    
     const weekDates = useMemo(() => {
         const today = new Date();
         const day = today.getDay(); // 0-6
@@ -97,17 +100,102 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
         start.setDate(today.getDate() + diff);
         
         const dates: string[] = [];
+        const activePeriods = JSON.parse(activePeriodsStr);
+        const parsedActiveDays = JSON.parse(activeDaysStr);
+
         // Loop through 7 full days starting from Monday
         for (let i = 0; i < 7; i++) {
             const current = new Date(start);
             current.setDate(start.getDate() + i);
-            // Only add to table if it's an active day based on config
-            if (activeDays.includes(current.getDay())) {
-                dates.push(getLocalDateString(current));
+            const currentDateStr = getLocalDateString(current);
+
+            let isWithinActiveRange = true;
+            if (activePeriods.length > 0) {
+                isWithinActiveRange = activePeriods.some((period: any) => {
+                    const startOk = !period.startDate || currentDateStr >= period.startDate;
+                    const endOk = !period.endDate || currentDateStr <= period.endDate;
+                    return startOk && endOk;
+                });
+            }
+
+            // Only add to table if it's an active day based on config and within active range
+            if (parsedActiveDays.includes(current.getDay()) && isWithinActiveRange) {
+                dates.push(currentDateStr);
             }
         }
         return dates;
-    }, [currentWeekOffset, activeDays]);
+    }, [currentWeekOffset, activeDaysStr, activePeriodsStr]);
+
+    
+    const checkHoliday = (offset: number) => {
+        const today = new Date();
+        const day = today.getDay();
+        const diff = (day === 0 ? -6 : 1) - day + (offset * 7);
+        const start = new Date(today);
+        start.setDate(today.getDate() + diff);
+        
+        const activePeriods = JSON.parse(activePeriodsStr);
+        const parsedActiveDays = JSON.parse(activeDaysStr);
+        
+        let hasActiveDay = false;
+        for (let i = 0; i < 7; i++) {
+            const current = new Date(start);
+            current.setDate(start.getDate() + i);
+            const currentDateStr = getLocalDateString(current);
+            
+            let isWithinActiveRange = true;
+            if (activePeriods.length > 0) {
+                isWithinActiveRange = activePeriods.some((period: any) => {
+                    const startOk = !period.startDate || currentDateStr >= period.startDate;
+                    const endOk = !period.endDate || currentDateStr <= period.endDate;
+                    return startOk && endOk;
+                });
+            }
+            if (parsedActiveDays.includes(current.getDay()) && isWithinActiveRange) {
+                hasActiveDay = true;
+                break;
+            }
+        }
+        return !hasActiveDay;
+    };
+
+    const holidayBlock = useMemo(() => {
+        if (weekDates.length > 0) return null;
+        
+        let startOffset = currentWeekOffset;
+        while (checkHoliday(startOffset - 1)) {
+            startOffset--;
+        }
+        
+        let endOffset = currentWeekOffset;
+        while (checkHoliday(endOffset + 1)) {
+            endOffset++;
+        }
+        
+        const getMonday = (offset: number) => {
+            const today = new Date();
+            const day = today.getDay();
+            const diff = (day === 0 ? -6 : 1) - day + (offset * 7);
+            const d = new Date(today);
+            d.setDate(today.getDate() + diff);
+            return d;
+        };
+        const getSunday = (offset: number) => {
+            const d = getMonday(offset);
+            d.setDate(d.getDate() + 6);
+            return d;
+        };
+        
+        const startDate = getMonday(startOffset);
+        const endDate = getSunday(endOffset);
+        
+        const formatOptions: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short', year: 'numeric' };
+        return {
+            startOffset,
+            endOffset,
+            displayRange: `${startDate.toLocaleDateString('id-ID', formatOptions)} - ${endDate.toLocaleDateString('id-ID', formatOptions)}`
+        };
+    }, [currentWeekOffset, weekDates.length, activePeriodsStr, activeDaysStr]);
 
     const weekDisplayRange = useMemo(() => {
         if (weekDates.length === 0) return '';
@@ -356,6 +444,12 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
     const fetchRecords = async () => {
         if (!selectedStudent) return;
         
+        if (weekDates.length === 0) {
+            setRecords([]);
+            setPendingChanges({});
+            return;
+        }
+
         const targetId = selectedStudent.id;
         const weekStart = weekDates[0];
         setIsFetchingRecords(true);
@@ -434,18 +528,14 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
             const d = sortedDates[i];
             const key = `${d}|${type}`;
             
-            // Check pending first
-            const pending = activePending[key];
-            if (pending?.surah_name && pending?.ayat_end) {
-                return { surah_name: pending.surah_name, ayat_pos: pending.ayat_end };
-            }
+            const existing = (recordsByDate[d] || []).find(r => r.type === type);
+            const curr = {
+                ...existing,
+                ...(activePending[key] || {})
+            };
             
-            // Check existing if not overwritten by pending
-            if (!pending || (!pending.surah_name && !pending.ayat_end)) {
-                const existing = (recordsByDate[d] || []).find(r => r.type === type);
-                if (existing?.surah_name && existing?.ayat_end) {
-                    return { surah_name: existing.surah_name, ayat_pos: existing.ayat_end };
-                }
+            if (curr.surah_name && curr.ayat_end) {
+                return { surah_name: curr.surah_name, ayat_pos: curr.ayat_end };
             }
         }
 
@@ -455,6 +545,58 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
             return { surah_name: last.surah_name, ayat_pos: last.ayat_start };
         }
         return null;
+    };
+
+    
+    const applyRippleEffect = (basePending: Record<string, any>, startDate: string, type: MemorizationType) => {
+        let newPending = { ...basePending };
+        const sortedDates = [...weekDates].sort((a, b) => a.localeCompare(b));
+        const startIndex = sortedDates.indexOf(startDate);
+        
+        for (let i = startIndex + 1; i < sortedDates.length; i++) {
+            const d = sortedDates[i];
+            const k = `${d}|${type}`;
+            const rec = (recordsByDate[d] || []).find(r => r.type === type);
+            const curr = {
+                ...rec,
+                ...(newPending[k] || {})
+            };
+
+            if (curr.surah_name && curr.ayat_end) {
+                const lastPos = findLatestPosition(type, d, newPending);
+                if (lastPos) {
+                    const start = getNextAyah(lastPos.surah_name, lastPos.ayat_pos);
+                    if (start) {
+                        const val = (type === MemorizationType.SABAQ)
+                            ? calculateLines(start.surah, start.ayah, curr.surah_name, curr.ayat_end)
+                            : calculatePages(start.surah, start.ayah, curr.surah_name, curr.ayat_end);
+                        
+                        if (val <= 0 && type === MemorizationType.SABAQ) {
+                            newPending[k] = {
+                                ...newPending[k],
+                                surah_name: '',
+                                ayat_end: 0,
+                                jumlah: 0,
+                                is_verified: false,
+                                status: MemorizationStatus.EMPTY,
+                                keterangan: '-'
+                            };
+                        } else {
+                            newPending[k] = {
+                                ...newPending[k],
+                                jumlah: val > 0 ? val : 0,
+                                is_verified: false
+                            };
+                        }
+                    } else {
+                        newPending[k] = { ...newPending[k], jumlah: 0, is_verified: false };
+                    }
+                } else {
+                    newPending[k] = { ...newPending[k], jumlah: 0, is_verified: false };
+                }
+            }
+        }
+        return newPending;
     };
 
     const handleLocalChange = (date: string, type: MemorizationType, value: string, subType: string = 'value') => {
@@ -588,31 +730,38 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                 }
             }
 
-            setPendingChanges(prev => ({
-                ...prev,
-                [key]: {
-                    ...prev[key],
-                    surah_name: value,
-                    ayat_end: suggestedAyat,
-                    jumlah: autoJumlah > 0 ? autoJumlah : 0,
-                    is_verified: false,
-                    is_read_by_parent: false
-                }
-            }));
+            setPendingChanges(prev => {
+                const newPending = {
+                    ...prev,
+                    [key]: {
+                        ...prev[key],
+                        surah_name: value,
+                        ayat_end: suggestedAyat,
+                        jumlah: autoJumlah > 0 ? autoJumlah : 0,
+                        is_verified: false,
+                        is_read_by_parent: false,
+                        ...(value === '' ? { status: MemorizationStatus.EMPTY } : {})
+                    }
+                };
+                return applyRippleEffect(newPending, date, type);
+            });
             return;
         }
 
         // Handle empty/clear input
         if (value.trim() === '') {
-            setPendingChanges(prev => ({
-                ...prev,
-                [key]: {
-                    ...prev[key],
-                    [subType === 'score' ? 'score' : subType === 'ayat_end' ? 'ayat_end' : 'jumlah']: null,
-                    is_verified: false,
-                    is_read_by_parent: false
-                }
-            }));
+            setPendingChanges(prev => {
+                const newPending = {
+                    ...prev,
+                    [key]: {
+                        ...prev[key],
+                        [subType === 'score' ? 'score' : subType === 'ayat_end' ? 'ayat_end' : 'jumlah']: null,
+                        is_verified: false,
+                        is_read_by_parent: false
+                    }
+                };
+                return applyRippleEffect(newPending, date, type);
+            });
             return;
         }
 
@@ -663,44 +812,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                 [key]: updatedChanges
             };
 
-            // RIPPLE EFFECT: Update subsequent days in the week
-            const sortedDates = [...weekDates].sort((a, b) => a.localeCompare(b));
-            const startIndex = sortedDates.indexOf(date);
-            
-            for (let i = startIndex + 1; i < sortedDates.length; i++) {
-                const d = sortedDates[i];
-                const k = `${d}|${type}`;
-                const rec = (recordsByDate[d] || []).find(r => r.type === type);
-                const curr = {
-                    ...rec,
-                    ...(newPending[k] || {})
-                };
-
-                if (curr.surah_name && curr.ayat_end) {
-                    const lastPos = findLatestPosition(type, d, newPending);
-                    if (lastPos) {
-                        const start = getNextAyah(lastPos.surah_name, lastPos.ayat_pos);
-                        if (start) {
-                            const val = (type === MemorizationType.SABAQ)
-                                ? calculateLines(start.surah, start.ayah, curr.surah_name, curr.ayat_end)
-                                : calculatePages(start.surah, start.ayah, curr.surah_name, curr.ayat_end);
-                            
-                            newPending[k] = {
-                                ...newPending[k],
-                                jumlah: val > 0 ? val : 0,
-                                is_verified: false
-                            };
-                        } else {
-                            newPending[k] = { ...newPending[k], jumlah: 0, is_verified: false };
-                        }
-                    } else {
-                        // PREVIOUS DAY CLEARED -> CURRENT BARIS BECOMES 0
-                        newPending[k] = { ...newPending[k], jumlah: 0, is_verified: false };
-                    }
-                }
-            }
-
-            return newPending;
+            return applyRippleEffect(newPending, date, type);
         });
     };
 
@@ -1096,7 +1208,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                             {/* Dropdown Menu */}
                             <div 
                                 id="student-mobile-dropdown"
-                                className="hidden absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-100 max-h-[300px] overflow-y-auto no-scrollbar animate-in slide-in-from-top-2 duration-200"
+                                className="hidden absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-100 max-h-75 overflow-y-auto no-scrollbar animate-in slide-in-from-top-2 duration-200"
                             >
                                 <div className="p-2 space-y-1">
                                     {students.map(student => (
@@ -1147,26 +1259,28 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                 <div className="flex items-center justify-between lg:justify-end gap-1.5 lg:gap-4 w-full lg:w-auto">
                                     <div className="flex bg-white p-0.5 rounded-xl border-2 border-slate-300 ring-1 ring-white scale-90 lg:scale-100 origin-left">
                                         <button 
-                                            onClick={() => setCurrentWeekOffset(prev => prev - 1)}
+                                            onClick={() => holidayBlock ? setCurrentWeekOffset(holidayBlock.startOffset - 1) : setCurrentWeekOffset(prev => prev - 1)}
                                             className="p-1 px-1.5 lg:px-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
                                         >
                                             <ChevronLeft className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
                                         </button>
-                                        <div className="px-1.5 sm:px-2 lg:px-3 py-1 text-[7.5px] sm:text-[8px] lg:text-[9px] font-black uppercase tracking-widest text-jade-600 flex flex-col items-center justify-center min-w-[110px] sm:min-w-[130px] lg:min-w-[160px]">
+                                        <div className="px-1.5 sm:px-2 lg:px-3 py-1 text-[7.5px] sm:text-[8px] lg:text-[9px] font-black uppercase tracking-widest text-jade-600 flex flex-col items-center justify-center min-w-27.5 sm:min-w-32.5 lg:min-w-40">
                                             <span className="flex items-center gap-1 whitespace-nowrap">
                                                 <Calendar className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
-                                                {weekDisplayRange}
+                                                {holidayBlock ? holidayBlock.displayRange : weekDisplayRange}
                                             </span>
                                             <span className="text-[6px] lg:text-[7px] text-jade-300 mt-0.5 opacity-80 uppercase tracking-widest font-black leading-none">
-                                                {currentWeekOffset === 0 ? 'Pekan Ini' : 
+                                                {holidayBlock ? 'Masa Liburan' : (
+                                                 currentWeekOffset === 0 ? 'Pekan Ini' : 
                                                  currentWeekOffset === -1 ? 'Pekan Lalu' : 
                                                  currentWeekOffset === 1 ? 'Pekan Depan' : 
                                                  currentWeekOffset < 0 ? `${Math.abs(currentWeekOffset)} Pekan Lalu` : 
-                                                 `${currentWeekOffset} Pekan Depan`}
+                                                 `${currentWeekOffset} Pekan Depan`
+                                                )}
                                             </span>
                                         </div>
                                         <button 
-                                            onClick={() => setCurrentWeekOffset(prev => prev + 1)}
+                                            onClick={() => holidayBlock ? setCurrentWeekOffset(holidayBlock.endOffset + 1) : setCurrentWeekOffset(prev => prev + 1)}
                                             className="p-1 px-1.5 lg:px-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
                                         >
                                             <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
@@ -1205,15 +1319,15 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                             <div 
                                 ref={tableContainerRef}
                                 key={selectedStudent.id} 
-                                className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent -mt-[1px]"
+                                className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent -mt-px"
                             >
                                 {/* DESKTOP VIEW - ORIGINAL TABLE */}
                                 <div className="hidden lg:block">
                                     <table className="w-full border-separate border-spacing-0">
                                     <thead className="sticky top-0 z-50">
                                         <tr>
-                                            <th className="px-2 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-[75px] min-w-[75px] sticky left-0 z-50 bg-slate-300 border-t border-b border-l border-r border-black">TANGGAL</th>
-                                            <th className="px-2 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-[65px] min-w-[65px] sticky left-[75px] z-50 bg-slate-300 border-t border-b border-r border-black">JENIS</th>
+                                            <th className="px-2 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-18.75 min-w-18.75 sticky left-0 z-50 bg-slate-300 border-t border-b border-l border-r border-black">TANGGAL</th>
+                                            <th className="px-2 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-16.25 min-w-16.25 sticky left-18.75 z-50 bg-slate-300 border-t border-b border-r border-black">JENIS</th>
                                             <th className="px-6 py-4 text-[9px] lg:text-[10px] font-black text-emerald-700 uppercase tracking-widest text-center border-t border-b border-r border-emerald-700 bg-emerald-50">SURAT / AYAT</th>
                                             <th className="px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-black text-blue-700 uppercase tracking-widest text-center w-12 lg:w-48 border-t border-b border-r border-blue-700 bg-blue-50">
                                                 <span className="lg:hidden">KET</span>
@@ -1241,7 +1355,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                                         <div className="h-4 bg-slate-200 rounded w-12 mx-auto"></div>
                                                                     </td>
                                                                 )}
-                                                                <td className="px-4 py-3 sticky left-[75px] z-20 border-b border-slate-200 bg-white shadow-[4px_0_8px_rgba(0,0,0,0.05)] after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1.5px] after:bg-slate-300">
+                                                                <td className="px-4 py-3 sticky left-18.75 z-20 border-b border-slate-200 bg-white shadow-[4px_0_8px_rgba(0,0,0,0.05)] after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1.5px] after:bg-slate-300">
                                                                     <div className="h-4 bg-slate-200 rounded w-12 mx-auto"></div>
                                                                 </td>
                                                                 <td className="px-4 py-3 border border-slate-200">
@@ -1269,7 +1383,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                                     <td 
                                                                         id={`row-${date}`}
                                                                         rowSpan={3} 
-                                                                        className={`px-2 py-5 align-middle w-[75px] min-w-[75px] sticky left-0 z-20 border-l border-r border-b border-slate-200 opacity-100 !opacity-100 after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[0.5px] after:bg-slate-100 ${isToday ? 'bg-[#ECFDF5]' : isFuture ? 'bg-[#FDFDFD]' : 'bg-white'} group-hover:bg-emerald-50/60`}
+                                                                        className={`px-2 py-5 align-middle w-18.75 min-w-18.75 sticky left-0 z-20 border-l border-r border-b border-slate-200 opacity-100 after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[0.5px] after:bg-slate-100 ${isToday ? 'bg-[#ECFDF5]' : isFuture ? 'bg-[#FDFDFD]' : 'bg-white'} group-hover:bg-emerald-50/60`}
                                                                     >
                                                                         {isToday && (
                                                                             <div className="absolute top-0 bottom-0 left-0 w-1 bg-emerald-500 shadow-[2px_0_8px_rgba(16,185,129,0.3)]"></div>
@@ -1287,15 +1401,15 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                                         </div>
                                                                     </td>
                                                                 )}
-                                                                <td className={`px-2 py-3 sticky left-[75px] z-20 w-[65px] min-w-[65px] border-r border-b border-slate-200 text-center transition-colors shadow-[4px_0_8px_rgba(0,0,0,0.05)] opacity-100 !opacity-100 after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[0.5px] after:bg-slate-200 ${isToday ? 'bg-[#ECFDF5]' : isFuture ? 'bg-[#FDFDFD]' : 'bg-white group-hover:bg-emerald-50/60'}`}>
+                                                                <td className={`px-2 py-3 sticky left-18.75 z-20 w-16.25 min-w-16.25 border-r border-b border-slate-200 text-center transition-colors shadow-[4px_0_8px_rgba(0,0,0,0.05)] opacity-100 after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[0.5px] after:bg-slate-200 ${isToday ? 'bg-[#ECFDF5]' : isFuture ? 'bg-[#FDFDFD]' : 'bg-white group-hover:bg-emerald-50/60'}`}>
                                                                     <span className={`text-[8px] font-black ${isToday ? 'text-emerald-600' : 'text-slate-500'} uppercase tracking-tighter ${isFuture ? 'opacity-60' : ''}`}>
                                                                         {getTypeLabel(type)}
                                                                     </span>
                                                                 </td>
                                                                 <td className={`px-2 py-1 border-b border-slate-200`}>
-                                                                    <div className="flex items-center gap-1 justify-center min-w-[200px]">
+                                                                    <div className="flex items-center gap-1 justify-center min-w-50">
                                                                         {/* VOLUME - NOW "jumlah" */}
-                                                                        <div className="flex items-center bg-slate-100/50 border border-slate-200 rounded-lg focus-within:ring-1 focus-within:ring-jade-200 h-8 px-1.5 flex-none w-[84px]">
+                                                                        <div className="flex items-center bg-slate-100/50 border border-slate-200 rounded-lg focus-within:ring-1 focus-within:ring-jade-200 h-8 px-1.5 flex-none w-21">
                                                                             <input 
                                                                                 type="number" readOnly
                                                                                 disabled={isFuture}
@@ -1311,23 +1425,32 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                                         </div>
 
                                                                         {/* SURAH */}
-                                                                        <div className="flex-1 min-w-[60px]">
+                                                                        <div className="flex-1 min-w-15">
                                                                             <select 
                                                                                 value={pendingChanges[`${date}|${type}`]?.surah_name ?? rec?.surah_name ?? ''}
                                                                                 onChange={(e) => handleLocalChange(date, type, e.target.value, 'surah_name')}
                                                                                 className="w-full h-8 bg-white border border-slate-200 rounded-lg px-2 text-[9px] font-bold text-slate-700 outline-none focus:border-jade-400 transition-all appearance-none text-center shadow-sm"
                                                                             >
                                                                                 <option value="">- Surat -</option>
-                                                                                {SURAH_DATA.slice(0, 114).map(s => (
-                                                                                    <option key={s.name} value={s.name}>{s.name}</option>
-                                                                                ))}
+                                                                                {SURAH_DATA.slice(0, 114).map(s => {
+                                                                                    if (type === MemorizationType.SABAQ) {
+                                                                                        const prevPos = findLatestPosition(type, date);
+                                                                                        if (prevPos) {
+                                                                                            const progression = [...SURAH_DATA.slice(0, 114)].reverse().map(s => s.name);
+                                                                                            const prevSurahIndex = progression.indexOf(prevPos.surah_name);
+                                                                                            const currentSurahIndex = progression.indexOf(s.name);
+                                                                                            if (currentSurahIndex < prevSurahIndex) return null;
+                                                                                        }
+                                                                                    }
+                                                                                    return <option key={s.name} value={s.name}>{s.name}</option>;
+                                                                                })}
                                                                             </select>
                                                                         </div>
 
                                                                         <span className="text-slate-300 font-bold self-center">:</span>
 
                                                                         {/* AYAT - NOW "ayat_end" */}
-                                                                        <div className={`flex items-center h-8 px-1 flex-none w-[68px] border rounded-lg transition-all shadow-sm ${
+                                                                        <div className={`flex items-center h-8 px-1 flex-none w-17 border rounded-lg transition-all shadow-sm ${
                                                                              !(!!(pendingChanges[`${date}|${type}`]?.surah_name ?? rec?.surah_name)) 
                                                                                  ? 'bg-slate-50/30 border-slate-100 opacity-30 cursor-not-allowed' 
                                                                                  : 'bg-slate-50/50 border-slate-100 focus-within:bg-white focus-within:border-jade-400 focus-within:ring-1 focus-within:ring-jade-200'
@@ -1370,7 +1493,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                                         </div>
                                                                     </div>
                                                                 </td>
-                                                                 <td className={`px-1 lg:px-2 py-1 border-b border-slate-200 min-w-[50px] lg:min-w-[180px] ${isFuture ? 'opacity-40 pointer-events-none grayscale-[0.5]' : ''}`}>
+                                                                 <td className={`px-1 lg:px-2 py-1 border-b border-slate-200 min-w-12.5 lg:min-w-45 ${isFuture ? 'opacity-40 pointer-events-none grayscale-[0.5]' : ''}`}>
                                                                     <div className="flex flex-col gap-1">
                                                                         {/* Desktop Select */}
                                                                         <select
@@ -1488,10 +1611,11 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                     className="lg:hidden h-full overflow-x-auto overflow-y-hidden no-scrollbar snap-x snap-mandatory scroll-smooth"
                                     style={{ scrollPaddingLeft: '50px' }}
                                  >
+                                    {weekDates.length > 0 ? (
                                      <table className="border-collapse table-fixed w-max h-full border-spacing-0">
                                          <thead>
                                               <tr className="snap-start">
-                                                  <th className="sticky left-0 z-70 bg-slate-50 border-b border-r border-slate-200 w-[50px] min-w-[50px]">
+                                                  <th className="sticky left-0 z-70 bg-slate-50 border-b border-r border-slate-200 w-12.5 min-w-12.5">
                                                      <div className="flex flex-col items-center justify-center gap-1.5 py-2 h-full">
                                                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">TGL</span>
                                                          <div className="flex items-center justify-center gap-1 w-full px-1">
@@ -1514,7 +1638,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                      const isToday = date === getLocalDateString(new Date());
                                                      const dayWidth = "calc(100vw - 84px)";
                                                      return (
-                                                         <th key={date} colSpan={3} style={{ width: dayWidth, minWidth: dayWidth, scrollSnapAlign: 'start', scrollSnapStop: 'always' }} className={`relative px-2 py-2 text-[10px] font-black uppercase tracking-widest text-center border-b border-b border-l border-slate-200 snap-start ${isToday ? 'bg-emerald-50/80 text-emerald-800 after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-[2px] after:bg-emerald-500 after:z-10 before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-[2px] before:bg-emerald-500 before:z-10' : 'bg-slate-50 text-slate-500'}`}>
+                                                         <th key={date} colSpan={3} style={{ width: dayWidth, minWidth: dayWidth, scrollSnapAlign: 'start', scrollSnapStop: 'always' }} className={`relative px-2 py-2 text-[10px] font-black uppercase tracking-widest text-center border-b border-l border-slate-200 snap-start ${isToday ? 'bg-emerald-50/80 text-emerald-800 after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10 before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : 'bg-slate-50 text-slate-500'}`}>
                                                              {isToday && (
                                                                  <div className="absolute top-1 left-1/2 -translate-x-1/2">
                                                                      <span className="bg-emerald-500 text-white text-[6px] px-1.5 py-0.5 rounded-full shadow-sm shadow-emerald-500/20">HARI INI</span>
@@ -1529,7 +1653,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                  })}
                                              </tr>
                                              <tr className="snap-start">
-                                                <th className="sticky left-0 z-70 bg-slate-50 border-b border-r border-slate-200 w-[50px] min-w-[50px]">
+                                                <th className="sticky left-0 z-70 bg-slate-50 border-b border-r border-slate-200 w-12.5 min-w-12.5">
                                                     <div className="flex items-center justify-center h-full w-full py-2">
                                                         <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">SETORAN</span>
                                                     </div>
@@ -1539,7 +1663,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                     return [MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL].map((type) => {
                                                         const colWidth = "calc((100vw - 84px) / 3)";
                                                         return (
-                                                            <th key={`${date}-${type}`} style={{ width: colWidth, minWidth: colWidth }} className={`px-1 py-1 text-[8px] font-black uppercase tracking-tighter text-center border-b border-l border-slate-200 ${isToday ? 'bg-emerald-50/80 text-emerald-700' : 'bg-white text-slate-400'} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-[2px] after:bg-emerald-500 after:z-10' : ''} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-[2px] before:bg-emerald-500 before:z-10' : ''}`}>
+                                                            <th key={`${date}-${type}`} style={{ width: colWidth, minWidth: colWidth }} className={`px-1 py-1 text-[8px] font-black uppercase tracking-tighter text-center border-b border-l border-slate-200 ${isToday ? 'bg-emerald-50/80 text-emerald-700' : 'bg-white text-slate-400'} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10' : ''} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : ''}`}>
                                                                 {type === MemorizationType.SABAQ ? 'Sabaq' : type === MemorizationType.SABQI ? 'Sabqi' : 'Manzil'}
                                                             </th>
                                                         );
@@ -1550,7 +1674,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                         <tbody>
                                             {/* SURAT/AYAT ROW */}
                                             <tr className="hover:bg-slate-50/30 snap-start">
-                                                <th className="sticky left-0 z-50 bg-slate-50 border-b border-r border-slate-200 w-[50px] min-w-[50px]">
+                                                <th className="sticky left-0 z-50 bg-slate-50 border-b border-r border-slate-200 w-12.5 min-w-12.5">
                                                     <div className="flex items-center justify-center h-full w-full py-4">
                                                         <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">SURAT / AYAT</span>
                                                     </div>
@@ -1565,7 +1689,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                         const colWidth = "calc((100vw - 84px) / 3)";
                                                         
                                                         return (
-                                                            <td key={`${date}-${type}-surah`} style={{ width: colWidth, minWidth: colWidth }} className={`p-1 border-b border-l border-slate-100 ${isToday ? 'bg-emerald-50/40' : ''} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-[2px] after:bg-emerald-500 after:z-10' : ''} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-[2px] before:bg-emerald-500 before:z-10' : ''}`}>
+                                                            <td key={`${date}-${type}-surah`} style={{ width: colWidth, minWidth: colWidth }} className={`p-1 border-b border-l border-slate-100 ${isToday ? 'bg-emerald-50/40' : ''} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10' : ''} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : ''}`}>
                                                                 <div className="flex flex-col gap-1 w-full items-center">
                                                                     {/* Row 1: SURAH SELECT */}
                                                                     <select 
@@ -1574,7 +1698,18 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                                         className="w-[92%] h-6 bg-white border border-slate-200 rounded-md px-1 text-center text-[6.5px] font-bold text-slate-700 outline-none focus:border-jade-400 appearance-none"
                                                                     >
                                                                         <option value="">- Surat -</option>
-                                                                        {SURAH_DATA.slice(0, 114).map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
+                                                                        {SURAH_DATA.slice(0, 114).map(s => {
+                                                                            if (type === MemorizationType.SABAQ) {
+                                                                                const prevPos = findLatestPosition(type, date);
+                                                                                if (prevPos) {
+                                                                                    const progression = [...SURAH_DATA.slice(0, 114)].reverse().map(s => s.name);
+                                                                                    const prevSurahIndex = progression.indexOf(prevPos.surah_name);
+                                                                                    const currentSurahIndex = progression.indexOf(s.name);
+                                                                                    if (currentSurahIndex < prevSurahIndex) return null;
+                                                                                }
+                                                                            }
+                                                                            return <option key={s.name} value={s.name}>{s.name}</option>;
+                                                                        })}
                                                                     </select>
 
                                                                     {/* Row 2: AYAT INPUT */}
@@ -1615,7 +1750,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
 
                                             {/* KETERANGAN ROW */}
                                             <tr className="hover:bg-slate-50/30 snap-start">
-                                                <th className="sticky left-0 z-50 bg-slate-50 border-b border-r border-slate-200 w-[50px] min-w-[50px]">
+                                                <th className="sticky left-0 z-50 bg-slate-50 border-b border-r border-slate-200 w-12.5 min-w-12.5">
                                                     <div className="flex items-center justify-center h-full w-full py-2">
                                                         <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">KET</span>
                                                     </div>
@@ -1631,7 +1766,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                         const colWidth = "calc((100vw - 84px) / 3)";
 
                                                         return (
-                                                            <td key={`${date}-${type}-status`} style={{ width: colWidth, minWidth: colWidth }} className={`p-1 border-b border-l border-slate-100 ${isFuture ? 'opacity-30 pointer-events-none' : ''} ${isToday ? 'bg-emerald-50/40' : ''} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-[2px] after:bg-emerald-500 after:z-10' : ''} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-[2px] before:bg-emerald-500 before:z-10' : ''}`}>
+                                                            <td key={`${date}-${type}-status`} style={{ width: colWidth, minWidth: colWidth }} className={`p-1 border-b border-l border-slate-100 ${isFuture ? 'opacity-30 pointer-events-none' : ''} ${isToday ? 'bg-emerald-50/40' : ''} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10' : ''} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : ''}`}>
                                                                 <div className="flex justify-center">
                                                                     <select
                                                                         value={status}
@@ -1661,7 +1796,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
 
                                             {/* PARAF ROW */}
                                             <tr className="hover:bg-slate-50/30 snap-start">
-                                                <th className="sticky left-0 z-50 bg-slate-50 border-b border-r border-slate-200 w-[50px] min-w-[50px]">
+                                                <th className="sticky left-0 z-50 bg-slate-50 border-b border-r border-slate-200 w-12.5 min-w-12.5">
                                                     <div className="flex items-center justify-center h-full w-full py-2">
                                                         <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">PARAF</span>
                                                     </div>
@@ -1681,7 +1816,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                         const colWidth = "calc((100vw - 84px) / 3)";
 
                                                         return (
-                                                            <td key={`${date}-${type}-paraf`} style={{ width: colWidth, minWidth: colWidth }} className={`p-1 border-b border-l border-slate-100 ${isFuture ? 'opacity-30 pointer-events-none' : ''} ${isToday ? 'bg-emerald-50/40' : ''} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-[2px] after:bg-emerald-500 after:z-10' : ''} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-[2px] before:bg-emerald-500 before:z-10' : ''}`}>
+                                                            <td key={`${date}-${type}-paraf`} style={{ width: colWidth, minWidth: colWidth }} className={`p-1 border-b border-l border-slate-100 ${isFuture ? 'opacity-30 pointer-events-none' : ''} ${isToday ? 'bg-emerald-50/40' : ''} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10' : ''} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : ''}`}>
                                                                 <div className="flex flex-row items-center justify-center gap-1">
                                                                     <button 
                                                                         disabled={isFuture || !isCompletable}
@@ -1709,18 +1844,34 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                             </tr>
                                         </tbody>
                                     </table>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center p-8 bg-slate-50/30 min-h-[300px] w-full max-w-sm mx-auto">
+                                            <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-3 text-slate-300 ring-1 ring-slate-200 shadow-sm">
+                                                <BookOpen className="w-7 h-7 opacity-50" />
+                                            </div>
+                                            <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5">Masa Liburan</h4>
+                                            <p className="text-[10px] font-bold text-slate-400 text-center max-w-[200px] leading-relaxed">
+                                                Tidak ada hari efektif yang dikonfigurasi pada periode ini.
+                                            </p>
+                                            {holidayBlock && (
+                                                <div className="inline-block mt-4 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg font-bold text-[9px] uppercase tracking-widest border border-emerald-100">
+                                                    {holidayBlock.displayRange}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </>
                 ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-10 bg-white/50 backdrop-blur-sm rounded-[40px] border border-slate-100 shadow-sm min-h-[300px]">
+                    <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-10 bg-white/50 backdrop-blur-sm rounded-[40px] border border-slate-100 shadow-sm min-h-75">
                         <div className="relative mb-6 group">
                             {/* Decorative Background Circles */}
-                            <div className="absolute inset-0 bg-jade-100/50 rounded-[32px] blur-xl group-hover:scale-110 transition-transform duration-700"></div>
+                            <div className="absolute inset-0 bg-jade-100/50 rounded-32px blur-xl group-hover:scale-110 transition-transform duration-700"></div>
                             
                             {/* Main Icon Container */}
-                            <div className="relative w-20 h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-jade-50 to-white border border-jade-100/50 rounded-[32px] shadow-inner flex items-center justify-center overflow-hidden">
+                            <div className="relative w-20 h-20 lg:w-24 lg:h-24 bg-linear-to-br from-jade-50 to-white border border-jade-100/50 rounded-32px shadow-inner flex items-center justify-center overflow-hidden">
                                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/islamic-art.png')] opacity-[0.03]"></div>
                                 <div className="w-12 h-12 lg:w-14 lg:h-14 bg-jade-500/10 rounded-full flex items-center justify-center animate-bounce-slow">
                                     <Users className="w-6 h-6 lg:w-7 lg:h-7 text-jade-500" />
@@ -1759,7 +1910,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                     onClick={() => setIsAddModalOpen(false)}
                 >
                     <div 
-                        className="bg-white rounded-[28px] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 max-h-[90vh]"
+                        className="bg-white rounded-28px shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20 max-h-[90vh]"
                         onClick={e => e.stopPropagation()}
                     >
                         <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-[#FCFDFE]">
@@ -2066,7 +2217,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                         <div className="p-5 space-y-4">
                             <div className="py-2.5 px-4 bg-jade-50 rounded-xl border-2 border-jade-100 flex items-center justify-center gap-2">
                                 <Calendar className="w-3.5 h-3.5 text-jade-600" />
-                                <span className="text-[9.5px] font-black text-jade-700 uppercase tracking-widest">{weekDisplayRange}</span>
+                                <span className="text-[9.5px] font-black text-jade-700 uppercase tracking-widest">{holidayBlock ? holidayBlock.displayRange : weekDisplayRange}</span>
                             </div>
 
                             <div className="space-y-2">

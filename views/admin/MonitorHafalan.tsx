@@ -166,7 +166,7 @@ const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClo
                             <button 
                                 onClick={handleSubmit}
                                 disabled={saving}
-                                className="flex-1 py-3 bg-jade-600 text-white rounded-xl border-2 border-jade-600 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-jade-700 shadow-none transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 min-w-[90px]"
+                                className="flex-1 py-3 bg-jade-600 text-white rounded-xl border-2 border-jade-600 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-jade-700 shadow-none transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 min-22.5"
                             >
                                 {saving ? (
                                     <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -326,7 +326,10 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
         // Get the latest weekly target to get Juz info
         const studentTargets = weeklyTargets.filter(t => t.student_id === student.id);
         const latestTarget = studentTargets.length > 0 ? studentTargets[0] : null; // Sorted by week_start DESC in service
-        const totalJuz = latestTarget?.target_data?.current_juz ? `${latestTarget.target_data.current_juz} Juz` : '-';
+        const juzValue = latestTarget?.target_data?.current_juz ?? student.current_juz ?? null;
+        const pageValue = student.current_page ?? null;
+        const totalJuz = juzValue != null ? `${juzValue}` : '-';
+        const totalPage = pageValue != null && pageValue > 0 ? `${pageValue}` : null;
 
         studentRecords.forEach(r => {
             const amount = Number(r.ayat_end || r.jumlah || 0);
@@ -339,7 +342,8 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
             teacherName: pengampu?.full_name || halaqah?.teacher_name || '-',
             teacherId: currentTeacherId || 'none',
             sabaqBaris,
-            totalJuz
+            totalJuz,
+            totalPage
         };
     });
 
@@ -462,17 +466,17 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                 {/* --- BARIS 1 (Mobile) / ROW 1 (Desktop) --- */}
                 
                 {/* 1. Halaqah Selector */}
-                <div className="order-1 lg:order-1 flex-1 lg:flex-none flex items-center gap-2 md:gap-3 bg-white px-3 md:px-4 py-2 rounded-xl border-2 border-slate-300 shadow-none min-w-[200px] lg:min-w-[340px] h-10 lg:h-11">
+                <div className="order-1 lg:order-1 flex-1 lg:flex-none flex items-center gap-2.5 md:gap-3 bg-white px-3 md:px-4 rounded-xl border-2 border-slate-300 shadow-none min-50 lg:min-85 h-10 lg:h-11">
                     <div className="p-1.5 bg-primary-500 rounded-lg text-white shrink-0">
                         <GraduationCap className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     </div>
-                    <div className="flex-1 relative group/sel-unified min-w-0">
-                        <p className="text-[7.5px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Halaqoh / Pengampu</p>
+                    <div className="flex-1 flex flex-col justify-center relative group/sel-unified min-w-0 h-full">
+                        <p className="text-[7.5px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-0.5 mt-0.5">Halaqoh / Pengampu</p>
                         <div className="relative">
                             <select 
                                 value={selectedHalaqahId}
                                 onChange={(e) => setSelectedHalaqahId(e.target.value)}
-                                className="w-full bg-transparent text-[8.5px] md:text-[10px] font-black text-slate-800 uppercase tracking-tight focus:outline-none appearance-none cursor-pointer p-0 pr-5 relative z-10 truncate"
+                                className="w-full bg-transparent text-[9px] md:text-[10px] font-black text-slate-800 uppercase tracking-tight focus:outline-none appearance-none cursor-pointer p-0 pr-5 relative z-10 truncate leading-none"
                             >
                                 <option value="all">SEMUA HALAQAH</option>
                                 {halaqahs.map(h => (
@@ -485,7 +489,7 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                 </div>
 
                 {/* 2. Search Input */}
-                <div className="order-2 lg:order-2 relative flex-1 lg:flex-1 group h-10 lg:h-11 min-w-[140px]">
+                <div className="order-2 lg:order-2 relative flex-1 lg:flex-1 group h-10 lg:h-11 min-35">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-jade-500 transition-colors" />
                     <input 
                         type="text"
@@ -502,7 +506,7 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                 {/* --- BARIS 2 (Mobile) / ROW 2 (Desktop Hybrid) --- */}
 
                 {/* 6. Month Selector - Order 3 on mobile */}
-                <div className="order-3 lg:order-6 relative h-10 lg:h-11 flex-none w-[110px] lg:w-auto lg:min-w-[140px] flex items-center px-3 lg:px-4 bg-white border-2 border-slate-300 rounded-xl shadow-none group/month transition-all">
+                <div className="order-3 lg:order-6 relative h-10 lg:h-11 flex-none w-27.5 lg:w-auto lg:min-35 flex items-center px-3 lg:px-4 bg-white border-2 border-slate-300 rounded-xl shadow-none group/month transition-all lg:ml-auto">
                     <Calendar className="w-3.5 h-3.5 text-jade-500 mr-1.5 lg:mr-2 shrink-0" />
                     <select 
                         value={selectedMonth}
@@ -529,7 +533,7 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
 
                 {/* 7. Date Range Group - Order 4 on mobile */}
                 <div className="order-4 lg:order-7 flex items-center gap-1 shrink-0 h-10 lg:h-11 flex-1 lg:flex-none">
-                    <div className="h-full flex-1 lg:flex-none lg:min-w-[125px] flex justify-center items-center px-2 md:px-4 bg-white border-2 border-slate-300 rounded-xl shadow-none transition-all">
+                    <div className="h-full flex-1 lg:flex-none lg:min-31.25 flex justify-center items-center px-2 md:px-4 bg-white border-2 border-slate-300 rounded-xl shadow-none transition-all">
                         <CustomDatePicker 
                             value={startDate} 
                             align="right"
@@ -542,7 +546,7 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                     
                     <ArrowRight className="w-3 h-3 text-slate-300 shrink-0 mx-0.5" />
 
-                    <div className="h-full flex-1 lg:flex-none lg:min-w-[125px] flex justify-center items-center px-2 md:px-4 bg-white border-2 border-slate-300 rounded-xl shadow-none transition-all">
+                    <div className="h-full flex-1 lg:flex-none lg:min-31.25 flex justify-center items-center px-2 md:px-4 bg-white border-2 border-slate-300 rounded-xl shadow-none transition-all">
                         <CustomDatePicker 
                             value={endDate} 
                             align="right"
@@ -583,7 +587,7 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
 
                 {/* 5. Gender Selector - Order 7 on mobile */}
                 <div className="order-7 lg:order-5 flex-1 lg:flex-none flex items-center justify-end lg:justify-start">
-                    <div className="flex items-center gap-2 bg-white border-2 border-slate-300 px-3 py-2 rounded-xl shadow-none h-10 lg:h-11 group/gender min-w-[100px] lg:min-w-[120px]">
+                    <div className="flex items-center gap-2 bg-white border-2 border-slate-300 px-3 py-2 rounded-xl shadow-none h-10 lg:h-11 group/gender min-25 lg:min-30">
                         <User className="w-3.5 h-3.5 text-blue-500 mr-0.5 shrink-0" />
                         <div className="relative flex-1">
                             <select 
@@ -608,24 +612,24 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                     <table className="w-full border-separate border-spacing-0">
                         <thead className="sticky top-0 z-10 bg-white shadow-sm">
                             <tr>
-                                <th rowSpan={2} className="w-[30px] md:w-[45px] sticky left-0 bg-slate-300 z-20 px-1 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-l border-r border-slate-400">NO</th>
-                                <th rowSpan={2} className={`${showNisMobile ? 'table-cell' : 'hidden'} md:table-cell w-[65px] md:w-[100px] min-w-[65px] md:min-w-[100px] sticky left-[30px] md:left-[45px] bg-slate-300 z-20 px-1 md:px-3 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r border-slate-400`}>NIS</th>
-                                <th rowSpan={2} className={`w-auto md:w-[180px] sticky ${showNisMobile ? 'left-[95px]' : 'left-[30px]'} md:left-[145px] bg-slate-300 z-20 px-2 md:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-left border-t border-b border-r border-slate-400`}>NAMA SANTRI</th>
-                                <th rowSpan={2} className="hidden md:table-cell px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r border-slate-400 bg-slate-300 min-w-[240px]">HALAQOH ( <span className='text-jade-600'>PENGAMPU</span> )</th>
+                                <th rowSpan={2} className="w-7.5 md:w-11.25 sticky left-0 bg-slate-300 z-20 px-1 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-l border-r border-slate-400">NO</th>
+                                <th rowSpan={2} className={`${showNisMobile ? 'table-cell' : 'hidden'} md:table-cell w-16.25 md:w-25 min-16.25 md:min-25 sticky left-7.5 md:left-11.25 bg-slate-300 z-20 px-1 md:px-3 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r border-slate-400`}>NIS</th>
+                                <th rowSpan={2} className={`w-auto md:w-45 sticky ${showNisMobile ? 'left-23.75' : 'left-7.5'} md:left-36.25 bg-slate-300 z-20 px-2 md:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-left border-t border-b border-r border-slate-400`}>NAMA SANTRI</th>
+                                <th rowSpan={2} className="hidden md:table-cell px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r border-slate-400 bg-slate-300 min-60">HALAQOH ( <span className='text-jade-600'>PENGAMPU</span> )</th>
                                 <th colSpan={2} className="px-4 py-3 text-[9px] lg:text-[10px] font-black text-emerald-700 uppercase tracking-widest text-center border-t border-b border-r border-slate-400 bg-emerald-50">STATISTIK SETORAN</th>
                             </tr>
                             <tr className="bg-white">
-                                <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-emerald-600 uppercase text-center border-b border-r border-slate-400 bg-emerald-50/50 w-[85px] md:min-w-[100px]">SABAQ</th>
-                                <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-amber-600 uppercase text-center border-b border-r border-slate-400 bg-amber-50/50 w-[90px] md:min-w-[120px]">TOTAL JUZ</th>
+                                <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-emerald-600 uppercase text-center border-b border-r border-slate-400 bg-emerald-50/50 w-21.25 md:min-25">SABAQ</th>
+                                <th className="px-2 py-3 text-[8.5px] lg:text-[9.5px] font-black text-amber-600 uppercase text-center border-b border-r border-slate-400 bg-amber-50/50 w-22.5 md:min-30">TOTAL JUZ</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white">
                             {loading ? (
                                 Array.from({ length: 5 }).map((_, i) => (
                                     <tr key={i}>
-                                        <td className="sticky left-0 bg-white border-r border-b border-slate-100 w-[30px] md:w-[45px]"><Skeleton className="h-4 w-4 mx-auto" /></td>
-                                        <td className={`${showNisMobile ? 'table-cell' : 'hidden'} md:table-cell sticky left-[30px] md:left-[45px] bg-white border-r border-b border-slate-100 w-[65px] md:w-[100px]`}><Skeleton className="h-4 w-12 mx-auto" /></td>
-                                        <td className={`sticky ${showNisMobile ? 'left-[95px]' : 'left-[30px]'} md:left-[145px] bg-white border-r border-b border-slate-100 w-auto md:w-[180px]`}><Skeleton className="h-4 w-24" /></td>
+                                        <td className="sticky left-0 bg-white border-r border-b border-slate-100 w-7.5 md:w-11.25"><Skeleton className="h-4 w-4 mx-auto" /></td>
+                                        <td className={`${showNisMobile ? 'table-cell' : 'hidden'} md:table-cell sticky left-7.5 md:left-11.25 bg-white border-r border-b border-slate-100 w-16.25 md:w-25`}><Skeleton className="h-4 w-12 mx-auto" /></td>
+                                        <td className={`sticky ${showNisMobile ? 'left-23.75' : 'left-7.5'} md:left-36.25 bg-white border-r border-b border-slate-100 w-auto md:w-45`}><Skeleton className="h-4 w-24" /></td>
                                         <td className="hidden md:table-cell px-4 py-4 border-r border-b border-slate-100"><Skeleton className="h-4 w-40 mx-auto" /></td>
                                         <td className="px-4 py-4 border-r border-b border-slate-100"><Skeleton className="h-4 w-10 mx-auto" /></td>
                                         <td className="px-4 py-4 border-b border-slate-100"><Skeleton className="h-4 w-10 mx-auto" /></td>
@@ -634,16 +638,16 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                             ) : paginatedStats.length > 0 ? (
                                 paginatedStats.map((stat, index) => (
                                     <tr key={stat.id} className="group transition-colors hover:bg-slate-50/30">
-                                        <td className="sticky left-0 bg-white px-1 py-4 text-[10px] md:text-[10.5px] font-black text-slate-400 text-center border-r border-b border-slate-100 z-20 group-hover:bg-slate-50 transition-colors uppercase w-[30px] md:w-[45px]">
+                                        <td className="sticky left-0 bg-white px-1 py-4 text-[10px] md:text-[10.5px] font-black text-slate-400 text-center border-r border-b border-slate-100 z-20 group-hover:bg-slate-50 transition-colors uppercase w-7.5 md:w-11.25">
                                             {String((currentPage - 1) * itemsPerPage + index + 1)}
                                         </td>
-                                        <td className={`${showNisMobile ? 'table-cell' : 'hidden'} md:table-cell sticky left-[30px] md:left-[45px] bg-white px-1 md:px-3 py-4 text-[9.5px] md:text-[10.5px] font-black text-slate-500 text-center border-r border-b border-slate-100 z-20 group-hover:bg-slate-50 transition-colors tracking-tighter w-[65px] md:w-[100px]`}>
+                                        <td className={`${showNisMobile ? 'table-cell' : 'hidden'} md:table-cell sticky left-7.5 md:left-11.25 bg-white px-1 md:px-3 py-4 text-[9.5px] md:text-[10.5px] font-black text-slate-500 text-center border-r border-b border-slate-100 z-20 group-hover:bg-slate-50 transition-colors tracking-tighter w-16.25 md:w-25`}>
                                             {stat.nis || '-'}
                                         </td>
-                                        <td className={`sticky ${showNisMobile ? 'left-[95px]' : 'left-[30px]'} md:left-[145px] bg-white px-2 py-4 text-[10.5px] md:text-[11px] font-bold text-slate-800 border-r border-b border-slate-100 z-20 group-hover:bg-slate-50 transition-colors truncate w-auto md:w-[180px]`}>
+                                        <td className={`sticky ${showNisMobile ? 'left-23.75' : 'left-7.5'} md:left-36.25 bg-white px-2 py-4 text-[10.5px] md:text-[11px] font-bold text-slate-800 border-r border-b border-slate-100 z-20 group-hover:bg-slate-50 transition-colors truncate w-auto md:w-45`}>
                                             <span className="capitalize" title={stat.full_name}>{stat.full_name}</span>
                                         </td>
-                                        <td className="hidden md:table-cell px-4 py-4 text-[10px] font-black text-slate-600 text-start border-r border-b border-slate-100 uppercase tracking-tight whitespace-nowrap min-w-[240px]">
+                                        <td className="hidden md:table-cell px-4 py-4 text-[10px] font-black text-slate-600 text-start border-r border-b border-slate-100 uppercase tracking-tight whitespace-nowrap min-60">
                                             <span className="text-slate-800">{stat.halaqahName}</span>
                                             <span className="mx-1 text-slate-300 font-bold">(</span>
                                             <span className="text-jade-600 font-black">{stat.teacherName}</span>
@@ -655,19 +659,28 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                                             </span>
                                         </td>
                                         <td className="px-4 py-4 text-center border-b border-slate-100 bg-amber-50/5">
-                                            <span className={`text-[10.5px] font-bold ${stat.totalJuz !== '-' ? 'text-amber-600' : 'text-slate-300'} tracking-tight`}>
-                                                {stat.totalJuz}
-                                            </span>
+                                            {stat.totalJuz !== '-' ? (
+                                                <div className="flex flex-col items-center justify-center gap-0.5">
+                                                    <span className="text-[11px] font-black text-amber-600 leading-none">
+                                                        {stat.totalJuz} <span className="text-[9px] font-bold text-amber-400">Juz</span>
+                                                    </span>
+                                                    {stat.totalPage && (
+                                                        <span className="text-[9px] font-black text-jade-500 leading-none">
+                                                            {stat.totalPage} <span className="text-[7.5px] font-bold text-jade-400">Halaman</span>
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <span className="text-[10.5px] font-bold text-slate-300 tracking-tight">-</span>
+                                            )}
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={6} className="px-4 py-24 text-center border-b border-slate-100">
-                                        <div className="flex flex-col items-center opacity-30">
-                                            <Activity className="w-12 h-12 text-slate-400 mb-4" />
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tidak ada data setoran ditemukan</p>
-                                        </div>
+                                    <td colSpan={6} className="px-4 py-16 text-center border-b border-slate-100 bg-white">
+                                        <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight mb-1">Data Tidak Ditemukan</h3>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gunakan kata kunci atau filter yang berbeda</p>
                                     </td>
                                 </tr>
                             )}

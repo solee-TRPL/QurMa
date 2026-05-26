@@ -62,8 +62,22 @@ export const getStudentNotes = async (studentId: string): Promise<TeacherNote[]>
 };
 
 export const createStudentNote = async (note: Omit<TeacherNote, 'id'>, actor: UserProfile, studentName: string): Promise<TeacherNote> => {
+    const roleMap: Record<string, string> = {
+        'TEACHER': 'teacher',
+        'ADMIN': 'admin',
+        'SUPERVISOR': 'supervisor'
+    };
+    const userRole = roleMap[actor.role] || 'teacher';
+    const readerString = `${actor.full_name} [${userRole}]`;
+    
     const { data, error } = await supabase.from('teacher_notes').insert({ ...note, tenant_id: actor.tenant_id }).select().single();
     if (error) throw error;
+
+    // Set initial seen status safely (silently fails if seen_by column not yet created in Supabase)
+    const { error: updateError } = await supabase.from('teacher_notes').update({ seen_by: [readerString] }).eq('id', data.id);
+    if (!updateError) {
+        data.seen_by = [readerString];
+    }
 
     // --- TRIGGER NOTIFICATIONS ---
     try {
@@ -96,6 +110,13 @@ export const deleteStudentNote = async (noteId: string, actor: UserProfile, stud
     const { error } = await supabase.from('teacher_notes').delete().eq('id', noteId);
     if (error) throw error;
     await logAudit(actor, 'DELETE', `Catatan: ${studentName}`, `Menghapus catatan ustadz.`);
+};
+
+export const updateStudentNote = async (noteId: string, content: string, category: string, actor: UserProfile, studentName: string): Promise<TeacherNote> => {
+    const { data, error } = await supabase.from('teacher_notes').update({ content, category }).eq('id', noteId).select().single();
+    if (error) throw error;
+    await logAudit(actor, 'UPDATE', `Catatan: ${studentName}`, `Memperbarui catatan ustadz.`);
+    return data as TeacherNote;
 };
 
 export const replyStudentNote = async (noteId: string, replyContent: string, actor: UserProfile): Promise<void> => {
@@ -132,6 +153,22 @@ export const deleteNoteReply = async (noteId: string, actor: UserProfile): Promi
     await logAudit(actor, 'UPDATE', `Hapus Balasan Catatan`, `Santri menghapus balasan catatan.`);
 };
 
+export const markNoteAsSeen = async (noteId: string, role: string, currentSeenBy: string[] = []): Promise<void> => {
+    if (currentSeenBy.includes(role)) return; // Already marked
+    
+    const updatedSeenBy = [...currentSeenBy, role];
+    const { error } = await supabase
+        .from('teacher_notes')
+        .update({ seen_by: updatedSeenBy })
+        .eq('id', noteId);
+        
+    // We ignore errors silently here because if the seen_by column hasn't been created in Supabase yet,
+    // or if RLS blocks it, we don't want to break the UI or flood the console.
+    if (error && process.env.NODE_ENV === 'development') {
+        console.warn("Could not mark note as seen. Please ensure 'seen_by' column exists as text[] in teacher_notes table.");
+    }
+};
+
 // Achievements
 export const getAchievements = async (studentId: string): Promise<Achievement[]> => {
     const { data, error } = await supabase.from('achievements').select('*').eq('student_id', studentId).order('date', { ascending: false });
@@ -140,7 +177,7 @@ export const getAchievements = async (studentId: string): Promise<Achievement[]>
 };
 
 export const createAchievement = async (data: Omit<Achievement, 'id'>, actor: UserProfile, studentName: string): Promise<Achievement> => {
-    const { data: res, error } = await supabase.from('achievements').insert({ ...data, tenant_id: actor.tenant_id }).select().single();
+    const { data: res, error } = await supabase.from('achievements').insert({ ...data, tenant_id: actor.tenant_id, teacher_name: actor.full_name }).select().single();
     if (error) throw error;
 
     // --- TRIGGER NOTIFICATIONS ---
@@ -174,4 +211,11 @@ export const deleteAchievement = async (id: string, actor: UserProfile, studentN
     const { error } = await supabase.from('achievements').delete().eq('id', id);
     if (error) throw error;
     await logAudit(actor, 'DELETE', `Pencapaian: ${studentName}`, `Menghapus pencapaian '${achievementTitle}'.`);
+};
+
+export const updateAchievement = async (id: string, title: string, color: string, actor: UserProfile, studentName: string): Promise<Achievement> => {
+    const { data, error } = await supabase.from('achievements').update({ title, color }).eq('id', id).select().single();
+    if (error) throw error;
+    await logAudit(actor, 'UPDATE', `Pencapaian: ${studentName}`, `Memperbarui pencapaian '${title}'.`);
+    return data as Achievement;
 };

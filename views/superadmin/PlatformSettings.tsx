@@ -152,7 +152,7 @@ export const PlatformSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                     <div className="w-20 h-20 bg-jade-50 rounded-full flex items-center justify-center text-jade-600 mb-6 border-2 border-jade-100 border-dashed animate-pulse">
                         <Settings className="w-10 h-10" />
                     </div>
-                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest max-w-[180px]">Platform Sync Ready</p>
+                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest max-45">Platform Sync Ready</p>
                 </div>
 
                 <button 

@@ -125,6 +125,7 @@ export const createUser = async (userData: any, actor: UserProfile): Promise<Use
           tenant_id: userData.tenant_id,
           whatsapp_number: userData.whatsapp_number,
           nip: userData.nip,
+          nik: userData.nik,
           initial_password: userData.password // BACKUP: For environments without email reset
       })
       .eq('id', newProfile.id)

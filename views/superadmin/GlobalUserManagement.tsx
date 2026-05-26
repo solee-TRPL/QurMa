@@ -57,7 +57,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSubmit
             </div>
             <div>
                 <h3 className="font-black text-slate-900 uppercase text-xs tracking-tight leading-none">Perbarui Identitas</h3>
-                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1 opacity-70 truncate max-w-[240px]">
+                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1 opacity-70 truncate max-60">
                     {userToEdit.email}
                 </p>
             </div>
@@ -281,7 +281,7 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                   <select 
                     value={selectedRole}
                     onChange={(e) => setSelectedRole(e.target.value)}
-                    className="pl-3 lg:pl-6 pr-6 lg:pr-10 py-1.5 lg:py-3 bg-white border-2 border-slate-300 rounded-xl text-[8.5px] lg:text-[10px] font-black uppercase tracking-tighter lg:tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none min-w-[70px] lg:min-w-[120px] h-8 lg:h-12 shadow-none"
+                    className="pl-3 lg:pl-6 pr-6 lg:pr-10 py-1.5 lg:py-3 bg-white border-2 border-slate-300 rounded-xl text-[8.5px] lg:text-[10px] font-black uppercase tracking-tighter lg:tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none min-17.5 lg:min-30 h-8 lg:h-12 shadow-none"
                   >
                       <option value="all">SEMUA ROLE</option>
                       {Object.values(UserRole).map(role => (
@@ -296,7 +296,7 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                   <select 
                     value={selectedTenant}
                     onChange={(e) => setSelectedTenant(e.target.value)}
-                    className="pl-3 lg:pl-6 pr-6 lg:pr-10 py-1.5 lg:py-3 bg-white border-2 border-slate-300 rounded-xl text-[8.5px] lg:text-[10px] font-black uppercase tracking-tighter lg:tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none min-w-[80px] lg:min-w-[180px] h-8 lg:h-12 shadow-none max-w-[200px] truncate"
+                    className="pl-3 lg:pl-6 pr-6 lg:pr-10 py-1.5 lg:py-3 bg-white border-2 border-slate-300 rounded-xl text-[8.5px] lg:text-[10px] font-black uppercase tracking-tighter lg:tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none min-20 lg:min-45 h-8 lg:h-12 shadow-none max-50 truncate"
                   >
                       <option value="all">SEMUA SEKOLAH</option>
                       <option value="platform">SYSTEM</option>
@@ -322,12 +322,12 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
             <table className="w-full table-fixed divide-y divide-slate-100 border-separate border-spacing-0">
             <thead>
                 <tr className="bg-slate-300">
-                <th className="hidden lg:table-cell w-[35px] min-w-[35px] lg:w-[45px] lg:min-w-[45px] sticky left-0 bg-slate-300 z-10 px-2 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-l border-b border-r border-slate-400">NO</th>
-                <th className="w-[130px] min-w-[130px] lg:w-[250px] lg:min-w-[250px] sticky left-0 lg:left-[45px] bg-slate-300 z-10 px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 shadow-none">PENGGUNA</th>
-                <th className="w-[120px] min-w-[120px] px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">ROLE</th>
-                <th className="w-[180px] min-w-[180px] px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">INSTITUSI</th>
-                <th className="w-[200px] min-w-[200px] px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">EMAIL ADDRESS</th>
-                <th className="w-[100px] min-w-[100px] px-4 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">AKSI</th>
+                <th className="hidden lg:table-cell w-8.75 min-8.75 lg:w-11.25 lg:min-11.25 sticky left-0 bg-slate-300 z-10 px-2 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-l border-b border-r border-slate-400">NO</th>
+                <th className="w-32.5 min-32.5 lg:w-62.5 lg:min-62.5 sticky left-0 lg:left-11.25 bg-slate-300 z-10 px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 shadow-none">PENGGUNA</th>
+                <th className="w-30 min-30 px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">ROLE</th>
+                <th className="w-45 min-45 px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">INSTITUSI</th>
+                <th className="w-50 min-50 px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">EMAIL ADDRESS</th>
+                <th className="w-25 min-25 px-4 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">AKSI</th>
                 </tr>
             </thead>
             <tbody key={currentPage} className="bg-white divide-y divide-slate-50 animate-fade-in">
@@ -336,10 +336,10 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                     <td className="hidden lg:table-cell sticky left-0 bg-white px-2 py-4 text-[10.5px] font-black text-slate-400 text-center border-r border-b border-slate-100 z-10 transition-colors uppercase">
                         {String(index + 1 + (currentPage - 1) * itemsPerPage)}
                     </td>
-                    <td className="sticky left-0 lg:left-[45px] bg-white px-4 py-4 border-r border-b border-slate-100 z-10 transition-colors">
+                    <td className="sticky left-0 lg:left-11.25 bg-white px-4 py-4 border-r border-b border-slate-100 z-10 transition-colors">
                         <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className="text-[11px] font-bold text-slate-800 group-hover:text-jade-600 transition-colors truncate max-w-[110px] lg:max-w-none capitalize">{u.full_name}</span>
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter truncate max-w-[110px] lg:max-w-none opacity-60 sm:hidden">{u.email}</span>
+                            <span className="text-[11px] font-bold text-slate-800 group-hover:text-jade-600 transition-colors truncate max-27.5 lg:max-w-none capitalize">{u.full_name}</span>
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter truncate max-27.5 lg:max-w-none opacity-60 sm:hidden">{u.email}</span>
                         </div>
                     </td>
                     <td className="px-4 py-4 border-r border-b border-slate-100">
@@ -393,7 +393,7 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
 
         {/* PAGINATION CONTROLS */}
         {!loading && filteredUsers.length > 0 && (
-            <div className="bg-[#F8FAFC] border-t border-slate-100 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 lg:gap-4">
+            <div className="bg-slate-100 border-t border-slate-100 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 lg:gap-4">
                 <div className="flex items-center gap-2 lg:gap-4">
                     <select 
                         value={itemsPerPage}
@@ -454,7 +454,7 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
 
         {filteredUsers.length === 0 && !loading && (
              <div className="p-20 text-center flex flex-col items-center">
-                 <div className="w-16 h-16 bg-slate-50 rounded-[24px] border-2 border-slate-50 flex items-center justify-center text-slate-200 mb-4 shadow-inner">
+                 <div className="w-16 h-16 bg-slate-50 rounded-3xl border-2 border-slate-50 flex items-center justify-center text-slate-200 mb-4 shadow-inner">
                     <Filter className="w-8 h-8" />
                  </div>
                  <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Data pengguna tidak ditemukan</p>

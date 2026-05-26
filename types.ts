@@ -21,6 +21,7 @@ export enum MemorizationStatus {
   SAKIT = "SAKIT",
   IZIN = "IZIN",
   ALPA = "ALPA",
+  PATOKAN_AWAL = "PATOKAN_AWAL",
   EMPTY = "-",
 }
 
@@ -31,7 +32,12 @@ export interface Tenant {
   plan: "basic" | "pro" | "enterprise";
   logo_url?: string;
   created_at: string;
-  cycle_config?: any; // To store class cycle settings
+  cycle_config?: {
+    academicYearStartMonth?: number;
+    activeDays?: number[];
+    activePeriods?: { startDate: string, endDate: string }[];
+    [key: string]: any;
+  };
   curriculum_config?: {
     sabaq?: any[];
     manzil?: any[];
@@ -49,6 +55,7 @@ export interface UserProfile {
   avatar_url?: string;
   whatsapp_number?: string;
   nip?: string;
+  nik?: string;
   initial_password?: string; // Backup for manual reset (no-email env)
   student_name?: string; // For UI display
   tenant_name?: string; // For Superadmin UI display
@@ -72,11 +79,11 @@ export interface Student {
   father_phone?: string;
   mother_phone?: string;
   address?: string; // Standardized as a concatenated version or the main street address
-  rt_rw?: string;
   village?: string;
   district?: string;
   city?: string;
   province?: string;
+  rt_rw?: string;
 }
 
 export interface Class {
@@ -91,8 +98,8 @@ export interface Achievement {
   student_id: string;
   title: string;
   date: string; // ISO Date string
-  rank: number;
   color?: string;
+  teacher_name?: string;
 }
 
 export interface MemorizationRecord {
@@ -150,6 +157,7 @@ export interface TeacherNote {
   content: string;
   reply_content?: string;
   replied_at?: string;
+  seen_by?: string[];
 }
 
 export interface AuditLogEntry {
@@ -179,6 +187,13 @@ export interface AdminStats {
   memorizationQuality: { name: string; value: number; color: string }[];
   memorizationTrend: { name: string; total: number; fullDate: string }[];
   monthlyTrend?: { name: string; total: number }[];
+  kehadiranToday: {
+    hadir: number;
+    sakit: number;
+    izin: number;
+    alpa: number;
+  };
+  kehadiranTrend: { name: string; hadir: number; tidak_hadir: number }[];
 }
 
 export interface SuperAdminStats {
@@ -251,6 +266,7 @@ export interface WeeklyTarget {
     current_juz?: number;
     current_page?: number;
     teacher_note?: string;
+    supervisor_note?: string;
   };
   created_at?: string;
   updated_at?: string;
@@ -262,6 +278,9 @@ export type PageView =
   | "input-hafalan"
   | "recap-hafalan"
   | "data-santri"
+  | "data-hafalan"
+  | "data-kehadiran"
+  | "data-catatan"
   | "student-contacts"
   | "exam-grades"
   | "guardian-exams"

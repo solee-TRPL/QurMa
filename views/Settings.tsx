@@ -58,13 +58,13 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
     fullName: user.full_name, 
     phone: user.whatsapp_number || '',
     role: user.role,
+    nik: user.nik || '',
     // Student specific fields
     father_name: '',
     mother_name: '',
     father_phone: '',
     mother_phone: '',
     address: '',
-    rt_rw: '',
     village: '',
     district: '',
     city: '',
@@ -127,11 +127,21 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
   // Update state to include oldPassword
   const [passwordForm, setPasswordForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
   const [tenantForm, setTenantForm] = useState({ name: '' });
-  const [systemForm, setSystemForm] = useState({ 
+  const [systemForm, setSystemForm] = useState<{
+    academicYearStartMonth: number;
+    activeDays: number[];
+    activePeriods: { startDate: string; endDate: string; }[];
+  }>({ 
     academicYearStartMonth: 6, // Default July (0-indexed)
-    activeDays: [1, 2, 3, 4, 5] // Default Mon-Fri
+    activeDays: [1, 2, 3, 4, 5], // Default Mon-Fri
+    activePeriods: [{ startDate: '', endDate: '' }]
   });
 
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isSavingSecurity, setIsSavingSecurity] = useState(false);
+  const [isSavingTenant, setIsSavingTenant] = useState(false);
+  const [isSavingSystem, setIsSavingSystem] = useState(false);
+  
   // Sync profile form when user prop changes (e.g. after upload or refresh)
   useEffect(() => {
     const fetchStudentData = async () => {
@@ -155,7 +165,6 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                     father_phone: student?.father_phone || '',
                     mother_phone: student?.mother_phone || '',
                     address: student?.address || '',
-                    rt_rw: student?.rt_rw || '',
                     village: student?.village || '',
                     district: student?.district || '',
                     city: student?.city || '',
@@ -172,7 +181,8 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
             ...prev,
             fullName: user.full_name,
             phone: user.whatsapp_number || '',
-            role: user.role
+            role: user.role,
+            nik: user.nik || ''
         }));
     };
     fetchStudentData();
@@ -184,18 +194,22 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
   const [cropType, setCropType] = useState<'avatar' | 'logo' | null>(null);
 
   useEffect(() => {
-    if (tenant) {
-      setTenantForm({ name: tenant.name });
-      setSystemForm({
-        academicYearStartMonth: tenant.cycle_config?.academicYearStartMonth ?? 6,
-        activeDays: tenant.cycle_config?.activeDays ?? [1, 2, 3, 4, 5]
-      });
-    }
+      if (tenant?.cycle_config) {
+          const loadedPeriods = tenant.cycle_config.activePeriods && tenant.cycle_config.activePeriods.length > 0 
+            ? tenant.cycle_config.activePeriods 
+            : [{ startDate: '', endDate: '' }];
+            
+          setSystemForm({
+              academicYearStartMonth: tenant.cycle_config.academicYearStartMonth ?? 6,
+              activeDays: tenant.cycle_config.activeDays ?? [1, 2, 3, 4, 5],
+              activePeriods: loadedPeriods
+          });
+      }
   }, [tenant]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSavingProfile(true);
     
     try {
         // 1. Update User Table (Auth User) - REMOVE role from update as it's restricted
@@ -203,6 +217,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
             id: user.id,
             full_name: profileForm.fullName,
             whatsapp_number: profileForm.phone,
+            ...(user.role === UserRole.TEACHER ? { nik: profileForm.nik } : {}),
             // role: profileForm.role // Do NOT update role here, it's usually restricted by RLS
         }, user);
 
@@ -229,7 +244,6 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                     father_phone: profileForm.father_phone,
                     mother_phone: profileForm.mother_phone,
                     address: profileForm.address,
-                    rt_rw: profileForm.rt_rw,
                     village: profileForm.village,
                     district: profileForm.district,
                     city: profileForm.city,
@@ -250,7 +264,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
             message: error?.message || 'Gagal menyimpan profil. Coba lagi.' 
         });
     } finally {
-        setLoading(false);
+        setIsSavingProfile(false);
     }
   };
 
@@ -338,7 +352,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
         return;
     }
 
-    setLoading(true);
+    setIsSavingSecurity(true);
     
     try {
         // 2. Verifikasi Password Lama (Re-Authentication)
@@ -383,14 +397,14 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
         }
         addNotification({ type: 'error', title: 'Gagal', message: friendlyMessage });
     } finally {
-        setLoading(false);
+        setIsSavingSecurity(false);
     }
   };
 
   const handleSaveTenant = async (e: React.FormEvent) => {
       e.preventDefault();
       if (!tenant) return;
-      setLoading(true);
+      setIsSavingTenant(true);
 
       try {
         const updatedTenant = await updateTenant(tenant.id, { name: tenantForm.name }, user);
@@ -401,21 +415,22 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
       } catch (error) {
         addNotification({ type: 'error', title: 'Gagal', message: 'Gagal menyimpan nama sekolah.' });
       } finally {
-        setLoading(false);
+        setIsSavingTenant(false);
       }
   };
 
   const handleSaveSystem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tenant) return;
-    setLoading(true);
+    setIsSavingSystem(true);
 
     try {
         const updatedTenant = await updateTenant(tenant.id, { 
             cycle_config: { 
                 ...tenant.cycle_config,
                 academicYearStartMonth: systemForm.academicYearStartMonth,
-                activeDays: systemForm.activeDays
+                activeDays: systemForm.activeDays,
+                activePeriods: systemForm.activePeriods
             } 
         }, user);
         if (onTenantUpdate) {
@@ -425,7 +440,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
     } catch (error) {
         addNotification({ type: 'error', title: 'Gagal', message: 'Gagal menyimpan pengaturan sistem.' });
     } finally {
-        setLoading(false);
+        setIsSavingSystem(false);
     }
   };
 
@@ -453,8 +468,8 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
   };
 
   const days = [
-    { id: 1, label: 'Sen' }, { id: 2, label: 'Sel' }, { id: 3, label: 'Rab' },
-    { id: 4, label: 'Kam' }, { id: 5, label: 'Jum' }, { id: 6, label: 'Sab' }, { id: 0, label: 'Min' }
+    { id: 1, label: 'Senin' }, { id: 2, label: 'Selasa' }, { id: 3, label: 'Rabu' },
+    { id: 4, label: 'Kamis' }, { id: 5, label: 'Jumat' }, { id: 6, label: 'Sabtu' }, { id: 0, label: 'Minggu' }
   ];
 
   return (
@@ -480,7 +495,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                 Keamanan
             </div>
           </button>
-          {(user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) && (
+          {user.role === UserRole.ADMIN && (
             <button 
               onClick={() => handleTabChange('tenant')}
               className={`flex-1 lg:flex-none px-2 lg:px-6 py-1.5 lg:py-2 text-[8.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-xl border-2 transition-all ${activeTab === 'tenant' ? 'border-slate-300 bg-white text-jade-600' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
@@ -491,7 +506,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
               </div>
             </button>
           )}
-          {(user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) && (
+          {user.role === UserRole.ADMIN && (
             <button 
               onClick={() => handleTabChange('system')}
               className={`flex-1 lg:flex-none px-2 lg:px-6 py-1.5 lg:py-2 text-[8.5px] lg:text-[11px] font-black uppercase tracking-tight rounded-xl border-2 transition-all ${activeTab === 'system' ? 'border-slate-300 bg-white text-jade-600' : 'border-transparent text-slate-400 hover:text-slate-500 hover:bg-white/50'}`}
@@ -527,7 +542,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                         </div>
                         <div className="text-left py-1 flex-1">
                             <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} accept="image/png, image/jpeg" style={{ display: 'none' }} />
-                            <h3 className="text-lg lg:text-2xl font-black text-slate-800 tracking-tight leading-tight truncate max-w-[200px] lg:max-w-none">{user.full_name}</h3>
+                            <h3 className="text-lg lg:text-2xl font-black text-slate-800 tracking-tight leading-tight truncate max-w-50 lg:max-w-none">{user.full_name}</h3>
                             <p className="text-[9px] lg:text-[11px] font-black text-jade-600 mt-1 uppercase tracking-widest leading-none px-2 lg:py-1.5 bg-jade-50 border border-jade-100/50 rounded-lg w-fit">
                                 {user.role === UserRole.ADMIN ? 'Admin' : 
                                  user.role === UserRole.TEACHER ? 'Ustadz' :
@@ -589,6 +604,38 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                             </div>
                         )}
 
+                        {/* NIK & NIP — khusus Teacher */}
+                        {user.role === UserRole.TEACHER && (
+                            <>
+                                {/* NIK — editable oleh teacher */}
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">NIK <span className="normal-case font-medium text-slate-300">(Nomor Induk Kependudukan)</span></label>
+                                    <input 
+                                        type="text"
+                                        maxLength={16}
+                                        value={profileForm.nik}
+                                        onChange={e => setProfileForm({...profileForm, nik: e.target.value.replace(/\D/g, '')})}
+                                        placeholder="16 digit NIK..."
+                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl shadow-none focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none placeholder:font-black placeholder:text-slate-300"
+                                    />
+                                </div>
+                                {/* NIP — readonly, style seperti Role Utama */}
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">NIP <span className="normal-case font-medium text-slate-300">(Nomor Induk Pegawai)</span></label>
+                                    <div className="relative">
+                                        <input 
+                                            type="text" 
+                                            readOnly
+                                            disabled
+                                            value={user.nip || '-'} 
+                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-slate-50 border-2 border-slate-300 text-slate-400 rounded-lg cursor-not-allowed text-[10px] lg:text-[11px] font-black uppercase tracking-widest outline-none appearance-none opacity-100"
+                                        />
+                                        <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-3 h-3 lg:w-3.5 lg:h-3.5 text-slate-300" />
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
                         {/* Additional Fields for SANTRI */}
                         {user.role === UserRole.SANTRI && (
                             <>
@@ -637,7 +684,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                                 const name = regions.provinces.find(p => p.id === e.target.value)?.name || '';
                                                 onProvinceChange(e.target.value, name);
                                             }} 
-                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none appearance-none"
+                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black tracking-widest text-slate-700 outline-none appearance-none"
                                         >
                                             <option value="">{profileForm.province || 'PILIH PROVINSI'}</option>
                                             {regions.provinces.map(prov => (
@@ -657,7 +704,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                                 const name = regions.regencies.find(r => r.id === e.target.value)?.name || '';
                                                 onRegencyChange(e.target.value, name);
                                             }} 
-                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none appearance-none disabled:opacity-50"
+                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black tracking-widest text-slate-700 outline-none appearance-none disabled:opacity-50"
                                         >
                                             <option value="">{profileForm.city || 'PILIH KOTA/KABUPATEN'}</option>
                                             {regions.regencies.map(r => (
@@ -679,7 +726,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                                 const name = regions.districts.find(d => d.id === e.target.value)?.name || '';
                                                 onDistrictChange(e.target.value, name);
                                             }} 
-                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none appearance-none disabled:opacity-50"
+                                            className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black tracking-widest text-slate-700 outline-none appearance-none disabled:opacity-50"
                                         >
                                             <option value="">{profileForm.district || 'PILIH KECAMATAN'}</option>
                                             {regions.districts.map(d => (
@@ -709,23 +756,13 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                         <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
                                     </div>
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">RT / RW</label>
-                                    <input 
-                                        type="text" 
-                                        value={profileForm.rt_rw} 
-                                        placeholder="Contoh: 001/002"
-                                        onChange={e => setProfileForm({...profileForm, rt_rw: e.target.value})} 
-                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none placeholder:font-black placeholder:text-slate-300" 
-                                    />
-                                </div>
                                 <div className="space-y-1.5 md:col-span-2">
                                     <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Alamat Lengkap</label>
                                     <textarea 
                                         value={profileForm.address} 
-                                        placeholder="Nama jalan, nomor rumah, dsb."
+                                        placeholder="Nama jalan, nomor rumah, dusun, rt/rw, dsb."
                                         onChange={e => setProfileForm({...profileForm, address: e.target.value})} 
-                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none min-h-[80px] placeholder:font-black placeholder:text-slate-300" 
+                                        className="w-full px-4 lg:px-5 py-2 lg:py-2.5 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400 transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none min-h-20 placeholder:font-black placeholder:text-slate-300" 
                                     />
                                 </div>
                             </>
@@ -735,9 +772,10 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                     <div className="pt-2 lg:pt-2 flex justify-start shrink-0">
                         <button 
                           type="submit"
-                          className="w-full lg:w-auto flex items-center justify-center px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white hover:bg-jade-700 transition-all active:scale-95"
+                          disabled={isSavingProfile}
+                          className="w-full lg:w-auto flex items-center justify-center gap-2 px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white hover:bg-jade-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Update Profil
+                            {isSavingProfile ? <><RefreshCw className="w-3.5 h-3.5 animate-spin"/> Menyimpan</> : 'Update Profil'}
                         </button>
                     </div>
                 </form>
@@ -803,9 +841,10 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                     <div className="pt-2 lg:pt-2 flex justify-start shrink-0">
                         <button 
                           type="submit"
-                          className="w-full lg:w-auto flex items-center justify-center px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white hover:bg-jade-700 transition-all active:scale-95"
+                          disabled={isSavingSecurity}
+                          className="w-full lg:w-auto flex items-center justify-center gap-2 px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white hover:bg-jade-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Update Password
+                            {isSavingSecurity ? <><RefreshCw className="w-3.5 h-3.5 animate-spin"/> Menyimpan</> : 'Update Password'}
                         </button>
                     </div>
                 </form>
@@ -860,9 +899,10 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                         <div className="pt-2 lg:pt-2 flex justify-start shrink-0">
                             <button 
                               type="submit"
-                              className="w-full lg:w-auto flex items-center justify-center px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white hover:bg-jade-700 transition-all active:scale-95"
+                              disabled={isSavingTenant}
+                              className="w-full lg:w-auto flex items-center justify-center gap-2 px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white hover:bg-jade-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Simpan Setting
+                                {isSavingTenant ? <><RefreshCw className="w-3.5 h-3.5 animate-spin"/> Menyimpan</> : 'Simpan Setting'}
                             </button>
                         </div>
                     )}
@@ -904,8 +944,83 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-xl border-2 border-slate-100 overflow-hidden">
-                                <table className="min-w-full border-separate border-spacing-0">
+                            <div className="space-y-4 border-t border-slate-100 pt-6">
+                                <div className="flex items-center justify-between pb-2">
+                                    <label className="text-[9px] lg:text-[10.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Masa Aktif Tahun Ajaran</label>
+                                </div>
+                                
+                                {systemForm.activePeriods.length === 0 ? (
+                                    <p className="text-[10px] lg:text-[11px] font-medium text-slate-400 italic px-2 py-4 text-center bg-slate-50 rounded-xl border border-slate-100">
+                                        Belum ada masa aktif yang diatur. Tahun ajaran akan dianggap non-aktif.
+                                    </p>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {systemForm.activePeriods.map((period, idx) => (
+                                            <div key={idx} className="flex items-end gap-3 bg-slate-50 relative">
+                                                {!isReadOnly && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSystemForm(prev => ({
+                                                            ...prev,
+                                                            activePeriods: prev.activePeriods.filter((_, i) => i !== idx)
+                                                        }))}
+                                                        className="absolute -top-2 -right-2 w-6 h-6 border border-slate-300 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center hover:bg-slate-200 transition-colors"
+                                                    >
+                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                                                    </button>
+                                                )}
+                                                <div className="flex-1 space-y-1.5">
+                                                    <label className="text-[8.5px] lg:text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Mulai Periode {idx + 1}</label>
+                                                    <input 
+                                                        type="date"
+                                                        disabled={isReadOnly}
+                                                        value={period.startDate} 
+                                                        onChange={e => {
+                                                            const newPeriods = [...systemForm.activePeriods];
+                                                            newPeriods[idx] = { ...newPeriods[idx], startDate: e.target.value };
+                                                            setSystemForm({...systemForm, activePeriods: newPeriods});
+                                                        }} 
+                                                        className={`w-full px-3 lg:px-4 py-1.5 lg:py-2 ${isReadOnly ? 'bg-slate-100 border-2 border-slate-200 text-slate-400' : 'bg-white border-2 border-slate-300 focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400'} rounded-lg transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none`}
+                                                    />
+                                                </div>
+                                                <div className="flex-1 space-y-1.5">
+                                                    <label className="text-[8.5px] lg:text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Selesai Periode {idx + 1}</label>
+                                                    <input 
+                                                        type="date"
+                                                        disabled={isReadOnly}
+                                                        value={period.endDate} 
+                                                        onChange={e => {
+                                                            const newPeriods = [...systemForm.activePeriods];
+                                                            newPeriods[idx] = { ...newPeriods[idx], endDate: e.target.value };
+                                                            setSystemForm({...systemForm, activePeriods: newPeriods});
+                                                        }} 
+                                                        className={`w-full px-3 lg:px-4 py-1.5 lg:py-2 ${isReadOnly ? 'bg-slate-100 border-2 border-slate-200 text-slate-400' : 'bg-white border-2 border-slate-300 focus:ring-4 focus:ring-jade-50/50 focus:border-jade-400'} rounded-lg transition-all text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-slate-700 outline-none`}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                
+                                {!isReadOnly && (
+                                    <div className="flex justify-end pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSystemForm(prev => ({
+                                                ...prev,
+                                                activePeriods: [...prev.activePeriods, { startDate: '', endDate: '' }]
+                                            }))}
+                                            className="w-full lg:w-auto flex items-center justify-center px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-[11px] uppercase tracking-widest rounded-xl border-2 border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-700 transition-all active:scale-95 shadow-sm"
+                                        >
+                                            + Tambah Periode
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="space-y-2.5 border-t border-slate-100 pt-6">
+                                <div className="bg-white rounded-sm border-2 border-slate-400 overflow-hidden">
+                                    <table className="min-w-full border-separate border-spacing-0">
                                     <thead>
                                         <tr className="bg-slate-300">
                                             <th className="px-4 py-2.5 text-left text-[9px] font-black text-slate-800 uppercase tracking-[0.2em] border-b border-r border-slate-200">Semester 1</th>
@@ -923,18 +1038,19 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                         </tr>
                                     </tbody>
                                 </table>
+                                </div>
                             </div>
                         </div>
                     </section>
 
                     {/* Hari Kerja Pekanan Section */}
-                    <section className="space-y-4 lg:space-y-6 pt-2 border-t border-slate-100">
+                    <section className="max-w-2xl space-y-4 lg:space-y-6 pt-2 border-t border-slate-100">
                         <div className="space-y-1 shrink-0">
                              <h3 className="text-lg lg:text-xl font-black text-slate-800 tracking-tight leading-tight">Hari Kerja Pekanan</h3>
                              <p className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1.5 lg:pb-2">Tentukan hari aktif setoran hafalan</p>
                         </div>
 
-                        <div className="flex flex-row items-center gap-1 lg:gap-3 overflow-x-hidden">
+                        <div className="flex flex-row items-center gap-1 lg:gap-2 overflow-hidden">
                             {days.map((day) => {
                                 const isActive = systemForm.activeDays.includes(day.id);
                                 return (
@@ -943,7 +1059,7 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                                         type="button"
                                         disabled={isReadOnly}
                                         onClick={() => toggleDay(day.id)}
-                                        className={`flex-1 lg:flex-none px-1.5 lg:px-6 py-2 lg:py-2.5 rounded-xl text-[9px] lg:text-[10px] font-black uppercase tracking-widest border-2 transition-all h-9 lg:h-auto flex items-center justify-center ${
+                                        className={`flex-1 px-1 lg:px-2 py-2 lg:py-2.5 rounded-xl text-[8.5px] lg:text-[9.5px] font-black uppercase tracking-widest border-2 transition-all h-9 lg:h-auto flex items-center justify-center ${
                                             isActive 
                                                 ? 'bg-jade-600 border-jade-600 text-white' 
                                                 : 'bg-white border-slate-200 text-slate-400 hover:border-jade-200'
@@ -963,9 +1079,10 @@ export const Settings: React.FC<SettingsProps> = ({ user, tenant, onProfileUpdat
                         <div className="pt-2 lg:pt-2 flex justify-start shrink-0">
                             <button 
                               type="submit"
-                              className="w-full lg:w-auto flex items-center justify-center px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white hover:bg-jade-700 transition-all active:scale-95"
+                              disabled={isSavingSystem}
+                              className="w-full lg:w-auto flex items-center justify-center gap-2 px-10 py-2.5 lg:py-3 font-black text-[10px] lg:text-xs uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white hover:bg-jade-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Simpan Konfigurasi
+                                {isSavingSystem ? <><RefreshCw className="w-3.5 h-3.5 animate-spin"/> Menyimpan</> : 'Simpan Konfigurasi'}
                             </button>
                         </div>
                     )}

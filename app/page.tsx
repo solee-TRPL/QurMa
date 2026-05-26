@@ -208,7 +208,7 @@ export default function LandingPage() {
                             <img 
                                 src="/images/teacher_portrait.png" 
                                 alt="Ustadz" 
-                                className="w-full max-w-[350px] object-cover rounded-[32px] drop-shadow-2xl z-10"
+                                className="w-full max-87.5 object-cover rounded-[32px] drop-shadow-2xl z-10"
                             />
                         </div>
 
@@ -304,7 +304,7 @@ export default function LandingPage() {
                         </div>
 
                         <div className="md:w-1/2 flex flex-col items-center gap-8">
-                             <div className="relative w-full max-w-[400px] h-[400px] bg-white rounded-3xl overflow-hidden shadow-lg shadow-slate-200 border border-slate-100 flex flex-col justify-center items-center">
+                             <div className="relative w-full max-100 h-100 bg-white rounded-3xl overflow-hidden shadow-lg shadow-slate-200 border border-slate-100 flex flex-col justify-center items-center">
                                  <div className="absolute top-0 right-0 w-64 h-64 bg-jade-600/10 rounded-full blur-[60px]" />
                                  <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary-500/20 rounded-full blur-[60px]" />
                                  
@@ -317,12 +317,12 @@ export default function LandingPage() {
                                             <span className="text-[10px] font-black text-jade-600 uppercase tracking-widest">QurMa</span>
                                          </div>
                                          <h3 className="text-xl md:text-2xl font-black text-slate-800 leading-tight">Buat <span className="text-primary-500">Target<br/>Hafalan,</span><br/>Dalam Satu<br/>Genggaman</h3>
-                                         <p className="text-[8px] text-slate-500 font-medium leading-relaxed mt-2 max-w-[120px]">
+                                         <p className="text-[8px] text-slate-500 font-medium leading-relaxed mt-2 max-30">
                                              Dirancang untuk membantu kebutuhan Manajemen Tahfidz dalam menyusun target hafalan santri secara cepat dan mudah.
                                          </p>
                                      </div>
                                      <div className="w-1/2 flex justify-end">
-                                         <div className="w-[140px] h-[280px] bg-slate-800 rounded-[20px] p-1 shadow-2xl relative rotate-3 hover:rotate-0 transition-transform duration-500">
+                                         <div className="w-35 h-70 bg-slate-800 rounded-[20px] p-1 shadow-2xl relative rotate-3 hover:rotate-0 transition-transform duration-500">
                                              <div className="w-full h-full bg-slate-50 rounded-[16px] flex flex-col overflow-hidden relative border border-slate-600">
                                                 <div className="w-16 h-3 bg-slate-800 absolute top-0 left-1/2 -translate-x-1/2 rounded-b-md z-10"></div>
                                                 <div className="bg-jade-600 h-12 w-full shrink-0 flex items-end px-2 pb-2">
@@ -367,7 +367,7 @@ export default function LandingPage() {
 
                     <div className="flex flex-col md:flex-row items-start gap-16 lg:gap-20 w-full mx-auto">
                         <div className="md:w-1/2 flex flex-col items-center gap-8">
-                            <div className="relative w-full max-w-[400px] h-[400px] bg-slate-50/50 rounded-3xl overflow-hidden shadow-inner border border-slate-200 flex flex-col justify-center items-center p-8">
+                            <div className="relative w-full max-100 h-100 bg-slate-50/50 rounded-3xl overflow-hidden shadow-inner border border-slate-200 flex flex-col justify-center items-center p-8">
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-jade-600/10 rounded-full blur-[60px]" />
                                 
                                 <div className="flex items-center justify-between w-full h-full relative z-10">
@@ -386,7 +386,7 @@ export default function LandingPage() {
                                         </p>
                                     </div>
                                     <div className="w-1/2 relative h-full flex items-center justify-end">
-                                        <div className="w-[160px] h-[320px] bg-slate-800 rounded-[24px] p-1 shadow-2xl relative -rotate-6 translate-x-4 hover:rotate-0 hover:translate-x-0 transition-transform duration-500 border border-slate-700">
+                                        <div className="w-40 h-80 bg-slate-800 rounded-[24px] p-1 shadow-2xl relative -rotate-6 translate-x-4 hover:rotate-0 hover:translate-x-0 transition-transform duration-500 border border-slate-700">
                                              <div className="w-full h-full bg-jade-600 rounded-[20px] flex flex-col overflow-hidden relative">
                                                 <div className="w-20 h-4 bg-slate-800 absolute top-0 left-1/2 -translate-x-1/2 rounded-b-lg z-10"></div>
                                                 <div className="pt-10 px-3 pb-3 grid grid-cols-2 gap-2 content-start flex-1 bg-[#20664a]">
@@ -491,7 +491,7 @@ export default function LandingPage() {
                             <div className="relative">
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-jade-600/90 rounded-full -z-10" />
                                 
-                                <div className="w-[280px] h-[580px] bg-slate-900 rounded-[40px] p-2 shadow-2xl shadow-slate-900/40 relative transform transition-transform duration-500">
+                                <div className="w-70 h-145 bg-slate-900 rounded-[40px] p-2 shadow-2xl shadow-slate-900/40 relative transform transition-transform duration-500">
                                      <div className="w-full h-full bg-slate-50 rounded-[32px] overflow-hidden flex flex-col relative border border-slate-200">
                                          <div className="bg-jade-600 pt-8 pb-10 px-5 text-white relative">
                                             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-xl z-20"></div>

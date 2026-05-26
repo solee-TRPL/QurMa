@@ -282,7 +282,7 @@ export const ManageStudentProgress: React.FC<{ user: UserProfile }> = ({ user })
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 {/* STUDENT LIST SIDEBAR - ENHANCED STYLE */}
                 <div className="lg:col-span-1 flex flex-col gap-4">
-                    <div className="bg-white rounded-[24px] border border-slate-200/60 shadow-sm overflow-hidden flex flex-col max-h-[700px]">
+                    <div className="bg-white rounded-[24px] border border-slate-200/60 shadow-sm overflow-hidden flex flex-col max-175">
                         <div className="p-5 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between">
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
                                 <Users className="w-3.5 h-3.5" />
@@ -335,11 +335,11 @@ export const ManageStudentProgress: React.FC<{ user: UserProfile }> = ({ user })
                                     </div>
                                 </div>
                                 <div className="flex gap-3 w-full md:w-auto relative z-10">
-                                    <div className="flex-1 md:flex-none bg-slate-50 px-5 py-2.5 rounded-2xl border border-slate-100 text-center min-w-[120px]">
+                                    <div className="flex-1 md:flex-none bg-slate-50 px-5 py-2.5 rounded-2xl border border-slate-100 text-center min-30">
                                         <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Target Kurikulum</p>
                                         <p className="text-sm font-black text-slate-800 leading-none">15 <span className="text-[9px] text-slate-400">Juz</span></p>
                                     </div>
-                                    <div className="flex-1 md:flex-none bg-emerald-50 px-5 py-2.5 rounded-2xl border border-emerald-100/50 text-center min-w-[120px]">
+                                    <div className="flex-1 md:flex-none bg-emerald-50 px-5 py-2.5 rounded-2xl border border-emerald-100/50 text-center min-30">
                                         <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest mb-1">Status Progres</p>
                                         <div className="flex items-center justify-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -350,18 +350,18 @@ export const ManageStudentProgress: React.FC<{ user: UserProfile }> = ({ user })
                             </div>
 
                             {/* PROGRESS TABLE - WEEKLY TARGET COLOR SCHEME */}
-                            <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm overflow-hidden overflow-x-auto min-h-[400px]">
+                            <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm overflow-hidden overflow-x-auto min-100">
                                 <table className="w-full text-center border-separate border-spacing-0">
                                     <thead>
                                         <tr className="bg-slate-300 text-[9px] font-black uppercase tracking-widest">
                                             <th className="px-3 py-2 text-slate-800 border-b border-r border-slate-200 bg-slate-300 w-12">Kelas</th>
                                             <th className="px-3 py-2 text-slate-800 border-b border-r border-slate-200 bg-slate-300 w-12">Semester</th>
-                                            <th className="px-4 py-2 text-jade-700 border-b border-r border-slate-200 bg-jade-50/20 min-w-[90px]">Hafalan</th>
-                                            <th className="px-4 py-2 text-blue-700 border-b border-r border-slate-200 bg-blue-50/20 min-w-[90px]">Sabaq</th>
-                                            <th className="px-4 py-2 text-slate-800 border-b border-r border-slate-200 bg-slate-300 min-w-[110px]">Target Hafalan</th>
-                                            <th className="px-4 py-2 text-slate-800 border-b border-r border-slate-200 bg-slate-300 min-w-[120px]">Ket</th>
-                                            <th className="px-4 py-2 text-slate-800 border-b border-r border-slate-200 bg-slate-300 min-w-[110px]">Target Sabaq</th>
-                                            <th className="px-4 py-2 text-slate-800 border-b border-slate-200 bg-slate-300 min-w-[120px]">Ket</th>
+                                            <th className="px-4 py-2 text-jade-700 border-b border-r border-slate-200 bg-jade-50/20 min-22.5">Hafalan</th>
+                                            <th className="px-4 py-2 text-blue-700 border-b border-r border-slate-200 bg-blue-50/20 min-22.5">Sabaq</th>
+                                            <th className="px-4 py-2 text-slate-800 border-b border-r border-slate-200 bg-slate-300 min-27.5">Target Hafalan</th>
+                                            <th className="px-4 py-2 text-slate-800 border-b border-r border-slate-200 bg-slate-300 min-30">Ket</th>
+                                            <th className="px-4 py-2 text-slate-800 border-b border-r border-slate-200 bg-slate-300 min-27.5">Target Sabaq</th>
+                                            <th className="px-4 py-2 text-slate-800 border-b border-slate-200 bg-slate-300 min-30">Ket</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white">

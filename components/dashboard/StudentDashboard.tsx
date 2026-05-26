@@ -8,6 +8,7 @@ import { ExamScheduleModal } from './ExamScheduleModal';
 import { AchievementsModal } from './AchievementsModal';
 import { NotesModal } from './NotesModal';
 import { RecentActivityModal } from './RecentActivityModal';
+import { markNoteAsSeen } from '../../services/dataService';
 
 interface StudentDashboardProps {
     user: UserProfile;
@@ -67,8 +68,17 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             const latestId = notes[0].id;
             localStorage.setItem(`lastSeenNote_${user.id}`, latestId);
             setLastSeenNoteId(latestId);
+
+            // Also mark as seen in the database for tracking
+            const readerString = `${studentProfile?.full_name || user.full_name} [santri]`;
+            notes.forEach(note => {
+                const seenArray = note.seen_by || [];
+                if (!seenArray.includes(readerString)) {
+                    markNoteAsSeen(note.id, readerString, seenArray);
+                }
+            });
         }
-    }, [isNotesModalOpen, notes, user.id]);
+    }, [isNotesModalOpen, notes, user.id, studentProfile]);
 
     const isMatch = (recDate: string | undefined, targetY: number, targetM: number, targetD?: number) => {
         if (!recDate) return false;
@@ -216,7 +226,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                             <School className="w-4 h-4 lg:w-4.5 lg:h-4.5" />
                         </div>
                         <div>
-                            <p className="text-[7.5px] lg:text-[8.5px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1 lg:mb-1.5">Halaqoh / Pengampu</p>
+                            <p className="text-[7.5px] lg:text-[8.5px] font-black text-slate-400 uppercase tracking-widest leading-none mb-0.5 lg:mb-1">Halaqoh / Pengampu</p>
                             <h4 className="text-xs lg:text-sm font-black text-jade-700 leading-tight uppercase">
                                 {studentHalaqah?.name || 'BELUM ADA'}
                             </h4>
@@ -272,7 +282,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             </div>
 
             {/* Main Progress Chart */}
-            <div className="bg-white rounded-xl border-2 border-slate-300 p-4 lg:p-5 flex flex-col h-full relative">
+            <div className="bg-white rounded-xl border-2 border-slate-300 p-4 lg:p-5 flex flex-col flex-1 min-h-0 relative">
                 <div className="flex flex-row items-center justify-between gap-2 mb-3 lg:mb-6">
                     <div className="flex items-start gap-3">
                         <h3 className="text-[9.5px] lg:text-[10px] ps-2 font-black text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">
@@ -296,7 +306,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                                 ))}
                             </div>
 
-                            <div className="flex items-center gap-1 bg-jade-600 p-1 rounded-xl shadow-none h-9 lg:h-10 justify-between min-w-[130px] border-2 border-jade-600">
+                            <div className="flex items-center gap-1 bg-jade-600 p-1 rounded-xl shadow-none h-9 lg:h-10 justify-between min-w-32.5 border-2 border-jade-600">
                                 <button 
                                     onClick={() => {
                                         if (lineChartRange === 'pekanan') setChartWeekOffset(prev => prev - 1);
@@ -310,7 +320,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                                 >
                                     <ChevronLeft className="w-3 h-3" />
                                 </button>
-                                <div className="flex flex-col items-center justify-center flex-1 min-w-[110px]">
+                                <div className="flex flex-col items-center justify-center flex-1 min-w-27.5">
                                     <span className="text-[7.5px] font-black text-white uppercase tracking-widest leading-none mb-0.5">{chartTimeframeInfo.range}</span>
                                     <span className="text-[5.5px] font-bold text-white/60 uppercase tracking-[0.2em] leading-none">{chartTimeframeInfo.relative}</span>
                                 </div>
@@ -340,9 +350,9 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
                         <button 
                             onClick={() => setIsActivityModalOpen(true)}
-                            className="bg-white hover:bg-slate-50 px-4 h-9 lg:h-10 rounded-xl text-[8.5px] font-black text-jade-700 uppercase tracking-widest transition-all active:scale-95 border-2 border-slate-300 flex items-center justify-center min-w-[50px]"
+                            className="bg-white hover:bg-slate-50 px-4 h-9 lg:h-10 rounded-xl text-[8.5px] font-black text-jade-700 uppercase tracking-widest transition-all active:scale-95 border-2 border-slate-300 flex items-center justify-center min-w-12.5"
                         >
-                            LOG
+                            AKTIVITAS
                         </button>
                     </div>
                 </div>
@@ -362,16 +372,16 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 </div>
 
                 <div className="flex-1 flex flex-col items-center justify-center min-h-0 w-full overflow-hidden">
-                    <div className="w-full flex-1 min-h-0">
+                    <div className="w-full flex-1 flex flex-col min-h-0">
                         <div className="flex items-center justify-end mb-4 px-2">
                             <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
                                 Total: <span className="text-slate-800">{chartTotal} {lineChartType === MemorizationType.SABAQ ? 'Baris' : lineChartType === MemorizationType.SABQI ? 'Halaman' : 'Kali'}</span>
                             </div>
                         </div>
 
-                    <div className="flex-1 w-full min-h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                            <AreaChart data={chartData}>
+                        <div className="flex-1 w-full min-h-0">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+                            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 25 }}>
                                 <defs>
                                     <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>

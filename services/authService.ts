@@ -36,7 +36,9 @@ import { UserRole, UserProfile } from '../types';
         role: (dbProfile?.role as UserRole) || (metadata.role as UserRole) || UserRole.SANTRI,
         whatsapp_number: dbProfile?.whatsapp_number || metadata.whatsapp || '',
         tenant_id: dbProfile?.tenant_id || metadata.tenant_id || null,
-        avatar_url: dbProfile?.avatar_url || null
+        avatar_url: dbProfile?.avatar_url || null,
+        nip: dbProfile?.nip || undefined,
+        nik: dbProfile?.nik || undefined
     };
   } catch (error) {
     console.error("Failed to fetch profile:", error);

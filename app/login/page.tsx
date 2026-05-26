@@ -109,8 +109,8 @@ export default function LoginPage() {
   return (
     <div className="h-screen w-screen bg-white flex overflow-hidden font-sans">
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-jade-600 to-jade-800 relative items-center justify-center p-20 overflow-hidden border-r-4 border-black/5">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-primary-500/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-125 h-125 bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-75 h-75 bg-primary-500/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
 
         <div className="relative z-20 w-full max-w-md animate-in slide-in-from-left duration-700">
            <div className="text-left">
@@ -183,7 +183,7 @@ export default function LoginPage() {
             <span className="text-[10px] font-black uppercase tracking-widest hidden group-hover:block transition-all">Kembali</span>
         </button>
 
-        <div className="w-full max-w-[360px] p-2 relative transform animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="w-full max-w-[340px] p-2 relative transform animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="text-center mb-16 relative z-10">
             <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">
               {isSignUp ? 'Daftar Superadmin' : 'Masuk QurMa'}

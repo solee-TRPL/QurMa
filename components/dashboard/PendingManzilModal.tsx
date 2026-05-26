@@ -20,11 +20,11 @@ export const PendingManzilModal: React.FC<PendingManzilModalProps> = ({ isOpen, 
 
     return (
         <div 
-            className="fixed top-16 right-0 bottom-0 left-0 lg:left-64 z-[9999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300"
+            className="fixed top-16 right-0 bottom-0 left-0 lg:left-64 z-9999 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300"
             onClick={onClose}
         >
             <div 
-                className="bg-white rounded-[28px] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20"
+                className="bg-white rounded-28px shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20"
                 onClick={e => e.stopPropagation()}
             >
                 <div className="px-5 py-3.5 border-b border-slate-100 flex justify-between items-center bg-[#FCFDFE]">
@@ -64,7 +64,7 @@ export const PendingManzilModal: React.FC<PendingManzilModalProps> = ({ isOpen, 
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-0.5">TERAKHIR</p>
+                                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-0.5">TERAKHIR</p>
                                         <p className="text-[10px] font-black text-slate-500">Juz {student.current_juz}</p>
                                     </div>
                                 </div>

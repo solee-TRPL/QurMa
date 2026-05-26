@@ -4,12 +4,12 @@ import { BookOpen } from 'lucide-react';
 export const GlobalLoader: React.FC = () => {
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-white/95 backdrop-blur-sm animate-in fade-in duration-500">
-      <div className="flex flex-col items-center justify-center max-w-[300px] w-full">
+      <div className="flex flex-col items-center justify-center max-75 w-full">
         {/* Animated Icon Container */}
         <div className="relative w-28 h-28 flex items-center justify-center mb-10">
             {/* The outer ring/arc animation */}
             <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-jade-600/80 animate-spin" style={{ animationDuration: '2s' }}></div>
-            <div className="absolute inset-[6px] rounded-full border border-slate-100/50"></div>
+            <div className="absolute inset-1.5 rounded-full border border-slate-100/50"></div>
             
             {/* The centered rounded square icon box */}
             <div className="relative w-16 h-16 bg-white border border-slate-100 rounded-[24px] flex items-center justify-center shadow-xl shadow-jade-900/5 ring-4 ring-jade-50/30">
@@ -25,11 +25,11 @@ export const GlobalLoader: React.FC = () => {
                 QURMA PLATFORM
             </h1>
             <div className="flex items-center gap-4 w-full px-4">
-                <div className="h-[1px] bg-gradient-to-r from-transparent to-slate-200 flex-1"></div>
+                <div className="h-0.25 bg-gradient-to-r from-transparent to-slate-200 flex-1"></div>
                 <span className="text-[9px] font-black text-jade-500 uppercase tracking-[0.3em] whitespace-nowrap">
                     MEMUAT DATA
                 </span>
-                <div className="h-[1px] bg-gradient-to-l from-transparent to-slate-200 flex-1"></div>
+                <div className="h-0.25 bg-gradient-to-l from-transparent to-slate-200 flex-1"></div>
             </div>
         </div>
       </div>

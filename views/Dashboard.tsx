@@ -68,18 +68,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Admin Specific States
-  const [adminTrendType, setAdminTrendType] = useState<MemorizationType | 'all'>('all');
-  const [adminTrendPeriod, setAdminTrendPeriod] = useState<'weekly' | 'monthly' | '3months' | '6months' | 'yearly'>('monthly');
+  const [adminTrendType, setAdminTrendType] = useState<MemorizationType | 'all'>(MemorizationType.SABAQ);
+  const [adminTrendPeriod, setAdminTrendPeriod] = useState<'weekly' | 'monthly' | '3months' | '6months' | 'yearly'>('weekly');
   const [adminTrendWeekOffset, setAdminTrendWeekOffset] = useState(0);
   const [adminTrendMonth, setAdminTrendMonth] = useState(new Date().getMonth());
   const [adminTrendYear, setAdminTrendYear] = useState(new Date().getFullYear());
-  const [adminAllRecords, setAdminAllRecords] = useState<MemorizationRecord[]>([]);
+  const [adminTrendData, setAdminTrendData] = useState<any[]>([]);
+  const adminTrendCache = React.useRef<Record<string, any[]>>({});
   const [loadingAdminTrend, setLoadingAdminTrend] = useState(false);
 
   
   const [adminTargetHalaqahId, setAdminTargetHalaqahId] = useState<string>('all');
   const [adminTargetWeekOffset, setAdminTargetWeekOffset] = useState<number>(0);
   const [adminTargetData, setAdminTargetData] = useState<any[]>([]);
+  const [adminKehadiranTrendData, setAdminKehadiranTrendData] = useState<any[]>([]);
   const [loadingAdminTargetChart, setLoadingAdminTargetChart] = useState(false);
 
   // Data Fetching Logic
@@ -219,9 +221,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
                 if (adminTargetHalaqahId !== 'all') filteredStudents = students.filter(s => s.halaqah_id === adminTargetHalaqahId);
                 if (filteredStudents.length === 0) { setAdminTargetData([]); return; }
                 const studentIds = filteredStudents.map(s => s.id);
-                const [targets, weeklyTotals] = await Promise.all([
+                const [targets, weeklyTotals, records] = await Promise.all([
                     getWeeklyTargets(studentIds, adminTargetWeekRange.start),
-                    getWeeklyAllTypeTotals(studentIds, adminTargetWeekRange.start)
+                    getWeeklyAllTypeTotals(studentIds, adminTargetWeekRange.start),
+                    getTenantRecords(studentIds, adminTargetWeekRange.start, adminTargetWeekRange.end)
                 ]);
                 const stats = {
                     sabaq: { tercapai: 0, tidakTercapai: 0, terlampaui: 0 },
@@ -261,6 +264,34 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
                     { name: 'SABQI', tercapai: stats.sabqi.tercapai, tidakTercapai: stats.sabqi.tidakTercapai, terlampaui: stats.sabqi.terlampaui },
                     { name: 'MANZIL', tercapai: stats.manzil.tercapai, tidakTercapai: stats.manzil.tidakTercapai, terlampaui: stats.manzil.terlampaui }
                 ]);
+
+                // Calculate Kehadiran Trend
+                const kehadiranTrend: { name: string, hadir: number, tidak_hadir: number }[] = [];
+                const startD = new Date(adminTargetWeekRange.start);
+                const endD = new Date(adminTargetWeekRange.end);
+                const formatD = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                
+                for (let d = new Date(startD); d <= endD; d.setDate(d.getDate() + 1)) {
+                    const dateStr = formatD(d);
+                    const dayName = d.toLocaleDateString('id-ID', { weekday: 'short' });
+                    const dayRecords = records.filter(r => r.record_date.startsWith(dateStr));
+                    
+                    const uniqueStudentsDay = new Set<string>();
+                    let absentCountDay = 0;
+                    
+                    dayRecords.forEach(r => {
+                        if (!uniqueStudentsDay.has(r.student_id)) {
+                            uniqueStudentsDay.add(r.student_id);
+                            if (r.status === MemorizationStatus.SAKIT || r.status === MemorizationStatus.IZIN || r.status === MemorizationStatus.ALPA) {
+                                absentCountDay++;
+                            }
+                        }
+                    });
+                    
+                    const hadirCountDay = Math.max(0, filteredStudents.length - absentCountDay);
+                    kehadiranTrend.push({ name: dayName, hadir: hadirCountDay, tidak_hadir: absentCountDay });
+                }
+                setAdminKehadiranTrendData(kehadiranTrend);
             } catch (error) {
                 console.error("Error fetching target achievement data:", error);
             } finally {
@@ -274,6 +305,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
   useEffect(() => {
     if ((user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) && students.length > 0) {
         const fetchRangeData = async () => {
+            const cacheKey = `${adminTrendPeriod}-${adminTrendYear}-${adminTrendMonth}-${adminTrendWeekOffset}`;
+            if (adminTrendCache.current[cacheKey]) {
+                setAdminTrendData(adminTrendCache.current[cacheKey]);
+                return;
+            }
+
             setLoadingAdminTrend(true);
             try {
                 const studentIds = students.map(s => s.id);
@@ -305,7 +342,47 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
                 }
                 const formatD = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                 const records = await getTenantRecords(studentIds, formatD(start), formatD(end));
-                setAdminAllRecords(records);
+
+                const isMonthlyAggregation = adminTrendPeriod !== 'weekly' && adminTrendPeriod !== 'monthly';
+                const groups: Record<string, { sabaq: number, sabqi: number, manzil: number }> = {};
+
+                if (!isMonthlyAggregation) {
+                    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                        const dateStr = formatD(d);
+                        groups[dateStr] = { sabaq: 0, sabqi: 0, manzil: 0 };
+                    }
+                } else {
+                    for (let d = new Date(start); d <= end; ) {
+                        const mKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                        groups[mKey] = { sabaq: 0, sabqi: 0, manzil: 0 };
+                        d.setMonth(d.getMonth() + 1);
+                    }
+                }
+
+                records.forEach(rec => {
+                    const dateStr = rec.record_date.split('T')[0];
+                    const mKey = dateStr.slice(0, 7);
+                    const key = isMonthlyAggregation ? mKey : dateStr;
+                    if (groups[key] !== undefined && rec.status !== MemorizationStatus.TIDAK_SETOR) {
+                         if (rec.type === MemorizationType.SABAQ) groups[key].sabaq++;
+                         else if (rec.type === MemorizationType.SABQI) groups[key].sabqi++;
+                         else if (rec.type === MemorizationType.MANZIL) groups[key].manzil++;
+                    }
+                });
+
+                const chartData = Object.entries(groups).map(([key, counts]) => {
+                    let name = "";
+                    if (!isMonthlyAggregation) name = new Date(key).getDate().toString();
+                    else {
+                        const [y, m] = key.split('-');
+                        name = new Date(Number(y), Number(m) - 1).toLocaleDateString('id-ID', { month: 'short' }).toUpperCase();
+                    }
+                    return { name, sabaq: counts.sabaq, sabqi: counts.sabqi, manzil: counts.manzil, fullDate: key };
+                });
+
+                adminTrendCache.current[cacheKey] = chartData;
+                setAdminTrendData(chartData);
+
             } catch (error) {
                 console.error("Error fetching admin trend records:", error);
             } finally {
@@ -315,59 +392,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
         fetchRangeData();
     }
   }, [adminTrendMonth, adminTrendYear, adminTrendPeriod, adminTrendWeekOffset, user.role, students.length, activeDays]);
-
-  const adminTrendData = useMemo(() => {
-    if (user.role !== UserRole.ADMIN && user.role !== UserRole.SUPERVISOR) return [];
-    const isMonthlyAggregation = adminTrendPeriod !== 'weekly' && adminTrendPeriod !== 'monthly';
-    const groups: Record<string, { sabaq: number, sabqi: number, manzil: number }> = {};
-    let start, end;
-    if (adminTrendPeriod === 'weekly') {
-        const today = new Date();
-        const day = today.getDay();
-        const diff = (day === 0 ? -6 : 1) - day + (adminTrendWeekOffset * 7);
-        start = new Date(today);
-        start.setDate(today.getDate() + diff);
-        end = new Date(start);
-        const rangeLength = activeDays.length > 0 ? activeDays.length - 1 : 4;
-        end.setDate(start.getDate() + rangeLength);
-    } else if (adminTrendPeriod === 'monthly') { start = new Date(adminTrendYear, adminTrendMonth, 1); end = new Date(adminTrendYear, adminTrendMonth + 1, 0); }
-    else if (adminTrendPeriod === '3months') { end = new Date(adminTrendYear, adminTrendMonth + 1, 0); start = new Date(adminTrendYear, adminTrendMonth - 2, 1); }
-    else if (adminTrendPeriod === '6months') { end = new Date(adminTrendYear, adminTrendMonth + 1, 0); start = new Date(adminTrendYear, adminTrendMonth - 5, 1); }
-    else if (adminTrendPeriod === 'yearly') { start = new Date(adminTrendYear, 0, 1); end = new Date(adminTrendYear, 11, 31); }
-    else { start = new Date(adminTrendYear, adminTrendMonth, 1); end = new Date(adminTrendYear, adminTrendMonth + 1, 0); }
-
-    if (!isMonthlyAggregation) {
-        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-            const dateStr = d.toISOString().split('T')[0];
-            groups[dateStr] = { sabaq: 0, sabqi: 0, manzil: 0 };
-        }
-    } else {
-        for (let d = new Date(start); d <= end; ) {
-            const mKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-            groups[mKey] = { sabaq: 0, sabqi: 0, manzil: 0 };
-            d.setMonth(d.getMonth() + 1);
-        }
-    }
-    adminAllRecords.forEach(rec => {
-        const dateStr = rec.record_date.split('T')[0];
-        const mKey = dateStr.slice(0, 7);
-        const key = isMonthlyAggregation ? mKey : dateStr;
-        if (groups[key] !== undefined && rec.status !== MemorizationStatus.TIDAK_SETOR) {
-             if (rec.type === MemorizationType.SABAQ) groups[key].sabaq++;
-             else if (rec.type === MemorizationType.SABQI) groups[key].sabqi++;
-             else if (rec.type === MemorizationType.MANZIL) groups[key].manzil++;
-        }
-    });
-    return Object.entries(groups).map(([key, counts]) => {
-        let name = "";
-        if (!isMonthlyAggregation) name = new Date(key).getDate().toString();
-        else {
-            const [y, m] = key.split('-');
-            name = new Date(Number(y), Number(m) - 1).toLocaleDateString('id-ID', { month: 'short' }).toUpperCase();
-        }
-        return { name, sabaq: counts.sabaq, sabqi: counts.sabqi, manzil: counts.manzil, fullDate: key };
-    });
-  }, [adminAllRecords, adminTrendMonth, adminTrendYear, adminTrendPeriod, user.role, activeDays, adminTrendWeekOffset]);
 
   if (loading) return <div className="p-8 lg:p-12"><DashboardSkeleton /></div>;
 
@@ -435,6 +459,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
               adminTargetWeekOffset={adminTargetWeekOffset}
               setAdminTargetWeekOffset={setAdminTargetWeekOffset}
               adminTargetData={adminTargetData}
+              adminKehadiranTrendData={adminKehadiranTrendData}
               loadingAdminTargetChart={loadingAdminTargetChart}
               adminTargetWeekRange={adminTargetWeekRange}
           />

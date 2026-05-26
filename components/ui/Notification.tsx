@@ -74,7 +74,7 @@ const Toast: React.FC<{ notification: Notification; onDismiss: (id: string) => v
 
   return (
     <div
-      className={`relative w-[340px] rounded-[22px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border-2 ${style.border} flex items-center p-4 pr-10 transition-all duration-300 transform ${isFadingOut ? 'opacity-0 translate-x-10 scale-95' : 'animate-in slide-in-from-right-10 fade-in duration-300'} ${style.bg}`}
+      className={`relative w-85 rounded-[22px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border-2 ${style.border} flex items-center p-4 pr-10 transition-all duration-300 transform ${isFadingOut ? 'opacity-0 translate-x-10 scale-95' : 'animate-in slide-in-from-right-10 fade-in duration-300'} ${style.bg}`}
     >
       <div className="flex items-center gap-4 w-full">
         {/* Circle Icon Container */}

@@ -33,12 +33,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     switch (page) {
       case 'dashboard': return 'Dashboard Overview';
       case 'users': return 'Manajemen User';
-      case 'student-management': return 'Manajemen Santri';
+      case 'student-management': return 'Manajemen Halaqah';
       case 'classes': return 'Manajemen Kelas';
-      case 'halaqah-management': return 'Manajemen Halaqah';
+      // case 'halaqah-management': return 'Manajemen Halaqah';
       case 'target-management': return 'Manajemen Target';
       case 'audit-logs': return 'Audit Logs';
-      case 'data-santri': return 'Direktori Santri';
+      case 'data-santri': return 'Data Santri';
+      case 'data-hafalan': return 'Data Hafalan';
+      case 'data-kehadiran': return 'Data Kehadiran';
+      case 'data-catatan': return 'Catatan dan Pencapaian';
       case 'input-hafalan': return 'Input Hafalan Baru';
       case 'recap-hafalan': return 'Rekap Hafalan';
       case 'exam-grades': return 'Penilaian Ujian';
@@ -67,12 +70,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     switch (page) {
       case 'dashboard': return 'Ringkasan data & statistik operasional tahfidz';
       case 'users': return 'Kelola akses administrator, guru, dan pengawas';
-      case 'student-management': return 'Database pusat dan administrasi data santri';
+      case 'student-management': return 'Pengaturan halaqah, kelompok belajar, dan data santri';
       case 'classes': return 'Data Organisasi Kelas & Sub-Kelas';
-      case 'halaqah-management': return 'Pengaturan kelompok dan pembimbing halaqah';
+      // case 'halaqah-management': return 'Pengaturan kelompok dan pembimbing halaqah';
       case 'target-management': return 'Standarisasi kurikulum dan target hafalan';
       case 'audit-logs': return 'Rekaman riwayat aktivitas sistem';
-      case 'data-santri': return 'Database lengkap dan statistik hafalan seluruh santri';
+      case 'data-santri': return 'Database lengkap informasi santri';
+      case 'data-hafalan': return 'Monitoring hafalan saat ini seluruh santri';
+      case 'data-kehadiran': return 'Rekapitulasi status kehadiran dan setoran santri';
+      case 'data-catatan': return 'Pencatatan evaluasi dan pencapaian santri';
       case 'input-hafalan': return 'Rekam kemajuan setoran harian santri secara real-time';
       case 'recap-hafalan': return 'Analisis data kolektif dan riwayat setoran per periode';
       case 'exam-grades': return 'Evaluasi kumulatif hasil ujian dan standar tasmi\' santri';
@@ -104,8 +110,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-jade-50/50 blur-[120px] rounded-full animate-pulse delay-1000" />
             <div className="flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-700 relative z-10">
                 <div className="relative w-20 h-20 mb-10">
-                    <div className="absolute inset-0 border-[3px] border-jade-100 rounded-[24px] opacity-40"></div>
-                    <div className="absolute inset-0 border-[3px] border-transparent border-t-jade-600 rounded-[24px] animate-[spin_2s_linear_infinite] shadow-[0_0_15px_rgba(79,70,229,0.1)]"></div>
+                    <div className="absolute inset-0 border-[3px] border-jade-100 rounded-3xl opacity-40"></div>
+                    <div className="absolute inset-0 border-[3px] border-transparent border-t-jade-600 rounded-3xl animate-[spin_2s_linear_infinite] shadow-[0_0_15px_rgba(79,70,229,0.1)]"></div>
                     <div className="absolute inset-4 bg-jade-600 rounded-2xl flex items-center justify-center shadow-lg shadow-jade-200 animate-pulse">
                         <BookOpen className="w-6 h-6 text-white" />
                     </div>
@@ -113,9 +119,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <div className="flex flex-col items-center space-y-2">
                     <h2 className="text-[14px] font-black text-slate-800 uppercase tracking-[0.4em] leading-none">QurMa Platform</h2>
                     <div className="flex items-center gap-3">
-                        <div className="h-[2px] w-8 bg-slate-100" />
+                        <div className="h-0.5 w-8 bg-slate-100" />
                         <p className="text-[9px] font-black text-jade-400 uppercase tracking-[0.2em]">Memuat Data</p>
-                        <div className="h-[2px] w-8 bg-slate-100" />
+                        <div className="h-0.5 w-8 bg-slate-100" />
                     </div>
                 </div>
             </div>
@@ -147,8 +153,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Unsaved Changes Confirmation Modal */}
       {showUnsavedModal && (
-          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in lg:pl-64">
-              <div className="bg-white rounded-xl shadow-none w-full max-w-[380px] overflow-hidden animate-scale-in border-2 border-slate-300">
+          <div className="fixed inset-0 z-99999 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in lg:pl-64">
+              <div className="bg-white rounded-xl shadow-none w-full max-w-md overflow-hidden animate-scale-in border-2 border-slate-300">
                   <div className="p-8 text-center">
                       <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-amber-500 shadow-none border-2 border-amber-100">
                           <AlertTriangle className="w-8 h-8" />
@@ -180,7 +186,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                               triggerSave();
                               setShowUnsavedModal(false);
                           }}
-                          className="flex-[2] py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-jade-700 shadow-none border-2 border-jade-600 transition-all active:scale-95 outline-none"
+                          className="flex-2 py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-jade-700 shadow-none border-2 border-jade-600 transition-all active:scale-95 outline-none"
                       >
                           Simpan & Pindah
                       </button>

@@ -27,7 +27,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             </h3>
             
             {description ? (
-                <p className="max-w-[280px] text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed opacity-80">
+                <p className="max-70 text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed opacity-80">
                     {description}
                 </p>
             ) : (

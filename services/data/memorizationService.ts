@@ -43,6 +43,19 @@ export const getLastProgressByType = async (studentId: string): Promise<Record<s
     return results;
 };
 
+export const getFirstRecordDate = async (studentId: string): Promise<string | null> => {
+    const { data, error } = await supabase
+        .from('memorization_records')
+        .select('record_date')
+        .eq('student_id', studentId)
+        .order('record_date', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+    
+    if (error || !data) return null;
+    return data.record_date;
+};
+
 export const getHalaqahRecords = async (studentIds: string[]): Promise<MemorizationRecord[]> => {
     if (studentIds.length === 0) return [];
     const { data, error } = await supabase

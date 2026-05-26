@@ -125,7 +125,7 @@ export const GuardianDirectory: React.FC<{ tenantId: string, user: UserProfile }
                             <div key={guardian.id} className="p-5 flex flex-col md:flex-row items-start justify-between gap-6 group">
                                 
                                 {/* LEFT: Guardian Info */}
-                                <div className="flex items-center gap-4 w-full md:w-1/3 min-w-[280px]">
+                                <div className="flex items-center gap-4 w-full md:w-1/3 min-70">
                                     <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 font-bold text-lg border border-slate-200 shrink-0 capitalize">
                                         {guardian.full_name.charAt(0)}
                                     </div>

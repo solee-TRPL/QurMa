@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { MemorizationRecord, MemorizationStatus, TeacherNote, UserProfile, Student, MemorizationType } from '../../types';
 import { getStudentRecords, getStudentNotes, getStudents, getWeeklyMemorization, upsertWeeklyMemorization, getTenant, getWeeklyTargets } from '../../services/dataService';
 import { 
@@ -24,7 +24,10 @@ import {
     GraduationCap,
     School,
     RotateCcw,
-    Crosshair
+    Crosshair,
+    Pen,
+    Square,
+    CheckSquare
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -38,6 +41,9 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
   const [activeDays, setActiveDays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [weeklyTarget, setWeeklyTarget] = useState<any>(null);
   const [showTargetPanel, setShowTargetPanel] = useState(false);
+  // Checklist state: key = "date-type", value = true jika sudah dicentang wali
+  const [checkedRows, setCheckedRows] = useState<Set<string>>(new Set());
+  const [parafLoading, setParafLoading] = useState<string | null>(null);
 
   // WEEKLY LOGIC — initialize from localStorage if available
   const [selectedWeek, setSelectedWeek] = useState(() => {
@@ -204,8 +210,39 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
     return notes.filter(n => weekDates.includes(n.date));
   }, [notes, weekDates]);
 
-  if (loading) return (
-    <div className="p-20 flex flex-col items-center justify-center gap-4">
+  // Handler: toggle checkbox (wali harus centang dulu sebelum paraf)
+  const toggleCheck = useCallback((key: string) => {
+    setCheckedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }, []);
+
+  // Handler: simpan paraf ke weeklyData
+  const handleParaf = useCallback(async (date: string, type: MemorizationType) => {
+    if (!student || !user) return;
+    const key = `${date}-${type}`;
+    if (!checkedRows.has(key)) return; // Harus centang dulu
+    setParafLoading(key);
+    try {
+      const updatedData = { ...weeklyData };
+      if (updatedData[date]?.[type]) {
+        updatedData[date][type].is_read_by_parent = true;
+      }
+      await upsertWeeklyMemorization(student.id, selectedWeek, updatedData, user, student.full_name);
+      setWeeklyData(updatedData);
+      // Hapus dari checkedRows setelah berhasil paraf
+      setCheckedRows(prev => { const next = new Set(prev); next.delete(key); return next; });
+    } catch (err) {
+      console.error('Gagal menyimpan paraf', err);
+    } finally {
+      setParafLoading(null);
+    }
+  }, [checkedRows, weeklyData, student, user, selectedWeek]);
+
+  if (loading && !student) return (
+    <div className="p-20 flex flex-col items-center justify-center gap-4 h-full">
         <div className="w-10 h-10 border-4 border-jade-100 border-t-jade-600 rounded-full animate-spin"></div>
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Menyusun Laporan...</p>
     </div>
@@ -251,42 +288,42 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                       </div>
                   </div>
 
-                  <div className="flex-1 flex flex-col justify-between py-1 min-h-0 relative z-10">
+                  <div className="flex-1 flex flex-col gap-1 lg:gap-1.5 py-0.5 min-h-0 relative z-10">
                       {/* Sabaq Target */}
-                      <div className="p-2 lg:p-2.5 bg-slate-50/50 border-2 border-slate-100 rounded-xl group hover:bg-white hover:border-jade-200 transition-all flex-1 flex flex-col justify-center mb-1.5">
-                          <div className="flex items-center justify-between mb-1">
+                      <div className="p-1.5 lg:p-2 bg-slate-50/50 border-2 border-slate-100 rounded-xl group hover:bg-white hover:border-jade-200 transition-all flex-1 flex flex-col justify-center">
+                          <div className="flex items-center justify-between mb-0.5">
                               <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest">SABAQ</span>
-                              <span className="text-[8px] font-black text-jade-700 bg-white px-2 py-0.5 rounded-lg border-2 border-jade-100">
+                              <span className="text-[7.5px] font-black text-jade-700 bg-white px-2 py-0.5 rounded-lg border-2 border-jade-100">
                                   {weeklyTarget?.sabaq_target || 0} BARIS
                               </span>
                           </div>
-                          <p className="text-[9px] font-black text-slate-800 uppercase tracking-tight truncate leading-none">
+                          <p className="text-[8.5px] font-black text-slate-800 uppercase tracking-tight truncate leading-none">
                               {weeklyTarget?.sabaq_target_surat || 'BELUM ADA'}
                           </p>
                       </div>
 
                       {/* Sabqi Target */}
-                      <div className="p-2 lg:p-2.5 bg-slate-50/50 border-2 border-slate-100 rounded-xl group hover:bg-white hover:border-emerald-200 transition-all flex-1 flex flex-col justify-center mb-1.5">
-                          <div className="flex items-center justify-between mb-1">
+                      <div className="p-1.5 lg:p-2 bg-slate-50/50 border-2 border-slate-100 rounded-xl group hover:bg-white hover:border-emerald-200 transition-all flex-1 flex flex-col justify-center">
+                          <div className="flex items-center justify-between mb-0.5">
                               <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest">SABQI</span>
-                              <span className="text-[8px] font-black text-emerald-700 bg-white px-2 py-0.5 rounded-lg border-2 border-emerald-100">
+                              <span className="text-[7.5px] font-black text-emerald-700 bg-white px-2 py-0.5 rounded-lg border-2 border-emerald-100">
                                   {weeklyTarget?.sabqi_target || 0} HALAMAN
                               </span>
                           </div>
-                          <p className="text-[9px] font-black text-slate-800 uppercase tracking-tight truncate leading-none">
+                          <p className="text-[8.5px] font-black text-slate-800 uppercase tracking-tight truncate leading-none">
                               {weeklyTarget?.sabqi_target_surat || 'BELUM ADA'}
                           </p>
                       </div>
 
                       {/* Manzil Target */}
-                      <div className="p-2 lg:p-2.5 bg-slate-50/50 border-2 border-slate-100 rounded-xl group hover:bg-white hover:border-amber-200 transition-all flex-1 flex flex-col justify-center">
-                          <div className="flex items-center justify-between mb-1">
+                      <div className="p-1.5 lg:p-2 bg-slate-50/50 border-2 border-slate-100 rounded-xl group hover:bg-white hover:border-amber-200 transition-all flex-1 flex flex-col justify-center">
+                          <div className="flex items-center justify-between mb-0.5">
                               <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest">MANZIL</span>
-                              <span className="text-[8px] font-black text-amber-700 bg-white px-2 py-0.5 rounded-lg border-2 border-amber-100">
+                              <span className="text-[7.5px] font-black text-amber-700 bg-white px-2 py-0.5 rounded-lg border-2 border-amber-100">
                                   {weeklyTarget?.manzil_hal || 0} HALAMAN
                               </span>
                           </div>
-                          <p className="text-[9px] font-black text-slate-800 uppercase tracking-tight truncate leading-none">
+                          <p className="text-[8.5px] font-black text-slate-800 uppercase tracking-tight truncate leading-none">
                               {weeklyTarget?.manzil_target || 'BELUM ADA'}
                           </p>
                       </div>
@@ -330,22 +367,27 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
       <div className="flex-1 flex flex-col min-h-0 min-w-0 h-full">
           
           {/* Mobile Date Selector (Visible only on mobile) */}
-          <div className="lg:hidden shrink-0 bg-white border border-slate-200 rounded-[24px] p-2 shadow-sm mb-4">
-              <div className="flex bg-white p-1 rounded-[18px] border border-slate-100 shadow-sm ring-1 ring-white w-full justify-between items-center h-[44px]">
+          <div className="lg:hidden shrink-0 bg-white border border-slate-200 rounded-3xl p-2 shadow-sm mb-4">
+              <div className="flex bg-jade-600 p-1 rounded-xl shadow-none border-2 border-jade-600 w-full justify-between items-center h-10.5">
                   <button 
                       onClick={() => {
                           const d = new Date(selectedWeek);
                           d.setDate(d.getDate() - 7);
                           setSelectedWeek(d.toISOString().split('T')[0]);
                       }}
-                      className="p-1 px-2.5 hover:bg-slate-50 rounded-xl transition-colors text-slate-400 active:scale-95"
+                      className="w-8 h-8 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg transition-all text-white active:scale-95 shrink-0"
                   >
                       <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <div className="px-2 py-1 text-[9.5px] font-black uppercase tracking-widest text-jade-600 flex flex-col items-center justify-center flex-1">
-                      <span className="flex items-center gap-2 whitespace-nowrap leading-none truncate w-full justify-center">
-                          <Calendar className="w-3 h-3 shrink-0" />
+                  <div className="px-2 flex flex-col items-center justify-center flex-1 relative">
+                      <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none mb-0.5 truncate w-full text-center">
                           {new Date(weekDates[0]).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })} - {new Date(weekDates[4]).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
+                      </span>
+                      <span className="text-[6.5px] font-bold text-white/60 uppercase tracking-[0.2em] leading-none">
+                          {currentWeekOffset === 0 ? 'PEKAN INI' : 
+                           currentWeekOffset === -1 ? 'PEKAN LALU' : 
+                           currentWeekOffset < 0 ? `${Math.abs(currentWeekOffset)} PK LALU` : 
+                           `${currentWeekOffset} PK DEPAN`}
                       </span>
                   </div>
                   <button 
@@ -354,7 +396,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                           d.setDate(d.getDate() + 7);
                           setSelectedWeek(d.toISOString().split('T')[0]);
                       }}
-                      className="p-1 px-2.5 hover:bg-slate-50 rounded-xl transition-colors text-slate-400 active:scale-95"
+                      className="w-8 h-8 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg transition-all text-white active:scale-95 shrink-0"
                   >
                       <ChevronRight className="w-4 h-4" />
                   </button>
@@ -384,23 +426,23 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                           <Crosshair className={`w-4 h-4 ${showTargetPanel ? 'animate-pulse' : ''}`} />
                       </button>
 
-                        <div className="hidden lg:flex items-center bg-white p-1 rounded-xl border-2 border-slate-200 shadow-sm ring-1 ring-white shrink-0">
+                        <div className="hidden lg:flex items-center gap-1 bg-jade-600 p-1 rounded-xl shadow-none h-10 justify-between min-w-50 border-2 border-jade-600 shrink-0">
                             <button 
                                 onClick={() => {
                                     const d = new Date(selectedWeek);
                                     d.setDate(d.getDate() - 7);
                                     setSelectedWeek(d.toISOString().split('T')[0]);
                                 }}
-                                className="w-8 h-8 flex items-center justify-center hover:bg-slate-50 rounded-lg transition-all text-slate-400 active:scale-95"
+                                className="w-7 h-7 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg transition-all text-white active:scale-95 shrink-0"
                             >
                                 <ChevronLeft className="w-3.5 h-3.5" />
                             </button>
 
-                            <div className="px-3 flex flex-col items-center min-w-[120px]">
-                                <span className="text-[9px] font-black text-jade-700 uppercase tracking-tight leading-none whitespace-nowrap">
+                            <div className="px-3 flex flex-col items-center flex-1 justify-center min-w-30">
+                                <span className="text-[9px] font-black text-white uppercase tracking-widest leading-none mb-0.5 whitespace-nowrap">
                                     {new Date(weekDates[0]).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }).toUpperCase()} - {new Date(weekDates[4]).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }).toUpperCase()}
                                 </span>
-                                <span className="text-[6.5px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
+                                <span className="text-[6.5px] font-bold text-white/60 uppercase tracking-[0.2em] leading-none">
                                     {currentWeekOffset === 0 ? 'PEKAN INI' : 
                                      currentWeekOffset === -1 ? 'PEKAN LALU' : 
                                      currentWeekOffset < 0 ? `${Math.abs(currentWeekOffset)} PK LALU` : 
@@ -414,7 +456,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                     d.setDate(d.getDate() + 7);
                                     setSelectedWeek(d.toISOString().split('T')[0]);
                                 }}
-                                className="w-8 h-8 flex items-center justify-center hover:bg-slate-50 rounded-lg transition-all text-slate-400 active:scale-95"
+                                className="w-7 h-7 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg transition-all text-white active:scale-95 shrink-0"
                             >
                                 <ChevronRight className="w-3.5 h-3.5" />
                             </button>
@@ -423,7 +465,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                       
                       {/* MOBILE TARGET MODAL */}
                       {showTargetPanel && (
-                          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 lg:hidden">
+                          <div className="fixed inset-0 z-100 flex items-center justify-center p-4 lg:hidden">
                               {/* Backdrop */}
                               <div 
                                   className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300"
@@ -431,7 +473,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                               />
                               
                               {/* Modal Card */}
-                              <div className="relative w-full max-w-sm bg-white rounded-[32px] shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-300">
+                              <div className="relative w-full max-w-sm bg-white rounded-32px shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-300">
                                   <div className="p-5 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
                                       <div className="flex items-center gap-3">
                                           <div className="w-8 h-8 rounded-xl bg-jade-600 text-white flex items-center justify-center shadow-md shadow-jade-100">
@@ -458,19 +500,19 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                               <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Target Pekan Ini</p>
                                           </div>
                                           <div className="grid grid-cols-3 gap-2">
-                                              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-center flex flex-col justify-center min-h-[54px]">
+                                              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-center flex flex-col justify-center min-13.5">
                                                   <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sabaq</p>
                                                   <p className="text-[10px] font-black text-slate-700 leading-tight">
                                                       {weeklyTarget?.sabaq_target || 0} <span className="text-[7.5px] font-bold text-slate-400 block mt-0.5">Baris</span>
                                                   </p>
                                               </div>
-                                              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-center flex flex-col justify-center min-h-[54px]">
+                                              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-center flex flex-col justify-center min-13.5">
                                                   <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sabqi</p>
                                                   <p className="text-[10px] font-black text-slate-700 leading-tight">
                                                       {weeklyTarget?.sabqi_target || 0} <span className="text-[7.5px] font-bold text-slate-400 block mt-0.5">Halaman</span>
                                                   </p>
                                               </div>
-                                              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-center flex flex-col justify-center min-h-[54px]">
+                                              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-center flex flex-col justify-center min-13.5">
                                                   <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-1">Manzil</p>
                                                   <p className="text-[10px] font-black text-slate-700 leading-tight">
                                                       {weeklyTarget?.manzil_target || 0} <span className="text-[7.5px] font-bold text-slate-400 block mt-0.5">Juz</span>
@@ -486,14 +528,14 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                               <p className="text-[8px] font-black text-jade-600 uppercase tracking-[0.2em]">Capaian Riil</p>
                                           </div>
                                           <div className="grid grid-cols-2 gap-2">
-                                              <div className="p-3 bg-jade-50/50 rounded-2xl border border-jade-100 text-center relative overflow-hidden flex flex-col justify-center min-h-[54px]">
+                                              <div className="p-3 bg-jade-50/50 rounded-2xl border border-jade-100 text-center relative overflow-hidden flex flex-col justify-center min-13.5">
                                                   <div className="absolute top-0 right-0 w-8 h-8 bg-jade-100/30 rounded-bl-3xl -mr-2 -mt-2" />
                                                   <p className="text-[7px] font-bold text-jade-400 uppercase tracking-widest mb-1">Sabaq</p>
                                                   <p className="text-[10px] font-black text-jade-700 leading-tight">
                                                       {stats.sabaqCount} <span className="text-[7.5px] font-bold text-jade-400 block mt-0.5">Baris</span>
                                                   </p>
                                               </div>
-                                              <div className="p-3 bg-jade-50/50 rounded-2xl border border-jade-100 text-center relative overflow-hidden flex flex-col justify-center min-h-[54px]">
+                                              <div className="p-3 bg-jade-50/50 rounded-2xl border border-jade-100 text-center relative overflow-hidden flex flex-col justify-center min-13.5">
                                                   <div className="absolute top-0 right-0 w-8 h-8 bg-jade-100/30 rounded-bl-3xl -mr-2 -mt-2" />
                                                   <p className="text-[7px] font-bold text-jade-400 uppercase tracking-widest mb-1">Sabqi</p>
                                                   <p className="text-[10px] font-black text-jade-700 leading-tight">
@@ -515,15 +557,16 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                       )}
 
                   {/* High Density Table Body */}
-                  <div className="flex-1 overflow-x-auto overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent -mt-[1px]">
+                  <div className="flex-1 overflow-x-auto overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent -mt-px">
                       <table className="w-full border-separate border-spacing-0">
                           <thead className="sticky top-0 z-40 bg-white">
                               <tr className="bg-slate-300 backdrop-blur-sm">
-                                  <th className="px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center lg:w-[100px] lg:min-w-[100px] w-[70px] min-w-[70px] sticky left-0 z-50 bg-slate-300 border-t border-b border-l border-r border-black">TANGGAL</th>
-                                  <th className="px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center lg:w-[80px] lg:min-w-[80px] w-[60px] min-w-[60px] sticky lg:left-[100px] left-[70px] z-50 bg-slate-300 border-t border-b border-r border-black shadow-none">SETORAN</th>
-                                  <th className="px-4 py-4 text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-[100px] border-t border-b border-r border-black bg-slate-300">JUMLAH</th>
+                                  <th className="px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center lg:w-25 lg:min-25 w-17.5 min-17.5 sticky left-0 z-50 bg-slate-300 border-t border-b border-l border-r border-black">TANGGAL</th>
+                                  <th className="px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center lg:w-20 lg:min-20 w-15 min-15 sticky lg:left-25 left-17.5 z-50 bg-slate-300 border-t border-b border-r border-black shadow-none">SETORAN</th>
+                                  <th className="px-4 py-4 text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-25 border-t border-b border-r border-black bg-slate-300">JUMLAH</th>
                                   <th className="px-2 lg:px-6 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r border-black bg-slate-300 whitespace-nowrap">SURAT / AYAT</th>
                                   <th className="px-6 py-4 text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-64 border-t border-b border-r border-black bg-slate-300">KETERANGAN</th>
+                                  <th className="px-3 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-22.5 min-22.5 border-t border-b border-r border-black bg-slate-300 whitespace-nowrap">PARAF WALI</th>
                               </tr>
                           </thead>
                           <tbody className="bg-white">
@@ -549,9 +592,9 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                                 className={`${isToday ? 'bg-emerald-50/10' : 'hover:bg-slate-50/50'} transition-colors ${tIdx === 0 ? 'report-date-row' : ''}`}
                                                >
                                                   {tIdx === 0 && (
-                                                      <td rowSpan={3} className={`px-1 lg:px-2 py-3 align-middle lg:w-[100px] lg:min-w-[100px] w-[70px] min-w-[70px] sticky left-0 z-30 border-b border-r border-slate-200 text-center transition-colors !opacity-100 ${isToday ? 'bg-emerald-50' : 'bg-white'}`}>
+                                                      <td rowSpan={3} className={`px-1 lg:px-2 py-3 align-middle lg:w-25 lg:min-25 w-17.5 min-17.5 sticky left-0 z-30 border-b border-r border-slate-200 text-center transition-colors opacity-100 ${isToday ? 'bg-emerald-50' : 'bg-white'}`}>
                                                           {isToday && (
-                                                              <div className="absolute top-0 bottom-0 left-0 w-[3px] bg-emerald-600 shadow-none"></div>
+                                                              <div className="absolute top-0 bottom-0 left-0 w-0.75 bg-emerald-600 shadow-none"></div>
                                                           )}
                                                           <div className="flex flex-col items-center justify-center space-y-1 lg:space-y-1.5 text-center relative z-10 py-1 lg:py-2">
                                                               {isToday && (
@@ -579,7 +622,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                                           </div>
                                                       </td>
                                                   )}
-                                                  <td className={`px-1 lg:px-2 py-3 sticky lg:left-[100px] left-[70px] z-30 lg:w-[80px] lg:min-w-[80px] w-[60px] min-w-[60px] border-b border-r border-slate-200 text-center transition-colors shadow-none !opacity-100 ${isToday ? 'bg-emerald-50' : 'bg-white'}`}>
+                                                  <td className={`px-1 lg:px-2 py-3 sticky lg:left-25 left-17.5 z-30 lg:w-20 lg:min-20 w-15 min-15 border-b border-r border-slate-200 text-center transition-colors shadow-none opacity-100 ${isToday ? 'bg-emerald-50' : 'bg-white'}`}>
                                                       <span className={`text-[8.5px] lg:text-[10px] font-black uppercase tracking-widest ${isToday ? 'text-emerald-700' : 'text-slate-400'}`}>
                                                           {getTypeLabel(type)}
                                                       </span>
@@ -599,7 +642,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
 
                                                   {/* SURAT : AYAT COLUMN */}
                                                   <td className={`px-4 py-3 border-b border-r border-slate-200 ${isToday ? 'bg-emerald-50/20' : ''}`}>
-                                                      <div className="flex items-center justify-center gap-1.5 max-w-[400px] mx-auto">
+                                                      <div className="flex items-center justify-center gap-1.5 max-100 mx-auto">
                                                           <span className={`text-[9px] font-black uppercase tracking-widest truncate ${rec?.surah_name ? 'text-jade-700' : 'text-slate-200'}`}>
                                                               {rec?.surah_name || '- SURAT -'}
                                                           </span>
@@ -611,7 +654,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                                   </td>
 
                                                   {/* KETERANGAN / STATUS */}
-                                                  <td className={`px-2 lg:px-4 py-3 border-b-2 border-slate-200 ${isToday ? 'bg-emerald-50/20' : ''}`}>
+                                                  <td className={`px-2 lg:px-4 py-3 border-b border-r border-slate-200 ${isToday ? 'bg-emerald-50/20' : ''}`}>
                                                        <div className="flex items-center justify-center">
                                                            {rec && rec.status && rec.status !== MemorizationStatus.EMPTY ? (
                                                                <span className={`text-[8.5px] lg:text-[9.5px] font-black uppercase tracking-widest whitespace-nowrap px-3 py-1 rounded-lg border-2 ${
@@ -626,6 +669,68 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                                            )}
                                                        </div>
                                                   </td>
+
+                                                  {/* PARAF WALI COLUMN */}
+                                                  {(() => {
+                                                    const rowKey = `${date}-${type}`;
+                                                    const isParafed = !!rec?.is_read_by_parent;
+                                                    const isChecked = checkedRows.has(rowKey);
+                                                    const hasData = !!rec?.status && rec.status !== MemorizationStatus.EMPTY;
+                                                    const isLoadingParaf = parafLoading === rowKey;
+
+                                                    return (
+                                                      <td className={`px-2 py-3 border-b border-r border-slate-200 text-center w-22.5 min-22.5 ${isToday ? 'bg-emerald-50/20' : ''}`}>
+                                                        {isParafed ? (
+                                                          // Sudah diparaf — tampilkan tanda centang hijau
+                                                          <div className="flex flex-col items-center justify-center gap-0.5">
+                                                            <div className="w-6 h-6 rounded-full bg-jade-500 flex items-center justify-center shadow-sm shadow-jade-100">
+                                                              <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                                                            </div>
+                                                            <span className="text-[6.5px] font-black text-jade-500 uppercase tracking-widest">Terparaf</span>
+                                                          </div>
+                                                        ) : hasData ? (
+                                                          // Ada data tapi belum diparaf — tampilkan checkbox + tombol paraf
+                                                          <div className="flex flex-col items-center justify-center gap-1.5">
+                                                            {/* Checkbox */}
+                                                            <button
+                                                              onClick={() => toggleCheck(rowKey)}
+                                                              title="Centang untuk mengaktifkan paraf"
+                                                              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                                                                isChecked
+                                                                  ? 'bg-jade-600 border-jade-600 text-white'
+                                                                  : 'border-slate-300 bg-white hover:border-jade-400'
+                                                              }`}
+                                                            >
+                                                              {isChecked && <Check className="w-3 h-3" strokeWidth={3} />}
+                                                            </button>
+                                                            {/* Tombol Paraf — aktif hanya jika sudah dicentang */}
+                                                            <button
+                                                              disabled={!isChecked || isLoadingParaf}
+                                                              onClick={() => handleParaf(date, type)}
+                                                              title={isChecked ? 'Klik untuk memberi paraf' : 'Centang dulu sebelum paraf'}
+                                                              className={`px-2 py-0.5 text-[7px] font-black uppercase tracking-widest rounded-lg border-2 transition-all flex items-center gap-1 ${
+                                                                isChecked
+                                                                  ? 'bg-jade-600 border-jade-600 text-white hover:bg-jade-700 active:scale-95 shadow-sm shadow-jade-100'
+                                                                  : 'bg-slate-50 border-slate-200 text-slate-300 cursor-not-allowed'
+                                                              }`}
+                                                            >
+                                                              {isLoadingParaf ? (
+                                                                <span className="animate-pulse">...</span>
+                                                              ) : (
+                                                                <>
+                                                                  <Pen className="w-2.5 h-2.5" />
+                                                                  <span>Paraf</span>
+                                                                </>
+                                                              )}
+                                                            </button>
+                                                          </div>
+                                                        ) : (
+                                                          // Tidak ada data — kosong
+                                                          <span className="text-[8px] font-black text-slate-200">—</span>
+                                                        )}
+                                                      </td>
+                                                    );
+                                                  })()}
                                               </tr>
                                           );
                                       })}

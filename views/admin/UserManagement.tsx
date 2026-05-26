@@ -27,7 +27,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
     role: '' as any,
     password: '',
     whatsapp_number: '',
-    nip: ''
+    nip: '',
+    nik: ''
   });
   const [isResetting, setIsResetting] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -42,11 +43,12 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
           role: initialData.role,
           password: '',
           whatsapp_number: initialData.whatsapp_number || '',
-          nip: initialData.nip || ''
+          nip: initialData.nip || '',
+          nik: initialData.nik || ''
         });
       } else {
         // Explicitly reset all fields saat modal Tambah dibuka
-        setFormData({ full_name: '', email: '', role: '' as any, password: '', whatsapp_number: '', nip: '' });
+        setFormData({ full_name: '', email: '', role: '' as any, password: '', whatsapp_number: '', nip: '', nik: '' });
       }
     }
   }, [isOpen, initialData]);
@@ -63,7 +65,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
         role: formData.role,
         tenant_id: tenantId,
         whatsapp_number: formData.whatsapp_number,
-        nip: formData.nip
+        nip: formData.nip,
+        nik: formData.nik
     };
 
     if (initialData) {
@@ -99,7 +102,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
         </div>
         
         <form onSubmit={handleSubmit} className="p-4 space-y-2.5 overflow-y-auto scrollbar-hide" autoComplete="off">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-2 pt-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                 <div className="group/field">
                     <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">Nama Lengkap</label>
                     <div className="relative">
@@ -166,6 +169,23 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
                     />
                 </div>
                 <p className="mt-1 ml-1 text-[8px] font-medium text-slate-400 italic">NIP akan digunakan sebagai password default.</p>
+            </div>
+          )}
+
+          {formData.role === UserRole.TEACHER && (
+            <div className="group/field animate-in fade-in slide-in-from-top-1 duration-200">
+                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">NIK <span className="text-slate-300 normal-case font-medium">(Nomor Induk Kependudukan)</span></label>
+                <div className="relative">
+                    <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within/field:text-jade-600" />
+                    <input 
+                        type="text"
+                        maxLength={16}
+                        value={formData.nik} 
+                        onChange={e => setFormData({ ...formData, nik: e.target.value.replace(/\D/g, '') })} 
+                        className="w-full pl-9 pr-4 py-2 bg-white border-2 border-slate-300 rounded-xl text-slate-800 font-bold text-[13px] focus:border-jade-400 outline-none transition-all placeholder:text-slate-300" 
+                        placeholder="16 digit NIK..." 
+                    />
+                </div>
             </div>
           )}
 
@@ -388,7 +408,7 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
     return (
         <div className="space-y-6">
             {/* Unified Control Bar */}
-            <div className="flex flex-col lg:flex-row w-full gap-2 py-2 bg-white shrink-0 z-70 sticky top-0">
+            <div className="flex flex-col lg:flex-row w-full gap-2 py-2 bg-white shrink-0 z-40 sticky top-0">
                 <div className="flex flex-row items-center gap-2 w-full lg:contents">
                     {/* 1. SEARCH BAR */}
                     <div className="relative flex-1 group h-10 min-w-0">
@@ -421,7 +441,7 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                         <select 
                             value={roleFilter}
                             onChange={(e) => setRoleFilter(e.target.value)}
-                            className="h-10 flex-1 lg:flex-none text-[9px] font-black uppercase tracking-widest text-slate-500 border-2 border-slate-300 px-3 pr-8 outline-none focus:ring-4 focus:ring-slate-50 bg-white cursor-pointer hover:border-jade-300 transition-all lg:min-w-[120px] rounded-xl shadow-none appearance-none"
+                            className="h-10 flex-1 lg:flex-none text-[9px] font-black uppercase tracking-widest text-slate-500 border-2 border-slate-300 px-3 pr-8 outline-none focus:ring-4 focus:ring-slate-50 bg-white cursor-pointer hover:border-jade-300 transition-all lg:min-30 rounded-xl shadow-none appearance-none"
                             style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.75rem' }}
                         >
                             <option value="all">SEMUA ROLE</option>
@@ -448,9 +468,9 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                     <table className="min-w-full border-separate border-spacing-0">
                         <thead className="sticky top-0 z-40 bg-white">
                             <tr>
-                                <th className="hidden md:table-cell sticky left-0 z-60 px-2 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-l border-r border-black w-[45px] min-w-[45px] bg-slate-300">NO</th>
-                                <th className="sticky left-0 md:left-[45px] z-60 px-4 md:px-6 py-4 text-left text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-black w-[110px] md:w-auto min-w-[110px] md:min-w-0 bg-slate-300">USER & EMAIL</th>
-                                <th className="px-6 py-4 text-center text-emerald-600 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-emerald-600 bg-emerald-50 min-w-[120px]">ROLE</th>
+                                <th className="hidden md:table-cell sticky left-0 z-60 px-2 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-l border-r border-black w-11.25 min-11.25 bg-slate-300">NO</th>
+                                <th className="sticky left-0 md:left-11.25 z-60 px-4 md:px-6 py-4 text-left text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-black w-27.5 md:w-auto min-27.5 md:min-w-0 bg-slate-300">USER & EMAIL</th>
+                                <th className="px-6 py-4 text-center text-emerald-600 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-emerald-600 bg-emerald-50 min-30">ROLE</th>
                                 <th className="px-4 py-4 text-left text-[9.5px] font-black text-blue-600 uppercase tracking-widest border-t border-b border-r border-blue-600 bg-blue-50 w-44">WHATSAPP</th>
                                 {!isReadOnly && <th className="px-4 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black bg-slate-300 w-24">AKSI</th>}
                             </tr>
@@ -459,8 +479,8 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                             {loading ? (
                                 [...Array(5)].map((_, i) => (
                                     <tr key={i}>
-                                        <td className="hidden md:table-cell sticky left-0 z-10 bg-white border-r border-b border-slate-100 w-[45px]"><Skeleton className="h-4 w-4 mx-auto" /></td>
-                                        <td className="sticky left-0 md:left-[45px] z-10 bg-white border-r border-b border-slate-100 w-[110px] md:w-auto"><Skeleton className="h-4 w-20" /></td>
+                                        <td className="hidden md:table-cell sticky left-0 z-10 bg-white border-r border-b border-slate-100 w-11.25"><Skeleton className="h-4 w-4 mx-auto" /></td>
+                                        <td className="sticky left-0 md:left-11.25 z-10 bg-white border-r border-b border-slate-100 w-27.5 md:w-auto"><Skeleton className="h-4 w-20" /></td>
                                         <td className="px-6 py-4 border-r border-b border-slate-100"><Skeleton className="h-4 w-20" /></td>
                                         <td className="px-4 py-4 border-b border-r border-slate-100"><Skeleton className="h-4 w-24" /></td>
                                         {!isReadOnly && <td className="px-4 py-4 border-b border-slate-100"><div className="h-4 bg-slate-100 rounded animate-pulse w-full"></div></td>}
@@ -471,9 +491,9 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                                     <td className="hidden md:table-cell sticky left-0 bg-white px-2 py-4 text-[10.5px] font-black text-slate-400 text-center border-r border-b border-slate-100 z-20 uppercase transition-colors">
                                         {String((currentPage - 1) * itemsPerPage + index + 1)}
                                     </td>
-                                    <td className="sticky left-0 md:left-[45px] bg-white px-3 md:px-6 py-4 border-r border-b border-slate-100 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
-                                        <div className="font-bold text-[10px] md:text-[11px] text-slate-800 truncate max-w-[80px] md:max-w-none" title={u.full_name}>{u.full_name}</div>
-                                        <div className="font-medium text-[9px] md:text-[10px] text-slate-400 truncate max-w-[80px] md:max-w-none" title={u.email}>{u.email}</div>
+                                    <td className="sticky left-0 md:left-11.25 bg-white px-3 md:px-6 py-4 border-r border-b border-slate-100 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
+                                        <div className="font-bold text-[10px] md:text-[11px] text-slate-800 truncate max-20 md:max-w-none" title={u.full_name}>{u.full_name}</div>
+                                        <div className="font-medium text-[9px] md:text-[10px] text-slate-400 truncate max-20 md:max-w-none" title={u.email}>{u.email}</div>
                                     </td>
                                     <td className="px-6 py-4 border-r border-b border-slate-100 text-center">
                                         <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${getRoleBadge(u.role)} shadow-sm`}>
@@ -569,9 +589,6 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
 
                 {filteredUsers.length === 0 && !loading && (
                      <div className="p-16 text-center bg-white">
-                        <div className="w-20 h-20 bg-slate-50 rounded-[32px] flex items-center justify-center mx-auto mb-6 border-2 border-slate-50/50">
-                            <Search className="w-10 h-10 text-slate-200" />
-                        </div>
                         <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight mb-1">Data Tidak Ditemukan</h3>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gunakan kata kunci atau filter yang berbeda</p>
                      </div>

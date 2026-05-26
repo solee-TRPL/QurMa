@@ -39,7 +39,8 @@ export const getAdminStats = async (tenantId: string): Promise<AdminStats> => {
         return { 
             totalStudents: totalStudents || 0, totalTeachers: totalTeachers || 0, totalHalaqahs: totalHalaqahs || 0, 
             totalRecordsToday: 0, sabaqToday: 0, sabqiToday: 0, manzilToday: 0, notManzilToday: 0, 
-            manzilDoneIds: [], memorizationQuality: [], memorizationTrend: [], monthlyTrend: [] 
+            manzilDoneIds: [], memorizationQuality: [], memorizationTrend: [], monthlyTrend: [],
+            kehadiranToday: { hadir: 0, sakit: 0, izin: 0, alpa: 0 }, kehadiranTrend: []
         };
     }
 
@@ -48,7 +49,7 @@ export const getAdminStats = async (tenantId: string): Promise<AdminStats> => {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     const { data: recordsToday } = await supabase.from('memorization_records')
-        .select('student_id, type')
+        .select('student_id, type, status')
         .eq('record_date', today)
         .in('student_id', studentIds);
     const safeRecordsToday = recordsToday || [];
@@ -59,6 +60,29 @@ export const getAdminStats = async (tenantId: string): Promise<AdminStats> => {
 
     const studentsDoneManzilToday = new Set<string>(safeRecordsToday.filter(r => r.type === MemorizationType.MANZIL).map(r => r.student_id as string));
     const notManzilToday = Math.max(0, (totalStudents || 0) - studentsDoneManzilToday.size);
+
+    // Kehadiran Today
+    const uniqueStudentsWithRecordsToday = new Set<string>();
+    let sakitToday = 0;
+    let izinToday = 0;
+    let alpaToday = 0;
+
+    safeRecordsToday.forEach(r => {
+        if (!uniqueStudentsWithRecordsToday.has(r.student_id)) {
+            uniqueStudentsWithRecordsToday.add(r.student_id);
+            if (r.status === MemorizationStatus.SAKIT) {
+                sakitToday++;
+            } else if (r.status === MemorizationStatus.IZIN) {
+                izinToday++;
+            } else if (r.status === MemorizationStatus.ALPA) {
+                alpaToday++;
+            }
+        }
+    });
+
+    // Hadir are those who have records and are not sakit/izin/alpa PLUS those who haven't setoran yet (assumed present until marked absent)
+    // Actually, usually schools mark absence specifically. So Hadir = totalStudents - sakit - izin - alpa
+    const hadirToday = Math.max(0, (totalStudents || 0) - sakitToday - izinToday - alpaToday);
 
     const { data: records } = await supabase.from('memorization_records')
         .select('status, record_date')
@@ -108,6 +132,31 @@ export const getAdminStats = async (tenantId: string): Promise<AdminStats> => {
         monthlyTrend.push({ name: dayLabel, total: count });
     }
 
+    // Kehadiran Trend (7 days)
+    const kehadiranTrend: any[] = [];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const dayName = d.toLocaleDateString('id-ID', { weekday: 'short' });
+        
+        const dayRecords = safeRecords.filter(r => r.record_date.startsWith(dateStr));
+        const uniqueStudentsDay = new Set<string>();
+        let absentCountDay = 0;
+        
+        dayRecords.forEach(r => {
+            if (!uniqueStudentsDay.has(r.student_id)) {
+                uniqueStudentsDay.add(r.student_id);
+                if (r.status === MemorizationStatus.SAKIT || r.status === MemorizationStatus.IZIN || r.status === MemorizationStatus.ALPA) {
+                    absentCountDay++;
+                }
+            }
+        });
+        
+        const hadirCountDay = Math.max(0, (totalStudents || 0) - absentCountDay);
+        kehadiranTrend.push({ name: dayName, hadir: hadirCountDay, tidak_hadir: absentCountDay });
+    }
+
     return { 
         totalStudents: totalStudents || 0, 
         totalTeachers: totalTeachers || 0, 
@@ -120,7 +169,9 @@ export const getAdminStats = async (tenantId: string): Promise<AdminStats> => {
         manzilDoneIds: Array.from(studentsDoneManzilToday),
         memorizationQuality,
         memorizationTrend,
-        monthlyTrend
+        monthlyTrend,
+        kehadiranToday: { hadir: hadirToday, sakit: sakitToday, izin: izinToday, alpa: alpaToday },
+        kehadiranTrend
     }; 
 };
 

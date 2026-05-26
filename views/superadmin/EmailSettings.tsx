@@ -113,7 +113,7 @@ export const EmailSettings: React.FC<{ user: UserProfile }> = ({ user }) => {
                             placeholder="Tuliskan format email di sini..."
                             value={activeTab === 'welcome' ? (settings.welcome_email_body || '') : (settings.reset_password_body || '')}
                             onChange={e => handleInputChange(activeTab === 'welcome' ? 'welcome_email_body' : 'reset_password_body', e.target.value)}
-                            className="w-full flex-1 min-h-[200px] lg:min-h-0 px-5 lg:px-6 py-4 lg:py-5 bg-white border-2 border-slate-300 rounded-xl text-slate-700 font-medium text-[12px] lg:text-[13px] focus:border-jade-300 focus:ring-4 focus:ring-jade-50/30 outline-none transition-all font-mono leading-relaxed shadow-none lg:scrollbar-thin lg:scrollbar-thumb-slate-200"
+                            className="w-full flex-1 min-50 lg:min-h-0 px-5 lg:px-6 py-4 lg:py-5 bg-white border-2 border-slate-300 rounded-xl text-slate-700 font-medium text-[12px] lg:text-[13px] focus:border-jade-300 focus:ring-4 focus:ring-jade-50/30 outline-none transition-all font-mono leading-relaxed shadow-none lg:scrollbar-thin lg:scrollbar-thumb-slate-200"
                         />
                     </div>
                 </div>

@@ -4,7 +4,7 @@ import { getHalaqahs, getStudentsByHalaqah, createHalaqah, updateHalaqah, getUse
 import { Halaqah, Student, UserProfile, UserRole } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
-import { Plus, Users, X, ChevronRight, Save, Edit, Trash2, BookOpen, Search, RefreshCw, Download, Upload, Database } from 'lucide-react';
+import { Plus, Users, User, X, ChevronRight, Save, Edit, Trash2, BookOpen, Search, RefreshCw, Download, Upload, Database } from 'lucide-react';
 import { useLoading } from '../../lib/LoadingContext';
 import { useNotification } from '../../lib/NotificationContext';
 import ExcelJS from 'exceljs';
@@ -20,7 +20,7 @@ interface HalaqahFormModalProps {
   initialData?: Halaqah | null;
 }
 
-const HalaqahFormModal: React.FC<HalaqahFormModalProps> = ({ isOpen, onClose, onSubmit, teachers, initialData }) => {
+export const HalaqahFormModal: React.FC<HalaqahFormModalProps> = ({ isOpen, onClose, onSubmit, teachers, initialData }) => {
   const [name, setName] = useState('');
   const [teacherId, setTeacherId] = useState('');
 
@@ -125,7 +125,7 @@ interface HalaqahDetailModalProps {
   isReadOnly?: boolean;
 }
 
-const HalaqahDetailModal: React.FC<HalaqahDetailModalProps> = ({ isOpen, onClose, halaqah, onEdit, isReadOnly }) => {
+export const HalaqahDetailModal: React.FC<HalaqahDetailModalProps> = ({ isOpen, onClose, halaqah, onEdit, isReadOnly }) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -193,7 +193,7 @@ const HalaqahDetailModal: React.FC<HalaqahDetailModalProps> = ({ isOpen, onClose
                 ))
             ) : (
                 <div className="text-center space-y-4">
-                    <div className="w-16 h-16 bg-slate-50 rounded-[24px] border border-slate-100 flex items-center justify-center mx-auto shadow-sm">
+                    <div className="w-16 h-16 bg-slate-50 rounded-3xl border border-slate-100 flex items-center justify-center mx-auto shadow-sm">
                         <Users className="w-8 h-8 text-slate-200" />
                     </div>
                     <div>
@@ -221,12 +221,12 @@ interface ImportModalProps {
 const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, progress }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-white/95 backdrop-blur-sm animate-in fade-in duration-500 lg:pl-64 pt-16">
+        <div className="fixed inset-0 z-120 flex items-center justify-center bg-white/95 backdrop-blur-sm animate-in fade-in duration-500 lg:pl-64 pt-16">
             <div className="flex flex-col items-center justify-center max-w-md w-full px-6">
                 {/* Branding Icon Container (Plek Ketiplek from GlobalLoader) */}
                 <div className="relative w-24 h-24 flex items-center justify-center mb-8">
                     <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-jade-600/80 animate-spin" style={{ animationDuration: '2s' }}></div>
-                    <div className="absolute inset-[4px] rounded-full border border-slate-100/50"></div>
+                    <div className="absolute inset-1 rounded-full border border-slate-100/50"></div>
                     
                     <div className="relative w-14 h-14 bg-white border border-slate-100 rounded-[20px] flex items-center justify-center shadow-xl shadow-jade-900/5 ring-4 ring-jade-50/30">
                         <div className="w-9 h-9 bg-jade-600/10 rounded-lg flex items-center justify-center">
@@ -241,11 +241,11 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, progress }) 
                         QURMA PLATFORM
                     </h1>
                     <div className="flex items-center gap-4 w-full">
-                        <div className="h-[1px] bg-gradient-to-r from-transparent to-slate-200 flex-1"></div>
+                        <div className="h-px bg-linear-to-r from-transparent to-slate-200 flex-1"></div>
                         <span className="text-[9px] font-black text-jade-500 uppercase tracking-[0.3em] whitespace-nowrap">
                             SINKRONISASI DATA
                         </span>
-                        <div className="h-[1px] bg-gradient-to-l from-transparent to-slate-200 flex-1"></div>
+                        <div className="h-px bg-linear-to-l from-transparent to-slate-200 flex-1"></div>
                     </div>
                 </div>
 
@@ -265,14 +265,14 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, progress }) 
                         </div>
                         <div className="w-full bg-slate-50 h-3 rounded-full overflow-hidden border border-slate-100/50 p-0.5">
                             <div 
-                                className="bg-gradient-to-r from-jade-500 to-emerald-400 h-full rounded-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(16,185,129,0.3)]" 
+                                className="bg-linear-to-r from-jade-500 to-emerald-400 h-full rounded-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(16,185,129,0.3)]" 
                                 style={{ width: `${(progress.current / (progress.total || 1)) * 100}%` }}
                             />
                         </div>
                     </div>
 
                     {progress.errors.length > 0 && (
-                        <div className="bg-rose-50/50 rounded-2xl border border-rose-100 p-4 max-h-[160px] overflow-y-auto custom-scrollbar">
+                        <div className="bg-rose-50/50 rounded-2xl border border-rose-100 p-4 max-40 overflow-y-auto custom-scrollbar">
                             <p className="text-[9px] font-black text-rose-600 uppercase tracking-widest mb-3 flex items-center gap-2">
                                 <X className="w-3 h-3" /> {progress.errors.length} Kendala Ditemukan
                             </p>
@@ -365,25 +365,30 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
         const yellowFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFE1' } };
         const greenFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } };
 
-        // --- SHEET 1: Manajemen Halaqah ---
-        const ws1 = workbook.addWorksheet("Manajemen Halaqah");
-        ws1.columns = [
+        // --- SHEET 1: Data Santri ---
+        const ws0 = workbook.addWorksheet("Data Santri");
+        ws0.columns = [
             { header: "No.", key: "no", width: 8 },
             { header: "NIS", key: "nis", width: 15 },
             { header: "Nama Santri", key: "name", width: 40 },
-            { header: "Jumlah Hafalan", key: "hafalan", width: 20 },
+            { header: "Jenis Kelamin", key: "gender", width: 15 },
             { header: "Pengampu", key: "teacher", width: 25 },
             { header: "Halaqah", key: "halaqah", width: 25 },
-            { header: "SyncKey", key: "sync", width: 5 }
+            { header: "Email Akses", key: "email", width: 25 },
+            { header: "Nama Ayah", key: "father", width: 25 },
+            { header: "Nama Ibu", key: "mother", width: 25 },
+            { header: "HP Ayah", key: "hp_father", width: 20 },
+            { header: "HP Ibu", key: "hp_mother", width: 20 },
+            { header: "Alamat", key: "address", width: 40 },
+            { header: "RT/RW", key: "rt_rw", width: 10 },
+            { header: "Kel/Desa", key: "village", width: 20 },
+            { header: "Kecamatan", key: "district", width: 20 },
+            { header: "Kab/Kota", key: "city", width: 20 }
         ];
 
-        // Style Header Row
-        const headerRow = ws1.getRow(1);
-        headerRow.eachCell(cell => {
-            cell.fill = headerFill;
-            cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
-            cell.alignment = { horizontal: 'center' };
-            cell.border = borderStyle;
+        ws0.getRow(1).eachCell(cell => {
+            cell.fill = headerFill; cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+            cell.alignment = { horizontal: 'center', vertical: 'middle' }; cell.border = borderStyle;
         });
 
         // Sorted Students
@@ -395,10 +400,49 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
             return a.full_name.localeCompare(b.full_name);
         });
 
+        sortedStudents.forEach((s, idx) => {
+            const halaqahObj = classes.find(h => h.id === s.halaqah_id);
+            const rowIdx = idx + 2;
+            const r = ws0.addRow({
+                no: idx + 1, nis: s.nis || '-', name: s.full_name,
+                gender: s.gender === 'L' ? 'Laki-laki' : 'Perempuan',
+                teacher: { formula: `'Data Halaqah'!E${rowIdx}`, result: halaqahObj?.teacher_name || '-' },
+                halaqah: { formula: `'Data Halaqah'!F${rowIdx}`, result: halaqahObj?.name || '-' },
+                email: (s as any).parent_email || '-', father: (s as any).father_name || '-', mother: (s as any).mother_name || '-',
+                hp_father: (s as any).father_phone || '-', hp_mother: (s as any).mother_phone || '-',
+                address: (s as any).address || '-', rt_rw: (s as any).rt_rw || '-', village: (s as any).village || '-',
+                district: (s as any).district || '-', city: ((s as any).city || '-').replace(/^(KABUPATEN|KOTA|KAB\.|KAB)\s+/i, '').trim()
+            });
+            r.eachCell((cell, colNumber) => {
+                cell.border = borderStyle;
+                if (colNumber <= 3) cell.fill = yellowFill;
+                else if (colNumber === 6) cell.fill = greenFill;
+            });
+        });
+
+        // --- SHEET 2: Data Halaqah ---
+        const ws1 = workbook.addWorksheet("Data Halaqah");
+        ws1.columns = [
+            { header: "No.", key: "no", width: 8 },
+            { header: "NIS", key: "nis", width: 15 },
+            { header: "Nama Santri", key: "name", width: 40 },
+            { header: "Jumlah Hafalan", key: "hafalan", width: 20 },
+            { header: "Pengampu", key: "teacher", width: 25 },
+            { header: "Halaqah", key: "halaqah", width: 25 },
+            { header: "SyncKey", key: "sync", width: 5 }
+        ];
+
+        ws1.getRow(1).eachCell(cell => {
+            cell.fill = headerFill;
+            cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+            cell.alignment = { horizontal: 'center' };
+            cell.border = borderStyle;
+        });
+
         const halaqahNames = classes.map(h => h.name);
         const halaqahDropdown = `"${halaqahNames.join(',')}"`;
 
-        // --- SHEET 3: Referensi Data (Hidden) ---
+        // --- Referensi Data (Hidden) ---
         const wsRef = workbook.addWorksheet("Referensi_Data");
         wsRef.columns = [
             { header: "Halaqah", key: "halaqah", width: 25 },
@@ -422,32 +466,28 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
                 sync: { formula: `F${rowIdx}&"_"&COUNTIF($F$2:F${rowIdx}, F${rowIdx})` }
             });
 
-            // Set Teacher as VLOOKUP Formula based on Halaqah (Column F)
             r.getCell(5).value = { formula: `IFERROR(VLOOKUP(F${rowIdx}, Referensi_Data!$A:$B, 2, FALSE), "-")` };
 
-            // Style data cells
             r.getCell(1).fill = yellowFill; r.getCell(1).border = borderStyle;
             r.getCell(2).fill = yellowFill; r.getCell(2).border = borderStyle;
             r.getCell(3).fill = yellowFill; r.getCell(3).border = borderStyle;
-            r.getCell(4).fill = yellowFill; r.getCell(4).border = borderStyle; // Hafalan
-            r.getCell(5).border = borderStyle; // Teacher
-            r.getCell(6).fill = greenFill;  r.getCell(6).border = borderStyle; // Halaqah
-            r.getCell(7).border = borderStyle; // Sync
-
-            // Add Data Validation (Dropdown) to Halaqah Column
+            r.getCell(4).fill = yellowFill; r.getCell(4).border = borderStyle; 
+            r.getCell(5).border = borderStyle; 
+            r.getCell(6).fill = greenFill;  r.getCell(6).border = borderStyle; 
             r.getCell(6).dataValidation = {
                 type: 'list',
                 allowBlank: true,
                 formulae: [halaqahDropdown]
             };
+            r.getCell(7).border = borderStyle; 
         });
         ws1.getColumn(7).hidden = true;
 
-        // --- SHEET 2: Rangkuman Manajemen Halaqah ---
+        // --- SHEET 3: Rangkuman Halaqah ---
         const ws2 = workbook.addWorksheet("Rangkuman Halaqah");
         const BLOCKS_PER_ROW = 3;
         const COLUMNS_PER_BLOCK = 4;
-        const FIXED_SLOTS = 12;
+        const FIXED_SLOTS = 15;
 
         const sortedHalaqahs = [...classes].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -465,39 +505,27 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
             rowHalaqahs.forEach((h, idx) => {
                 const colStart = idx * COLUMNS_PER_BLOCK;
                 const c1 = ws2.getCell(currentBaseRow, colStart + 1);
-                c1.value = "";
-                c1.font = { bold: true };
-                c1.border = borderStyle;
-
+                c1.value = ""; c1.font = { bold: true }; c1.border = borderStyle;
                 const c2 = ws2.getCell(currentBaseRow, colStart + 2);
-                c2.value = "Halaqah :";
-                c2.font = { bold: true };
-                c2.border = borderStyle;
-
+                c2.value = "Halaqah :"; c2.font = { bold: true }; c2.border = borderStyle;
                 const c3 = ws2.getCell(currentBaseRow, colStart + 3);
-                c3.value = h.name;
-                c3.fill = greenFill;
-                c3.border = borderStyle;
-                c3.font = { bold: true };
+                c3.value = h.name; c3.fill = greenFill; c3.border = borderStyle; c3.font = { bold: true };
             });
 
             // Row 1: Labels (Pengampu)
             rowHalaqahs.forEach((h, idx) => {
                 const colStart = idx * COLUMNS_PER_BLOCK;
                 const c1 = ws2.getCell(currentBaseRow + 1, colStart + 1);
-                c1.value = "";
-                c1.border = borderStyle;
-
+                c1.value = ""; c1.border = borderStyle;
                 const c2 = ws2.getCell(currentBaseRow + 1, colStart + 2);
-                c2.value = "Pengampu :";
-                c2.font = { bold: true };
-                c2.border = borderStyle;
-
+                c2.value = "Pengampu :"; c2.font = { bold: true }; c2.border = borderStyle;
                 const c3 = ws2.getCell(currentBaseRow + 1, colStart + 3);
-                c3.value = h.teacher_name || '-';
-                c3.fill = greenFill;
-                c3.font = { bold: true };
-                c3.border = borderStyle;
+                const hNameEscaped = h.name.replace(/"/g, '""');
+                c3.value = { 
+                    formula: `IFERROR(VLOOKUP("${hNameEscaped}", Referensi_Data!$A:$B, 2, FALSE), "-")`, 
+                    result: h.teacher_name || '-' 
+                };
+                c3.fill = greenFill; c3.font = { bold: true }; c3.border = borderStyle;
             });
 
             // Row 2: Headers
@@ -506,14 +534,12 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
                 ["No.", "NIS", "Nama Santri"].forEach((text, tIdx) => {
                     const c = ws2.getCell(currentBaseRow + 2, colStart + 1 + tIdx);
                     c.value = text;
-                    c.fill = headerFill;
-                    c.font = { color: { argb: 'FFFFFFFF' }, bold: true };
-                    c.border = borderStyle;
-                    c.alignment = { horizontal: 'center' };
+                    c.fill = headerFill; c.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+                    c.border = borderStyle; c.alignment = { horizontal: 'center' };
                 });
             });
 
-            // Student Rows (12 Slots)
+            // Student Rows (15 Slots)
             for (let r = 0; r < FIXED_SLOTS; r++) {
                 const excelRowIdx = currentBaseRow + 3 + r;
                 rowHalaqahs.forEach((h, idx) => {
@@ -521,27 +547,24 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
                     const hNameEscaped = h.name.replace(/"/g, '""');
                     const targetKey = `"${hNameEscaped}_${r + 1}"`;
 
-                    const hStudents = students.filter(s => s.halaqah_id === h.id).sort((a, b) => a.full_name.localeCompare(b.full_name));
+                    const hStudents = sortedStudents.filter(s => s.halaqah_id === h.id);
                     const s = hStudents[r];
 
-                    // No
                     const nisColLetter = getExcelCol(colStart + 1);
                     const cellNo = ws2.getCell(excelRowIdx, colStart + 1);
-                    cellNo.value = { formula: `IF(${nisColLetter}${excelRowIdx}="", "", ${r + 1})`, result: s ? (r + 1) : undefined };
+                    cellNo.value = { formula: `IF(${getExcelCol(colStart + 1)}${excelRowIdx}="", "", ${r + 1})`, result: s ? (r + 1) : undefined };
                     cellNo.border = borderStyle;
 
-                    // NIS
                     const cellNis = ws2.getCell(excelRowIdx, colStart + 2);
                     cellNis.value = { 
-                        formula: `IFERROR(INDEX('Manajemen Halaqah'!$B:$B, MATCH(${targetKey}, 'Manajemen Halaqah'!$F:$F, 0)), "")`,
+                        formula: `IFERROR(INDEX('Data Halaqah'!$B:$B, MATCH(${targetKey}, 'Data Halaqah'!$G:$G, 0)), "")`,
                         result: s ? (s.nis || "-") : undefined
                     };
                     cellNis.border = borderStyle;
 
-                    // Nama
                     const cellName = ws2.getCell(excelRowIdx, colStart + 3);
                     cellName.value = { 
-                        formula: `IFERROR(INDEX('Manajemen Halaqah'!$C:$C, MATCH(${targetKey}, 'Manajemen Halaqah'!$F:$F, 0)), "")`,
+                        formula: `IFERROR(INDEX('Data Halaqah'!$C:$C, MATCH(${targetKey}, 'Data Halaqah'!$G:$G, 0)), "")`,
                         result: s ? s.full_name : undefined
                     };
                     cellName.border = borderStyle;
@@ -866,7 +889,7 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
   return (
     <div className="space-y-4">
       {/* Unified Control Bar */}
-      <div className="flex flex-row flex-wrap items-center w-full gap-3 lg:gap-4 py-3 bg-white shrink-0 z-70 sticky top-0 border-b border-slate-100 lg:static lg:border-none lg:py-0">
+      <div className="flex flex-row flex-wrap items-center w-full gap-3 lg:gap-4 py-3 bg-white shrink-0 z-40 sticky top-0 border-b border-slate-100 lg:static lg:border-none lg:py-0">
         
         {/* 1. STATS (Desktop: 1, Mobile: 2) */}
         <div className="bg-white h-10 px-3 lg:px-4 border-2 border-slate-300 flex items-center justify-center lg:justify-start gap-3 lg:gap-4 rounded-xl shadow-none flex-1 lg:flex-none order-4 lg:order-1">
@@ -908,14 +931,18 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
         {/* 4. IMPORT & EXPORT BUTTONS (Desktop: 4, Mobile: 2) */}
         {!isReadOnly && (
             <div className="h-10 flex items-center bg-white border-2 border-slate-300 rounded-xl p-1 gap-1 shadow-none px-2 order-3 lg:order-4">
-                <button 
-                    onClick={handleExport}
-                    className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
-                    title="Ekspor Data Halaqah"
-                >
-                    <Download className="w-4 h-4" />
-                </button>
-                <div className="w-px h-4 bg-slate-200 self-center" />
+                {classes.length === 0 && (
+                    <>
+                        <button 
+                            onClick={handleExport}
+                            className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                            title="Download Template"
+                        >
+                            <Download className="w-4 h-4" />
+                        </button>
+                        <div className="w-px h-4 bg-slate-200 self-center" />
+                    </>
+                )}
                 <label className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all cursor-pointer" title="Impor Data Halaqah">
                     <Upload className="w-4 h-4" />
                     <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleImportExcel} />
@@ -945,56 +972,30 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
             onClick={() => handleCardClick(cls)}
             className="group relative bg-white border-2 border-slate-300 rounded-xl p-5 hover:border-jade-400 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col h-full shadow-none"
           >
-            <div className="flex items-center gap-3 md:gap-4 md:mb-4">
-              <div className="min-w-0 flex-1 pb-1">
-                <p className="text-[9.5px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Halaqah</p>
-                <h3 className="text-base font-black text-slate-800 truncate tracking-tight uppercase leading-none">{cls.name}</h3>
-                
-                <div className="flex items-center gap-1.5 mt-2 bg-slate-50 w-fit px-2.5 py-1 rounded-lg border border-slate-100 group-hover:bg-jade-50/50 group-hover:border-jade-100 transition-colors">
-                    <span className="text-[10.5px] font-black text-slate-600 tracking-tight capitalize truncate max-w-[200px]">
-                        {cls.teacher_name}
-                    </span>
-                </div>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              {/* Kiri: Nama Halaqah + Pengampu */}
+              <div className="min-w-0 flex-1">
+                <h3 className="flex items-center gap-1.5 text-base font-black text-slate-800 truncate tracking-tight uppercase leading-none">
+                  <Users className="w-4 h-4 text-jade-600" />
+                  {cls.name}
+                </h3>
+                <p className="flex items-center gap-1 text-[10px] font-black text-jade-600 tracking-tight capitalize truncate mt-1.5">
+                  <User className="w-3 h-3" /> {cls.teacher_name}
+                </p>
               </div>
 
-              {/* Mobile Actions */}
-              {/* <div className="md:hidden flex items-center gap-1">
-                {!isReadOnly && (
-                    <>
-                        <button 
-                            onClick={(e) => { 
-                                e.stopPropagation(); 
-                                e.preventDefault();
-                                setIsEditMode(true); 
-                                setSelectedHalaqah(cls); 
-                                setIsFormModalOpen(true); 
-                                setIsDetailModalOpen(false);
-                            }}
-                            className="p-1.5 text-slate-300 hover:text-jade-600 hover:bg-jade-50 rounded-lg transition-all"
-                        >
-                            <Edit className="w-3.5 h-3.5" />
-                        </button>
-                        <button 
-                            onClick={(e) => { 
-                                e.stopPropagation(); 
-                                e.preventDefault();
-                                setHalaqahToDelete(cls); 
-                                setIsDetailModalOpen(false);
-                            }}
-                            className="p-1.5 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                        >
-                            <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                    </>
-                )}
-              </div> */}
+              {/* Kanan: Jumlah Santri */}
+              <div className="flex flex-col items-end shrink-0">
+                <p className="text-2xl font-black text-jade-600 leading-none">{cls.student_count || 0}</p>
+                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Santri</p>
+              </div>
             </div>
 
             <div className="flex items-center justify-between pt-4 border-t-2 border-slate-100 mt-auto">
                 <div className="flex items-center gap-2">
                     <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Santri</p>
-                        <p className="text-xs font-black text-slate-800 mt-1">{cls.student_count || 0} Peserta</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Peserta</p>
+                        <p className="text-xs font-black text-slate-800 mt-1">{cls.student_count || 0} Santri</p>
                     </div>
                 </div>
 
@@ -1036,12 +1037,12 @@ export const HalaqahManagement: React.FC<{ tenantId: string, user: UserProfile }
             </div>
 
             {/* Accent Decoration */}
-            <div className="absolute top-0 right-0 w-24 h-24 bg-jade-50/50 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-500 -z-0" />
+            <div className="absolute top-0 right-0 w-24 h-24 bg-jade-50/50 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-500 z-0" />
           </div>
         ))}
         
         {classes.length === 0 && !loading && (
-            <div className="col-span-full py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[32px] flex flex-col items-center justify-center text-center">
+            <div className="col-span-full py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-32px flex flex-col items-center justify-center text-center">
                 <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-4">
                     <BookOpen className="w-8 h-8 text-slate-200" />
                 </div>

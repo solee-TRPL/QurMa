@@ -82,6 +82,7 @@ export const Layout: React.FC<LayoutProps> = ({
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [totalHafalan, setTotalHafalan] = useState<string | null>(null);
+  const [studentPageCount, setStudentPageCount] = useState<number | null>(null);
   const [savedAccounts, setSavedAccounts] = useState<any[]>([]);
   const [halaqahName, setHalaqahName] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string, name: string } | null>(null);
@@ -109,14 +110,21 @@ export const Layout: React.FC<LayoutProps> = ({
             const stats = await getGuardianStats(user.id);
             if (stats) setTotalHafalan(stats.totalJuz.toString());
 
-            // Also fetch halaqah for student
+            // Fetch halaqah and current_page for student
             try {
-                const { data: student } = await supabase.from('students').select('halaqah_id').eq('id', user.id).maybeSingle();
-                const sid = student?.halaqah_id || (await supabase.from('students').select('halaqah_id').eq('parent_id', user.id).maybeSingle()).data?.halaqah_id;
-                
-                if (sid) {
-                    const { data: halaqah } = await supabase.from('halaqah_classes').select('name').eq('id', sid).maybeSingle();
-                    if (halaqah) setHalaqahName(halaqah.name);
+                // Try direct student ID first
+                let studentRow = (await supabase.from('students').select('halaqah_id, current_juz, current_page').eq('id', user.id).maybeSingle()).data;
+                // Fallback: linked via parent_id
+                if (!studentRow) {
+                    studentRow = (await supabase.from('students').select('halaqah_id, current_juz, current_page').eq('parent_id', user.id).maybeSingle()).data;
+                }
+
+                if (studentRow) {
+                    if (studentRow.current_page != null) setStudentPageCount(studentRow.current_page);
+                    if (studentRow.halaqah_id) {
+                        const { data: halaqah } = await supabase.from('halaqah_classes').select('name').eq('id', studentRow.halaqah_id).maybeSingle();
+                        if (halaqah) setHalaqahName(halaqah.name);
+                    }
                 }
             } catch (err) {}
         }
@@ -249,7 +257,7 @@ export const Layout: React.FC<LayoutProps> = ({
         `}
       >
         <Icon className={`w-4 h-4 mr-3 transition-colors ${active ? 'text-slate-800' : 'text-[#a5d1bd] group-hover:text-white'}`} />
-        <span className={`tracking-tight ${active ? 'font-black' : 'font-bold'} text-[11px] uppercase`}>{label}</span>
+        <span className={`flex-1 text-left tracking-tight ${active ? 'font-black' : 'font-bold'} text-[11px] uppercase`}>{label}</span>
         {active && (
             <div className="ml-auto w-1.5 h-1.5 rounded-full bg-slate-900 animate-pulse" />
         )}
@@ -307,7 +315,7 @@ export const Layout: React.FC<LayoutProps> = ({
     <div className={`min-h-screen bg-white font-sans text-slate-800 ${paddingTopClass}`}>
       
       {isImpersonating && (
-        <div className="fixed top-0 left-0 right-0 h-10 bg-slate-800 text-white z-[70] flex items-center justify-between px-4 shadow-md">
+        <div className="fixed top-0 left-0 right-0 h-10 bg-slate-800 text-white z-70 flex items-center justify-between px-4 shadow-md">
             <div className="flex items-center gap-2 text-xs md:text-sm font-medium animate-pulse">
                 <EyeOff className="w-4 h-4 text-orange-400" />
                 <span>
@@ -324,7 +332,7 @@ export const Layout: React.FC<LayoutProps> = ({
       )}
 
       {mounted && isSidebarOpen && (
-        <div className="fixed inset-0 z-[55] bg-slate-900/20 backdrop-blur-sm lg:hidden" onClick={() => setIsSidebarOpen(false)}></div>
+        <div className="fixed inset-0 z-55 bg-slate-900/20 backdrop-blur-sm lg:hidden" onClick={() => setIsSidebarOpen(false)}></div>
       )}
 
       <aside 
@@ -372,18 +380,24 @@ export const Layout: React.FC<LayoutProps> = ({
                             <NavItem icon={Crosshair} label="Target Pekanan" page="weekly-target" active={currentPage === 'weekly-target' || currentPage === 'weekly-target-notes'}/>
                             {/* <NavItem icon={TrendingUp} label="Kelola Perkembangan" page="student-progress-manage" active={currentPage === 'student-progress-manage'}/> */}
                             <NavItem icon={Users} label="Data Santri" page="data-santri" active={currentPage === 'data-santri'}/>
+                            <NavItem icon={BookOpen} label="Data Hafalan" page="data-hafalan" active={currentPage === 'data-hafalan'}/>
+                            <NavItem icon={ClipboardCheck} label="Data Kehadiran" page="data-kehadiran" active={currentPage === 'data-kehadiran'}/>
+                            <NavItem icon={Award} label="Catatan dan Pencapaian" page="data-catatan" active={currentPage === 'data-catatan'}/>
                         </>
                     )}
                     {(user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) && (
                         <>
-                            <NavItem icon={Users} label="Manajemen User" page="users" active={currentPage === 'users'}/>
-                            <NavItem icon={UserCheck} label="Manajemen Santri" page="student-management" active={currentPage === 'student-management'}/>
+                            {user.role === UserRole.ADMIN && (
+                                <NavItem icon={Users} label="Manajemen User" page="users" active={currentPage === 'users'}/>
+                            )}
+                            <NavItem icon={GraduationCap} label="Manajemen Halaqah" page="student-management" active={currentPage === 'student-management'}/>
                             {/* <NavItem icon={School} label="Manajemen Kelas" page="classes" active={currentPage === 'classes'}/> */}
-                            <NavItem icon={GraduationCap} label="Manajemen Halaqah" page="halaqah-management" active={currentPage === 'halaqah-management'}/>
                             {/* <NavItem icon={Target} label="Manajemen Target" page="target-management" active={currentPage === 'target-management'}/> */}
                             <NavItem icon={Activity} label="Monitor Hafalan Santri" page="monitor-hafalan" active={currentPage === 'monitor-hafalan'}/>
                             <NavItem icon={ClipboardCheck} label="Monitor Target Pekanan" page="weekly-target-monitor" active={currentPage === 'weekly-target-monitor' || currentPage === 'weekly-target-monitor-notes'}/>
-                            <NavItem icon={ShieldCheck} label="Audit Logs" page="audit-logs" active={currentPage === 'audit-logs'}/>
+                            {user.role === UserRole.ADMIN && (
+                                <NavItem icon={ShieldCheck} label="Audit Logs" page="audit-logs" active={currentPage === 'audit-logs'}/>
+                            )}
                         </>
                     )}
                     {user.role === UserRole.SANTRI && (
@@ -412,7 +426,7 @@ export const Layout: React.FC<LayoutProps> = ({
       </aside>
 
       <div className={`lg:pl-64 flex flex-col min-h-screen transition-all duration-300`}>
-        <header className={`fixed right-0 left-0 lg:left-64 z-50 h-16 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center px-4 lg:px-8 shrink-0 transition-all shadow-sm gap-1.5 sm:gap-3 ${topOffsetClass}`}>
+        <header className={`fixed right-0 left-0 lg:left-64 z-[55] h-16 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center px-4 lg:px-8 shrink-0 transition-all shadow-sm gap-1.5 sm:gap-3 ${topOffsetClass}`}>
             
             {/* Hamburger */}
             <button className="lg:hidden p-1.5 sm:p-2 -ml-1.5 sm:-ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors order-1 shrink-0" onClick={() => setIsSidebarOpen(true)}>
@@ -425,22 +439,25 @@ export const Layout: React.FC<LayoutProps> = ({
                 {subtitle && <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-80">{subtitle}</p>}
             </div>
 
-            {/* TOTAL HAFALAN FOR SANTRI */}
+            {/* TOTAL HAFALAN + HALAMAN FOR SANTRI */}
             {user.role === UserRole.SANTRI && (
                 <div className="flex bg-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl border-2 border-jade-100 animate-in fade-in slide-in-from-left-4 duration-500 order-2 lg:order-4 shrink-0">
                     <div className="flex flex-col items-start justify-center">
                         <span className="text-[6px] sm:text-[7px] text-jade-500 uppercase tracking-[0.2em] font-black leading-none mb-1">
                             Hafalan
                         </span>
-                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none">
+                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wide text-jade-700 leading-none">
                             {totalHafalan || '0'} JUZ
+                            {studentPageCount != null && (
+                                <span className="text-jade-700 font-black"> {studentPageCount} Halaman</span>
+                            )}
                         </span>
                     </div>
                 </div>
             )}
 
-            {/* HALAQAH NAME FOR TEACHER & SANTRI ROLE */}
-            {(user.role === UserRole.TEACHER || user.role === UserRole.SANTRI) && halaqahName && (
+            {/* HALAQAH NAME FOR TEACHER ONLY */}
+            {user.role === UserRole.TEACHER && halaqahName && (
                 <div className="flex bg-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl border-2 border-jade-100 animate-in fade-in slide-in-from-right-4 duration-500 order-3 lg:order-5 shrink-0">
                     <div className="flex flex-col items-start justify-center">
                         <span className="text-[6px] sm:text-[7px] text-jade-500 uppercase tracking-[0.2em] font-black leading-none mb-1 whitespace-nowrap">
@@ -448,30 +465,6 @@ export const Layout: React.FC<LayoutProps> = ({
                         </span>
                         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none whitespace-nowrap">
                             {halaqahName}
-                        </span>
-                    </div>
-                </div>
-            )}
-
-            {/* WEEKLY DATE FOR SANTRI ROLE */}
-            {user.role === UserRole.SANTRI && (
-                <div className="hidden xl:flex bg-white px-3 py-1.5 rounded-xl border-2 border-jade-100 animate-in fade-in slide-in-from-right-4 duration-500 order-6 shrink-0">
-                    <div className="flex flex-col items-start justify-center">
-                        <span className="text-[7px] text-jade-500 uppercase tracking-[0.2em] font-black leading-none mb-1">
-                            Pekan Ini
-                        </span>
-                        <span className="text-[10px] font-black uppercase tracking-tight text-jade-700 leading-none">
-                            {mounted ? (() => {
-                                const today = new Date();
-                                const day = today.getDay();
-                                const diffToMonday = (day === 0 ? -6 : 1) - day;
-                                const monday = new Date(today);
-                                monday.setDate(today.getDate() + diffToMonday);
-                                const friday = new Date(monday);
-                                friday.setDate(monday.getDate() + 4);
-                                const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short' };
-                                return `${monday.toLocaleDateString('id-ID', options)} - ${friday.toLocaleDateString('id-ID', options)}`.toUpperCase();
-                            })() : '...'}
                         </span>
                     </div>
                 </div>
@@ -504,7 +497,7 @@ export const Layout: React.FC<LayoutProps> = ({
 
                     {/* Notification Dropdown */}
                     {isNotificationsOpen && (
-                        <div className="fixed sm:absolute left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto top-20 sm:top-full mt-2 w-auto sm:w-80 bg-white rounded-xl shadow-2xl border-2 border-slate-300 z-[110] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top">
+                        <div className="fixed sm:absolute left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto top-20 sm:top-full mt-2 w-auto sm:w-80 bg-white rounded-xl shadow-2xl border-2 border-slate-300 z-50 overflow-hidden animate-in fade-in zoom-in duration-200 origin-top">
                             <div className="p-4 border-b-2 border-slate-100 bg-white flex items-center justify-between">
                                 <div>
                                     <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.2em]">Pemberitahuan</h4>
@@ -513,9 +506,9 @@ export const Layout: React.FC<LayoutProps> = ({
                                 <span className="text-[8.5px] font-black bg-jade-600 text-white px-2.5 py-0.5 rounded-lg shadow-sm shadow-jade-100">NEW</span>
                             </div>
 
-                            <div className="max-h-[300px] overflow-y-auto scrollbar-hide bg-slate-50/30">
+                            <div className="max-h-90 overflow-y-auto scrollbar-hide bg-slate-50/30">
                                 {notifications.length > 0 ? (
-                                    notifications.slice(0, 10).map((notif) => (
+                                    notifications.slice(0, 20).map((notif) => (
                                         <div 
                                             key={notif.id} 
                                             onClick={() => handleNotificationClick(notif)}
@@ -571,7 +564,7 @@ export const Layout: React.FC<LayoutProps> = ({
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center gap-1.5 sm:gap-3 hover:bg-slate-50 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl transition-all border border-transparent hover:border-slate-100"
                 >
-                    <div className="flex flex-col items-end max-w-[80px] sm:max-w-[120px] lg:max-w-none">
+                    <div className="flex flex-col items-end max-20 sm:max-30 lg:max-w-none">
                         <span className="text-[9.5px] lg:text-xs font-black text-slate-900 uppercase tracking-tighter truncate w-full text-right">
                             {(user.role === UserRole.SANTRI && user.student_name) ? user.student_name : (user.full_name || 'User')}
                         </span>
@@ -589,7 +582,7 @@ export const Layout: React.FC<LayoutProps> = ({
 
                  {/* Profile Dropdown */}
                  {isProfileOpen && (
-                     <div className="absolute right-0 top-full mt-4 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 ring-1 ring-slate-900/5 z-[100] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
+                     <div className="absolute right-0 top-full mt-4 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 ring-1 ring-slate-900/5 z-50 overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
                         
                         {/* COMPACT LIST SECTION */}
                         <div className="p-2">
@@ -609,7 +602,7 @@ export const Layout: React.FC<LayoutProps> = ({
                                                         className="flex-1 flex items-center px-2 py-1.5 text-left min-w-0"
                                                     >
                                                         <div className="flex items-center gap-2 min-w-0 w-full">
-                                                            <div className={`w-7 h-7 flex-shrink-0 rounded-full ${avatarColor} text-white flex items-center justify-center text-[10px] font-bold shadow-sm`}>
+                                                            <div className={`w-7 h-7 shrink-0 rounded-full ${avatarColor} text-white flex items-center justify-center text-[10px] font-bold shadow-sm`}>
                                                                 {(acc.profile.full_name || 'U').charAt(0).toUpperCase()}
                                                             </div>
                                                             <div className="min-w-0 flex-1 pb-1">
@@ -622,7 +615,7 @@ export const Layout: React.FC<LayoutProps> = ({
                                                             </div>
                                                         </div>
                                                     </button>
-                                                    <div className="flex-shrink-0 w-8 flex justify-center">
+                                                    <div className="shrink-0 w-8 flex justify-center">
                                                         <button 
                                                             onClick={(e) => handleRemoveAccount(e, accId, acc.profile.full_name)}
                                                             className="p-1.5 opacity-0 group-hover/item:opacity-100 hover:text-red-500 text-slate-300 transition-all"
@@ -667,7 +660,7 @@ export const Layout: React.FC<LayoutProps> = ({
         </header>
 
         <main className="flex-1 p-4 pt-20 lg:p-8 lg:pt-24 lg:min-h-[calc(100vh-64px)] min-h-0 overflow-x-hidden">
-            <div className="max-w-[1600px] mx-auto">
+            <div className="max-400 mx-auto">
                 {children}
             </div>
         </main>

@@ -11,5 +11,5 @@ export default function StudentDirectoryPage() {
   
   if (!user || (user.role !== UserRole.TEACHER && user.role !== UserRole.ADMIN && user.role !== UserRole.SUPERVISOR)) return <AccessDenied />;
   
-  return <StudentDirectory user={user} tenantId={user.tenant_id || ''} />;
+  return <StudentDirectory user={user} tenantId={user.tenant_id || ''} mode="santri" />;
 }

@@ -14,7 +14,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <p className="text-slate-500 text-xs font-semibold mb-3 uppercase tracking-wider">{label}</p>
         <div className="space-y-2">
           {payload.slice().reverse().map((entry: any, index: number) => (
-            <div key={index} className="flex items-center justify-between gap-8 min-w-[140px]">
+            <div key={index} className="flex items-center justify-between gap-8 min-35">
               <div className="flex items-center gap-2">
                 <div 
                   className="w-3 h-3 rounded-full shadow-sm" 

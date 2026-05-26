@@ -15,10 +15,16 @@ import {
   forceResetPassword,
   getAchievements,
   createAchievement,
+  updateAchievement,
   deleteAchievement,
   getStudentNotes,
   createStudentNote,
-  deleteStudentNote
+  deleteStudentNote,
+  updateStudentNote,
+  markNoteAsSeen,
+  createHalaqah,
+  updateHalaqah,
+  deleteHalaqah
 } from '../../services/dataService';
 import { UserProfile, UserRole, Student, Halaqah, Class, Achievement, TeacherNote } from '../../types';
 import { 
@@ -36,6 +42,7 @@ import {
   AlertCircle,
   School,
   Edit,
+  Edit3,
   Trash2,
   X,
   Upload,
@@ -52,15 +59,16 @@ import {
   Eye,
   EyeOff,
   Trophy,
-  MessageSquare,
   Calendar,
   Trash,
   Plus,
   Save,
-  Fingerprint,
+  MessageSquare,
   History,
   Timer,
-  AlertTriangle
+  Fingerprint,
+  AlertTriangle,
+  ChevronDown
 } from 'lucide-react';
 import { useNotification } from '../../lib/NotificationContext';
 import { Skeleton } from '../../components/ui/Skeleton';
@@ -68,6 +76,7 @@ import { Button } from '../../components/ui/Button';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import { getStudentAssignmentHistory, getAssignmentsByDateRange, AssignmentHistory } from '../../services/dataService';
 import { CustomDatePicker } from '../../components/ui/CustomDatePicker';
+import { HalaqahFormModal, HalaqahDetailModal } from './HalaqahManagement';
 
 // --- Types for Joined Data ---
 interface StudentRekap extends Student {
@@ -97,7 +106,9 @@ interface AchievementModalProps {
 const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, student, user, onUpdate }) => {
     const [achievements, setAchievements] = useState<Achievement[]>([]);
     const [title, setTitle] = useState('');
+    const [color, setColor] = useState<string>('emerald');
     const [achToDelete, setAchToDelete] = useState<{id: string, title: string} | null>(null);
+    const [editingAchId, setEditingAchId] = useState<string | null>(null);
     const { addNotification } = useNotification();
     
     useEffect(() => {
@@ -105,6 +116,15 @@ const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, st
             getAchievements(student.id).then(res => {
                 if (Array.isArray(res)) setAchievements(res);
             }).catch(() => setAchievements([]));
+            setTitle('');
+            setColor('emerald');
+            setEditingAchId(null);
+            setAchToDelete(null);
+        } else {
+            setTitle('');
+            setColor('emerald');
+            setEditingAchId(null);
+            setAchToDelete(null);
         }
     }, [student, isOpen]);
 
@@ -114,16 +134,40 @@ const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, st
         e.preventDefault();
         if (!title.trim()) return;
         try {
-            await createAchievement({ title, student_id: student.id, date: new Date().toISOString(), rank: (achievements?.length || 0) + 1 }, user, student.full_name);
+            if (editingAchId) {
+                await updateAchievement(editingAchId, title, color, user, student.full_name);
+                addNotification({type: 'success', title: 'Berhasil', message: 'Pencapaian telah diperbarui.'});
+                setEditingAchId(null);
+            } else {
+                await createAchievement({ 
+                    title, 
+                    student_id: student.id, 
+                    date: new Date().toISOString(), 
+                    color: color
+                }, user, student.full_name);
+                addNotification({type: 'success', title: 'Berhasil', message: 'Pencapaian baru telah ditambahkan.'});
+            }
             onUpdate();
             setTitle('');
+            setColor('emerald');
             getAchievements(student.id).then(res => {
                 if (Array.isArray(res)) setAchievements(res);
             });
-            addNotification({type: 'success', title: 'Berhasil', message: 'Pencapaian baru telah ditambahkan.'});
         } catch (error) {
-            addNotification({type: 'error', title: 'Gagal', message: 'Tidak dapat menambahkan pencapaian.'});
+            addNotification({type: 'error', title: 'Gagal', message: 'Tidak dapat memproses pencapaian.'});
         }
+    };
+
+    const handleEditAch = (ach: Achievement) => {
+        setEditingAchId(ach.id);
+        setTitle(ach.title);
+        setColor(ach.color || 'emerald');
+    };
+
+    const cancelEdit = () => {
+        setEditingAchId(null);
+        setTitle('');
+        setColor('emerald');
     };
 
     const handleDelete = async (id: string, achievementTitle: string) => {
@@ -146,58 +190,127 @@ const AchievementModal: React.FC<AchievementModalProps> = ({ isOpen, onClose, st
     };
 
     return (
-        <div className="fixed top-16 lg:left-64 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in" onClick={onClose}>
-            <div className="bg-white rounded-xl shadow-none w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border-2 border-slate-300 relative max-h-[75vh]" onClick={e => e.stopPropagation()}>
-                <div className="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-white shrink-0 rounded-t-xl">
+        <div className="fixed top-16 right-0 bottom-0 left-0 lg:left-64 z-9999 flex items-center justify-center p-6 lg:p-14 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 text-slate-800" onClick={onClose}>
+            <div className="bg-white rounded-xl w-full max-w-sm overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border-2 border-slate-200" onClick={e => e.stopPropagation()}>
+                <div className="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-xl">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center border border-amber-100">
-                             <Trophy className="w-4 h-4 text-amber-500" />
-                        </div>
                         <div>
-                            <h3 className="text-[11px] font-black text-slate-800 tracking-tight leading-none mb-1 uppercase">Pencapaian Santri</h3>
-                            <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none">{student.full_name}</p>
+                            <h3 className="text-[11px] font-black uppercase">Pencapaian Santri</h3>
+                            <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest">{student.full_name}</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all">
+                    <button 
+                        onClick={onClose} 
+                        className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-slate-600 transition-all active:scale-90"
+                    >
                         <X className="w-4 h-4" />
                     </button>
                 </div>
-                <div className="p-5 overflow-y-auto space-y-2.5 max-h-[190px] custom-scrollbar bg-slate-50/20">
+                <div className="p-4 overflow-y-auto space-y-2.5 max-h-[60vh] scrollbar-hide bg-slate-50/30">
                     {achievements.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-10 opacity-30">
                             <Trophy className="w-12 h-12 mb-2" />
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Belum ada pencapaian</p>
                         </div>
                     ) : achievements.map(ach => (
-                        <div key={ach.id} className="group relative flex justify-between items-center bg-white p-2.5 rounded-xl border-2 border-slate-100 transition-all hover:border-jade-200">
+                        <div key={ach.id} className="group relative flex justify-between items-center bg-slate-50/30 p-2.5 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-md hover:border-jade-100 ring-1 ring-transparent hover:ring-jade-50/50">
                             <div className="flex items-center gap-3">
-                                <div className="p-1.5 bg-amber-50 rounded-lg border border-amber-100/50 shadow-none">
-                                    <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center border-2 shrink-0 ${
+                                    ach.color === 'emerald' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                    ach.color === 'blue' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                    ach.color === 'orange' ? 'bg-orange-50 text-orange-600 border-orange-100' :
+                                    ach.color === 'purple' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                                    ach.color === 'pink' ? 'bg-pink-50 text-pink-600 border-pink-100' :
+                                    'bg-slate-50 text-slate-600 border-slate-200'
+                                }`}>
+                                    <Trophy className="w-4 h-4" />
                                 </div>
-                                <div>
-                                    <p className="text-[11px] font-black text-slate-700 uppercase tracking-tight leading-none">{ach.title}</p>
-                                    <div className="flex items-center gap-1.5 mt-1">
-                                        <Calendar className="w-2.5 h-2.5 text-slate-300" />
-                                        <span className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest">{ach.date ? new Date(ach.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</span>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10.5px] font-black text-slate-700 uppercase tracking-tight leading-none truncate">{ach.title}</p>
+                                    <div className="flex items-center gap-1.5 mt-1 opacity-40">
+                                        <Calendar className="w-2.5 h-2.5" />
+                                        <span className="text-[7.5px] font-black uppercase tracking-widest">{ach.date ? new Date(ach.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</span>
                                     </div>
                                 </div>
                             </div>
-                            <button onClick={() => handleDelete(ach.id, ach.title)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
-                                <Trash className="w-3.5 h-3.5"/>
-                            </button>
+                            {(() => {
+                                const isOwner = ach.teacher_name === user.full_name || user.role === 'admin' || user.role === 'superadmin' || !ach.teacher_name;
+                                if (!isOwner) return null;
+                                return (
+                                    <div className="flex gap-1 items-center">
+                                        <button 
+                                            onClick={() => handleEditAch(ach)}
+                                            className="p-1.5 text-slate-500 hover:text-blue-500 rounded-lg transition-all group-hover:opacity-100"
+                                        >
+                                            <Edit3 className="w-3.5 h-3.5"/>
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDelete(ach.id, ach.title)}
+                                            className="p-1.5 text-slate-500 hover:text-red-500 rounded-lg transition-all group-hover:opacity-100"
+                                        >
+                                            <Trash className="w-3.5 h-3.5"/>
+                                        </button>
+                                    </div>
+                                );
+                            })()}
                         </div>
                     ))}
                 </div>
-                <form onSubmit={handleAdd} className="p-3 border-t border-slate-100 bg-slate-50/30 flex gap-2.5">
-                    <input 
-                        value={title} 
-                        onChange={e => setTitle(e.target.value)} 
-                        placeholder="TULIS PENCAPAIAN BARU..." 
-                        className="flex-1 px-4 border-2 border-slate-300 bg-white rounded-xl focus:ring-0 focus:border-jade-600 shadow-none transition-all text-[12px] font-bold text-slate-800 outline-none h-10 placeholder:text-slate-300 placeholder:font-black placeholder:text-[9px] placeholder:tracking-widest" 
-                    />
-                    <button type="submit" className="w-12 h-10 bg-jade-600 text-white rounded-xl border-2 border-jade-600 hover:bg-jade-700 shadow-none transition-all active:scale-[0.98] flex items-center justify-center shrink-0">
-                        <Plus className="w-5 h-5"/>
-                    </button>
+                <form onSubmit={handleAdd} className="p-5 border-t border-slate-100 bg-slate-50/30 space-y-3">
+                    <div className="flex gap-2">
+                        <div className="flex-1 space-y-1.5">
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Pencapaian</label>
+                            <input 
+                                value={title} 
+                                onChange={e => setTitle(e.target.value)} 
+                                placeholder="Contoh: Hafal Juz 30" 
+                                className="w-full px-4 py-2.5 border-2 border-slate-100 bg-white rounded-2xl focus:ring-0 focus:border-jade-400 shadow-sm transition-all text-[9px] uppercase font-bold text-slate-800 outline-none placeholder:text-slate-300" 
+                            />
+                        </div>
+                    </div>
+                    
+                    <div className="flex items-end gap-3">
+                        <div className="flex-1 flex flex-col gap-1">
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Warna</label>
+                            <div className="flex flex-wrap gap-3 py-1.5 px-1">
+                                {['emerald', 'blue', 'orange', 'purple', 'pink'].map(c => (
+                                <button
+                                    key={c}
+                                    type="button"
+                                    onClick={() => setColor(c)}
+                                    className={`w-6 h-6 rounded-full border-2 transition-all shrink-0 ${
+                                        color === c 
+                                        ? `ring-2 ring-offset-1 ring-${c}-500 border-white bg-${c}-500` 
+                                        : `bg-${c}-400 border-transparent opacity-40 hover:opacity-100`
+                                    } ${
+                                        c === 'emerald' ? 'bg-emerald-500' :
+                                        c === 'blue' ? 'bg-blue-500' :
+                                        c === 'orange' ? 'bg-orange-500' :
+                                        c === 'purple' ? 'bg-purple-500' :
+                                        'bg-pink-500'
+                                    }`}
+                                />
+                            ))}
+                            </div>
+                        </div>
+                        <div className="flex gap-2 shrink-0 mb-1">
+                            {editingAchId && (
+                                <button 
+                                    type="button"
+                                    onClick={cancelEdit}
+                                    className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all text-[9px] font-black tracking-[0.2em] uppercase flex items-center justify-center"
+                                >
+                                    BATAL
+                                </button>
+                            )}
+                            <button 
+                                type="submit"
+                                className="px-6 py-2 bg-jade-600 text-white rounded-xl hover:bg-jade-700 shadow-lg shadow-jade-100 transition-all active:scale-95 flex items-center justify-center gap-2"
+                            >
+                                {editingAchId ? <Save className="w-4 h-4"/> : <Plus className="w-4 h-4"/>}
+                            </button>
+                        </div>
+                    </div>
                 </form>
                 <ConfirmModal
                     isOpen={!!achToDelete}
@@ -231,7 +344,7 @@ const HistoryModal = ({ isOpen, onClose, student }: { isOpen: boolean, onClose: 
     if (!isOpen || !student) return null;
 
     return (
-        <div className="fixed top-16 lg:left-64 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in" onClick={onClose}>
+        <div className="fixed top-16 lg:left-64 left-0 right-0 bottom-0 z-9999 flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in" onClick={onClose}>
             <div className="bg-white rounded-xl shadow-none w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border-2 border-slate-300 relative max-h-[75vh]" onClick={e => e.stopPropagation()}>
                 <div className="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-white shrink-0 rounded-t-xl">
                     <div className="flex items-center gap-3">
@@ -247,7 +360,7 @@ const HistoryModal = ({ isOpen, onClose, student }: { isOpen: boolean, onClose: 
                         <X className="w-4 h-4" />
                     </button>
                 </div>
-                <div className="p-5 overflow-y-auto space-y-4 max-h-[290px] custom-scrollbar bg-slate-50/20">
+                <div className="p-5 overflow-y-auto space-y-4 max-72.5 custom-scrollbar bg-slate-50/20">
                     {loading ? (
                         <div className="py-20 flex flex-col items-center justify-center opacity-30">
                             <RefreshCw className="w-10 h-10 animate-spin mb-3" />
@@ -259,8 +372,8 @@ const HistoryModal = ({ isOpen, onClose, student }: { isOpen: boolean, onClose: 
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Belum ada riwayat tercetak</p>
                         </div>
                     ) : history.map((h, idx) => (
-                        <div key={h.id} className="relative pl-6 pb-2 last:pb-0 border-l-2 border-slate-100 ml-2">
-                             <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-jade-400 z-10" />
+                        <div key={h.id} className="relative pl-6 pb-2 last:pb-0 border-l-2 border-slate-300 ml-2">
+                             <div className="absolute -left-2.25 top-0 w-3.5 h-3.5 rounded-full bg-white border-2 border-jade-400 z-10" />
                              <div className="flex justify-between items-start">
                                  <div>
                                     <p className="text-[12px] font-black text-jade-700 tracking-tight uppercase leading-none">{h.teacher_name}</p>
@@ -268,19 +381,35 @@ const HistoryModal = ({ isOpen, onClose, student }: { isOpen: boolean, onClose: 
                                     <div className="flex items-center gap-3 mt-3">
                                         <div className="flex items-center gap-1.5 opacity-60">
                                             <Calendar className="w-2.5 h-2.5 text-emerald-500" />
-                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.1em]">{new Date(h.start_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}</span>
+                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{new Date(h.start_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})}</span>
                                         </div>
-                                        <span className="text-[8px] font-black text-slate-300">S/D</span>
+                                        <span className="text-[8px] font-black text-slate-400">S/D</span>
                                         <div className="flex items-center gap-1.5 opacity-60">
                                             <Calendar className="w-2.5 h-2.5 text-rose-500" />
-                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.1em]">{h.end_date ? new Date(h.end_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : 'SAAT INI'}</span>
+                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{h.end_date ? new Date(h.end_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : 'SAAT INI'}</span>
                                         </div>
                                     </div>
                                  </div>
                                  <div className="flex flex-col items-end gap-1">
-                                     <div className="bg-jade-50 px-2.5 py-1.5 rounded-xl border border-jade-100 flex flex-col items-center justify-center min-w-[50px] shadow-sm">
-                                         <span className="text-[14px] font-black text-jade-700 leading-none">{h.total_sabaq_lines || 0}</span>
-                                         <span className="text-[6px] font-black text-jade-400 uppercase tracking-widest mt-0.5">Baris Sabaq</span>
+                                     <div className="bg-jade-50 px-2.5 py-1.5 rounded-xl border border-jade-100 flex flex-col items-center justify-center min-12.5 shadow-sm">
+                                         <div className="flex items-center gap-1.5 justify-center text-jade-700">
+                                             {(() => {
+                                                 const lines = h.total_sabaq_lines || 0;
+                                                 if (!lines) return <span className="text-[12px] font-black leading-none">0</span>;
+                                                 const juz = Math.floor(lines / 300);
+                                                 const rem = lines % 300;
+                                                 const hal = Math.floor(rem / 15);
+                                                 const brs = rem % 15;
+                                                 return (
+                                                     <>
+                                                         {juz > 0 && <span className="flex items-baseline gap-0.5"><span className="text-[12px] font-black leading-none">{juz}</span><span className="text-[8px] font-bold opacity-70">Juz</span></span>}
+                                                         {hal > 0 && <span className="flex items-baseline gap-0.5"><span className="text-[12px] font-black leading-none">{hal}</span><span className="text-[8px] font-bold opacity-70">Hal</span></span>}
+                                                         {brs > 0 && <span className="flex items-baseline gap-0.5"><span className="text-[12px] font-black leading-none">{brs}</span><span className="text-[8px] font-bold opacity-70">Baris</span></span>}
+                                                     </>
+                                                 );
+                                             })()}
+                                         </div>
+                                         <span className="text-[6px] font-black text-jade-400 uppercase tracking-widest mt-1">Total Sabaq</span>
                                      </div>
                                  </div>
                              </div>
@@ -314,7 +443,7 @@ const GlobalTrackingModal = ({ isOpen, onClose, tenantId }: { isOpen: boolean, o
     if (!isOpen) return null;
 
     return (
-        <div className="fixed top-16 lg:left-64 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in" onClick={onClose}>
+        <div className="fixed top-16 lg:left-64 left-0 right-0 bottom-0 z-9999 flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in" onClick={onClose}>
             <div className="bg-white rounded-xl shadow-none w-full max-w-lg flex flex-col animate-in zoom-in-95 duration-200 border-2 border-slate-300 relative max-h-[75vh]" onClick={e => e.stopPropagation()}>
                 <div className="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-white shrink-0 rounded-t-xl">
                     <div className="flex items-center gap-3">
@@ -333,7 +462,7 @@ const GlobalTrackingModal = ({ isOpen, onClose, tenantId }: { isOpen: boolean, o
                 <div className="p-4 bg-slate-50/30 border-b border-slate-100 flex flex-row items-end gap-2">
                     <div className="flex-none space-y-1">
                         <label className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Mulai</label>
-                        <div className="h-9 min-w-[100px] lg:min-w-[125px] px-3 flex items-center justify-center bg-white border-2 border-slate-300 rounded-xl focus-within:border-jade-400 transition-all">
+                        <div className="h-9 min-25 lg:min-31.25 px-3 flex items-center justify-center bg-white border-2 border-slate-300 rounded-xl focus-within:border-jade-400 transition-all">
                             <CustomDatePicker 
                                 value={startDate} 
                                 align="center"
@@ -343,7 +472,7 @@ const GlobalTrackingModal = ({ isOpen, onClose, tenantId }: { isOpen: boolean, o
                     </div>
                     <div className="flex-none space-y-1">
                         <label className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest ml-1">Hingga</label>
-                        <div className="h-9 min-w-[100px] lg:min-w-[125px] px-3 flex items-center justify-center bg-white border-2 border-slate-300 rounded-xl focus-within:border-jade-400 transition-all">
+                        <div className="h-9 min-25 lg:min-31.25 px-3 flex items-center justify-center bg-white border-2 border-slate-300 rounded-xl focus-within:border-jade-400 transition-all">
                             <CustomDatePicker 
                                 value={endDate} 
                                 align="center"
@@ -389,7 +518,7 @@ const GlobalTrackingModal = ({ isOpen, onClose, tenantId }: { isOpen: boolean, o
                                     (res.student_nis && res.student_nis.includes(trackingSearch))
                                 )
                                 .map((res, i) => (
-                                 <div key={i} className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 bg-white border border-slate-100 rounded-[24px] shadow-sm hover:shadow-md transition-all gap-4">
+                                 <div key={i} className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 bg-white border border-slate-100 rounded-3xl shadow-sm hover:shadow-md transition-all gap-4">
                                      <div className="flex items-center gap-4">
                                          <div className="w-10 h-10 bg-jade-50 rounded-2xl flex items-center justify-center border border-jade-100/50">
                                              <User className="w-5 h-5 text-jade-600" />
@@ -435,14 +564,34 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
     const [content, setContent] = useState('');
     const [category, setCategory] = useState<'Motivasi' | 'Evaluasi' | 'Perilaku' | 'Lainnya'>('Motivasi');
     const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
+    const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+    const [viewingReply, setViewingReply] = useState<string | null>(null);
+    const [senderFilter, setSenderFilter] = useState<string>('all');
     const { addNotification } = useNotification();
     const categories: (typeof category)[] = ['Motivasi', 'Evaluasi', 'Perilaku', 'Lainnya'];
 
+    const loadNotes = () => {
+        if (!student) return;
+        getStudentNotes(student.id).then(res => {
+            if (Array.isArray(res)) {
+                const roleName = user.role === 'superadmin' ? 'admin' : user.role;
+                const readerString = `${user.full_name} [${roleName}]`;
+                const updatedRes = res.map(note => {
+                    const seenArray = note.seen_by || [];
+                    if (!seenArray.includes(readerString)) {
+                        markNoteAsSeen(note.id, readerString, seenArray);
+                        return { ...note, seen_by: [...seenArray, readerString] };
+                    }
+                    return note;
+                });
+                setNotes(updatedRes);
+            }
+        }).catch(() => setNotes([]));
+    };
+
     useEffect(() => {
         if (student && isOpen) {
-            getStudentNotes(student.id).then(res => {
-                if (Array.isArray(res)) setNotes(res);
-            }).catch(() => setNotes([]));
+            loadNotes();
         }
     }, [student, isOpen]);
 
@@ -452,16 +601,31 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
         e.preventDefault();
         if (!content.trim()) return;
         try {
-            await createStudentNote({ content, student_id: student.id, category, teacher_name: user.full_name, date: new Date().toISOString() }, user, student.full_name);
+            if (editingNoteId) {
+                await updateStudentNote(editingNoteId, content, category, user, student.full_name);
+                addNotification({type: 'success', title: 'Berhasil', message: 'Catatan telah diperbarui.'});
+                setEditingNoteId(null);
+            } else {
+                await createStudentNote({ content, student_id: student.id, category, teacher_name: `${user.full_name} | ${user.role}`, date: new Date().toISOString() }, user, student.full_name);
+                addNotification({type: 'success', title: 'Berhasil', message: 'Catatan baru telah ditambahkan.'});
+            }
             onUpdate();
             setContent('');
-            getStudentNotes(student.id).then(res => {
-                if (Array.isArray(res)) setNotes(res);
-            });
-            addNotification({type: 'success', title: 'Berhasil', message: 'Catatan baru telah ditambahkan.'});
+            loadNotes();
         } catch (error) {
-            addNotification({type: 'error', title: 'Gagal', message: 'Tidak dapat menambahkan catatan.'});
+            addNotification({type: 'error', title: 'Gagal', message: 'Tidak dapat memproses catatan.'});
         }
+    };
+
+    const handleEditNote = (note: TeacherNote) => {
+        setEditingNoteId(note.id);
+        setContent(note.content);
+        setCategory(note.category as any);
+    };
+
+    const cancelEdit = () => {
+        setEditingNoteId(null);
+        setContent('');
     };
 
     const handleDelete = async (id: string) => {
@@ -483,8 +647,15 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
         setNoteToDelete(null);
     };
 
+    const uniqueSenders = Array.from(new Set(notes.map(n => n.teacher_name.split('|')[0].trim())));
+    const filteredNotes = notes.filter(n => {
+        if (senderFilter === 'all') return true;
+        if (senderFilter === 'me') return n.teacher_name.split('|')[0].trim() === user.full_name;
+        return n.teacher_name.split('|')[0].trim() === senderFilter;
+    });
+
     return (
-        <div className="fixed top-16 lg:left-64 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in" onClick={onClose}>
+        <div className="fixed top-16 lg:left-64 left-0 right-0 bottom-0 z-9999 flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in" onClick={onClose}>
             <div className="bg-white rounded-xl shadow-none w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border-2 border-slate-300 relative max-h-[75vh]" onClick={e => e.stopPropagation()}>
                 <div className="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-white shrink-0 rounded-t-xl">
                     <div className="flex items-center gap-3">
@@ -492,44 +663,175 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
                              <MessageSquare className="w-4 h-4 text-jade-600" />
                         </div>
                         <div>
-                            <h3 className="text-[11px] font-black text-slate-800 tracking-tight leading-none mb-1 uppercase">Catatan Admin</h3>
+                            <h3 className="text-[11px] font-black text-slate-800 tracking-tight leading-none mb-1 uppercase">
+                                {user.role === 'admin' || user.role === 'superadmin' ? 'Catatan Admin' : user.role === 'supervisor' ? 'Catatan Supervisor' : 'Catatan Ustadz'}
+                            </h3>
                             <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none">{student.full_name}</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all">
-                        <X className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {notes.length > 0 && (
+                            <select
+                                value={senderFilter}
+                                onChange={(e) => setSenderFilter(e.target.value)}
+                                className="bg-slate-50 border border-slate-200 text-[8px] font-black text-slate-600 rounded-lg px-2 py-1.5 outline-none focus:border-jade-400 uppercase cursor-pointer max-w-28 truncate"
+                            >
+                                <option value="all">SEMUA PENGIRIM</option>
+                                <option value="me">ANDA</option>
+                                {uniqueSenders.filter(s => s !== user.full_name).map(s => (
+                                    <option key={s} value={s}>{s}</option>
+                                ))}
+                            </select>
+                        )}
+                        <button onClick={onClose} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all shrink-0">
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
-                <div className="p-5 overflow-y-auto space-y-3 max-h-[160px] custom-scrollbar bg-slate-50/20">
+                <div className="p-5 overflow-y-auto space-y-3 max-h-62.5 custom-scrollbar bg-slate-50/20">
                     {notes.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-10 opacity-30">
                             <MessageSquare className="w-12 h-12 mb-2" />
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Belum ada catatan</p>
                         </div>
-                    ) : notes.map(note => (
-                        <div key={note.id} className="group relative flex flex-col bg-white p-3 rounded-xl border-2 border-slate-100 transition-all hover:border-jade-200 hover:shadow-sm">
-                            <div className="flex justify-between items-center mb-2">
-                                <span className={`px-2 py-0.5 text-[7px] font-black uppercase tracking-[0.1em] rounded-md border-2 shadow-none ${
-                                    note.category === 'Motivasi' ? 'bg-jade-50 text-jade-600 border-jade-100' :
-                                    note.category === 'Evaluasi' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                    note.category === 'Perilaku' ? 'bg-rose-50 text-rose-600 border-rose-100' :
-                                    'bg-slate-50 text-slate-500 border-slate-100'
-                                }`}>
-                                    {note.category}
-                                </span>
-                                <div className="flex items-center gap-2">
-                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                        <Calendar className="w-2.5 h-2.5 text-slate-300" />
-                                        {note.date ? new Date(note.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
-                                    </p>
-                                    <button onClick={() => handleDelete(note.id)} className="p-1 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
-                                        <Trash className="w-3 h-3"/>
-                                    </button>
-                                </div>
-                            </div>
-                            <p className="text-[11px] font-black text-slate-700 leading-tight tracking-tight uppercase">{note.content}</p>
+                    ) : filteredNotes.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-10 opacity-30">
+                            <MessageSquare className="w-12 h-12 mb-2" />
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">Catatan dari pengirim<br/>tersebut tidak ditemukan</p>
                         </div>
-                    ))}
+                    ) : (
+                        <div className="space-y-3">
+                            {filteredNotes.map(note => {
+                                let displayName = note.teacher_name;
+                                let roleName = '';
+                                if (displayName.includes('|')) {
+                            const parts = displayName.split('|');
+                            displayName = parts[0].trim();
+                             roleName = parts[1].trim();
+                        }
+                        const isOwner = displayName === user.full_name || note.teacher_name === user.full_name || user.role === 'admin' || user.role === 'superadmin';
+
+                        return (
+                                    <div 
+                                        key={note.id} 
+                                        onClick={() => note.reply_content && setViewingReply(viewingReply === note.id ? null : note.id)}
+                                        className={`group relative z-10 hover:z-50 flex flex-col bg-white p-2.5 rounded-lg border border-slate-200 transition-all hover:shadow-sm hover:border-slate-300 ${note.reply_content ? 'cursor-pointer' : ''}`}
+                                    >
+                                        <div className="flex justify-between items-center mb-2 relative">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className={`px-1.5 py-0.5 text-[6px] font-black uppercase tracking-widest rounded border ${
+                                                    note.category === 'Motivasi' ? 'bg-jade-50 text-jade-600 border-jade-100' :
+                                                    note.category === 'Evaluasi' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                    note.category === 'Perilaku' ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                                                    'bg-slate-50 text-slate-500 border-slate-200'
+                                                }`}>
+                                                    {note.category}
+                                                </span>
+                                                <span className="text-[6.5px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-0.5">
+                                                    <Calendar className="w-2 h-2 opacity-60" />
+                                                    {note.date ? new Date(note.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                {isOwner && (
+                                                    <div className="flex items-center gap-0.5">
+                                                        <div className="relative group/info">
+                                                            <button 
+                                                                className="p-1 text-slate-400 hover:text-jade-500 rounded-md transition-all cursor-help"
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                <Info className="w-3 h-3"/>
+                                                            </button>
+                                                            <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover/info:block bg-slate-800 text-white text-[8px] p-2.5 rounded-xl shadow-xl z-9999 w-max min-w-36 pointer-events-none animate-in fade-in zoom-in duration-200">
+                                                                <div className="font-black tracking-widest text-slate-400 mb-2 border-b border-slate-600 pb-1.5 uppercase">Status Dilihat:</div>
+                                                                {(() => {
+                                                                    const authorName = note.teacher_name.split(' | ')[0].trim().toLowerCase();
+                                                                    const filteredSeenBy = note.seen_by?.filter(seenStr => {
+                                                                        const readerName = seenStr.split(' [')[0].trim().toLowerCase();
+                                                                        return readerName !== authorName && readerName !== note.teacher_name.toLowerCase();
+                                                                    }) || [];
+                                                                    
+                                                                    return filteredSeenBy.length > 0 ? (
+                                                                        <div className="flex flex-col gap-1.5">
+                                                                            {filteredSeenBy.map((seenStr, i) => (
+                                                                                <div key={i} className="flex justify-between items-center gap-6">
+                                                                                    <span className="uppercase font-bold tracking-widest text-slate-200">{seenStr}</span> 
+                                                                                    <CheckCircle2 className="w-3 h-3 text-jade-400"/>
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="flex flex-col gap-1.5">
+                                                                            <span className="text-slate-400 text-[9px] uppercase tracking-widest text-center">Belum dilihat</span>
+                                                                        </div>
+                                                                    );
+                                                                })()}
+                                                            </div>
+                                                        </div>
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); handleEditNote(note); }}
+                                                            className="p-1 text-slate-400 hover:text-blue-500 rounded-md transition-all"
+                                                        >
+                                                            <Edit3 className="w-3 h-3"/>
+                                                        </button>
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); handleDelete(note.id); }}
+                                                            className="p-1 text-slate-400 hover:text-red-500 rounded-md transition-all"
+                                                        >
+                                                            <Trash className="w-3 h-3"/>
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        
+                                        <p className="text-[8.5px] font-black text-slate-700 leading-snug tracking-tight uppercase mb-2 px-0.5">
+                                            {note.content}
+                                        </p>
+                                        
+                                        <div className="flex justify-between items-end mt-auto pt-1.5 border-t border-slate-50">
+                                            <div className="flex items-center gap-1.5">
+                                                <div className="w-4 h-4 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 border border-slate-200">
+                                                    <User className="w-2 h-2" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[7.5px] font-bold text-slate-700 uppercase tracking-tight leading-none">{isOwner ? 'Anda' : displayName}</span>
+                                                    {roleName && !isOwner && <span className="text-[5.5px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{roleName}</span>}
+                                                </div>
+                                            </div>
+                                            {note.reply_content && (
+                                                <div className="flex items-center gap-1">
+                                                    <div className="flex items-center gap-1 bg-jade-50 px-1 py-0.5 rounded border border-jade-100">
+                                                        <CheckCircle2 className="w-2.5 h-2.5 text-jade-500" />
+                                                        <span className="text-[6px] font-black text-jade-600 uppercase tracking-tight">Dibalas</span>
+                                                    </div>
+                                                    <div className={`p-0.5 rounded transition-all duration-300 ${viewingReply === note.id ? 'rotate-180 bg-jade-50' : 'bg-slate-50'}`}>
+                                                        <ChevronDown className={`w-3 h-3 ${viewingReply === note.id ? 'text-jade-600' : 'text-slate-400'}`} strokeWidth={3} />
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        <div className={`grid transition-all duration-500 ease-in-out ${viewingReply === note.id ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0'}`}>
+                                            <div className="overflow-hidden">
+                                                <div className="flex items-start gap-2 bg-jade-50/50 p-2.5 rounded-xl border border-jade-100">
+                                                    <div className="flex-1 w-full">
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <span className="text-[8px] font-black text-jade-700 uppercase tracking-widest">Balasan Wali Santri</span>
+                                                            <span className="text-[7.5px] font-bold text-jade-400/80">
+                                                                {note.replied_at ? new Date(note.replied_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : ''}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-[8.5px] font-bold text-slate-600 leading-relaxed uppercase tracking-tight">{note.reply_content}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
                 <form onSubmit={handleAdd} className="p-3 border-t border-slate-100 bg-slate-50/30 space-y-2.5">
                     <div className="flex items-center gap-3">
@@ -562,10 +864,24 @@ const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, student, user,
                             ))}
                         </div>
                     </div>
-                    <button type="submit" className="w-full h-10 bg-jade-600 text-white rounded-xl border-2 border-jade-600 font-black text-[10px] uppercase tracking-widest hover:bg-jade-700 shadow-none transition-all active:scale-[0.98] flex items-center justify-center gap-2">
-                        <Save className="w-4 h-4"/>
-                        SIMPAN DATA
-                    </button>
+                    <div className="flex gap-2 w-full mt-2">
+                        {editingNoteId && (
+                            <button 
+                                type="button" 
+                                onClick={cancelEdit} 
+                                className="flex-1 py-2.5 bg-red-600 text-white rounded-xl font-black text-[9px] uppercase tracking-[0.3em] hover:bg-red-700 transition-all active:scale-[0.98]"
+                            >
+                                BATAL EDIT
+                            </button>
+                        )}
+                        <button 
+                            type="submit"
+                            className="flex-1 py-2.5 bg-jade-600 text-white rounded-xl font-black text-[9px] uppercase tracking-[0.3em] hover:bg-jade-700 shadow-none transition-all active:scale-[0.98] flex items-center justify-center gap-2 group"
+                        >
+                            <Save className="w-4 h-4"/>
+                            {editingNoteId ? 'SIMPAN' : 'SIMPAN DATA'}
+                        </button>
+                    </div>
                 </form>
                 <ConfirmModal
                     isOpen={!!noteToDelete}
@@ -588,6 +904,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
   const [rekapData, setRekapData] = useState<StudentRekap[]>(studentCache || []);
   const [halaqahs, setHalaqahs] = useState<Halaqah[]>(halaqahCache || []);
   const [classes, setClasses] = useState<Class[]>(classCache || []);
+  const [activeTab, setActiveTab] = useState<'santri' | 'halaqah'>('santri');
   const [loading, setLoading] = useState(!studentCache);
   const [showAddModal, setShowAddModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -803,28 +1120,28 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                 <div className="p-4 space-y-2.5 overflow-y-auto custom-scrollbar">
                     {/* Section 1: Data Utama - Compact Grid */}
                     <div className="grid grid-cols-2 gap-2">
-                        <div className="p-2.5 bg-jade-50/50 rounded-xl border-2 border-jade-100 flex items-center gap-2.5">
-                            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-none border border-jade-100 shrink-0">
-                                <GraduationCap className="w-4 h-4 text-jade-600" />
+                        <div className="p-2.5 bg-slate-50/30 rounded-xl border-2 border-slate-100 flex items-center gap-2.5">
+                            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-none border border-slate-100 shrink-0">
+                                <GraduationCap className="w-4 h-4 text-slate-500" />
                             </div>
                             <div className="min-w-0">
-                                <p className="text-[7.5px] font-black text-jade-400 uppercase tracking-widest leading-none mb-1">Nama</p>
+                                <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Nama</p>
                                 <div className="relative group/name">
-                                    <p className="text-[11px] font-black text-jade-900 leading-none truncate cursor-help" title={student.full_name}>{student.full_name || '-'}</p>
-                                    <div className="absolute left-0 bottom-full mb-1 hidden group-hover/name:block z-[10000] w-max max-w-[200px] bg-slate-800 text-white text-[9px] font-bold px-2 py-1.5 rounded-lg shadow-xl animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+                                    <p className="text-[11px] font-black text-slate-800 leading-none truncate cursor-help">{student.full_name || '-'}</p>
+                                    <div className="absolute left-0 bottom-full mb-1 hidden group-hover/name:block z-10000 w-max max-50 bg-slate-800 text-white text-[9px] font-bold px-2 py-1.5 rounded-lg shadow-xl animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
                                         {student.full_name}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="p-2.5 bg-slate-300 rounded-xl border-2 border-slate-100 flex items-center gap-2.5">
+                        <div className="p-2.5 bg-slate-50/30 rounded-xl border-2 border-slate-100 flex items-center gap-2.5">
                             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-none border border-slate-100 shrink-0">
                                 <Fingerprint className="w-4 h-4 text-slate-500" />
                             </div>
                             <div className="min-w-0">
                                 <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">NIS</p>
-                                <p className="text-[11px] font-mono font-black text-slate-700 leading-none truncate uppercase tracking-tighter">{student.nis || '-'}</p>
+                                <p className="text-[11px] font-mono font-black text-slate-800 leading-none truncate uppercase tracking-tighter">{student.nis || '-'}</p>
                             </div>
                         </div>
                     </div>
@@ -840,16 +1157,16 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                 <div className="min-w-0">
                                     <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-none">Bapak</p>
                                     <div className="relative group/bapak">
-                                        <p className="text-[11px] font-bold text-slate-800 leading-none truncate cursor-help" title={student.father_name}>{student.father_name || '-'}</p>
-                                        <div className="absolute left-0 bottom-full mb-1 hidden group-hover/bapak:block z-[10000] w-max max-w-[200px] bg-slate-800 text-white text-[9px] font-bold px-2 py-1.5 rounded-lg shadow-xl animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+                                        <p className="text-[11px] font-bold text-slate-800 leading-none truncate cursor-help">{student.father_name || '-'}</p>
+                                        <div className="absolute left-0 bottom-full mb-1 hidden group-hover/bapak:block z-10000 w-max max-50 bg-slate-800 text-white text-[9px] font-bold px-2 py-1.5 rounded-lg shadow-xl animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
                                             {student.father_name}
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-1.5 bg-emerald-50 px-2 py-1.5 rounded-lg border border-emerald-100 shrink-0">
-                                 <MessageCircle className="w-2.5 h-2.5 text-emerald-600" />
-                                 <span className="text-[10px] font-black text-emerald-700 font-mono tracking-tighter">{student.father_phone || '-'}</span>
+                            <div className="flex items-center gap-1.5 bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200 shrink-0">
+                                 <MessageCircle className="w-2.5 h-2.5 text-slate-500" />
+                                 <span className="text-[10px] font-black text-slate-700 font-mono tracking-tighter">{student.father_phone || '-'}</span>
                             </div>
                         </div>
 
@@ -857,33 +1174,33 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                         <div className="flex items-center justify-between gap-2.5 p-2.5 bg-slate-50/30 rounded-xl border-2 border-slate-100">
                             <div className="flex items-center gap-2.5 min-w-0">
                                 <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-none border border-slate-100 shrink-0">
-                                    <User className="w-3.5 h-3.5 text-rose-400" />
+                                    <User className="w-3.5 h-3.5 text-slate-500" />
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-none">Ibu</p>
                                     <div className="relative group/ibu">
-                                        <p className="text-[11px] font-bold text-slate-800 leading-none truncate cursor-help" title={student.mother_name}>{student.mother_name || '-'}</p>
-                                        <div className="absolute left-0 bottom-full mb-1 hidden group-hover/ibu:block z-[10000] w-max max-w-[200px] bg-slate-800 text-white text-[9px] font-bold px-2 py-1.5 rounded-lg shadow-xl animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+                                        <p className="text-[11px] font-bold text-slate-800 leading-none truncate cursor-help">{student.mother_name || '-'}</p>
+                                        <div className="absolute left-0 bottom-full mb-1 hidden group-hover/ibu:block z-10000 w-max max-50 bg-slate-800 text-white text-[9px] font-bold px-2 py-1.5 rounded-lg shadow-xl animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
                                             {student.mother_name}
                                         </div>
                                     </div>
                                 </div>
                         </div>
-                        <div className="flex items-center gap-1.5 bg-pink-50 px-2 py-1.5 rounded-lg border border-pink-100 shrink-0">
-                                 <MessageCircle className="w-2.5 h-2.5 text-pink-600" />
-                                 <span className="text-[10px] font-black text-pink-700 font-mono tracking-tighter">{student.mother_phone || '-'}</span>
+                        <div className="flex items-center gap-1.5 bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200 shrink-0">
+                                 <MessageCircle className="w-2.5 h-2.5 text-slate-500" />
+                                 <span className="text-[10px] font-black text-slate-700 font-mono tracking-tighter">{student.mother_phone || '-'}</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Section 3: Alamat */}
-                    <div className="flex items-start gap-3 p-3 bg-slate-50/30 rounded-xl border-2 border-slate-100 min-h-[70px]">
+                    <div className="flex items-start gap-3 p-3 bg-slate-50/30 rounded-xl border-2 border-slate-100 min-17.5">
                         <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-none border border-slate-100 shrink-0">
-                            <Home className="w-4 h-4 text-amber-500" />
+                            <Home className="w-4 h-4 text-slate-500" />
                         </div>
                         <div className="min-w-0">
                             <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest mb-1.5 leading-none">Alamat Lengkap</p>
-                            <p className="text-[10px] font-bold text-slate-600 leading-normal break-words capitalize">
+                            <p className="text-[10px] font-bold text-slate-600 leading-normal wrap-break-words uppercase">
                                 {[
                                     student.address,
                                     student.rt_rw ? (student.rt_rw.includes('/') ? `RT ${student.rt_rw.split('/')[0].trim()} / RW ${student.rt_rw.split('/')[1].trim()}` : `RT/RW ${student.rt_rw}`) : '', 
@@ -899,6 +1216,63 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
             </div>
         </div>
     );
+  };
+
+  const [halaqahToDelete, setHalaqahToDelete] = useState<Halaqah | null>(null);
+  const [teachers, setTeachers] = useState<UserProfile[]>([]);
+
+  // --- Halaqah Management State ---
+  const [isHalaqahFormOpen, setIsHalaqahFormOpen] = useState(false);
+  const [isHalaqahDetailOpen, setIsHalaqahDetailOpen] = useState(false);
+  const [selectedHalaqahData, setSelectedHalaqahData] = useState<Halaqah | null>(null);
+
+  const availableTeachersForModal = useMemo(() => {
+      const assignedTeacherIds = new Set(halaqahs.map(h => h.teacher_id).filter(Boolean));
+      if (selectedHalaqahData) {
+          const unassignedTeachers = teachers.filter(t => !assignedTeacherIds.has(t.id));
+          const currentTeacher = teachers.find(t => t.id === selectedHalaqahData.teacher_id);
+          if (currentTeacher && !unassignedTeachers.some(t => t.id === currentTeacher.id)) {
+              return [...unassignedTeachers, currentTeacher];
+          }
+          return unassignedTeachers;
+      }
+      return teachers.filter(t => !assignedTeacherIds.has(t.id));
+  }, [halaqahs, teachers, selectedHalaqahData]);
+
+  const handleCreateOrUpdateHalaqah = async (data: { name: string, teacher_id: string }) => {
+      setLoading(true);
+      try {
+          const payload = { ...data, teacher_id: data.teacher_id || null } as any;
+          if (selectedHalaqahData) {
+              await updateHalaqah(selectedHalaqahData.id, payload, currentUser);
+              addNotification({ type: 'success', title: 'Berhasil', message: `Halaqah diperbarui.` });
+          } else {
+              await createHalaqah({ ...payload, tenant_id: tenantId }, currentUser);
+              addNotification({ type: 'success', title: 'Berhasil', message: `Halaqah baru dibuat.` });
+          }
+          await fetchData();
+          setIsHalaqahFormOpen(false);
+          setSelectedHalaqahData(null);
+      } catch (error) {
+          addNotification({ type: 'error', title: 'Gagal', message: 'Gagal menyimpan halaqah.' });
+      } finally {
+          setLoading(false);
+      }
+  };
+
+  const handleDeleteHalaqahConfirm = async () => {
+      if (!halaqahToDelete) return;
+      setLoading(true);
+      try {
+          await deleteHalaqah(halaqahToDelete.id, halaqahToDelete.name, currentUser);
+          addNotification({ type: 'success', title: 'Berhasil', message: 'Halaqah dihapus.' });
+          await fetchData();
+      } catch (error: any) {
+          addNotification({ type: 'error', title: 'Gagal', message: error.message || 'Gagal menghapus.' });
+      } finally {
+          setLoading(false);
+          setHalaqahToDelete(null);
+      }
   };
 
   const fetchData = async (isBackground = false) => {
@@ -931,6 +1305,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
         const hFullMap = new Map(enrichedHalaqahs.map(h => [h.id, h]));
         const classMap = new Map(classData.map(c => [c.id, c.name]));
         
+        setTeachers(usersData.filter(u => u.role === UserRole.TEACHER));
         setHalaqahs(enrichedHalaqahs);
         halaqahCache = enrichedHalaqahs;
         classCache = sortedClasses;
@@ -1010,8 +1385,27 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
     if (!formData.parentEmail.trim()) errors.parentEmail = 'Email wajib diisi.';
     if (!formData.parentEmail.includes('@')) errors.parentEmail = 'Format email tidak valid.';
     
+    if (formData.nis && formData.nis.trim() !== '') {
+        const existingNis = rekapData.find(s => s.nis === formData.nis.trim());
+        if (existingNis) {
+            if (!isEditMode || (isEditMode && selectedStudent?.id !== existingNis.id)) {
+                errors.nis = 'NIS sudah terdaftar, silakan gunakan NIS yang lain.';
+            }
+        }
+    }
+    
     if (Object.keys(errors).length > 0) {
         setFormErrors(errors);
+        
+        setTimeout(() => {
+            const firstErrorKey = Object.keys(errors)[0];
+            const errorElement = document.getElementById(`input-${firstErrorKey}`);
+            if (errorElement) {
+                errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                errorElement.focus({ preventScroll: true });
+            }
+        }, 100);
+        
         return;
     }
 
@@ -1058,7 +1452,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
             // Pastikan email selalu valid: gunakan email form, NIS, atau UUID sebagai fallback
             const safeNis = formData.nis && formData.nis.trim().length > 0 ? formData.nis.trim() : null;
             const safeEmail = formData.parentEmail?.trim() 
-                || (safeNis ? `${safeNis}@qurma.local` : `santri_${Date.now()}@qurma.local`);
+                || (safeNis ? `${safeNis}@qurma.com` : `santri_${Date.now()}@qurma.com`);
             const safePassword = (safeNis && safeNis.length >= 6) 
                 ? safeNis 
                 : `qurma_${Date.now().toString().slice(-6)}`;
@@ -1449,8 +1843,8 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
     const greenFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } };
 
     // --- SHEET 1: Data Santri ---
-    const ws1 = workbook.addWorksheet("Data Santri");
-    ws1.columns = [
+    const ws0 = workbook.addWorksheet("Data Santri");
+    ws0.columns = [
         { header: "No.", key: "no", width: 8 },
         { header: "NIS", key: "nis", width: 15 },
         { header: "Nama Santri", key: "name", width: 40 },
@@ -1469,116 +1863,194 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
         { header: "Kab/Kota", key: "city", width: 20 }
     ];
 
-    // Style Header Row
-    const headerRow = ws1.getRow(1);
-    headerRow.eachCell(cell => {
+    ws0.getRow(1).eachCell(cell => {
+        cell.fill = headerFill; cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' }; cell.border = borderStyle;
+    });
+
+    const sortedStudents = [...filteredData].sort((a, b) => {
+        const hA = halaqahs.find(h => h.id === a.halaqah_id)?.name || '';
+        const hB = halaqahs.find(h => h.id === b.halaqah_id)?.name || '';
+        const hComp = hA.localeCompare(hB);
+        if (hComp !== 0) return hComp;
+        return a.full_name.localeCompare(b.full_name);
+    });
+
+    sortedStudents.forEach((s, idx) => {
+        const halaqahObj = halaqahs.find(h => h.id === s.halaqah_id);
+        const rowIdx = idx + 2;
+        const r = ws0.addRow({
+            no: idx + 1, nis: s.nis || '-', name: s.full_name,
+            gender: s.gender === 'L' ? 'Laki-laki' : 'Perempuan',
+            teacher: { formula: `'Data Halaqah'!E${rowIdx}`, result: halaqahObj?.teacher_name || '-' },
+            halaqah: { formula: `'Data Halaqah'!F${rowIdx}`, result: halaqahObj?.name || '-' },
+            email: s.parent_email || '-', father: s.father_name || '-', mother: s.mother_name || '-',
+            hp_father: s.father_phone || '-', hp_mother: s.mother_phone || '-',
+            address: s.address || '-', rt_rw: s.rt_rw || '-', village: s.village || '-',
+            district: s.district || '-', city: (s.city || '-').replace(/^(KABUPATEN|KOTA|KAB\.|KAB)\s+/i, '').trim()
+        });
+        r.eachCell((cell, colNumber) => {
+            cell.border = borderStyle;
+            if (colNumber <= 3) cell.fill = yellowFill;
+            else if (colNumber === 6) cell.fill = greenFill;
+        });
+    });
+
+    // --- SHEET 2: Data Halaqah ---
+    const ws1 = workbook.addWorksheet("Data Halaqah");
+    ws1.columns = [
+        { header: "No.", key: "no", width: 8 },
+        { header: "NIS", key: "nis", width: 15 },
+        { header: "Nama Santri", key: "name", width: 40 },
+        { header: "Jumlah Hafalan", key: "hafalan", width: 20 },
+        { header: "Pengampu", key: "teacher", width: 25 },
+        { header: "Halaqah", key: "halaqah", width: 25 },
+        { header: "SyncKey", key: "sync", width: 5 }
+    ];
+
+    ws1.getRow(1).eachCell(cell => {
         cell.fill = headerFill;
         cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
-        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.alignment = { horizontal: 'center' };
         cell.border = borderStyle;
     });
 
-    filteredData.forEach((s, idx) => {
+    const halaqahNames = halaqahs.map(h => h.name);
+    const halaqahDropdown = `"${halaqahNames.join(',')}"`;
+
+    // --- Referensi Data (Hidden) ---
+    const wsRef = workbook.addWorksheet("Referensi_Data");
+    wsRef.columns = [
+        { header: "Halaqah", key: "halaqah", width: 25 },
+        { header: "Pengampu", key: "teacher", width: 25 }
+    ];
+    halaqahs.forEach(h => {
+        wsRef.addRow({ halaqah: h.name, teacher: h.teacher_name || '-' });
+    });
+    wsRef.state = 'hidden';
+
+    // Pre-calculate SyncKey per halaqah (tracks occurrence count per halaqah name)
+    const syncKeyCounters: Record<string, number> = {};
+    sortedStudents.forEach((s, idx) => {
+        const halaqahObj = halaqahs.find(h => h.id === s.halaqah_id);
+        const hName = halaqahObj?.name || '-';
+        const rowIdx = idx + 2;
+
+        // Track occurrence count for this halaqah
+        syncKeyCounters[hName] = (syncKeyCounters[hName] || 0) + 1;
+        const syncKeyValue = `${hName}_${syncKeyCounters[hName]}`;
+
         const r = ws1.addRow({
             no: idx + 1,
             nis: s.nis || '-',
             name: s.full_name,
-            gender: s.gender === 'L' ? 'Laki-laki' : 'Perempuan',
-            teacher: s.halaqah_teacher_name || '-',
-            halaqah: s.halaqah_name || '-',
-            email: s.parent_email || '-',
-            father: s.father_name || '-',
-            mother: s.mother_name || '-',
-            hp_father: s.father_phone || '-',
-            hp_mother: s.mother_phone || '-',
-            address: s.address || '-',
-            rt_rw: s.rt_rw || '-',
-            village: s.village || '-',
-            district: s.district || '-',
-            city: (s.city || '-').replace(/^(KABUPATEN|KOTA|KAB\.|KAB)\s+/i, '').trim()
+            hafalan: `${s.current_juz || 0} Juz`,
+            halaqah: hName,
+            sync: { formula: `F${rowIdx}&"_"&COUNTIF($F$2:F${rowIdx},F${rowIdx})`, result: syncKeyValue }
         });
 
-        // Style data cells
-        r.eachCell((cell, colNumber) => {
-            cell.border = borderStyle;
-            if (colNumber <= 3) {
-                cell.fill = yellowFill;
-            } else if (colNumber === 6) {
-                cell.fill = greenFill;
-            }
-        });
+        r.getCell(5).value = { formula: `IFERROR(VLOOKUP(F${rowIdx},Referensi_Data!$A:$B,2,FALSE),"-")`, result: halaqahObj?.teacher_name || '-' };
+
+        r.getCell(1).fill = yellowFill; r.getCell(1).border = borderStyle;
+        r.getCell(2).fill = yellowFill; r.getCell(2).border = borderStyle;
+        r.getCell(3).fill = yellowFill; r.getCell(3).border = borderStyle;
+        r.getCell(4).fill = yellowFill; r.getCell(4).border = borderStyle;
+        r.getCell(5).border = borderStyle;
+        r.getCell(6).fill = greenFill; r.getCell(6).border = borderStyle;
+        r.getCell(6).dataValidation = {
+            type: 'list',
+            allowBlank: true,
+            formulae: [halaqahDropdown]
+        };
+        r.getCell(7).border = borderStyle;
     });
+    ws1.getColumn(7).hidden = true;
 
-    // --- SHEET 2: Rangkuman Per Halaqah (Grid Style) ---
+    // --- SHEET 3: Rangkuman Halaqah ---
     const ws2 = workbook.addWorksheet("Rangkuman Halaqah");
     const BLOCKS_PER_ROW = 3;
     const COLUMNS_PER_BLOCK = 4;
-    const FIXED_SLOTS = 15; // Adjusted for student list
+    const FIXED_SLOTS = 15;
 
     const sortedHalaqahs = [...halaqahs].sort((a, b) => a.name.localeCompare(b.name));
+
+    const getExcelCol = (idx: number) => {
+        let letter = '';
+        while (idx >= 0) { letter = String.fromCharCode((idx % 26) + 65) + letter; idx = Math.floor(idx / 26) - 1; }
+        return letter;
+    };
 
     let currentBaseRow = 1;
     for (let i = 0; i < sortedHalaqahs.length; i += BLOCKS_PER_ROW) {
         const rowHalaqahs = sortedHalaqahs.slice(i, i + BLOCKS_PER_ROW);
 
-        // Header Labels
+        // Row 0: Labels (Halaqah)
         rowHalaqahs.forEach((h, idx) => {
             const colStart = idx * COLUMNS_PER_BLOCK;
-            
-            // Halaqah Name
-            const cH = ws2.getCell(currentBaseRow, colStart + 2);
-            cH.value = "Halaqah :";
-            cH.font = { bold: true };
-            cH.border = borderStyle;
-            
-            const cHN = ws2.getCell(currentBaseRow, colStart + 3);
-            cHN.value = h.name;
-            cHN.fill = greenFill;
-            cHN.font = { bold: true };
-            cHN.border = borderStyle;
+            const c1 = ws2.getCell(currentBaseRow, colStart + 1);
+            c1.value = ""; c1.font = { bold: true }; c1.border = borderStyle;
+            const c2 = ws2.getCell(currentBaseRow, colStart + 2);
+            c2.value = "Halaqah :"; c2.font = { bold: true }; c2.border = borderStyle;
+            const c3 = ws2.getCell(currentBaseRow, colStart + 3);
+            c3.value = h.name; c3.fill = greenFill; c3.border = borderStyle; c3.font = { bold: true };
+        });
 
-            // Teacher Name
-            const cT = ws2.getCell(currentBaseRow + 1, colStart + 2);
-            cT.value = "Pengampu :";
-            cT.font = { bold: true };
-            cT.border = borderStyle;
-            
-            const cTN = ws2.getCell(currentBaseRow + 1, colStart + 3);
-            cTN.value = h.teacher_name || '-';
-            cTN.fill = greenFill;
-            cTN.font = { bold: true };
-            cTN.border = borderStyle;
+        // Row 1: Labels (Pengampu)
+        rowHalaqahs.forEach((h, idx) => {
+            const colStart = idx * COLUMNS_PER_BLOCK;
+            const c1 = ws2.getCell(currentBaseRow + 1, colStart + 1);
+            c1.value = ""; c1.border = borderStyle;
+            const c2 = ws2.getCell(currentBaseRow + 1, colStart + 2);
+            c2.value = "Pengampu :"; c2.font = { bold: true }; c2.border = borderStyle;
+            const c3 = ws2.getCell(currentBaseRow + 1, colStart + 3);
+            const hNameEscaped = h.name.replace(/"/g, '""');
+            c3.value = { 
+                formula: `IFERROR(VLOOKUP("${hNameEscaped}", Referensi_Data!$A:$B, 2, FALSE), "-")`, 
+                result: h.teacher_name || '-' 
+            };
+            c3.fill = greenFill; c3.font = { bold: true }; c3.border = borderStyle;
+        });
 
-            // Table Headers
+        // Row 2: Headers
+        rowHalaqahs.forEach((h, idx) => {
+            const colStart = idx * COLUMNS_PER_BLOCK;
             ["No.", "NIS", "Nama Santri"].forEach((text, tIdx) => {
                 const c = ws2.getCell(currentBaseRow + 2, colStart + 1 + tIdx);
                 c.value = text;
-                c.fill = headerFill;
-                c.font = { color: { argb: 'FFFFFFFF' }, bold: true };
-                c.border = borderStyle;
-                c.alignment = { horizontal: 'center' };
+                c.fill = headerFill; c.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+                c.border = borderStyle; c.alignment = { horizontal: 'center' };
             });
         });
 
-        // Student Slots
+        // Student Rows (15 Slots)
         for (let r = 0; r < FIXED_SLOTS; r++) {
             const excelRowIdx = currentBaseRow + 3 + r;
             rowHalaqahs.forEach((h, idx) => {
                 const colStart = idx * COLUMNS_PER_BLOCK;
-                const hStudents = rekapData.filter(s => s.halaqah_id === h.id).sort((a, b) => a.full_name.localeCompare(b.full_name));
+                const hNameEscaped = h.name.replace(/"/g, '""');
+                const targetKey = `"${hNameEscaped}_${r + 1}"`;
+
+                const hStudents = sortedStudents.filter(s => s.halaqah_id === h.id);
                 const s = hStudents[r];
 
+                // NIS is col colStart+2, so use that letter for the IF formula
+                const nisColLetter = getExcelCol(colStart + 1); // col B in each block (0-indexed: colStart+1)
                 const cellNo = ws2.getCell(excelRowIdx, colStart + 1);
-                cellNo.value = s ? r + 1 : "";
+                cellNo.value = { formula: `IF(${getExcelCol(colStart + 1)}${excelRowIdx}="", "", ${r + 1})`, result: s ? (r + 1) : undefined };
                 cellNo.border = borderStyle;
-                cellNo.alignment = { horizontal: 'center' };
 
                 const cellNis = ws2.getCell(excelRowIdx, colStart + 2);
-                cellNis.value = s ? s.nis : "";
+                cellNis.value = { 
+                    formula: `IFERROR(INDEX('Data Halaqah'!$B:$B, MATCH(${targetKey}, 'Data Halaqah'!$G:$G, 0)), "")`,
+                    result: s ? (s.nis || "-") : undefined
+                };
                 cellNis.border = borderStyle;
 
                 const cellName = ws2.getCell(excelRowIdx, colStart + 3);
-                cellName.value = s ? s.full_name : "";
+                cellName.value = { 
+                    formula: `IFERROR(INDEX('Data Halaqah'!$C:$C, MATCH(${targetKey}, 'Data Halaqah'!$G:$G, 0)), "")`,
+                    result: s ? s.full_name : undefined
+                };
                 cellName.border = borderStyle;
             });
         }
@@ -1676,9 +2148,30 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                 }
                 seenNisInExcel.add(nis);
 
+                // Map Halaqah from Excel
+                const importedHalaqahId = halaqahMap.get(String(row['Halaqah'] || '').toLowerCase());
+
                 // Check for duplicate NIS in system
-                if (existingNis.has(nis)) {
-                    errors.push(`Baris ${i + 2} (${studentName}): NIS "${nis}" sudah terdaftar di sistem.`);
+                const existingStudent = rekapData.find(s => String(s.nis).trim() === nis);
+                if (existingStudent) {
+                    if (existingStudent.halaqah_id !== importedHalaqahId) {
+                        try {
+                            // Rate limit protection
+                            if (i > 0) await new Promise(res => setTimeout(res, 300));
+                            
+                            await updateStudent({
+                                id: existingStudent.id,
+                                halaqah_id: importedHalaqahId
+                            }, currentUser);
+                            successCount++;
+                        } catch (err: any) {
+                            errors.push(`Baris ${i + 2} (${studentName}): Gagal pindah halaqah.`);
+                        }
+                    } else {
+                        // Just silently skip if data is already correct
+                        successCount++;
+                    }
+                    
                     setImportProgress(prev => ({ ...prev, current: i + 1, errors: [...errors] }));
                     continue;
                 }
@@ -1772,48 +2265,82 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
 
   return (
     <div className="space-y-4 animate-fade-in pb-10">
-      <div className="relative group/scroll">
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-4">
+          <div className="flex items-center justify-between px-1 mb-2">
+            <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-widest">Daftar Halaqah</h3>
+            {!isReadOnly && (
+                <button 
+                  onClick={() => { setSelectedHalaqahData(null); setIsHalaqahFormOpen(true); }}
+                  className="h-9 flex items-center gap-2 px-5 font-black text-[10px] uppercase tracking-widest rounded-xl bg-emerald-600 text-white shadow-none hover:bg-emerald-700 transition-all active:scale-95 whitespace-nowrap"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Tambah Halaqah
+                </button>
+            )}
+          </div>
+          <div className="relative group/scroll">
         {!loading && halaqahs.length > 0 && (
           <div className="flex gap-3 overflow-x-auto pb-4 pt-2 px-1 snap-x snap-mandatory no-scrollbar scroll-smooth">
             {/* TOP TOTAL CARD */}
             <div 
-              className={`min-w-[180px] md:min-w-[200px] flex-none p-4 rounded-xl border-2 transition-all group overflow-hidden relative cursor-pointer snap-start ${filterHalaqah === 'all' ? 'bg-emerald-600 border-emerald-600 shadow-none scale-[1.02]' : 'bg-white border-slate-300 shadow-none hover:border-emerald-400'}`}
+              className={`w-35 md:w-37.5 h-28.75 md:h-30 flex-none p-4 rounded-xl border-2 transition-all group overflow-hidden relative cursor-pointer snap-start flex flex-col justify-between ${filterHalaqah === 'all' ? 'bg-emerald-600 border-emerald-600 shadow-none scale-[1.02]' : 'bg-white border-slate-300 shadow-none hover:border-emerald-400'}`}
               onClick={() => setFilterHalaqah('all')}
             >
               <div className={`absolute top-0 right-0 w-16 h-16 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-110 ${filterHalaqah === 'all' ? 'bg-white/10' : 'bg-slate-50'}`}></div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-3">
+              <div className="relative z-10 h-full flex flex-col justify-between">
+                <div className="flex items-center justify-between">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-none ${filterHalaqah === 'all' ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-600'}`}>
                     <GraduationCap className="w-4 h-4" />
                   </div>
                   <span className={`text-[15px] font-black tracking-tight ${filterHalaqah === 'all' ? 'text-white' : 'text-emerald-600'}`}>{rekapData.length}</span>
                 </div>
-                <h4 className={`text-[10px] font-black uppercase tracking-tighter truncate leading-tight ${filterHalaqah === 'all' ? 'text-white' : 'text-slate-800'}`}>TOTAL SANTRI</h4>
-                <p className={`text-[8px] font-bold mt-1 uppercase tracking-widest truncate ${filterHalaqah === 'all' ? 'text-white/70' : 'text-slate-400'}`}>Seluruh Halaqah</p>
+                <div className="flex flex-col justify-end h-full">
+                  <h4 className={`text-[10px] font-black uppercase tracking-tighter truncate leading-tight ${filterHalaqah === 'all' ? 'text-white' : 'text-slate-800'}`}>TOTAL SANTRI</h4>
+                  <p className={`text-[8px] font-bold mt-1 uppercase tracking-widest truncate ${filterHalaqah === 'all' ? 'text-white/70' : 'text-slate-400'}`}>Seluruh Halaqah</p>
+                </div>
               </div>
             </div>
 
             {halaqahStats.map(stat => (
-
-            
-
-
-
               <div 
                 key={stat.id} 
-                className={`min-w-[180px] md:min-w-[200px] flex-none p-4 rounded-xl border-2 transition-all group overflow-hidden relative cursor-pointer snap-start ${filterHalaqah === stat.id ? 'bg-jade-600 border-jade-600 shadow-none scale-[1.02]' : 'bg-white border-slate-300 shadow-none hover:border-jade-400'}`}
+                className={`w-35 md:w-37.5 h-28.75 md:h-30 flex-none p-4 rounded-xl border-2 transition-all group overflow-hidden relative cursor-pointer snap-start flex flex-col justify-between ${filterHalaqah === stat.id ? 'bg-jade-600 border-jade-600 shadow-none scale-[1.02]' : 'bg-white border-slate-300 shadow-none hover:border-jade-400'}`}
                 onClick={() => setFilterHalaqah(prev => prev === stat.id ? 'all' : stat.id)}
               >
                 <div className={`absolute top-0 right-0 w-16 h-16 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-110 ${filterHalaqah === stat.id ? 'bg-white/10' : 'bg-slate-50'}`}></div>
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-none ${filterHalaqah === stat.id ? 'bg-white/20 text-white' : 'bg-jade-50 text-jade-600'}`}>
+                <div className="relative z-10 h-full flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-none ${filterHalaqah === stat.id ? 'bg-white/20 text-white' : 'bg-slate-50 text-slate-400'}`}>
                       <Users className="w-4 h-4" />
                     </div>
                     <span className={`text-[15px] font-black tracking-tight ${filterHalaqah === stat.id ? 'text-white' : 'text-jade-600'}`}>{stat.count}</span>
                   </div>
-                  <h4 className={`text-[10px] font-black uppercase tracking-tighter truncate leading-tight ${filterHalaqah === stat.id ? 'text-white' : 'text-slate-800'}`} title={stat.name}>{stat.name}</h4>
-                  <p className={`text-[8px] font-bold mt-1 uppercase tracking-widest truncate ${filterHalaqah === stat.id ? 'text-white/70' : 'text-slate-400'}`}>{stat.teacher_name}</p>
+                  <div className="flex flex-col h-full justify-end relative">
+                    <h4 className={`text-[10px] font-black uppercase tracking-tighter truncate leading-tight ${filterHalaqah === stat.id ? 'text-white' : 'text-slate-800'}`} title={stat.name}>{stat.name}</h4>
+                    <p className={`text-[8px] font-bold mt-1 uppercase tracking-widest truncate ${filterHalaqah === stat.id ? 'text-white/70' : 'text-slate-400'}`}>{stat.teacher_name}</p>
+                    
+                    {!isReadOnly && (
+                        <div className="flex justify-end items-center gap-1.5 mt-2">
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); setSelectedHalaqahData(halaqahs.find(h => h.id === stat.id) || null); setIsHalaqahDetailOpen(true); }}
+                                className={`p-1 rounded-md border shadow-sm ${filterHalaqah === stat.id ? 'bg-jade-500 border-jade-400 text-white hover:bg-jade-400' : 'bg-white border-slate-200 text-slate-500 hover:text-jade-600 hover:border-jade-300'}`} title="Detail Santri"
+                            >
+                                <Users className="w-3.5 h-3.5" />
+                            </button>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); setSelectedHalaqahData(halaqahs.find(h => h.id === stat.id) || null); setIsHalaqahFormOpen(true); }}
+                                className={`p-1 rounded-md border shadow-sm ${filterHalaqah === stat.id ? 'bg-jade-500 border-jade-400 text-white hover:bg-jade-400' : 'bg-white border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-300'}`} title="Edit Halaqah"
+                            >
+                                <Edit className="w-3.5 h-3.5" />
+                            </button>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); setHalaqahToDelete(halaqahs.find(h => h.id === stat.id) || null); }}
+                                className={`p-1 rounded-md border shadow-sm ${filterHalaqah === stat.id ? 'bg-jade-500 border-jade-400 text-white hover:bg-rose-400' : 'bg-white border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-300'}`} title="Hapus Halaqah"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -1822,144 +2349,93 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
 
         {/* INDICATOR FOR MORE (Visible if more than few halaqahs) */}
         {!loading && halaqahs.length > 3 && (
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-full bg-gradient-to-l from-slate-50/50 to-transparent pointer-events-none flex items-center justify-end pr-1 opacity-0 group-hover/scroll:opacity-100 transition-opacity">
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-full bg-linear-to-l from-slate-50/50 to-transparent pointer-events-none flex items-center justify-end pr-1 opacity-0 group-hover/scroll:opacity-100 transition-opacity">
              <ChevronRight className="w-4 h-4 text-slate-300 animate-pulse" />
           </div>
         )}
       </div>
 
-      <div className="flex flex-col w-full gap-2.5 md:gap-3 py-4 bg-white shrink-0 z-70 sticky top-0 border-b border-slate-100">
-        {/* ROW 1: SEARCH & ACTIONS (Desktop has All, Mobile has Secondary) */}
-        <div className="flex flex-row items-center gap-2 w-full">
-          <div className="relative group h-10 flex-1">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-jade-500 transition-colors" />
-            <input 
-              type="text" 
-              value={search} 
-              onChange={e => setSearch(e.target.value)} 
-              placeholder="Cari NIS atau Nama Santri..." 
-              className="w-full h-full pl-10 pr-4 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 transition-all text-[10px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-none"
-            />
+      <div className="flex flex-col xl:flex-row items-stretch xl:items-center w-full gap-2.5 md:gap-3 py-4 bg-white shrink-0 z-70 sticky top-0 border-b border-slate-100">
+        {/* SEARCH */}
+        <div className="relative group h-10 w-full xl:flex-1 xl:min-w-50">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-jade-500 transition-colors" />
+          <input 
+            type="text" 
+            value={search} 
+            onChange={e => setSearch(e.target.value)} 
+            placeholder="Cari NIS atau Nama Santri..." 
+            className="w-full h-full pl-10 pr-4 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-jade-50/50 focus:border-jade-500 transition-all text-[10px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-none"
+          />
+        </div>
+
+        {/* FILTERS & REFRESH */}
+        <div className="flex items-center gap-2 w-full xl:w-auto flex-none">
+          <div className="flex items-center gap-2 flex-1 xl:flex-none">
+            <select 
+                value={filterGender}
+                onChange={(e) => setFilterGender(e.target.value)}
+                className="h-10 flex-1 xl:flex-none text-[9px] font-black uppercase tracking-widest text-slate-500 border-2 border-slate-300 px-3 pr-8 outline-none bg-white rounded-xl appearance-none shadow-none xl:w-28"
+                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.75rem' }}
+            >
+                <option value="all">GENDER</option>
+                <option value="L">PUTRA</option>
+                <option value="P">PUTRI</option>
+            </select>
+            <select 
+                value={filterHalaqah}
+                onChange={(e) => setFilterHalaqah(e.target.value)}
+                className="h-10 flex-1 xl:flex-none text-[9px] font-black tracking-widest text-slate-500 border-2 border-slate-300 px-3 pr-8 outline-none bg-white rounded-xl appearance-none shadow-none xl:w-36 uppercase truncate"
+                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.75rem' }}
+            >
+                <option value="all">Pilih Halaqah</option>
+                {halaqahs.map(h => (
+                    <option key={h.id} value={h.id}>{h.name}</option>
+                ))}
+            </select>
           </div>
+          <button onClick={() => fetchData()} disabled={loading} className="h-10 w-10 flex-none flex items-center justify-center border-2 border-slate-300 bg-white text-slate-400 hover:text-jade-600 hover:border-jade-300 rounded-xl shadow-none transition-all active:scale-95 duration-200">
+            <RefreshCw className={`w-3.5 h-3.5 transition-transform duration-500 ${loading ? 'animate-spin' : ''}`} />
+          </button>
           {!isReadOnly && (
-            <div className="flex items-center gap-1 lg:gap-2 flex-none">
-               {/* Secondary Actions (Icons) */}
-               <div className="flex items-center gap-1 lg:gap-1.5">
-                  <button onClick={downloadTemplate} className="h-9 w-9 flex items-center justify-center border-2 border-slate-300 bg-white text-slate-400 hover:text-jade-600 rounded-xl shadow-none" title="Template">
+              <button onClick={() => setShowNisMobile(!showNisMobile)} className={`xl:hidden h-10 w-10 flex-none flex items-center justify-center border-2 transition-all rounded-xl shadow-none ${showNisMobile ? 'bg-jade-600 border-jade-600 text-white' : 'bg-white border-slate-300 text-slate-400'}`}>
+                {showNisMobile ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              </button>
+          )}
+        </div>
+
+        {/* ACTIONS */}
+        {!isReadOnly && (
+          <div className="flex flex-row items-center gap-2 flex-wrap sm:flex-nowrap xl:flex-none w-full xl:w-auto mt-2 xl:mt-0">
+             <div className="flex items-center gap-1.5 flex-none justify-center">
+                {rekapData.length === 0 && (
+                  <button onClick={downloadTemplate} className="h-10 w-10 flex items-center justify-center border-2 border-slate-300 bg-white text-slate-400 hover:text-jade-600 rounded-xl shadow-none" title="Template">
                     <FileDown className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => fileInputRef.current?.click()} className="h-9 w-9 flex items-center justify-center border-2 border-emerald-300 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-xl shadow-none" title="Import">
-                    <Upload className="w-3.5 h-3.5" />
-                  </button>
-                  <button onClick={downloadFullExport} className="h-9 w-9 flex items-center justify-center border-2 border-slate-300 bg-white text-slate-400 hover:text-jade-600 rounded-xl shadow-none" title="Export">
-                    <Download className="w-3.5 h-3.5" />
-                  </button>
-               </div>
-               
-               {/* Primary Actions (Desktop Only here) */}
-               <div className="hidden lg:flex items-center gap-2">
-                  <button 
-                    onClick={() => { resetForm(); setShowAddModal(true); }}
-                    className="h-10 flex items-center gap-2 px-5 font-black text-[10px] uppercase tracking-widest rounded-xl bg-emerald-600 text-white shadow-none hover:bg-emerald-700 transition-all active:scale-95 whitespace-nowrap"
-                  >
-                    <UserPlus className="w-3.5 h-3.5" /> <span>TAMBAH SANTRI</span>
-                  </button>
-                  <button 
-                      onClick={() => setIsGlobalTrackingOpen(true)}
-                      className="h-10 flex items-center gap-2 px-5 font-black text-[10px] uppercase tracking-widest rounded-xl bg-jade-600 text-white shadow-none hover:bg-jade-700 transition-all active:scale-95 whitespace-nowrap"
-                  >
-                      <Timer className="w-3.5 h-3.5" /> <span>TRACKING</span>
-                  </button>
-               </div>
-            </div>
-          )}
-        </div>
-
-        {/* ROW 2: PRIMARY ACTIONS (Mobile Only) */}
-        {!isReadOnly && (
-          <div className="flex flex-row lg:hidden items-center gap-2 w-full">
-            <button 
-              onClick={() => { resetForm(); setShowAddModal(true); }}
-              className="h-10 flex-1 flex items-center justify-center gap-2 px-4 font-black text-[10px] uppercase tracking-widest rounded-xl bg-emerald-600 text-white shadow-none hover:bg-emerald-700 transition-all active:scale-95 whitespace-nowrap"
-            >
-              <UserPlus className="w-3.5 h-3.5" /> <span>TAMBAH SANTRI</span>
-            </button>
-            <button 
-                onClick={() => setIsGlobalTrackingOpen(true)}
-                className="h-10 flex-1 flex items-center justify-center gap-2 px-4 font-black text-[10px] uppercase tracking-widest rounded-xl bg-jade-600 text-white shadow-none hover:bg-jade-700 transition-all active:scale-95 whitespace-nowrap"
-            >
-                <Timer className="w-3.5 h-3.5" /> <span>TRACKING</span>
-            </button>
+                )}
+                <button onClick={() => fileInputRef.current?.click()} className="h-10 w-10 flex items-center justify-center border-2 border-emerald-300 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-xl shadow-none" title="Import">
+                  <Upload className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={downloadFullExport} className="h-10 w-10 flex items-center justify-center border-2 border-slate-300 bg-white text-slate-400 hover:text-jade-600 rounded-xl shadow-none" title="Export">
+                  <Download className="w-3.5 h-3.5" />
+                </button>
+             </div>
+             
+             <div className="flex items-center gap-2 flex-1 sm:flex-none xl:flex-none">
+                <button 
+                  onClick={() => { resetForm(); setShowAddModal(true); }}
+                  className="h-10 flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 font-black text-[10px] uppercase tracking-widest rounded-xl bg-emerald-600 text-white shadow-none hover:bg-emerald-700 transition-all active:scale-95 whitespace-nowrap"
+                >
+                  <UserPlus className="w-3.5 h-3.5" /> <span>TAMBAH SANTRI</span>
+                </button>
+                <button 
+                    onClick={() => setIsGlobalTrackingOpen(true)}
+                    className="h-10 flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 font-black text-[10px] uppercase tracking-widest rounded-xl bg-jade-600 text-white shadow-none hover:bg-jade-700 transition-all active:scale-95 whitespace-nowrap"
+                >
+                    <Timer className="w-3.5 h-3.5" /> <span>TRACKING</span>
+                </button>
+             </div>
           </div>
         )}
-
-        {/* ROW 3 (Mobile) / ROW 2 (Desktop): FILTERS & UTILITIES */}
-        <div className="flex flex-row items-center gap-2.5 lg:gap-3 w-full">
-          {isReadOnly ? (
-            /* SUPERVISOR FILTERS */
-            <div className="flex items-center gap-2 w-full">
-              <select 
-                  value={filterGender}
-                  onChange={(e) => setFilterGender(e.target.value)}
-                  className="h-10 flex-1 lg:flex-none text-[9px] font-black uppercase tracking-widest text-slate-500 border-2 border-slate-300 px-4 pr-8 outline-none bg-white rounded-xl appearance-none shadow-none lg:min-w-[120px]"
-                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.75rem' }}
-              >
-                  <option value="all">GENDER</option>
-                  <option value="L">PUTRA</option>
-                  <option value="P">PUTRI</option>
-              </select>
-              <select 
-                  value={filterHalaqah}
-                  onChange={(e) => setFilterHalaqah(e.target.value)}
-                  className="h-10 flex-1 lg:flex-none text-[9px] font-black uppercase tracking-widest text-slate-500 border-2 border-slate-300 px-4 pr-8 outline-none bg-white rounded-xl appearance-none shadow-none lg:min-w-[140px] capitalize"
-                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '0.75rem' }}
-              >
-                  <option value="all">Pilih Halaqah</option>
-                  {halaqahs.map(h => (
-                      <option key={h.id} value={h.id}>{h.name}</option>
-                  ))}
-              </select>
-              <button onClick={() => fetchData()} disabled={loading} className="h-10 w-10 flex items-center justify-center border border-slate-100 bg-white text-slate-400 hover:text-jade-600 rounded-full shadow-sm flex-none">
-                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 w-full">
-              <div className="flex flex-1 items-center gap-2">
-                <select 
-                    value={filterGender}
-                    onChange={(e) => setFilterGender(e.target.value)}
-                    className="h-9 flex-1 lg:flex-none text-[8.5px] lg:text-[9px] font-black uppercase tracking-tight lg:tracking-widest text-slate-500 border-2 border-slate-300 px-3 lg:px-4 pr-7 lg:pr-8 outline-none bg-white rounded-xl appearance-none shadow-none lg:min-w-[110px]"
-                    style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.65rem center', backgroundSize: '0.65rem' }}
-                >
-                    <option value="all">GENDER</option>
-                    <option value="L">PUTRA</option>
-                    <option value="P">PUTRI</option>
-                </select>
-                <select 
-                    value={filterHalaqah}
-                    onChange={(e) => setFilterHalaqah(e.target.value)}
-                    className="h-9 flex-1 lg:flex-none text-[8.5px] lg:text-[9px] font-black uppercase tracking-tight lg:tracking-widest text-slate-500 border-2 border-slate-300 px-3 lg:px-4 pr-7 lg:pr-8 outline-none bg-white rounded-xl appearance-none shadow-none lg:min-w-[130px] capitalize"
-                    style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2394a3b8\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.65rem center', backgroundSize: '0.65rem' }}
-                >
-                    <option value="all">Pilih Halaqah</option>
-                    {halaqahs.map(h => (
-                        <option key={h.id} value={h.id}>{h.name}</option>
-                    ))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-1.5 flex-none ml-auto">
-                <button onClick={() => fetchData()} disabled={loading} className="h-9 w-9 flex items-center justify-center border-2 border-slate-300 bg-white text-slate-400 hover:text-jade-600 rounded-xl shadow-none">
-                  <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-                </button>
-                <button onClick={() => setShowNisMobile(!showNisMobile)} className={`lg:hidden h-9 w-9 flex items-center justify-center border-2 transition-all rounded-xl shadow-none ${showNisMobile ? 'bg-jade-600 border-jade-600 text-white' : 'bg-white border-slate-300 text-slate-400'}`}>
-                  {showNisMobile ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
         <input type="file" ref={fileInputRef} onChange={handleImportExcel} className="hidden" accept=".xlsx, .xls" />
       </div>
 
@@ -1968,14 +2444,14 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
           <table className="w-full border-separate border-spacing-0">
             <thead className="sticky top-0 z-40 bg-white">
               <tr>
-                <th className="px-2 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-l border-r border-black sticky left-0 z-60 bg-slate-300 w-[40px] md:w-[45px] min-w-[40px] md:min-w-[45px]">NO</th>
-                <th className={`px-1 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black sticky left-[40px] md:left-[45px] z-60 bg-slate-300 w-[65px] md:w-[100px] min-w-[65px] md:min-w-[100px] ${!showNisMobile ? 'hidden md:table-cell' : ''}`}>NIS</th>
-                <th className={`px-2 md:px-3 py-4 text-left text-[9.5px] whitespace-nowrap font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black sticky z-60 bg-slate-300 w-[115px] md:w-[140px] lg:w-auto ${!showNisMobile ? 'left-[40px] md:left-[145px]' : 'left-[105px] md:left-[145px]'}`}>NAMA SANTRI</th>
+                <th className="px-2 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-l border-r border-black sticky left-0 z-60 bg-slate-300 w-10 md:w-11.25 min-10 md:min-11.25">NO</th>
+                <th className={`px-1 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black sticky left-10 md:left-11.25 z-60 bg-slate-300 w-16.25 md:w-25 min-16.25 md:min-25 ${!showNisMobile ? 'hidden md:table-cell' : ''}`}>NIS</th>
+                <th className={`px-2 md:px-3 py-4 text-left text-[9.5px] whitespace-nowrap font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black sticky z-60 bg-slate-300 w-28.75 md:w-35 lg:w-auto ${!showNisMobile ? 'left-10 md:left-36.25' : 'left-26.25 md:left-36.25'}`}>NAMA SANTRI</th>
                 <th className="px-3 py-4 text-center text-[9.5px] whitespace-nowrap font-black text-amber-600 uppercase tracking-widest border-t border-b border-r border-amber-600 bg-amber-50 w-32">JENIS KELAMIN</th>
-                <th className="px-6 py-4 text-left text-[9.5px] font-black text-emerald-600 uppercase tracking-widest border-t border-b border-r border-emerald-600 bg-emerald-50 max-w-[130px]">PENGAMPU</th>
-                <th className="px-6 py-4 text-left text-[9.5px] font-black text-blue-600 uppercase tracking-widest border-t border-b border-r border-blue-600 bg-blue-50 max-w-[110px]">HALAQAH</th>
-                <th className={`px-2 md:px-4 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black bg-slate-300 ${isReadOnly ? 'w-24' : 'min-w-[185px] md:min-w-[240px]'}`}>
-                  {isReadOnly ? 'INFO' : 'AKSI'}
+                <th className="px-6 py-4 text-left text-[9.5px] font-black text-emerald-600 uppercase tracking-widest border-t border-b border-r border-emerald-600 bg-emerald-50 max-32.5">PENGAMPU</th>
+                <th className="px-6 py-4 text-left text-[9.5px] font-black text-blue-600 uppercase tracking-widest border-t border-b border-r border-blue-600 bg-blue-50 max-27.5">HALAQAH</th>
+                <th className={`px-2 md:px-4 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black bg-slate-300 ${isReadOnly ? 'w-32' : 'min-46.25 md:min-60'}`}>
+                  AKSI
                 </th>
               </tr>
             </thead>
@@ -1983,9 +2459,9 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
               {loading ? (
                   [...Array(5)].map((_, i) => (
                       <tr key={i}>
-                          <td className="sticky left-0 z-10 bg-white border-r-2 border-b border-slate-100 w-[40px] md:w-[45px]"><Skeleton className="h-4 w-4 mx-auto" /></td>
-                          <td className={`sticky left-[40px] md:left-[45px] z-10 bg-white border-r-2 border-b border-slate-100 w-[65px] md:w-[100px] ${!showNisMobile ? 'hidden md:table-cell' : ''}`}><Skeleton className="h-4 w-10 mx-auto" /></td>
-                          <td className={`sticky z-10 bg-white border-r-2 border-b border-slate-100 w-[115px] md:w-[140px] lg:w-auto ${!showNisMobile ? 'left-[40px] md:left-[145px]' : 'left-[105px] md:left-[145px]'}`}><Skeleton className="h-4 w-24" /></td>
+                          <td className="sticky left-0 z-10 bg-white border-r-2 border-b border-slate-100 w-10 md:w-11.25"><Skeleton className="h-4 w-4 mx-auto" /></td>
+                          <td className={`sticky left-10 md:left-11.25 z-10 bg-white border-r-2 border-b border-slate-100 w-16.25 md:w-25 ${!showNisMobile ? 'hidden md:table-cell' : ''}`}><Skeleton className="h-4 w-10 mx-auto" /></td>
+                          <td className={`sticky z-10 bg-white border-r-2 border-b border-slate-100 w-28.75 md:w-35 lg:w-auto ${!showNisMobile ? 'left-10 md:left-36.25' : 'left-26.25 md:left-36.25'}`}><Skeleton className="h-4 w-24" /></td>
                           {[...Array(3)].map((_, j) => (
                               <td key={j} className="px-4 py-4 border-b border-r-2 border-slate-100"><div className="h-4 bg-slate-100 rounded animate-pulse w-full"></div></td>
                           ))}
@@ -1994,24 +2470,24 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                   ))
                 ) : paginatedData.map((s, index) => (
                   <tr key={s.id} className="group transition-colors hover:bg-slate-50/30">
-                    <td className="px-2 py-4 whitespace-nowrap border-r-2 border-b border-slate-100 sticky left-0 z-20 bg-white transition-colors text-center w-[40px] md:w-[45px] min-w-[40px] md:min-w-[45px] uppercase font-black text-[10.5px] text-slate-400">
+                    <td className="px-2 py-4 whitespace-nowrap border-r-2 border-b border-slate-100 sticky left-0 z-20 bg-white transition-colors text-center w-10 md:w-11.25 min-10 md:min-11.25 uppercase font-black text-[10.5px] text-slate-400">
                       {String((currentPage - 1) * itemsPerPage + index + 1)}
                     </td>
-                    <td className={`px-1 py-4 whitespace-nowrap border-r-2 border-b border-slate-100 sticky left-[40px] md:left-[45px] z-20 bg-white transition-colors text-center w-[65px] md:w-[100px] min-w-[65px] md:min-w-[100px] ${!showNisMobile ? 'hidden md:table-cell' : ''}`}>
+                    <td className={`px-1 py-4 whitespace-nowrap border-r-2 border-b border-slate-100 sticky left-10 md:left-11.25 z-20 bg-white transition-colors text-center w-16.25 md:w-25 min-16.25 md:min-25 ${!showNisMobile ? 'hidden md:table-cell' : ''}`}>
                         <span className="text-[9.5px] md:text-[10.5px] font-mono font-black text-slate-700 bg-slate-50 px-1 py-0.5 rounded tracking-tighter">{s.nis || '-'}</span>
                     </td>
-                    <td className={`px-2 md:px-4 py-4 border-r-2 border-b border-slate-100 sticky z-20 bg-white transition-colors w-[115px] md:w-[140px] ${!showNisMobile ? 'left-[40px] md:left-[145px]' : 'left-[105px] md:left-[145px]'}`}>
-                      <span className="text-[10.5px] md:text-[11px] font-bold text-slate-800 capitalize tracking-tight whitespace-normal break-words block max-w-[90px] md:max-w-none" title={s.full_name}>{s.full_name}</span>
+                    <td className={`px-2 md:px-4 py-4 border-r-2 border-b border-slate-100 sticky z-20 bg-white transition-colors w-28.75 md:w-35 ${!showNisMobile ? 'left-10 md:left-36.25' : 'left-26.25 md:left-36.25'}`}>
+                      <span className="text-[10.5px] md:text-[11px] font-bold text-slate-800 uppercase tracking-tight whitespace-normal wrap-break-words block max-22.5 md:max-w-none" title={s.full_name}>{s.full_name}</span>
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap border-r-2 border-b border-slate-100 text-center">
                       <span className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tight border ${s.gender === 'L' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-pink-50 text-pink-600 border-pink-100'}`}>
                           {s.gender === 'L' ? 'Putra' : 'Putri'}
                       </span>
                     </td>
-                  <td className="px-6 py-4 whitespace-nowrap border-r-2 border-b border-slate-100 max-w-[130px]">
+                  <td className="px-6 py-4 whitespace-nowrap border-r-2 border-b border-slate-100 max-32.5">
                      <p className="text-[10.5px] font-bold text-slate-700 truncate" title={s.halaqah_teacher_name || '-'}>{s.halaqah_teacher_name || '-'}</p>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap border-r-2 border-b border-slate-100 max-w-[130px]">
+                  <td className="px-6 py-4 whitespace-nowrap border-r-2 border-b border-slate-100 max-32.5">
                     {editingHalaqahId === s.id ? (
                         <select 
                             autoFocus
@@ -2027,14 +2503,13 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                             ))}
                         </select>
                     ) : (
-                        <div 
+                        <p 
                             onClick={() => !isReadOnly && setEditingHalaqahId(s.id)}
-                            className={`flex items-center gap-1.5 text-[10.5px] text-slate-600 bg-slate-50 px-2 py-1 rounded-full w-fit border border-slate-100 transition-all select-none group/h ${isReadOnly ? 'cursor-default' : 'cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700'}`}
+                            className={`text-[10.5px] font-bold text-slate-700 truncate transition-colors ${isReadOnly ? 'cursor-default' : 'cursor-pointer hover:text-emerald-600'}`}
                             title={isReadOnly ? "" : "Klik untuk ubah halaqah cepat"}
                         >
-                            <Users className="w-3 h-3 text-slate-400 group-hover/h:text-emerald-500" />
-                            <span className="font-bold text-slate-800 group-hover/h:text-emerald-800 truncate" style={{ maxWidth: '80px' }}>{s.halaqah_name || '-'}</span>
-                        </div>
+                            {s.halaqah_name || '-'}
+                        </p>
                     )}
                   </td>
                    {!isReadOnly ? (
@@ -2085,14 +2560,23 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                          </div>
                     </td>
                   ) : (
-                    <td className="px-6 py-4 whitespace-nowrap text-center border-b border-slate-100 transition-colors">
-                        <button 
-                            onClick={() => setInfoStudent(s)}
-                            className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border border-slate-200 hover:border-jade-100 transition-all bg-white shadow-sm"
-                            title="Detail Informasi Ortu"
-                        >
-                            <Info className="w-4 h-4" />
-                        </button>
+                    <td className="px-2 md:px-6 py-4 whitespace-nowrap text-center border-b border-slate-100 transition-colors">
+                        <div className="flex justify-center gap-1 md:gap-2">
+                             <button 
+                                 onClick={() => setInfoStudent(s)}
+                                 className="p-1.5 md:p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border-2 border-slate-300 shadow-none"
+                                 title="Detail Informasi Ortu"
+                             >
+                                 <Info className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                             </button>
+                             <button 
+                                 onClick={() => { setSelectedModalStudent(s); setIsNotesModalOpen(true); }} 
+                                 className="p-1.5 md:p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border-2 border-slate-300 shadow-none" 
+                                 title="Catatan Admin untuk Santri"
+                             >
+                                 <MessageSquare className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                             </button>
+                        </div>
                     </td>
                   )}
                 </tr>
@@ -2165,9 +2649,6 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
 
         {filteredData.length === 0 && !loading && (
              <div className="p-16 text-center bg-white">
-                <div className="w-20 h-20 bg-slate-50 rounded-[32px] flex items-center justify-center mx-auto mb-6 border-2 border-slate-50/50">
-                    <Search className="w-10 h-10 text-slate-200" />
-                </div>
                 <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight mb-1">Data Tidak Ditemukan</h3>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gunakan kata kunci atau filter yang berbeda</p>
              </div>
@@ -2201,6 +2682,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                           <div className="space-y-1">
                               <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Lengkap</label>
                               <input 
+                                id="input-studentName"
                                 required
                                 value={formData.studentName}
                                 onChange={e => {
@@ -2217,6 +2699,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                               <div className="space-y-1">
                                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">NIS</label>
                                   <input 
+                                    id="input-nis"
                                     value={formData.nis}
                                     onChange={e => {
                                         const newNis = e.target.value;
@@ -2254,7 +2737,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                 <select 
                                     value={formData.halaqahId}
                                     onChange={e => setFormData({...formData, halaqahId: e.target.value})}
-                                    className="w-full px-4 py-2 border-2 border-slate-300 bg-white rounded-xl text-[13px] font-bold text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 transition-all shadow-none capitalize"
+                                    className="w-full px-4 py-2 border-2 border-slate-300 bg-white rounded-xl text-[13px] font-bold text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 transition-all shadow-none"
                                 >
                                     <option value="">Pilih Halaqoh</option>
                                     {halaqahs.map(h => (
@@ -2280,11 +2763,12 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                   <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300" />
                                     <input 
+                                        id="input-parentEmail"
                                         readOnly
                                         type="email"
                                         value={formData.parentEmail}
                                         className={`w-full pl-9 pr-3 py-2 border-2 border-slate-300 rounded-xl text-[13px] font-bold transition-all outline-none bg-slate-50 text-slate-400 cursor-not-allowed`}
-                                        placeholder="Otomatis dari NIS"
+                                        placeholder="-"
                                     />
                                   </div>
                                   <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mt-1 ml-1">Email otomatis: NIS@qurma.com</p>
@@ -2376,7 +2860,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                     <select 
                                         value={formData.provinceId}
                                         onChange={e => onProvinceChange(e.target.value)}
-                                        className="w-full px-4 py-2 border-2 border-slate-300 bg-white rounded-xl text-[13px] font-bold text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 transition-all capitalize"
+                                        className="w-full px-4 py-2 border-2 border-slate-300 bg-white rounded-xl text-[13px] font-bold text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 transition-all"
                                     >
                                         <option value="">Pilih Provinsi</option>
                                         {regions.provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -2395,7 +2879,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                             const sanitizedName = originalName.replace(/^(KABUPATEN|KOTA|KAB\.|KAB)\s+/i, '').trim();
                                             onRegencyChange(e.target.value, sanitizedName);
                                         }}
-                                        className="w-full px-4 py-2 border-2 border-slate-300 bg-white rounded-xl text-[13px] font-bold text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 transition-all disabled:opacity-50 capitalize"
+                                        className="w-full px-4 py-2 border-2 border-slate-300 bg-white rounded-xl text-[13px] font-bold text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 transition-all disabled:opacity-50"
                                     >
                                         <option value="">Pilih Kota</option>
                                         {regions.regencies.map(r => (
@@ -2420,7 +2904,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                             const name = regions.districts.find(d => d.id === e.target.value)?.name || '';
                                             onDistrictChange(e.target.value, name);
                                         }}
-                                        className="w-full px-4 py-2 border-2 border-slate-300 bg-white rounded-xl text-[13px] font-bold text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 transition-all disabled:opacity-50 capitalize"
+                                        className="w-full px-4 py-2 border-2 border-slate-300 bg-white rounded-xl text-[13px] font-bold text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 transition-all disabled:opacity-50"
                                     >
                                         <option value="">Pilih Kecamatan</option>
                                         {regions.districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
@@ -2438,7 +2922,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                             const name = regions.villages.find(v => v.id === e.target.value)?.name || '';
                                             setFormData({...formData, villageId: e.target.value, village: name});
                                         }}
-                                        className="w-full px-4 py-2 border-2 border-slate-300 bg-white rounded-xl text-[13px] font-bold text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 transition-all disabled:opacity-50 capitalize"
+                                        className="w-full px-4 py-2 border-2 border-slate-300 bg-white rounded-xl text-[13px] font-bold text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 transition-all disabled:opacity-50"
                                     >
                                         <option value="">Pilih Desa</option>
                                         {regions.villages.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
@@ -2522,7 +3006,9 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                       {/* Progress Bar */}
                       <div className="space-y-2">
                           <div className="flex justify-between items-center">
-                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Memproses data...</span>
+                              <span className={`text-[9px] font-black uppercase tracking-widest ${importProgress.current === importProgress.total && importProgress.total > 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                  {importProgress.total > 0 && importProgress.current === importProgress.total ? 'IMPORT SELESAI' : 'MEMPROSES DATA...'}
+                              </span>
                               <span className="text-[10px] font-black text-slate-600 tabular-nums">
                                   {importProgress.current} / {importProgress.total}
                               </span>
@@ -2560,13 +3046,13 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                       {/* Done State */}
                       {importProgress.current === importProgress.total && importProgress.total > 0 && (
                           <div className="space-y-4 pt-2">
-                              <div className="bg-jade-50 p-4 rounded-xl flex gap-3 items-center border-2 border-jade-100">
-                                  <div className="w-10 h-10 bg-jade-600 rounded-lg flex items-center justify-center text-white shrink-0 shadow-none">
-                                      <Check className="w-6 h-6" />
+                              <div className="bg-emerald-50/50 py-2.5 px-3 rounded-lg flex items-center gap-2.5 border border-emerald-100">
+                                  <div className="w-7 h-7 bg-emerald-500 rounded-md flex items-center justify-center text-white shrink-0 shadow-sm shadow-emerald-500/20">
+                                      <Check className="w-4 h-4" />
                                   </div>
                                   <div>
-                                      <p className="text-xs font-black text-jade-800 uppercase tracking-tight">Proses Selesai</p>
-                                      <p className="text-[10px] font-bold text-jade-600 mt-0.5">{importProgress.total - importProgress.errors.length} santri berhasil ditambahkan.</p>
+                                      <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest leading-none">Proses Selesai</p>
+                                      <p className="text-[9px] font-bold text-emerald-600 mt-1">{importProgress.total - importProgress.errors.length} data santri berhasil diproses.</p>
                                   </div>
                               </div>
                               <button 
@@ -2591,6 +3077,9 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
               </div>
           </div>
       )}
+      
+      </div>
+
       {/* Info Modal */}
       {infoStudent && (
           <InfoModal 
@@ -2643,6 +3132,31 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
       <NotesModal isOpen={isNotesModalOpen} onClose={() => setIsNotesModalOpen(false)} student={selectedModalStudent} user={currentUser} onUpdate={fetchData} />
       <HistoryModal isOpen={isHistoryModalOpen} onClose={() => setIsHistoryModalOpen(false)} student={selectedModalStudent} />
       <GlobalTrackingModal isOpen={isGlobalTrackingOpen} onClose={() => setIsGlobalTrackingOpen(false)} tenantId={tenantId} />
+
+      {/* Halaqah Modals */}
+      <HalaqahFormModal 
+          isOpen={isHalaqahFormOpen} 
+          onClose={() => { setIsHalaqahFormOpen(false); setSelectedHalaqahData(null); }} 
+          onSubmit={handleCreateOrUpdateHalaqah} 
+          teachers={availableTeachersForModal} 
+          initialData={selectedHalaqahData} 
+      />
+      <HalaqahDetailModal 
+          isOpen={isHalaqahDetailOpen} 
+          onClose={() => setIsHalaqahDetailOpen(false)} 
+          halaqah={selectedHalaqahData} 
+          onEdit={() => { setIsHalaqahDetailOpen(false); setIsHalaqahFormOpen(true); }} 
+          isReadOnly={isReadOnly} 
+      />
+      <ConfirmModal
+        isOpen={!!halaqahToDelete}
+        onClose={() => setHalaqahToDelete(null)}
+        onConfirm={handleDeleteHalaqahConfirm}
+        title="Hapus Halaqah?"
+        variant="danger"
+        confirmLabel="YA, HAPUS"
+        message={`Hapus halaqah ${halaqahToDelete?.name}? Semua santri di dalamnya akan menjadi tanpa halaqah.`}
+      />
     </div>
   );
 };

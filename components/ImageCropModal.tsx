@@ -94,7 +94,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({ image, onCropCom
         </div>
 
         {/* Cropper Area */}
-        <div className="relative h-[280px] bg-slate-50 border-b border-slate-100">
+        <div className="relative h-70 bg-slate-50 border-b border-slate-100">
           <Cropper
             image={image}
             crop={crop}
