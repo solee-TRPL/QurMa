@@ -1495,7 +1495,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                                                     if (type === MemorizationType.SABAQ) {
                                                                                         const prevPos = findLatestPosition(type, date);
                                                                                         if (prevPos) {
-                                                                                            const progression = [...SURAH_DATA.slice(0, 114)].reverse().map(s => s.name);
+                                                                                            const progression = SURAH_DATA.slice(0, 114).map(s => s.name);
                                                                                             const prevSurahIndex = progression.indexOf(prevPos.surah_name);
                                                                                             const currentSurahIndex = progression.indexOf(s.name);
                                                                                             if (currentSurahIndex < prevSurahIndex) return null;
@@ -1773,7 +1773,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                                             if (type === MemorizationType.SABAQ) {
                                                                                 const prevPos = findLatestPosition(type, date);
                                                                                 if (prevPos) {
-                                                                                    const progression = [...SURAH_DATA.slice(0, 114)].reverse().map(s => s.name);
+                                                                                    const progression = SURAH_DATA.slice(0, 114).map(s => s.name);
                                                                                     const prevSurahIndex = progression.indexOf(prevPos.surah_name);
                                                                                     const currentSurahIndex = progression.indexOf(s.name);
                                                                                     if (currentSurahIndex < prevSurahIndex) return null;
