@@ -162,16 +162,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
     const holidayBlock = useMemo(() => {
         if (weekDates.length > 0) return null;
         
-        let startOffset = currentWeekOffset;
-        while (checkHoliday(startOffset - 1)) {
-            startOffset--;
-        }
-        
-        let endOffset = currentWeekOffset;
-        while (checkHoliday(endOffset + 1)) {
-            endOffset++;
-        }
-        
+        const activePeriods = JSON.parse(activePeriodsStr);
         const getMonday = (offset: number) => {
             const today = new Date();
             const day = today.getDay();
@@ -185,6 +176,52 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
             d.setDate(d.getDate() + 6);
             return d;
         };
+
+        let isOutsideActive = false;
+        if (activePeriods.length === 0) {
+            isOutsideActive = true;
+        } else {
+            let minDateStr = '';
+            let maxDateStr = '';
+            let hasUnboundedStart = false;
+            let hasUnboundedEnd = false;
+
+            activePeriods.forEach((p: any) => {
+                if (!p.startDate) hasUnboundedStart = true;
+                else if (!minDateStr || p.startDate < minDateStr) minDateStr = p.startDate;
+
+                if (!p.endDate) hasUnboundedEnd = true;
+                else if (!maxDateStr || p.endDate > maxDateStr) maxDateStr = p.endDate;
+            });
+
+            const currentWeekMondayStr = getLocalDateString(getMonday(currentWeekOffset));
+            const currentWeekSundayStr = getLocalDateString(getSunday(currentWeekOffset));
+
+            if (!hasUnboundedStart && minDateStr && currentWeekSundayStr < minDateStr) {
+                isOutsideActive = true;
+            } else if (!hasUnboundedEnd && maxDateStr && currentWeekMondayStr > maxDateStr) {
+                isOutsideActive = true;
+            }
+        }
+
+        if (isOutsideActive) {
+            return {
+                startOffset: currentWeekOffset,
+                endOffset: currentWeekOffset,
+                displayRange: '',
+                isOutsideActive: true
+            };
+        }
+
+        let startOffset = currentWeekOffset;
+        while (checkHoliday(startOffset - 1) && startOffset > currentWeekOffset - 50) {
+            startOffset--;
+        }
+        
+        let endOffset = currentWeekOffset;
+        while (checkHoliday(endOffset + 1) && endOffset < currentWeekOffset + 50) {
+            endOffset++;
+        }
         
         const startDate = getMonday(startOffset);
         const endDate = getSunday(endOffset);
@@ -193,7 +230,8 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
         return {
             startOffset,
             endOffset,
-            displayRange: `${startDate.toLocaleDateString('id-ID', formatOptions)} - ${endDate.toLocaleDateString('id-ID', formatOptions)}`
+            displayRange: `${startDate.toLocaleDateString('id-ID', formatOptions)} - ${endDate.toLocaleDateString('id-ID', formatOptions)}`,
+            isOutsideActive: false
         };
     }, [currentWeekOffset, weekDates.length, activePeriodsStr, activeDaysStr]);
 
@@ -1593,11 +1631,23 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                         })}
                                         {weekDates.length === 0 && (
                                             <tr>
-                                                <td colSpan={6} className="py-32 text-center border border-slate-200">
-                                                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-200 ring-1 ring-slate-100">
-                                                        <BookOpen className="w-8 h-8" />
+                                                <td colSpan={5} className="py-32 text-center border border-slate-200 bg-slate-50/30">
+                                                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-200 ring-1 ring-slate-100 shadow-sm">
+                                                        <BookOpen className="w-8 h-8 opacity-50" />
                                                     </div>
-                                                    <h4 className="text-[11px] font-black text-slate-300 uppercase tracking-[0.2em]">Belum ada data rekaman</h4>
+                                                    <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5">
+                                                        {holidayBlock?.isOutsideActive ? 'Belum ada Tanggal Aktif' : 'Masa Liburan'}
+                                                    </h4>
+                                                    <p className="text-[10px] font-bold text-slate-400 text-center max-w-[250px] mx-auto leading-relaxed">
+                                                        {holidayBlock?.isOutsideActive 
+                                                            ? 'Tanggal yang dipilih berada di luar periode aktif yang telah dikonfigurasi oleh admin.' 
+                                                            : 'Tidak ada hari efektif yang dikonfigurasi pada periode ini.'}
+                                                    </p>
+                                                    {holidayBlock && !holidayBlock.isOutsideActive && (
+                                                        <div className="inline-block mt-4 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg font-bold text-[9px] uppercase tracking-widest border border-emerald-100">
+                                                            {holidayBlock.displayRange}
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         )}
@@ -1845,15 +1895,19 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                         </tbody>
                                     </table>
                                     ) : (
-                                        <div className="flex flex-col items-center justify-center p-8 bg-slate-50/30 min-h-75 w-full max-w-sm mx-auto">
+                                        <div className="flex flex-col items-center justify-center p-8 bg-slate-50/30 min-h-[300px] w-full max-w-sm mx-auto">
                                             <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-3 text-slate-300 ring-1 ring-slate-200 shadow-sm">
                                                 <BookOpen className="w-7 h-7 opacity-50" />
                                             </div>
-                                            <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5">Masa Liburan</h4>
-                                            <p className="text-[10px] font-bold text-slate-400 text-center max-w-50 leading-relaxed">
-                                                Tidak ada hari efektif yang dikonfigurasi pada periode ini.
+                                            <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5">
+                                                {holidayBlock?.isOutsideActive ? 'Belum ada Tanggal Aktif' : 'Masa Liburan'}
+                                            </h4>
+                                            <p className="text-[10px] font-bold text-slate-400 text-center max-w-[200px] leading-relaxed">
+                                                {holidayBlock?.isOutsideActive 
+                                                    ? 'Tanggal yang dipilih berada di luar periode aktif yang telah dikonfigurasi.' 
+                                                    : 'Tidak ada hari efektif yang dikonfigurasi pada periode ini.'}
                                             </p>
-                                            {holidayBlock && (
+                                            {holidayBlock && !holidayBlock.isOutsideActive && (
                                                 <div className="inline-block mt-4 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg font-bold text-[9px] uppercase tracking-widest border border-emerald-100">
                                                     {holidayBlock.displayRange}
                                                 </div>
