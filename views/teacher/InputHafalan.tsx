@@ -178,8 +178,13 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
         };
 
         let isOutsideActive = false;
+        let isBeforeStart = false;
+        let isAfterEnd = false;
+
         if (activePeriods.length === 0) {
             isOutsideActive = true;
+            isBeforeStart = true;
+            isAfterEnd = true;
         } else {
             let minDateStr = '';
             let maxDateStr = '';
@@ -199,8 +204,10 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
 
             if (!hasUnboundedStart && minDateStr && currentWeekSundayStr < minDateStr) {
                 isOutsideActive = true;
+                isBeforeStart = true;
             } else if (!hasUnboundedEnd && maxDateStr && currentWeekMondayStr > maxDateStr) {
                 isOutsideActive = true;
+                isAfterEnd = true;
             }
         }
 
@@ -209,7 +216,9 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                 startOffset: currentWeekOffset,
                 endOffset: currentWeekOffset,
                 displayRange: '',
-                isOutsideActive: true
+                isOutsideActive: true,
+                isBeforeStart,
+                isAfterEnd
             };
         }
 
@@ -1296,12 +1305,18 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                 </div>
                                 <div className="flex items-center justify-between lg:justify-end gap-1.5 lg:gap-4 w-full lg:w-auto">
                                     <div className="flex bg-white p-0.5 rounded-xl border-2 border-slate-300 ring-1 ring-white scale-90 lg:scale-100 origin-left">
-                                        <button 
-                                            onClick={() => holidayBlock ? setCurrentWeekOffset(holidayBlock.startOffset - 1) : setCurrentWeekOffset(prev => prev - 1)}
-                                            className="p-1 px-1.5 lg:px-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
-                                        >
-                                            <ChevronLeft className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
-                                        </button>
+                                        {!holidayBlock?.isBeforeStart ? (
+                                            <button 
+                                                onClick={() => holidayBlock ? setCurrentWeekOffset(holidayBlock.startOffset - 1) : setCurrentWeekOffset(prev => prev - 1)}
+                                                className="p-1 px-1.5 lg:px-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
+                                            >
+                                                <ChevronLeft className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
+                                            </button>
+                                        ) : (
+                                            <button disabled className="p-1 px-1.5 lg:px-2 rounded-xl text-transparent cursor-default">
+                                                <ChevronLeft className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
+                                            </button>
+                                        )}
                                         <div className="px-1.5 sm:px-2 lg:px-3 py-1 text-[7.5px] sm:text-[8px] lg:text-[9px] font-black uppercase tracking-widest text-jade-600 flex flex-col items-center justify-center min-w-27.5 sm:min-w-32.5 lg:min-w-40">
                                             <span className="flex items-center gap-1 whitespace-nowrap">
                                                 <Calendar className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
@@ -1317,12 +1332,18 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                 )}
                                             </span>
                                         </div>
-                                        <button 
-                                            onClick={() => holidayBlock ? setCurrentWeekOffset(holidayBlock.endOffset + 1) : setCurrentWeekOffset(prev => prev + 1)}
-                                            className="p-1 px-1.5 lg:px-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
-                                        >
-                                            <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
-                                        </button>
+                                        {!holidayBlock?.isAfterEnd ? (
+                                            <button 
+                                                onClick={() => holidayBlock ? setCurrentWeekOffset(holidayBlock.endOffset + 1) : setCurrentWeekOffset(prev => prev + 1)}
+                                                className="p-1 px-1.5 lg:px-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
+                                            >
+                                                <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
+                                            </button>
+                                        ) : (
+                                            <button disabled className="p-1 px-1.5 lg:px-2 rounded-xl text-transparent cursor-default">
+                                                <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
+                                            </button>
+                                        )}
                                     </div>
 
                                     <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
