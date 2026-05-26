@@ -1397,7 +1397,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                                     <div className="h-4 bg-slate-200 rounded w-12 mx-auto"></div>
                                                                 </td>
                                                                 <td className="px-4 py-3 border border-slate-200">
-                                                                    <div className="h-8 bg-slate-50 rounded-lg w-full max-w-[200px] mx-auto"></div>
+                                                                    <div className="h-8 bg-slate-50 rounded-lg w-full max-w-50 mx-auto"></div>
                                                                 </td>
                                                                 <td className="px-4 py-3 border border-slate-200">
                                                                     <div className="h-7 bg-slate-50 rounded-full w-full mx-auto"></div>
@@ -1631,14 +1631,14 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                         })}
                                         {weekDates.length === 0 && (
                                             <tr>
-                                                <td colSpan={5} className="py-32 text-center border border-slate-200 bg-slate-50/30">
-                                                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-200 ring-1 ring-slate-100 shadow-sm">
+                                                <td colSpan={5} className={`text-center bg-slate-50/30 border border-slate-200 ${holidayBlock?.isOutsideActive ? 'py-24' : 'py-16'}`}>
+                                                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400 ring-1 ring-slate-100 shadow-sm">
                                                         <BookOpen className="w-8 h-8 opacity-50" />
                                                     </div>
                                                     <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1.5">
                                                         {holidayBlock?.isOutsideActive ? 'Belum ada Tanggal Aktif' : 'Masa Liburan'}
                                                     </h4>
-                                                    <p className="text-[10px] font-bold text-slate-400 text-center max-w-[250px] mx-auto leading-relaxed">
+                                                    <p className="text-[10px] font-bold text-slate-400 text-center max-w-62.5 mx-auto leading-relaxed">
                                                         {holidayBlock?.isOutsideActive 
                                                             ? 'Tanggal yang dipilih berada di luar periode aktif yang telah dikonfigurasi oleh admin.' 
                                                             : 'Tidak ada hari efektif yang dikonfigurasi pada periode ini.'}
@@ -1895,7 +1895,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                         </tbody>
                                     </table>
                                     ) : (
-                                        <div className="flex flex-col items-center justify-center p-8 bg-slate-50/30 min-h-[300px] w-full max-w-sm mx-auto">
+                                        <div className={`flex flex-col items-center justify-center bg-slate-50/30 h-full w-full max-w-sm mx-auto ${holidayBlock?.isOutsideActive ? 'py-20' : 'py-12'}`}>
                                             <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-3 text-slate-300 ring-1 ring-slate-200 shadow-sm">
                                                 <BookOpen className="w-7 h-7 opacity-50" />
                                             </div>
