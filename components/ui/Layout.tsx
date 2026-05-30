@@ -84,6 +84,10 @@ export const Layout: React.FC<LayoutProps> = ({
   const [totalHafalan, setTotalHafalan] = useState<string | null>(null);
   const [studentPageCount, setStudentPageCount] = useState<number | null>(null);
   const [savedAccounts, setSavedAccounts] = useState<any[]>([]);
+  const [showConfirmLogout, setShowConfirmLogout] = useState(false);
+  const [showConfirmRemove, setShowConfirmRemove] = useState<{id: string, name: string} | null>(null);
+
+  const [isDashboardMenuOpen, setIsDashboardMenuOpen] = useState(currentPage.startsWith('dashboard'));
   const [halaqahName, setHalaqahName] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string, name: string } | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -94,6 +98,12 @@ export const Layout: React.FC<LayoutProps> = ({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!currentPage.startsWith('dashboard')) {
+        setIsDashboardMenuOpen(false);
+    }
+  }, [currentPage]);
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
@@ -243,23 +253,33 @@ export const Layout: React.FC<LayoutProps> = ({
     return () => { document.body.style.overflow = 'unset'; };
   }, [isSidebarOpen]);
 
-  const NavItem = ({ icon: Icon, label, page, active }: { icon: any, label: string, page: PageView, active?: boolean }) => (
-    <div className="px-3 py-0.5">
+  const NavItem = ({ icon: Icon, label, page, active, isSubItem, hasSubMenu, isSubMenuOpen, onToggle }: { icon: any, label: string, page: PageView, active?: boolean, isSubItem?: boolean, hasSubMenu?: boolean, isSubMenuOpen?: boolean, onToggle?: () => void }) => (
+    <div className={`px-3 py-0.5 ${isSubItem ? 'pl-6' : ''}`}>
       <button 
         onClick={() => {
-          onNavigate(page);
-          setIsSidebarOpen(false);
+          if (hasSubMenu && onToggle) {
+             onToggle();
+          } else {
+             onNavigate(page);
+             setIsSidebarOpen(false);
+          }
         }}
-        className={`w-full flex items-center px-4 py-2.5 text-sm transition-all duration-200 rounded-xl border-2 group
-          ${active 
+        className={`w-full flex items-center px-4 py-2.5 text-[11px] transition-all duration-200 rounded-xl border-2 group
+          ${active && !hasSubMenu
             ? 'bg-primary-500 border-primary-600 text-slate-900 shadow-lg shadow-black/10' 
+            : active && hasSubMenu
+            ? 'bg-white/10 border-transparent text-white shadow-inner shadow-white/5'
             : 'bg-transparent border-transparent text-[#e2f3eb] hover:bg-white/10 hover:text-white'}
+          ${isSubItem ? 'py-1.5 min-h-9' : ''}
         `}
       >
-        <Icon className={`w-4 h-4 mr-3 transition-colors ${active ? 'text-slate-800' : 'text-[#a5d1bd] group-hover:text-white'}`} />
-        <span className={`flex-1 text-left tracking-tight ${active ? 'font-black' : 'font-bold'} text-[11px] uppercase`}>{label}</span>
-        {active && (
+        <Icon className={`${isSubItem ? 'w-4 h-4 mr-3' : 'w-4 h-4 mr-3'} transition-colors ${active && !hasSubMenu ? 'text-slate-800' : 'text-[#a5d1bd] group-hover:text-white'} ${active && hasSubMenu ? 'text-white' : ''}`} />
+        <span className={`flex-1 text-left tracking-tight ${active ? 'font-black' : 'font-bold'} ${isSubItem ? 'text-[11px]' : 'text-[11px]'} uppercase`}>{label}</span>
+        {active && !hasSubMenu && (
             <div className="ml-auto w-1.5 h-1.5 rounded-full bg-slate-900 animate-pulse" />
+        )}
+        {hasSubMenu && (
+            <ChevronDown className={`w-3.5 h-3.5 ml-auto transition-transform ${isSubMenuOpen ? 'rotate-180 text-slate-800' : 'text-[#a5d1bd] group-hover:text-white'}`} />
         )}
       </button>
     </div>
@@ -351,8 +371,13 @@ export const Layout: React.FC<LayoutProps> = ({
                 )}
             </div>
             <div className="overflow-hidden">
-                <h1 className="text-sm font-black text-white tracking-tight leading-none truncate">
-                    {isSuperAdmin ? 'PLATFORM HQ' : (tenant?.name?.toUpperCase() || 'QURMA')}
+                <h1 className="text-sm font-black text-white tracking-tight leading-tight">
+                    {isSuperAdmin ? 'PLATFORM HQ' : (() => {
+                        const name = tenant?.name?.toUpperCase() || 'QURMA';
+                        if (name.startsWith('PONPES ')) return <>{'PONPES '}<br/>{name.substring(7)}</>;
+                        if (name.startsWith('PONDOK PESANTREN ')) return <>{'PONDOK PESANTREN '}<br/>{name.substring(17)}</>;
+                        return name;
+                    })()}
                 </h1>
                 <p className={`text-[9px] font-black uppercase tracking-widest mt-1 opacity-60 ${isSuperAdmin ? 'text-[#a5d1bd]' : 'text-primary-500'}`}>
                     {isSuperAdmin ? 'Super Control' : 'Tahfidz System'}
@@ -373,12 +398,19 @@ export const Layout: React.FC<LayoutProps> = ({
                 </>
             ) : (
                 <>
-                    <NavItem icon={LayoutDashboard} label="Beranda" page="dashboard" active={currentPage === 'dashboard'} />
+                    <NavItem 
+                        icon={LayoutDashboard} 
+                        label="Beranda" 
+                        page="dashboard" 
+                        active={currentPage.startsWith('dashboard')} 
+                        hasSubMenu={user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR}
+                        isSubMenuOpen={isDashboardMenuOpen}
+                        onToggle={() => setIsDashboardMenuOpen(!isDashboardMenuOpen)}
+                    />
                     {user.role === UserRole.TEACHER && (
                         <>
                             <NavItem icon={BookOpen} label="Input Hafalan" page="input-hafalan" active={currentPage === 'input-hafalan'}/>
                             <NavItem icon={Crosshair} label="Target Pekanan" page="weekly-target" active={currentPage === 'weekly-target' || currentPage === 'weekly-target-notes'}/>
-                            {/* <NavItem icon={TrendingUp} label="Kelola Perkembangan" page="student-progress-manage" active={currentPage === 'student-progress-manage'}/> */}
                             <NavItem icon={Users} label="Data Santri" page="data-santri" active={currentPage === 'data-santri'}/>
                             <NavItem icon={BookOpen} label="Data Hafalan" page="data-hafalan" active={currentPage === 'data-hafalan'}/>
                             <NavItem icon={ClipboardCheck} label="Data Kehadiran" page="data-kehadiran" active={currentPage === 'data-kehadiran'}/>
@@ -387,6 +419,14 @@ export const Layout: React.FC<LayoutProps> = ({
                     )}
                     {(user.role === UserRole.ADMIN || user.role === UserRole.SUPERVISOR) && (
                         <>
+                            <div className={`grid transition-all duration-300 ease-in-out ${isDashboardMenuOpen ? 'grid-rows-[1fr] opacity-100 mt-1 mb-2' : 'grid-rows-[0fr] opacity-0'}`}>
+                                <div className="overflow-hidden flex flex-col">
+                                    <NavItem icon={School} label="Data Sekolah" page="dashboard" active={currentPage === 'dashboard' || currentPage === 'dashboard-school'} isSubItem={true} />
+                                    <NavItem icon={BookOpen} label="Hafalan" page="dashboard-memorization" active={currentPage === 'dashboard-memorization'} isSubItem={true} />
+                                    <NavItem icon={ClipboardCheck} label="Kehadiran" page="dashboard-attendance" active={currentPage === 'dashboard-attendance'} isSubItem={true} />
+                                </div>
+                            </div>
+                            
                             {user.role === UserRole.ADMIN && (
                                 <NavItem icon={Users} label="Manajemen User" page="users" active={currentPage === 'users'}/>
                             )}
@@ -426,7 +466,7 @@ export const Layout: React.FC<LayoutProps> = ({
       </aside>
 
       <div className={`lg:pl-64 flex flex-col min-h-screen transition-all duration-300`}>
-        <header className={`fixed right-0 left-0 lg:left-64 z-[55] h-16 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center px-4 lg:px-8 shrink-0 transition-all shadow-sm gap-1.5 sm:gap-3 ${topOffsetClass}`}>
+        <header className={`fixed right-0 left-0 lg:left-64 z-55 h-16 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center px-4 lg:px-8 shrink-0 transition-all shadow-sm gap-1.5 sm:gap-3 ${topOffsetClass}`}>
             
             {/* Hamburger */}
             <button className="lg:hidden p-1.5 sm:p-2 -ml-1.5 sm:-ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors order-1 shrink-0" onClick={() => setIsSidebarOpen(true)}>
@@ -618,7 +658,7 @@ export const Layout: React.FC<LayoutProps> = ({
                                                     <div className="shrink-0 w-8 flex justify-center">
                                                         <button 
                                                             onClick={(e) => handleRemoveAccount(e, accId, acc.profile.full_name)}
-                                                            className="p-1.5 opacity-0 group-hover/item:opacity-100 hover:text-red-500 text-slate-300 transition-all"
+                                                            className="p-1.5 group-hover/item:opacity-100 hover:text-red-500 text-red-300 transition-all"
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
                                                         </button>

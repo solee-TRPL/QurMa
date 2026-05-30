@@ -24,7 +24,8 @@ import {
   markNoteAsSeen,
   createHalaqah,
   updateHalaqah,
-  deleteHalaqah
+  deleteHalaqah,
+  checkNisExistsGlobal
 } from '../../services/dataService';
 import { UserProfile, UserRole, Student, Halaqah, Class, Achievement, TeacherNote } from '../../types';
 import { 
@@ -504,11 +505,11 @@ const GlobalTrackingModal = ({ isOpen, onClose, tenantId }: { isOpen: boolean, o
                     </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar scrollbar-hide">
+                <div className={`flex-1 overflow-y-auto p-6 custom-scrollbar scrollbar-hide ${results.length === 0 ? 'flex flex-col items-center justify-center min-h-50' : ''}`}>
                     {results.length === 0 ? (
-                        <div className="py-20 flex flex-col items-center justify-center opacity-30">
-                            <Timer className="w-16 h-16 mb-4 text-slate-200" />
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Tentukan periode untuk tracking</p>
+                        <div className="flex flex-col items-center justify-center opacity-30 my-auto">
+                            <Timer className="w-16 h-16 mb-4 text-slate-600" />
+                            <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest text-center">Tentukan periode untuk tracking</p>
                         </div>
                     ) : (
                         <div className="space-y-3">
@@ -544,7 +545,7 @@ const GlobalTrackingModal = ({ isOpen, onClose, tenantId }: { isOpen: boolean, o
                         </div>
                     )}
                 </div>
-                <div className="px-8 py-4 bg-slate-300 border-t border-slate-100 text-center">
+                <div className="px-8 py-3 bg-slate-300 border-t border-slate-100 text-center">
                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Daftar ini menunjukkan pembimbing yang aktif bertugas dalam periode yang dipilih.</p>
                 </div>
             </div>
@@ -906,6 +907,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
   const [classes, setClasses] = useState<Class[]>(classCache || []);
   const [activeTab, setActiveTab] = useState<'santri' | 'halaqah'>('santri');
   const [loading, setLoading] = useState(!studentCache);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<StudentRekap | null>(null);
@@ -1277,6 +1279,8 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
 
   const fetchData = async (isBackground = false) => {
     if (!isBackground) setLoading(true);
+    else setIsRefreshing(true);
+    const startTime = Date.now();
     try {
         const [usersData, studentsData, halaqahData, classData] = await Promise.all([
             getUsers(tenantId),
@@ -1332,7 +1336,12 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
         console.error("Error fetching rekap data:", error);
         if (!isBackground) addNotification({ type: 'error', title: 'Gagal Memuat', message: 'Gagal mengambil data rekap santri.' });
     } finally {
-        setLoading(false);
+        const elapsed = Date.now() - startTime;
+        if (isBackground && elapsed < 1000) {
+            await new Promise(resolve => setTimeout(resolve, 1000 - elapsed));
+        }
+        if (!isBackground) setLoading(false);
+        setIsRefreshing(false);
     }
   };
 
@@ -1382,20 +1391,23 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
     // Client-side validation
     const errors: Record<string, string> = {};
     if (!formData.studentName.trim()) errors.studentName = 'Nama santri wajib diisi.';
-    if (!formData.parentEmail.trim()) errors.parentEmail = 'Email wajib diisi.';
-    if (!formData.parentEmail.includes('@')) errors.parentEmail = 'Format email tidak valid.';
+    if (!isEditMode) {
+        if (!formData.parentEmail.trim()) errors.parentEmail = 'Email wajib diisi.';
+        if (!formData.parentEmail.includes('@')) errors.parentEmail = 'Format email tidak valid.';
+    }
     
+    setIsSubmitting(true);
+
     if (formData.nis && formData.nis.trim() !== '') {
-        const existingNis = rekapData.find(s => s.nis === formData.nis.trim());
-        if (existingNis) {
-            if (!isEditMode || (isEditMode && selectedStudent?.id !== existingNis.id)) {
-                errors.nis = 'NIS sudah terdaftar, silakan gunakan NIS yang lain.';
-            }
+        const isNisTaken = await checkNisExistsGlobal(formData.nis, isEditMode ? selectedStudent?.id : undefined);
+        if (isNisTaken) {
+            errors.nis = 'NIS sudah terdaftar, silakan gunakan NIS yang lain.';
         }
     }
     
     if (Object.keys(errors).length > 0) {
         setFormErrors(errors);
+        setIsSubmitting(false);
         
         setTimeout(() => {
             const firstErrorKey = Object.keys(errors)[0];
@@ -1408,8 +1420,6 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
         
         return;
     }
-
-    setIsSubmitting(true);
     try {
         if (isEditMode && selectedStudent) {
             // EDIT MODE
@@ -1752,11 +1762,11 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
         father_phone: '08123456789',
         mother_phone: '08987654321',
         province: 'DKI JAKARTA',
-        city: 'JAKARTA TIMUR',
-        district: 'PULOGADUNG',
-        village: 'PULOGADUNG',
-        rt_rw: '001 / 005',
-        address: 'Jl. Bunga Melati No. 12'
+        city: 'JAKARTA BARAT',
+        district: '',
+        village: '',
+        rt_rw: '',
+        address: ''
     });
 
     // Style Example Row and set validation
@@ -2266,14 +2276,14 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
   return (
     <div className="space-y-4 animate-fade-in pb-10">
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-4">
-          <div className="flex items-center justify-between px-1 mb-2">
+          <div className="flex items-start justify-between px-1 mb-2">
             <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-widest">Daftar Halaqah</h3>
             {!isReadOnly && (
                 <button 
                   onClick={() => { setSelectedHalaqahData(null); setIsHalaqahFormOpen(true); }}
-                  className="h-9 flex items-center gap-2 px-5 font-black text-[10px] uppercase tracking-widest rounded-xl bg-emerald-600 text-white shadow-none hover:bg-emerald-700 transition-all active:scale-95 whitespace-nowrap"
+                  className="h-10 flex items-center gap-2 px-4 font-black text-[10px] uppercase tracking-widest rounded-xl bg-emerald-600 text-white shadow-none hover:bg-emerald-700 transition-all active:scale-95 whitespace-nowrap"
                 >
-                  <Plus className="w-3.5 h-3.5" /> Tambah Halaqah
+                  Tambah Halaqah
                 </button>
             )}
           </div>
@@ -2355,7 +2365,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
         )}
       </div>
 
-      <div className="flex flex-col xl:flex-row items-stretch xl:items-center w-full gap-2.5 md:gap-3 py-4 bg-white shrink-0 z-70 sticky top-0 border-b border-slate-100">
+      <div className="flex flex-col xl:flex-row items-stretch xl:items-center w-full gap-1.5 md:gap-2 bg-white shrink-0 z-70 sticky top-0 border-b border-slate-100">
         {/* SEARCH */}
         <div className="relative group h-10 w-full xl:flex-1 xl:min-w-50">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-jade-500 transition-colors" />
@@ -2393,8 +2403,8 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                 ))}
             </select>
           </div>
-          <button onClick={() => fetchData()} disabled={loading} className="h-10 w-10 flex-none flex items-center justify-center border-2 border-slate-300 bg-white text-slate-400 hover:text-jade-600 hover:border-jade-300 rounded-xl shadow-none transition-all active:scale-95 duration-200">
-            <RefreshCw className={`w-3.5 h-3.5 transition-transform duration-500 ${loading ? 'animate-spin' : ''}`} />
+          <button onClick={() => fetchData(true)} disabled={loading || isRefreshing} className={`h-10 w-10 flex-none flex items-center justify-center border-2 bg-white rounded-xl shadow-none transition-all duration-300 ${loading || isRefreshing ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-400 hover:text-jade-600 hover:border-jade-300 active:scale-95'}`}>
+            <RefreshCw className={`w-3.5 h-3.5 transition-transform duration-500 ${loading || isRefreshing ? 'animate-spin' : ''}`} />
           </button>
           {!isReadOnly && (
               <button onClick={() => setShowNisMobile(!showNisMobile)} className={`xl:hidden h-10 w-10 flex-none flex items-center justify-center border-2 transition-all rounded-xl shadow-none ${showNisMobile ? 'bg-jade-600 border-jade-600 text-white' : 'bg-white border-slate-300 text-slate-400'}`}>
@@ -2406,7 +2416,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
         {/* ACTIONS */}
         {!isReadOnly && (
           <div className="flex flex-row items-center gap-2 flex-wrap sm:flex-nowrap xl:flex-none w-full xl:w-auto mt-2 xl:mt-0">
-             <div className="flex items-center gap-1.5 flex-none justify-center">
+             <div className="flex items-center gap-2 flex-none justify-center">
                 {rekapData.length === 0 && (
                   <button onClick={downloadTemplate} className="h-10 w-10 flex items-center justify-center border-2 border-slate-300 bg-white text-slate-400 hover:text-jade-600 rounded-xl shadow-none" title="Template">
                     <FileDown className="w-3.5 h-3.5" />
@@ -2425,13 +2435,13 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                   onClick={() => { resetForm(); setShowAddModal(true); }}
                   className="h-10 flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 font-black text-[10px] uppercase tracking-widest rounded-xl bg-emerald-600 text-white shadow-none hover:bg-emerald-700 transition-all active:scale-95 whitespace-nowrap"
                 >
-                  <UserPlus className="w-3.5 h-3.5" /> <span>TAMBAH SANTRI</span>
+                  <span>TAMBAH SANTRI</span>
                 </button>
                 <button 
                     onClick={() => setIsGlobalTrackingOpen(true)}
                     className="h-10 flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 font-black text-[10px] uppercase tracking-widest rounded-xl bg-jade-600 text-white shadow-none hover:bg-jade-700 transition-all active:scale-95 whitespace-nowrap"
                 >
-                    <Timer className="w-3.5 h-3.5" /> <span>TRACKING</span>
+                    <span>TRACKING</span>
                 </button>
              </div>
           </div>
@@ -2446,7 +2456,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
               <tr>
                 <th className="px-2 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-l border-r border-black sticky left-0 z-60 bg-slate-300 w-10 md:w-11.25 min-10 md:min-11.25">NO</th>
                 <th className={`px-1 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black sticky left-10 md:left-11.25 z-60 bg-slate-300 w-16.25 md:w-25 min-16.25 md:min-25 ${!showNisMobile ? 'hidden md:table-cell' : ''}`}>NIS</th>
-                <th className={`px-2 md:px-3 py-4 text-left text-[9.5px] whitespace-nowrap font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black sticky z-60 bg-slate-300 w-28.75 md:w-35 lg:w-auto ${!showNisMobile ? 'left-10 md:left-36.25' : 'left-26.25 md:left-36.25'}`}>NAMA SANTRI</th>
+                <th className={`px-2 md:px-3 py-4 text-left text-[9.5px] whitespace-nowrap font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black sticky z-60 bg-slate-300 w-28.75 md:w-35 lg:w-auto ${!showNisMobile ? 'left-8.5 md:left-36.25' : 'left-26.25 md:left-36.25'}`}>NAMA SANTRI</th>
                 <th className="px-3 py-4 text-center text-[9.5px] whitespace-nowrap font-black text-amber-600 uppercase tracking-widest border-t border-b border-r border-amber-600 bg-amber-50 w-32">JENIS KELAMIN</th>
                 <th className="px-6 py-4 text-left text-[9.5px] font-black text-emerald-600 uppercase tracking-widest border-t border-b border-r border-emerald-600 bg-emerald-50 max-32.5">PENGAMPU</th>
                 <th className="px-6 py-4 text-left text-[9.5px] font-black text-blue-600 uppercase tracking-widest border-t border-b border-r border-blue-600 bg-blue-50 max-27.5">HALAQAH</th>
@@ -2476,7 +2486,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                     <td className={`px-1 py-4 whitespace-nowrap border-r-2 border-b border-slate-100 sticky left-10 md:left-11.25 z-20 bg-white transition-colors text-center w-16.25 md:w-25 min-16.25 md:min-25 ${!showNisMobile ? 'hidden md:table-cell' : ''}`}>
                         <span className="text-[9.5px] md:text-[10.5px] font-mono font-black text-slate-700 bg-slate-50 px-1 py-0.5 rounded tracking-tighter">{s.nis || '-'}</span>
                     </td>
-                    <td className={`px-2 md:px-4 py-4 border-r-2 border-b border-slate-100 sticky z-20 bg-white transition-colors w-28.75 md:w-35 ${!showNisMobile ? 'left-10 md:left-36.25' : 'left-26.25 md:left-36.25'}`}>
+                    <td className={`px-2 md:px-4 py-4 border-r-2 border-b border-slate-100 sticky z-20 bg-white transition-colors w-28.75 md:w-35 ${!showNisMobile ? 'left-8.5 md:left-36.25' : 'left-26.25 md:left-36.25'}`}>
                       <span className="text-[10.5px] md:text-[11px] font-bold text-slate-800 uppercase tracking-tight whitespace-normal wrap-break-words block max-22.5 md:max-w-none" title={s.full_name}>{s.full_name}</span>
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap border-r-2 border-b border-slate-100 text-center">
@@ -2669,10 +2679,9 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                         <X className="w-5 h-5" />
                       </button>
                   </div>
-                  
-                  <form onSubmit={handleAddOrEditStudent} className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
+                  <form id="studentForm" onSubmit={handleAddOrEditStudent} className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide">
                       {/* Section 1: Data Santri */}
-                      <div className="space-y-4">
+                      <div className="space-y-2">
                           <div className="flex items-center gap-3">
                               <div className="h-px bg-slate-100 flex-1"></div>
                               <h4 className="text-[9px] font-black text-jade-600 uppercase tracking-widest shrink-0">1. Data Santri</h4>
@@ -2695,11 +2704,12 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                               {formErrors.studentName && <p className="text-[8px] text-red-500 font-bold mt-0.5 ml-1">{formErrors.studentName}</p>}
                           </div>
                           
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-2 gap-2">
                               <div className="space-y-1">
                                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">NIS</label>
                                   <input 
                                     id="input-nis"
+                                    type="number"
                                     value={formData.nis}
                                     onChange={e => {
                                         const newNis = e.target.value;
@@ -2710,7 +2720,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                         });
                                         if (formErrors.nis) setFormErrors({...formErrors, nis: ''});
                                     }}
-                                    className={`w-full px-4 py-2 border-2 rounded-xl text-[13px] font-bold transition-all outline-none placeholder:text-slate-300 ${formErrors.nis ? 'border-red-500 bg-red-50 focus:bg-white' : 'bg-white border-slate-300 focus:border-jade-400 focus:bg-white text-slate-800 shadow-none'}`}
+                                    className={`w-full px-4 py-2 border-2 rounded-xl text-[13px] font-bold transition-all outline-none placeholder:text-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${formErrors.nis ? 'border-red-500 bg-red-50 focus:bg-white' : 'bg-white border-slate-300 focus:border-jade-400 focus:bg-white text-slate-800 shadow-none'}`}
                                     placeholder="NIS santri..."
                                   />
                                   {formErrors.nis && <p className="text-[8px] text-red-500 font-bold mt-0.5 ml-1">{formErrors.nis}</p>}
@@ -2723,8 +2733,8 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                         onChange={e => setFormData({...formData, gender: e.target.value as 'L' | 'P'})}
                                         className="w-full px-4 py-2 border-2 border-slate-300 bg-white rounded-xl text-[13px] font-bold text-slate-800 outline-none appearance-none cursor-pointer focus:border-jade-400 transition-all shadow-none"
                                     >
-                                        <option value="L">Putra (L)</option>
-                                        <option value="P">Putri (P)</option>
+                                        <option value="L">Putra</option>
+                                        <option value="P">Putri</option>
                                     </select>
                                     <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 rotate-90 pointer-events-none" />
                                   </div>
@@ -2750,14 +2760,14 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                       </div>
 
                       {/* Section 2: Akses */}
-                      <div className="space-y-4 pt-2">
+                      <div className="space-y-2 pt-2">
                           <div className="flex items-center gap-3">
                               <div className="h-px bg-slate-100 flex-1"></div>
                               <h4 className="text-[9px] font-black text-emerald-600 uppercase tracking-widest shrink-0">2. Akses Wali</h4>
                               <div className="h-px bg-slate-100 flex-1"></div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-2 gap-2">
                               <div className="space-y-1">
                                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Email</label>
                                   <div className="relative">
@@ -2794,24 +2804,24 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                                     type="button"
                                     onClick={() => setShowResetConfirm(true)}
                                     disabled={isResetting || !formData.nis}
-                                    className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 hover:bg-amber-100 transition-all active:scale-95 disabled:opacity-50"
+                                    className="w-full flex items-center justify-center px-4 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-amber-200 bg-amber-50 text-amber-600 shadow-none hover:bg-amber-100 hover:border-amber-300 transition-all active:scale-95 disabled:opacity-50"
                                 >
-                                    <RefreshCw className={`w-3.5 h-3.5 ${isResetting ? 'animate-spin' : ''}`} />
-                                    <span className="text-[9px] font-black uppercase tracking-widest leading-none">Reset Password ke NIS</span>
+                                    <RefreshCw className={`w-4 h-4 mr-2 ${isResetting ? 'animate-spin' : ''}`} />
+                                    RESET PASSWORD KE NIS
                                 </button>
                             </div>
                           )}
                       </div>
 
                       {/* Section 3: Keluarga */}
-                      <div className="space-y-4 pt-2">
+                      <div className="space-y-2 pt-2">
                           <div className="flex items-center gap-3">
                               <div className="h-px bg-slate-100 flex-1"></div>
                               <h4 className="text-[9px] font-black text-jade-600 uppercase tracking-widest shrink-0">3. Data Orang Tua dan Alamat</h4>
                               <div className="h-px bg-slate-100 flex-1"></div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-2 gap-2">
                               <div className="space-y-1">
                                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Ayah</label>
                                   <input 
@@ -2832,28 +2842,30 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                               </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-2 gap-2">
                               <div className="space-y-1">
                                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Telp Ayah</label>
                                   <input 
+                                      type="number"
                                       value={formData.fatherPhone}
                                       onChange={e => setFormData({...formData, fatherPhone: e.target.value})}
                                       placeholder="0895..."
-                                      className="w-full px-4 py-2 border-2 border-slate-300 bg-white rounded-xl text-[13px] font-bold focus:border-jade-400 transition-all outline-none placeholder:text-slate-300"
+                                      className="w-full px-4 py-2 border-2 border-slate-300 bg-white rounded-xl text-[13px] font-bold focus:border-jade-400 transition-all outline-none placeholder:text-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                   />
                               </div>
                               <div className="space-y-1">
                                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Telp Ibu</label>
                                   <input 
+                                      type="number"
                                       value={formData.motherPhone}
                                       onChange={e => setFormData({...formData, motherPhone: e.target.value})}
                                       placeholder="0895..."
-                                      className="w-full px-4 py-2 border-2 border-slate-300 bg-white rounded-xl text-[13px] font-bold focus:border-jade-400 transition-all outline-none placeholder:text-slate-300"
+                                      className="w-full px-4 py-2 border-2 border-slate-300 bg-white rounded-xl text-[13px] font-bold focus:border-jade-400 transition-all outline-none placeholder:text-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                   />
                               </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-2 gap-2">
                               <div className="space-y-1">
                                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Provinsi</label>
                                   <div className="relative">
@@ -2893,7 +2905,7 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                               </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-2 gap-2">
                               <div className="space-y-1">
                                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Kecamatan</label>
                                   <div className="relative">
@@ -2932,10 +2944,11 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                               </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-2 gap-2">
                               <div className="space-y-1">
                                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">RT / RW</label>
                                   <input 
+                                      type="text"
                                       value={formData.rtRw}
                                       onChange={e => setFormData({...formData, rtRw: e.target.value})}
                                       placeholder="00 / 00"
@@ -2965,7 +2978,8 @@ export const StudentManagement: React.FC<{ tenantId: string, user: UserProfile }
                           BATAL
                       </button>
                       <button 
-                        onClick={() => (document.querySelector('form') as HTMLFormElement).requestSubmit()}
+                        type="submit"
+                        form="studentForm"
                         disabled={isSubmitting}
                         className="flex-2 flex items-center justify-center px-4 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white shadow-none hover:bg-jade-700 transition-all active:scale-95 disabled:opacity-50"
                       >

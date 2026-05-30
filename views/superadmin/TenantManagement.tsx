@@ -122,7 +122,7 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSu
                             <h4 className="text-[9px] font-black text-jade-500 uppercase tracking-[0.2em]">Otoritas Admin</h4>
                         </div>
 
-                        <div className="bg-gradient-to-br from-jade-50/30 to-slate-50/30 p-4 rounded-2xl border border-jade-100/50 space-y-3">
+                        <div className="bg-linear-to-br from-jade-50/30 to-slate-50/30 p-4 rounded-2xl border border-jade-100/50 space-y-3">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div className="group/field">
                                     <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1 group-focus-within/field:text-jade-600">Administrator</label>
@@ -166,14 +166,14 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSu
             <button 
                 type="button" 
                 onClick={onClose} 
-                className="px-6 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl border-2 border-slate-300 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all flex-1 shadow-none"
+                className="px-6 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-slate-300 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all flex-1 shadow-none"
             >
                 Batalkan
             </button>
             <button 
                 form="tenantForm"
                 type="submit" 
-                className="px-8 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl bg-jade-600 text-white hover:bg-jade-700 shadow-none transition-all active:scale-95 flex items-center justify-center gap-3 flex-1 border-2 border-jade-700"
+                className="px-8 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl bg-jade-600 text-white hover:bg-jade-700 shadow-none transition-all active:scale-95 flex items-center justify-center gap-3 flex-1 border-2 border-jade-700"
             >
                 <Save className="w-4 h-4" />
                 {initialData ? 'PERBARUI DATA' : 'BUAT SEKOLAH'}
@@ -285,7 +285,7 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
 
     return (
         <div 
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 lg:pl-64 pt-16"
+            className="fixed inset-0 z-9999 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 lg:pl-64 pt-16"
             onClick={onClose}
         >
             <div 
@@ -371,8 +371,8 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
 
                             {/* Security Section - Reset to Initial Flow */}
                             <div className="pt-3 border-t border-slate-100">
-                                <div className="bg-gradient-to-r from-emerald-50/50 to-slate-50/30 p-3 rounded-xl border-2 border-slate-300 flex items-center gap-4">
-                                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-emerald-500 shadow-none border-2 border-emerald-100 flex-shrink-0">
+                                <div className="bg-linear-to-r from-emerald-50/50 to-slate-50/30 p-3 rounded-xl border-2 border-slate-300 flex items-center gap-4">
+                                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-emerald-500 shadow-none border-2 border-emerald-100 shrink-0">
                                         <Lock className="w-4 h-4" />
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -381,7 +381,7 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
                                     </div>
                                     {showInitialPass ? (
                                         <div className="bg-white px-2 py-1.5 border-2 border-emerald-400 rounded-xl flex items-center gap-2 animate-in zoom-in-95 duration-200">
-                                            <div className="px-2 py-1 bg-emerald-50 rounded-lg">
+                                            <div className="px-2 bg-emerald-50 rounded-lg border-2 border-emerald-200">
                                                 <span className="text-[10px] font-black text-emerald-600 font-mono tracking-[0.2em]">{(adminProfile as any).initial_password || '********'}</span>
                                             </div>
                                             
@@ -417,7 +417,7 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
                                         <button 
                                             type="button" 
                                             onClick={handleRestoreDefaultPassword} 
-                                            className="px-4 py-2 font-black text-[9px] uppercase tracking-[0.1em] rounded-xl border border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all active:scale-95 flex items-center gap-1.5 shadow-sm whitespace-nowrap"
+                                            className="px-4 py-2 font-black text-[9px] uppercase tracking-widest rounded-xl border border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all active:scale-95 flex items-center gap-1.5 shadow-sm whitespace-nowrap"
                                         >
                                             <RotateCcw className="w-3 h-3" />
                                             CEK PASSWORD
@@ -492,7 +492,7 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
                     <button 
                         type="button" 
                         onClick={onClose} 
-                        className="px-6 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl border-2 border-slate-300 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all flex-1 shadow-none"
+                        className="px-6 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-slate-300 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all flex-1 shadow-none"
                     >
                         TUTUP
                     </button>
@@ -500,7 +500,7 @@ const AdminManagerModal: React.FC<AdminManagerModalProps> = ({ isOpen, onClose, 
                         form="adminForm"
                         type="submit" 
                         disabled={isLoading}
-                        className="px-8 py-2.5 font-black text-[10px] uppercase tracking-[0.1em] rounded-xl bg-jade-600 text-white hover:bg-jade-700 shadow-none transition-all active:scale-95 flex items-center justify-center gap-3 flex-1 disabled:opacity-50 border-2 border-jade-700"
+                        className="px-8 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl bg-jade-600 text-white hover:bg-jade-700 shadow-none transition-all active:scale-95 flex items-center justify-center gap-3 flex-1 disabled:opacity-50 border-2 border-jade-700"
                     >
                         <Save className="w-4 h-4" />
                         {adminProfile ? 'SIMPAN PROFIL' : 'BUAT ADMIN BARU'}
@@ -725,7 +725,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                 
                 <th className="hidden lg:table-cell w-20 min-20 lg:w-37.5 lg:min-37.5 lg:sticky lg:left-11.25 bg-slate-300 z-10 px-4 py-4 text-left text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-slate-400">KODE</th>
                 
-                <th className="w-30 min-30 lg:w-[auto] lg:min-75 sticky left-0 lg:left-48.75 bg-slate-300 z-10 px-4 py-4 text-left text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-slate-400 shadow-none transition-all">NAMA SEKOLAH</th>
+                <th className="w-30 min-30 lg:w-auto lg:min-75 sticky left-0 lg:left-48.75 bg-slate-300 z-10 px-4 py-4 text-left text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-slate-400 shadow-none transition-all">NAMA SEKOLAH</th>
                 <th className="px-6 py-4 text-center text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-slate-400 bg-slate-300 min-30">REGISTRASI</th>
                 <th className="px-6 py-4 text-center text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">AKSI</th>
               </tr>
@@ -744,7 +744,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
                   </td>
                   
                   <td className="sticky left-0 lg:left-48.75 bg-white px-4 py-4 border-r border-b border-slate-100 z-10 transition-all">
-                      <span className="text-[11px] font-bold text-slate-800 group-hover:text-jade-600 transition-colors block break-words leading-tight">{tenant.name}</span>
+                      <span className="text-[11px] font-bold text-slate-800 group-hover:text-jade-600 transition-colors block wrap-break-words leading-tight">{tenant.name}</span>
                   </td>
                   <td className="px-6 py-4 border-r border-b border-slate-100">
                     <span className="text-[11px] font-black text-slate-700 tracking-tight whitespace-nowrap">
@@ -795,7 +795,7 @@ export const TenantManagement: React.FC<{ user: UserProfile }> = ({ user }) => {
 
         {/* PAGINATION FOOTER */}
         {!loading && filteredTenants.length > 0 && (
-            <div className="bg-[#F8FAFC] border-t-2 border-slate-300 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 lg:gap-4">
+            <div className="bg-slate-100 border-t-2 border-slate-300 px-3 md:px-6 py-3 flex flex-row justify-between items-center gap-2 lg:gap-4">
                 <div className="flex items-center gap-2 lg:gap-4">
                     <select 
                         value={itemsPerPage}

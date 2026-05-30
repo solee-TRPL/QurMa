@@ -146,7 +146,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
     <div className={`relative ${className}`} ref={containerRef}>
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-center w-full gap-2 cursor-pointer outline-none"
+        className="flex items-center justify-center w-full h-full gap-2 cursor-pointer outline-none"
       >
          <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">
             {mounted ? (displayValue || placeholder) : placeholder}
@@ -154,7 +154,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
       </div>
 
       {isOpen && (
-        <div className={`absolute top-full mt-2 z-[9999] w-53.75 sm:w-60 bg-white rounded-xl shadow-none border-2 border-slate-300 p-3 sm:p-4 animate-in fade-in zoom-in-95 duration-200 
+        <div className={`absolute top-full mt-1 z-9999 w-53.75 sm:w-60 bg-white rounded-xl shadow-none border-2 border-slate-300 p-3 sm:p-4 animate-in fade-in zoom-in-95 duration-200 
           ${align === 'left' ? 'left-0' : align === 'right' ? 'right-0 left-auto translate-x-0' : 'left-1/2 -translate-x-1/2'}`}
         >
           {/* Header */}

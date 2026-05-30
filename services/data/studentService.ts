@@ -27,6 +27,20 @@ export const getStudentById = async (studentId: string): Promise<Student | null>
     return data as Student;
 };
 
+export const checkNisExistsGlobal = async (nis: string, excludeStudentId?: string): Promise<boolean> => {
+    if (!nis) return false;
+    let query = supabase.from('students').select('id').eq('nis', nis.trim());
+    if (excludeStudentId) {
+        query = query.neq('id', excludeStudentId);
+    }
+    const { data, error } = await query.limit(1);
+    if (error) {
+        console.error("Error checking NIS globally:", error);
+        return false;
+    }
+    return data && data.length > 0;
+};
+
 export const getUnlinkedStudents = async (tenantId: string): Promise<Student[]> => {
     const { data, error } = await supabase.from('students').select('*').eq('tenant_id', tenantId).is('parent_id', null).order('full_name', { ascending: true });
     if (error || !data) return [];

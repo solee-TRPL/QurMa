@@ -150,7 +150,7 @@ const ManageTargetInfoModal: React.FC<ManageTargetModalProps> = ({ isOpen, onClo
                         <>
                             <button 
                                 onClick={handleAddItem}
-                                className="flex-1 py-3 text-[8.5px] md:text-[9px] font-black text-jade-600 bg-jade-50/50 hover:bg-jade-50 uppercase tracking-[0.2em] rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 border border-jade-100"
+                                className="flex-1 py-3 bg-white border-2 border-jade-500 text-jade-600 rounded-xl hover:bg-jade-50 text-[8.5px] md:text-[9px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 flex items-center justify-center gap-2 shadow-none"
                             >
                                 <Plus className="w-3.5 h-3.5" />
                                 <span>Tambah</span>
@@ -461,12 +461,12 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
     return (
         <div className="flex flex-col gap-2 md:gap-3 animate-fade-in pb-12">
             {/* Premium Multi-Row Filter Bar */}
-            <div className="flex flex-row flex-wrap items-center gap-2.5 md:gap-3 py-3 bg-white w-full sticky top-0 z-100 border-b border-slate-100 lg:border-none lg:static lg:py-0">
+            <div className="flex flex-row flex-wrap items-center gap-1.5 md:gap-2 py-3 bg-white w-full sticky top-0 z-100 border-b border-slate-100 lg:border-none lg:static lg:py-0">
                 
                 {/* --- BARIS 1 (Mobile) / ROW 1 (Desktop) --- */}
                 
                 {/* 1. Halaqah Selector */}
-                <div className="order-1 lg:order-1 flex-1 lg:flex-none flex items-center gap-2.5 md:gap-3 bg-white px-3 md:px-4 rounded-xl border-2 border-slate-300 shadow-none min-50 lg:min-85 h-10 lg:h-11">
+                <div className="order-1 lg:order-1 flex-1 lg:flex-none flex items-center gap-2.5 md:gap-3 bg-white pt-2 md:pt-2 pb-2 md:pb-2 pl-4.5 pr-4.5 rounded-xl border-2 border-slate-300 shadow-none min-50 lg:min-85">
                     <div className="p-1.5 bg-primary-500 rounded-lg text-white shrink-0">
                         <GraduationCap className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     </div>
@@ -489,7 +489,7 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                 </div>
 
                 {/* 2. Search Input */}
-                <div className="order-2 lg:order-2 relative flex-1 lg:flex-1 group h-10 lg:h-11 min-35">
+                <div className="order-8 lg:order-2 relative flex-1 lg:flex-1 group h-10 lg:h-11 min-35">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-jade-500 transition-colors" />
                     <input 
                         type="text"
@@ -501,12 +501,12 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                 </div>
 
                 {/* BREAK 1 (After Row 1 on Mobile) */}
-                <div className="w-full lg:hidden order-2 h-0" />
+                <div className="w-full lg:hidden order-4 h-0" />
 
                 {/* --- BARIS 2 (Mobile) / ROW 2 (Desktop Hybrid) --- */}
 
-                {/* 6. Month Selector - Order 3 on mobile */}
-                <div className="order-3 lg:order-6 relative h-10 lg:h-11 flex-none w-27.5 lg:w-auto lg:min-35 flex items-center px-3 lg:px-4 bg-white border-2 border-slate-300 rounded-xl shadow-none group/month transition-all lg:ml-auto">
+                {/* 6. Month Selector - Order 5 on mobile */}
+                <div className="order-5 lg:order-6 relative h-10 lg:h-11 flex-none w-27.5 lg:w-auto lg:min-35 flex items-center px-3 lg:px-4 bg-white border-2 border-slate-300 rounded-xl shadow-none group/month transition-all lg:ml-auto">
                     <Calendar className="w-3.5 h-3.5 text-jade-500 mr-1.5 lg:mr-2 shrink-0" />
                     <select 
                         value={selectedMonth}
@@ -531,25 +531,32 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                     <ChevronDown className="absolute right-3 lg:right-4 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none group-hover/month:text-jade-500 transition-colors" />
                 </div>
 
-                {/* 7. Date Range Group - Order 4 on mobile */}
-                <div className="order-4 lg:order-7 flex items-center gap-1 shrink-0 h-10 lg:h-11 flex-1 lg:flex-none">
-                    <div className="h-full flex-1 lg:flex-none lg:min-31.25 flex justify-center items-center px-2 md:px-4 bg-white border-2 border-slate-300 rounded-xl shadow-none transition-all">
+                {/* 7. Date Range Group - Order 6 on mobile */}
+                <div className="order-6 lg:order-7 flex items-center gap-1 shrink-0 h-10 lg:h-11 flex-1 lg:flex-none">
+                    <div className="relative h-full flex-1 lg:flex-none lg:min-31.25 flex justify-center items-center px-2 md:px-4 bg-white border-2 border-slate-300 rounded-xl shadow-none transition-all">
                         <CustomDatePicker 
                             value={startDate} 
-                            align="right"
+                            align="center"
+                            className="static w-full h-full"
                             onChange={(val) => {
                                 setStartDate(val);
                                 setSelectedMonth("custom");
-                            }} 
+                                if (val >= endDate) {
+                                    const nextDay = new Date(val);
+                                    nextDay.setDate(nextDay.getDate() + 1);
+                                    setEndDate(nextDay.toISOString().split('T')[0]);
+                                }
+                            }}
                         />
                     </div>
                     
                     <ArrowRight className="w-3 h-3 text-slate-300 shrink-0 mx-0.5" />
 
-                    <div className="h-full flex-1 lg:flex-none lg:min-31.25 flex justify-center items-center px-2 md:px-4 bg-white border-2 border-slate-300 rounded-xl shadow-none transition-all">
+                    <div className="relative h-full flex-1 lg:flex-none lg:min-31.25 flex justify-center items-center px-2 md:px-4 bg-white border-2 border-slate-300 rounded-xl shadow-none transition-all">
                         <CustomDatePicker 
                             value={endDate} 
                             align="right"
+                            className="static w-full h-full"
                             onChange={(val) => {
                                 setEndDate(val);
                                 setSelectedMonth("custom");
@@ -559,23 +566,23 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                 </div>
 
                 {/* BREAK 2 (After Row 2 on Mobile) */}
-                <div className="w-full lg:hidden order-4 h-0" />
+                <div className="w-full lg:hidden order-7 h-0" />
 
                 {/* --- BARIS 3 (Mobile) / ROW 1 & 2 (Desktop Hybrid) --- */}
 
-                {/* 3. Manage Target Button - Order 5 on mobile */}
+                {/* 3. Manage Target Button - Order 2 on mobile */}
                 <button 
                     onClick={() => setIsManageModalOpen(true)}
-                    className="order-5 lg:order-3 h-10 lg:h-11 w-10 lg:w-11 bg-jade-600 border-2 border-jade-600 rounded-xl text-white hover:bg-jade-700 transition-all flex items-center justify-center group shrink-0 shadow-none"
+                    className="order-2 lg:order-3 h-10 lg:h-11 w-10 lg:w-11 bg-jade-600 border-2 border-jade-600 rounded-xl text-white hover:bg-jade-700 transition-all flex items-center justify-center group shrink-0 shadow-none"
                     title="Kelola Target"
                 >
                     <Crosshair className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform" />
                 </button>
 
-                {/* 4. Export Button - Order 6 on mobile */}
+                {/* 4. Export Button - Order 3 on mobile */}
                 <button 
                     onClick={handleExport}
-                    className="order-6 lg:order-4 h-10 lg:h-11 px-3 md:px-4 bg-white border-2 border-jade-500 text-jade-600 rounded-xl hover:bg-jade-50 transition-all flex items-center justify-center gap-2 group shrink-0 shadow-none"
+                    className="order-3 lg:order-4 h-10 lg:h-11 px-3 md:px-4 bg-white border-2 border-jade-500 text-jade-600 rounded-xl hover:bg-jade-50 transition-all flex items-center justify-center gap-2 group shrink-0 shadow-none"
                     title="Ekspor Excel"
                 >
                     <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
@@ -585,8 +592,8 @@ export const MonitorHafalan: React.FC<{ user: UserProfile, tenantId: string }> =
                 {/* BREAK for Desktop (Row 1 Ends) */}
                 <div className="hidden lg:block w-full lg:order-4 h-0" />
 
-                {/* 5. Gender Selector - Order 7 on mobile */}
-                <div className="order-7 lg:order-5 flex-1 lg:flex-none flex items-center justify-end lg:justify-start">
+                {/* 5. Gender Selector - Order 9 on mobile */}
+                <div className="order-9 lg:order-5 flex-none flex items-center justify-end lg:justify-start">
                     <div className="flex items-center gap-2 bg-white border-2 border-slate-300 px-3 py-2 rounded-xl shadow-none h-10 lg:h-11 group/gender min-25 lg:min-30">
                         <User className="w-3.5 h-3.5 text-blue-500 mr-0.5 shrink-0" />
                         <div className="relative flex-1">

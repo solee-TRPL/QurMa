@@ -245,8 +245,11 @@ export const StudentProgress: React.FC<{ user: UserProfile }> = ({ user }) => {
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 800}} dy={10} />
                                     <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 800}} domain={[0, 30]} />
                                     <Tooltip 
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                                        itemStyle={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }}
+                                        cursor={{ stroke: '#f1f5f9', strokeWidth: 2 }}
+                                        contentStyle={{ borderRadius: '12px', border: '2px solid #e2e8f0', backgroundColor: '#fff', color: '#1e293b', padding: '10px', boxShadow: 'none' }}
+                                        itemStyle={{ color: '#1e293b', fontSize: '9px', fontWeight: 900, padding: 0, textTransform: 'uppercase' }}
+                                        labelStyle={{ color: '#94a3b8', opacity: 1, fontSize: '7px', fontWeight: 900, marginBottom: '4px', textTransform: 'uppercase' }}
+                                        formatter={(value: number, name: string) => [value, name === 'targetHafalan' ? 'TARGET HAFALAN' : 'HAFALAN AKTUAL']}
                                     />
                                     <Line type="linear" dataKey="targetHafalan" stroke="#10b981" strokeWidth={2} dot={false} strokeDasharray="4 4" />
                                     <Line type="linear" dataKey="hafalanActual" stroke="#6366f1" strokeWidth={4} dot={{ r: 4, fill: '#6366f1', strokeWidth: 0 }} activeDot={{ r: 6 }} />
@@ -271,8 +274,11 @@ export const StudentProgress: React.FC<{ user: UserProfile }> = ({ user }) => {
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 800}} dy={10} />
                                     <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 800}} domain={[0, 100]} />
                                     <Tooltip 
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                                        itemStyle={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }}
+                                        cursor={{ stroke: '#f1f5f9', strokeWidth: 2 }}
+                                        contentStyle={{ borderRadius: '12px', border: '2px solid #e2e8f0', backgroundColor: '#fff', color: '#1e293b', padding: '10px', boxShadow: 'none' }}
+                                        itemStyle={{ color: '#1e293b', fontSize: '9px', fontWeight: 900, padding: 0, textTransform: 'uppercase' }}
+                                        labelStyle={{ color: '#94a3b8', opacity: 1, fontSize: '7px', fontWeight: 900, marginBottom: '4px', textTransform: 'uppercase' }}
+                                        formatter={(value: number, name: string) => [value, name === 'targetSabaq' ? 'TARGET SABAQ' : 'SABAQ AKTUAL']}
                                     />
                                     <Line type="linear" dataKey="targetSabaq" stroke="#ef4444" strokeWidth={2} dot={false} strokeDasharray="4 4" />
                                     <Line type="linear" dataKey="sabaqActual" stroke="#3b82f6" strokeWidth={4} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }} activeDot={{ r: 6 }} />

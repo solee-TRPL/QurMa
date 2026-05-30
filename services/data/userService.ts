@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
-import { UserProfile } from '../../types';
+import { UserProfile, UserRole } from '../../types';
 import { logAudit } from './auditService';
 
 export const getUsers = async (tenantId: string): Promise<UserProfile[]> => {
@@ -49,6 +49,10 @@ export const createUser = async (userData: any, actor: UserProfile): Promise<Use
   }
 
   if (isAlreadyRegistered) {
+    if (userData.role !== UserRole.SANTRI && userData.role !== 'santri') {
+      throw new Error(`Email ${userData.email} sudah digunakan oleh akun lain. Gunakan email berbeda.`);
+    }
+
     let { data: existingProfile } = await supabase
       .from('profiles')
       .select('*')

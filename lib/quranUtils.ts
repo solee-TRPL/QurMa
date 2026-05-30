@@ -35,7 +35,7 @@ const calculateLinesPhysical = (
     const startInfo = QURAN_MAPPING[sId1]?.[startAyah];
     if (!startInfo) return 0;
 
-    const next = getNextAyah(endSurah, endAyah);
+    const next = getNextAyahPhysical(endSurah, endAyah);
     let pageBoundary: number;
     let lineBoundary: number;
 
@@ -136,7 +136,7 @@ const calculatePagesPhysical = (
     
     // To count COMPLETED pages, we check where the NEXT ayah would be.
     // If the next ayah is on a new page, it means the current page was finished.
-    const next = getNextAyah(endSurah, endAyah);
+    const next = getNextAyahPhysical(endSurah, endAyah);
     let pageBoundary: number;
     if (next) {
         const nId = QURAN_NAME_TO_ID[next.surah];
@@ -225,8 +225,34 @@ export const validateMemorizationSequence = (lastSurah: string, lastAyah: number
     return newScore >= lastScore;
 };
 
+
 /**
- * Helper to get the next ayah key
+ * [INTERNAL] Mendapatkan ayah berikutnya berdasarkan urutan MUSHAF fisik (1→114).
+ * Dipakai oleh calculateLinesPhysical & calculatePagesPhysical untuk menentukan
+ * batas halaman/baris di mushaf. JANGAN pakai untuk alur sabaq.
+ */
+const getNextAyahPhysical = (surahName: string, ayah: number): { surah: string; ayah: number } | null => {
+    const sId = QURAN_NAME_TO_ID[surahName];
+    if (!sId) return null;
+
+    const totalAyah = QURAN_SURAH_VERSES[sId];
+    if (ayah < totalAyah) {
+        return { surah: surahName, ayah: ayah + 1 };
+    }
+
+    // Lanjut ke surah berikutnya dalam urutan mushaf (ID numerik)
+    if (sId < 114) {
+        const nextName = QURAN_ID_TO_NAME[sId + 1];
+        if (nextName) return { surah: nextName, ayah: 1 };
+    }
+
+    return null;
+};
+
+/**
+ * [EXPORTED] Mendapatkan ayah berikutnya berdasarkan urutan SABAQ (SURAH_PROGRESSION).
+ * Dipakai untuk menentukan titik mulai setoran sabaq berikutnya.
+ * Alur: Juz 30 → Juz 1, per-juz dari depan (An-Naba' → An-Nas, lalu Al-Mulk, dst.)
  */
 export const getNextAyah = (surahName: string, ayah: number): { surah: string; ayah: number } | null => {
     const sId = QURAN_NAME_TO_ID[surahName];
@@ -237,10 +263,13 @@ export const getNextAyah = (surahName: string, ayah: number): { surah: string; a
         return { surah: surahName, ayah: ayah + 1 };
     }
 
-    if (sId < 114) {
-        const nextName = QURAN_ID_TO_NAME[sId + 1];
+    // Lanjut ke surah berikutnya dalam urutan sabaq (SURAH_PROGRESSION)
+    const currentIdx = SURAH_PROGRESSION.indexOf(surahName);
+    if (currentIdx !== -1 && currentIdx < SURAH_PROGRESSION.length - 1) {
+        const nextName = SURAH_PROGRESSION[currentIdx + 1];
         if (nextName) return { surah: nextName, ayah: 1 };
     }
 
     return null;
 };
+

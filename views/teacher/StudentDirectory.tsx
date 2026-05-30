@@ -981,16 +981,16 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string; m
 
       {/* Date Filter Control Bar - Only for kehadiran or hafalan */}
       {(mode === 'kehadiran' || mode === 'hafalan') && (
-      <div className="flex flex-col sm:flex-row gap-3 bg-white">
-          <div className="flex-1 space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dari Tanggal</label>
-              <div className="h-10 px-3 flex items-center bg-slate-50 border-2 border-slate-200 rounded-xl focus-within:border-jade-400 transition-all">
+      <div className="flex flex-row gap-2 lg:gap-3 bg-white">
+          <div className="flex-1 space-y-1 lg:space-y-1.5">
+              <label className="text-[8px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dari Tanggal</label>
+              <div className="h-8 lg:h-10 px-2 lg:px-3 flex items-center bg-slate-50 border-2 border-slate-200 rounded-xl focus-within:border-jade-400 transition-all">
                   <CustomDatePicker value={startDate} onChange={setStartDate} align="left" />
               </div>
           </div>
-          <div className="flex-1 space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sampai Tanggal</label>
-              <div className="h-10 px-3 flex items-center bg-slate-50 border-2 border-slate-200 rounded-xl focus-within:border-jade-400 transition-all">
+          <div className="flex-1 space-y-1 lg:space-y-1.5">
+              <label className="text-[8px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sampai Tanggal</label>
+              <div className="h-8 lg:h-10 px-2 lg:px-3 flex items-center bg-slate-50 border-2 border-slate-200 rounded-xl focus-within:border-jade-400 transition-all">
                   <CustomDatePicker value={endDate} onChange={setEndDate} align="left" />
               </div>
           </div>
@@ -1004,7 +1004,7 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string; m
                     <tr className="bg-slate-300">
                         <th className="hidden lg:table-cell w-12.5 min-w-12.5 max-w-12.5 sticky left-0 bg-slate-300 z-50 px-2 lg:px-3 py-4 text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-l border-r border-black whitespace-nowrap">No</th>
                         <th className="hidden lg:table-cell w-25 min-w-25 max-w-25 sticky lg:left-12.5 bg-slate-300 z-50 px-3 py-4 text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-black border-r whitespace-nowrap">NIS</th>
-                        <th className={`w-25 min-w-25 max-w-25 lg:w-75 lg:min-w-75 lg:max-w-75 sticky left-0 lg:left-37.5 bg-slate-300 z-50 px-4 py-3 text-[10px] font-black text-slate-800 uppercase tracking-widest text-left border-t border-b border-r border-black shadow-[2px_0_5px_rgba(0,0,0,0.05)] whitespace-nowrap`}>Nama Santri</th>
+                        <th className={`w-23.75 min-w-23.75 max-w-23.75 lg:w-75 lg:min-w-75 lg:max-w-75 sticky left-0 lg:left-37.5 bg-slate-300 z-50 px-2 lg:px-4 py-3 lg:py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-left border-t border-b border-r border-black shadow-[2px_0_5px_rgba(0,0,0,0.05)] whitespace-nowrap`}>Nama Santri</th>
                         {mode === 'hafalan' && (
                             <>
                                 <th className="w-full min-w-30 px-3 py-4 text-[10px] font-black text-emerald-700 uppercase tracking-widest text-center border-t border-b border-r border-emerald-700 bg-emerald-50 whitespace-nowrap">Hafalan Saat Ini</th>
@@ -1036,7 +1036,16 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string; m
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-200">
-                    {paginatedStudents.length === 0 ? (
+                    {loading ? (
+                        <tr>
+                            <td colSpan={10} className="py-24 text-center">
+                                <div className="flex flex-col items-center justify-center gap-4">
+                                    <div className="w-8 h-8 border-4 border-jade-100 border-t-jade-500 rounded-full animate-spin"></div>
+                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Memuat data...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    ) : paginatedStudents.length === 0 ? (
                         <tr>
                             <td colSpan={10} className="py-24 text-center">
                                 <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Data santri tidak ditemukan</p>
@@ -1046,26 +1055,62 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string; m
                         <tr key={student.id} className="group transition-colors hover:bg-emerald-50/40">
                             <td className="hidden lg:table-cell w-12.5 min-w-12.5 max-w-12.5 sticky left-0 bg-white group-hover:bg-emerald-50 px-2 lg:px-3 py-3 text-[11px] font-bold text-slate-400 text-center border-r border-b border-slate-200 z-20 transition-colors">{(currentPage - 1) * itemsPerPage + idx + 1}</td>
                             <td className="hidden lg:table-cell w-25 min-w-25 max-w-25 sticky lg:left-12.5 bg-white group-hover:bg-emerald-50 px-3 py-3 text-[8px] font-bold text-slate-600 text-center border-r border-b border-slate-200 z-20 transition-colors truncate">{student.nis || '-'}</td>
-                             <td className={`w-25 min-w-25 max-w-25 lg:w-75 lg:min-w-75 lg:max-w-75 sticky left-0 lg:left-37.5 bg-white group-hover:bg-emerald-50 px-4 py-3 text-xs font-bold text-slate-800 border-r border-b border-slate-200 z-20 transition-colors truncate`}>
+                             <td className={`w-23.75 min-w-23.75 max-w-23.75 lg:w-75 lg:min-w-75 lg:max-w-75 sticky left-0 lg:left-37.5 bg-white group-hover:bg-emerald-50 px-2 lg:px-4 py-3 lg:py-4 text-[9.5px] lg:text-xs font-bold text-slate-800 border-r border-b border-slate-200 z-20 transition-all duration-300 whitespace-normal leading-tight break-words shadow-[2px_0_5px_rgba(0,0,0,0.05)]`}>
                                 <div className="flex items-center gap-2">
-                                    <span className="leading-tight">{student.full_name}</span>
+                                    <span className="whitespace-normal lg:truncate leading-tight break-words lg:whitespace-nowrap">{student.full_name}</span>
                                 </div>
                             </td>
                              {mode === 'hafalan' && (
                                  <>
                                      <td className="px-4 py-3 text-center border-r border-b border-slate-200 bg-emerald-50/10 group-hover:bg-emerald-50">
                                          <span className="text-[11px] font-black text-slate-800">
-                                             {student.current_juz || 0} Juz {student.current_page || 0} Halaman
+                                             {student.current_juz === 30 
+                                                 ? '30 Juz' 
+                                                 : `${student.current_juz || 0} Juz ${student.current_page || 0} Halaman`
+                                             }
                                          </span>
                                      </td>
                                      <td className="px-3 py-3 text-[11px] font-black text-teal-600 text-center border-rborder-b border-slate-200 bg-teal-50/10 group-hover:bg-emerald-50 whitespace-nowrap">
-                                         {loadingStats ? <span className="text-[8px] text-slate-400 animate-pulse">...</span> : `${studentStats[student.id]?.sabaq_sum || 0} Baris`}
+                                         {loadingStats ? <span className="text-[8px] text-slate-400 animate-pulse">...</span> : (() => {
+                                             const totalLines = studentStats[student.id]?.sabaq_sum || 0;
+                                             const totalPages = Math.floor(totalLines / 15);
+                                             const lines = totalLines % 15;
+                                             const juz = Math.floor(totalPages / 20);
+                                             const pages = totalPages % 20;
+                                             
+                                             const parts: string[] = [];
+                                             if (juz > 0) parts.push(`${juz} Juz`);
+                                             if (pages > 0) parts.push(`${pages} Halaman`);
+                                             if (lines > 0) parts.push(`${lines} Baris`);
+                                             
+                                             return parts.length > 0 ? parts.join(' ') : '0 Baris';
+                                         })()}
                                      </td>
                                      <td className="px-3 py-3 text-[11px] font-black text-sky-600 text-center border-r border-b border-slate-200 bg-sky-50/10 group-hover:bg-emerald-50 whitespace-nowrap">
-                                         {loadingStats ? <span className="text-[8px] text-slate-400 animate-pulse">...</span> : `${studentStats[student.id]?.sabqi_sum || 0} Halaman`}
+                                         {loadingStats ? <span className="text-[8px] text-slate-400 animate-pulse">...</span> : (() => {
+                                             const totalPages = studentStats[student.id]?.sabqi_sum || 0;
+                                             const juz = Math.floor(totalPages / 20);
+                                             const pages = totalPages % 20;
+                                             
+                                             const parts: string[] = [];
+                                             if (juz > 0) parts.push(`${juz} Juz`);
+                                             if (pages > 0) parts.push(`${pages} Halaman`);
+                                             
+                                             return parts.length > 0 ? parts.join(' ') : '0 Halaman';
+                                         })()}
                                      </td>
                                      <td className="px-3 py-3 text-[11px] font-black text-indigo-600 text-center border-r border-b border-slate-200 bg-indigo-50/10 group-hover:bg-emerald-50 whitespace-nowrap">
-                                         {loadingStats ? <span className="text-[8px] text-slate-400 animate-pulse">...</span> : `${studentStats[student.id]?.manzil_sum || 0} Halaman`}
+                                         {loadingStats ? <span className="text-[8px] text-slate-400 animate-pulse">...</span> : (() => {
+                                             const totalPages = studentStats[student.id]?.manzil_sum || 0;
+                                             const juz = Math.floor(totalPages / 20);
+                                             const pages = totalPages % 20;
+                                             
+                                             const parts: string[] = [];
+                                             if (juz > 0) parts.push(`${juz} Juz`);
+                                             if (pages > 0) parts.push(`${pages} Halaman`);
+                                             
+                                             return parts.length > 0 ? parts.join(' ') : '0 Halaman';
+                                         })()}
                                      </td>
                                  </>
                              )}

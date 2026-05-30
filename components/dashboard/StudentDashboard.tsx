@@ -402,15 +402,21 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                                     tick={{ fontSize: 9, fontWeight: 900, fill: '#94a3b8' }}
                                 />
                                 <Tooltip 
-                                    contentStyle={{ borderRadius: '12px', border: '2px solid #e2e8f0', boxShadow: 'none' }}
-                                    itemStyle={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase' }}
+                                    cursor={{ stroke: '#f1f5f9', strokeWidth: 2 }}
+                                    contentStyle={{ borderRadius: '12px', border: '2px solid #e2e8f0', backgroundColor: '#fff', color: '#1e293b', padding: '10px', boxShadow: 'none' }}
+                                    itemStyle={{ color: '#1e293b', fontSize: '9px', fontWeight: 900, padding: 0, textTransform: 'uppercase' }}
+                                    labelStyle={{ color: '#94a3b8', opacity: 1, fontSize: '7px', fontWeight: 900, marginBottom: '4px', textTransform: 'uppercase' }}
+                                    labelFormatter={(label: string) => {
+                                        const fullDays: Record<string, string> = { 'Sen': 'Senin', 'Sel': 'Selasa', 'Rab': 'Rabu', 'Kam': 'Kamis', 'Jum': 'Jumat', 'Sab': 'Sabtu', 'Min': 'Minggu' };
+                                        return fullDays[label] || label;
+                                    }}
                                 />
                                 <Area 
                                     type="monotone" 
                                     dataKey="amount" 
                                     stroke="#10b981" 
                                     strokeWidth={4} 
-                                    fillOpacity={1} 
+                                    fillOpacity={1}
                                     fill="url(#colorAmount)"
                                     animationDuration={1500}
                                 />

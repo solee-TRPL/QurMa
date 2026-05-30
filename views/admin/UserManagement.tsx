@@ -18,9 +18,10 @@ interface UserFormModalProps {
   onResetPassword?: (userId: string, targetPass: string) => Promise<void>; 
   initialData?: UserProfile | null;
   tenantId: string;
+  existingUsers: UserProfile[];
 }
 
-const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit, onResetPassword, initialData, tenantId }) => {
+const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit, onResetPassword, initialData, tenantId, existingUsers }) => {
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
@@ -32,6 +33,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
   });
   const [isResetting, setIsResetting] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [emailError, setEmailError] = useState('');
 
   // Sync state when opening for Edit vs Create
   useEffect(() => {
@@ -50,13 +52,17 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
         // Explicitly reset all fields saat modal Tambah dibuka
         setFormData({ full_name: '', email: '', role: '' as any, password: '', whatsapp_number: '', nip: '', nik: '' });
       }
+      setEmailError('');
     }
   }, [isOpen, initialData]);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (emailError) return;
     
     // Construct payload
     const payload: any = { 
@@ -79,8 +85,13 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
         payload.password = (isStaff && formData.nip) ? formData.nip : formData.password;
     }
     
-    await onSubmit(payload);
-    onClose();
+    setIsSubmitting(true);
+    try {
+      await onSubmit(payload);
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleForceReset = async () => {
@@ -127,13 +138,22 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
                         required
                         type="email" 
                         value={formData.email}
-                        onChange={e => setFormData({...formData, email: e.target.value})}
+                        onChange={e => {
+                            const newEmail = e.target.value;
+                            setFormData({...formData, email: newEmail});
+                            if (!initialData) {
+                                const exists = existingUsers.some(u => u.email.toLowerCase() === newEmail.toLowerCase());
+                                if (exists) setEmailError('Email sudah terdaftar. Gunakan email lain.');
+                                else setEmailError('');
+                            }
+                        }}
                         autoComplete="off"
-                        className={`w-full pl-9 pr-4 py-2 border-2 border-slate-300 rounded-xl font-bold text-[13px] outline-none transition-all placeholder:text-slate-300 ${initialData ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-800 focus:border-jade-400'}`}
+                        className={`w-full pl-9 pr-4 py-2 border-2 rounded-xl font-bold text-[13px] outline-none transition-all placeholder:text-slate-300 ${initialData ? 'bg-slate-50 border-slate-300 text-slate-400 cursor-not-allowed' : emailError ? 'border-red-500 bg-red-50 focus:border-red-500 focus:bg-white text-slate-800' : 'bg-white border-slate-300 focus:border-jade-400 text-slate-800'}`}
                         placeholder="email@sekolah.com"
                         disabled={!!initialData}
                     />
                 </div>
+                {emailError && <p className="mt-1 ml-1 text-[8.5px] font-bold text-red-500">{emailError}</p>}
             </div>
 
           <div className="group/field">
@@ -232,10 +252,15 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
             </button>
             <button 
                 type="submit"
-                className="flex-2 flex items-center justify-center px-4 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 border-jade-600 bg-jade-600 text-white shadow-none hover:bg-jade-700 transition-all active:scale-95"
+                disabled={!!emailError || isSubmitting}
+                className={`flex-2 flex items-center justify-center px-4 py-2.5 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 shadow-none transition-all active:scale-95 ${(emailError || isSubmitting) ? 'border-slate-300 bg-slate-300 text-white cursor-not-allowed' : 'border-jade-600 bg-jade-600 text-white hover:bg-jade-700'}`}
             >
-              <Save className="w-4 h-4 mr-2" />
-              {initialData ? 'SIMPAN' : 'BUAT USER'}
+              {isSubmitting ? (
+                 <div className="w-4 h-4 mr-2 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+              ) : (
+                 <Save className="w-4 h-4 mr-2" />
+              )}
+              {initialData ? 'SIMPAN PERUBAHAN' : 'TAMBAH USER'}
             </button>
           </div>
         </form>
@@ -277,6 +302,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSubmit
 // --- Main Page Component ---
 export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> = ({ tenantId, user }) => {
     const isReadOnly = user.role === UserRole.SUPERVISOR;
+    const canEditDelete = !isReadOnly;
     const [users, setUsers] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -290,10 +316,10 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(5);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
 
-    const fetchData = async () => {
-        setLoading(true);
+    const fetchData = async (silent = false) => {
+        if (!silent) setLoading(true);
         try {
             const usersData = await getUsers(tenantId);
             setUsers(usersData.filter(u => 
@@ -305,7 +331,7 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
             console.error("Error fetching user data:", error);
             addNotification({ type: 'error', title: 'Gagal', message: 'Tidak dapat memuat data pengguna.' });
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     };
 
@@ -334,7 +360,6 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
     }, [filteredUsers, currentPage, itemsPerPage]);
 
     const handleCreateOrUpdate = async (userData: any) => {
-        setGlobalLoading(true);
         try {
             if (selectedUser) {
                 await updateUser(userData, user);
@@ -343,7 +368,7 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                 await createUser(userData, user);
                 addNotification({ type: 'success', title: 'Berhasil', message: `User baru ${userData.full_name} telah dibuat.` });
             }
-            await fetchData();
+            await fetchData(true);
         } catch (error: any) {
             console.error("User creation error:", error);
             let msg = error.message || "Gagal menyimpan data.";
@@ -366,8 +391,6 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                 title: 'Gagal Menyimpan', 
                 message: msg 
             });
-        } finally {
-            setGlobalLoading(false);
         }
     };
 
@@ -408,7 +431,7 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
     return (
         <div className="space-y-6">
             {/* Unified Control Bar */}
-            <div className="flex flex-col lg:flex-row w-full gap-2 py-2 bg-white shrink-0 z-40 sticky top-0">
+            <div className="flex flex-col lg:flex-row w-full gap-2 bg-white shrink-0 z-40 sticky top-0">
                 <div className="flex flex-row items-center gap-2 w-full lg:contents">
                     {/* 1. SEARCH BAR */}
                     <div className="relative flex-1 group h-10 min-w-0">
@@ -472,7 +495,7 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                                 <th className="sticky left-0 md:left-11.25 z-60 px-4 md:px-6 py-4 text-left text-slate-800 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-black w-27.5 md:w-auto min-27.5 md:min-w-0 bg-slate-300">USER & EMAIL</th>
                                 <th className="px-6 py-4 text-center text-emerald-600 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-emerald-600 bg-emerald-50 min-30">ROLE</th>
                                 <th className="px-4 py-4 text-left text-[9.5px] font-black text-blue-600 uppercase tracking-widest border-t border-b border-r border-blue-600 bg-blue-50 w-44">WHATSAPP</th>
-                                {!isReadOnly && <th className="px-4 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black bg-slate-300 w-24">AKSI</th>}
+                                {canEditDelete && <th className="px-4 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black bg-slate-300 w-24">AKSI</th>}
                             </tr>
                         </thead>
                         <tbody className="bg-white">
@@ -483,7 +506,7 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                                         <td className="sticky left-0 md:left-11.25 z-10 bg-white border-r border-b border-slate-100 w-27.5 md:w-auto"><Skeleton className="h-4 w-20" /></td>
                                         <td className="px-6 py-4 border-r border-b border-slate-100"><Skeleton className="h-4 w-20" /></td>
                                         <td className="px-4 py-4 border-b border-r border-slate-100"><Skeleton className="h-4 w-24" /></td>
-                                        {!isReadOnly && <td className="px-4 py-4 border-b border-slate-100"><div className="h-4 bg-slate-100 rounded animate-pulse w-full"></div></td>}
+                                        {canEditDelete && <td className="px-4 py-4 border-b border-slate-100"><div className="h-4 bg-slate-100 rounded animate-pulse w-full"></div></td>}
                                     </tr>
                                 ))
                             ) : paginatedData.map((u, index) => (
@@ -507,16 +530,20 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                                             <span className="text-slate-300 font-black text-[9px] uppercase tracking-widest leading-none">-</span>
                                         )}
                                     </td>
-                                    {!isReadOnly && (
+                                    {canEditDelete && (
                                         <td className="px-4 py-4 whitespace-nowrap text-center border-b border-slate-100">
-                                            <div className="flex justify-center gap-2">
-                                                <button onClick={() => openEditModal(u)} className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border-2 border-slate-300 hover:border-jade-100 transition-all bg-white shadow-none" title="Edit">
-                                                    <Edit className="w-4 h-4" />
-                                                </button>
-                                                <button onClick={() => setUserToDelete(u)} className="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl border-2 border-slate-300 hover:border-red-100 transition-all bg-white shadow-none" title="Hapus">
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </div>
+                                            {u.role !== UserRole.ADMIN ? (
+                                                <div className="flex justify-center gap-2">
+                                                    <button onClick={() => openEditModal(u)} className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border-2 border-slate-300 hover:border-jade-100 transition-all bg-white shadow-none" title="Edit">
+                                                        <Edit className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={() => setUserToDelete(u)} className="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl border-2 border-slate-300 hover:border-red-100 transition-all bg-white shadow-none" title="Hapus">
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <span className="text-slate-300 font-black text-[9px] uppercase tracking-widest leading-none">-</span>
+                                            )}
                                         </td>
                                     )}
                                 </tr>
@@ -605,6 +632,7 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
                 }}
                 initialData={selectedUser}
                 tenantId={tenantId}
+                existingUsers={users}
             />
 
             <ConfirmModal

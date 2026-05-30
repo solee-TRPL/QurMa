@@ -104,9 +104,11 @@ export const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, notes, 
                 <div className="p-4 overflow-y-auto scrollbar-hide max-h-[60vh] bg-slate-50/30">
                     <div className="space-y-2.5">
                         {notes.length === 0 ? (
-                            <div className="py-12 flex flex-col items-center justify-center opacity-30 text-center">
-                                <MessageSquare className="w-12 h-12 mb-2 text-slate-300" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Belum ada catatan</p>
+                            <div className="py-8 flex flex-col items-center justify-center text-center bg-white rounded-xl border-2 border-dashed border-slate-200">
+                                <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 mb-2">
+                                    <MessageSquare className="w-4 h-4 text-slate-300" />
+                                </div>
+                                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Belum ada catatan</p>
                             </div>
                         ) : notes.map((note) => {
                             const hasReply = !!note.reply_content;
@@ -247,7 +249,7 @@ export const NotesModal: React.FC<NotesModalProps> = ({ isOpen, onClose, notes, 
                                                     onClick={() => handleReplySubmit(note.id)}
                                                     className="bg-jade-600 text-white px-4 py-1.5 rounded-lg text-[8.5px] font-black uppercase flex items-center gap-1.5 shadow-lg shadow-jade-100/50 active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100"
                                                 >
-                                                    {submittingReply ? 'Menyimpan...' : (note.reply_content ? 'Update' : 'Kirim')}
+                                                    {submittingReply ? 'Menyimpan' : (note.reply_content ? 'Update' : 'Kirim')}
                                                     {!submittingReply && <Send className="w-3 h-3" />}
                                                 </button>
                                             </div>

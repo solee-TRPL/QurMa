@@ -116,6 +116,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
   };
 
   const activePeriodsStr = JSON.stringify(tenant?.cycle_config?.activePeriods || []);
+  const activeDaysStr = JSON.stringify(tenant?.cycle_config?.activeDays || [1, 2, 3, 4, 5]);
   const weekDates = useMemo(() => {
     const today = new Date();
     const day = today.getDay(); // 0-6
@@ -124,10 +125,14 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
     start.setDate(today.getDate() + diff);
     const dates: string[] = [];
     const activePeriods = JSON.parse(activePeriodsStr);
+    const activeDays = JSON.parse(activeDaysStr);
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 7; i++) {
         const current = new Date(start);
         current.setDate(start.getDate() + i);
+        
+        if (!activeDays.includes(current.getDay())) continue;
+
         const currentDateStr = getLocalDateString(current);
 
         let isWithinActiveRange = true;
@@ -144,7 +149,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
         }
     }
     return dates;
-  }, [currentWeekOffset, activePeriodsStr]);
+  }, [currentWeekOffset, activePeriodsStr, activeDaysStr]);
 
   const weekDisplayRange = useMemo(() => {
     if (weekDates.length === 0) return '';
@@ -239,8 +244,28 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                 const dbTarget = targetMap.get(s.id);
                 const data = dbTarget?.target_data || {};
                 
-                const juz = data.current_juz ?? s.current_juz ?? 0;
-                const hal = data.current_page ?? s.current_page ?? 0;
+                // Automatisasi Hafalan Saat Ini (Juz & Hal) dari Posisi Sabaq Terakhir
+                const latestSabaq = baselines[s.id]?.sabaq;
+                let calculatedJuz = 0;
+                let calculatedHal = 0;
+
+                if (latestSabaq && latestSabaq.surah_name) {
+                    const totalPages = calculatePages("An-Naba'", 1, latestSabaq.surah_name, latestSabaq.ayat_start || 0);
+                    calculatedJuz = Math.floor(totalPages / 20);
+                    calculatedHal = totalPages % 20;
+
+                    if (calculatedJuz >= 30) {
+                        calculatedJuz = 30;
+                        calculatedHal = 0;
+                    }
+                } else {
+                    // Fallback jika belum pernah ada sabaq sama sekali
+                    calculatedJuz = data.current_juz ?? s.current_juz ?? 0;
+                    calculatedHal = data.current_page ?? s.current_page ?? 0;
+                }
+
+                const juz = calculatedJuz;
+                const hal = calculatedHal;
                 const manzilAtmValue = calculateManzilAtm(juz);
                 const hariAtmValue = calculateHariAtm(juz, manzilAtmValue);
                 const sabqiAtmValue = calculateSabqiAtm(hal);
@@ -252,8 +277,8 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                     nis: s.nis || '-',
                     name: s.full_name,
                     className: currentClassName,
-                    hafalanJuz: (juz && juz > 0) ? juz.toString() : '',
-                    hafalanHal: (hal && hal > 0) ? hal.toString() : '',
+                    hafalanJuz: (juz > 0 || hal > 0 || !!latestSabaq) ? juz.toString() : '',
+                    hafalanHal: (juz > 0 || hal > 0 || !!latestSabaq) ? hal.toString() : '',
                     manzilAtm: manzilAtmValue > 0 ? manzilAtmValue.toString() : '',
                     hariAtm: hariAtmValue > 0 ? hariAtmValue.toString() : '',
                     sabqiAtm: sabqiAtmValue,
@@ -508,7 +533,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
   }, [saveTrigger]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-0">
       {/* Top Utility Strip */}
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2 lg:gap-4 py-2 lg:py-3">
           {/* Row 1: Week & Halaqah */}
@@ -545,8 +570,8 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
               </div>
 
               {/* Halaqah Info */}
-              <div className="flex items-center gap-2 lg:gap-3 bg-white px-2.5 lg:px-4 py-1.5 lg:py-2 rounded-2xl border border-slate-200">
-                  <div className="p-1 lg:p-1.5 bg-slate-50 rounded-lg text-slate-400">
+              <div className="flex items-center gap-1 lg:gap-3 bg-white px-2.5 lg:px-4 py-1.5 lg:py-2 rounded-2xl border border-slate-400">
+                  <div className="pl-0 p-1 lg:p-1.5 bg-slate-50 rounded-lg text-slate-400">
                       <BookOpen className="w-3 h-3 lg:w-4 lg:h-4" />
                   </div>
                   <div className="text-left">
@@ -590,16 +615,16 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                       ) : (
                         <Save className="w-3.5 h-3.5 lg:mr-2" />
                       )}
-                      <span className="hidden lg:inline">{isSaving ? 'MENYIMPAN...' : 'SIMPAN LAPORAN'}</span>
-                      <span className="lg:hidden ml-1.5">{isSaving ? 'MENYIMPAN...' : 'SIMPAN'}</span>
+                      <span className="hidden lg:inline">{isSaving ? 'MENYIMPAN' : 'SIMPAN LAPORAN'}</span>
+                      <span className="lg:hidden ml-1.5">{isSaving ? 'MENYIMPAN' : 'SIMPAN'}</span>
                     </button>
               </div>
           </div>
       </div>
 
       {/* Top Utility Strip (Outside bordered container) */}
-      <div className="py-2 lg:py-4 bg-transparent flex flex-row items-center justify-between gap-2 overflow-x-auto no-scrollbar mb-1 lg:mb-0 px-1">
-          <div className="hidden sm:flex items-center gap-2">
+      <div className="py-2 lg:py-4 bg-transparent flex flex-col lg:flex-row items-start lg:items-center justify-between gap-2 lg:gap-2 mb-1 lg:mb-0 px-1">
+          <div className="flex items-center gap-2 flex-wrap">
             <button 
               onClick={() => setShowAtm(!showAtm)}
               className={`flex-none flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all text-[8.5px] lg:text-[10px] font-black uppercase tracking-tight border-2 shadow-none ${showAtm ? 'bg-jade-50/50 text-jade-600 border-jade-300' : 'bg-white text-slate-400 border-slate-300 hover:bg-slate-50'}`}
@@ -624,7 +649,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
             </button>
           </div>
 
-          <div className="flex items-center gap-2 lg:gap-4 flex-nowrap whitespace-nowrap py-1">
+          <div className="flex items-center gap-2 lg:gap-4 flex-wrap lg:flex-nowrap py-1">
               <span className="flex items-center gap-1 text-[7.5px] lg:text-[9px] font-black text-amber-500 uppercase tracking-tighter"><CheckCircle2 className="w-2.5 h-2.5" /> A: Terlampaui</span>
               <span className="flex items-center gap-1 text-[7.5px] lg:text-[9px] font-black text-emerald-600 uppercase tracking-tighter"><CheckCircle2 className="w-2.5 h-2.5" /> B: Tercapai</span>
               <span className="flex items-center gap-1 text-[7.5px] lg:text-[9px] font-black text-rose-500 uppercase tracking-tighter"><XCircle className="w-2.5 h-2.5" /> C: Tidak Tercapai</span>
@@ -711,54 +736,38 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                 {/* Scrollable Content */}
                                 {!showNotes ? (
                                   <>
-                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-b border-slate-200 text-center bg-jade-50/5">
+                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-b border-slate-200 text-center bg-slate-50/50">
                                         <input 
-                                            type="number" 
-                                            min="1" 
-                                            max="30" 
+                                            type="text" 
                                             value={target.hafalanJuz} 
-                                            onChange={e => {
-                                                let val = parseInt(e.target.value);
-                                                if (isNaN(val)) handleInputChange(s.id, 'hafalanJuz', '');
-                                                else {
-                                                    if (val < 0) val = 0;
-                                                    if (val > 30) val = 30;
-                                                    handleInputChange(s.id, 'hafalanJuz', val.toString());
-                                                }
-                                            }} 
-                                            className="w-full text-center text-[9px] lg:text-[10px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-jade-300 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                            readOnly
+                                            disabled
+                                            title="Juz dihitung otomatis dari posisi Sabaq terakhir"
+                                            className="w-full text-center text-[9px] lg:text-[10px] font-black text-slate-700 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 cursor-not-allowed opacity-80" 
                                             placeholder="Juz" 
                                         />
                                     </td>
-                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-b border-slate-200 text-center bg-jade-50/5">
+                                    <td className="px-0.5 lg:px-1 py-1.5 border-r border-b border-slate-200 text-center bg-slate-50/50">
                                         <input 
-                                            type="number" 
-                                            min="1" 
-                                            max="20" 
+                                            type="text" 
                                             value={target.hafalanHal} 
-                                            onChange={e => {
-                                                let val = parseInt(e.target.value);
-                                                if (isNaN(val)) handleInputChange(s.id, 'hafalanHal', '');
-                                                else {
-                                                    if (val < 0) val = 0;
-                                                    if (val > 20) val = 20;
-                                                    handleInputChange(s.id, 'hafalanHal', val.toString());
-                                                }
-                                            }} 
-                                            className="w-full text-center text-[9px] lg:text-[10px] font-black text-slate-800 tracking-tight bg-transparent border-none focus:ring-1 focus:ring-jade-300 rounded h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                            readOnly
+                                            disabled
+                                            title="Halaman dihitung otomatis dari posisi Sabaq terakhir"
+                                            className="w-full text-center text-[9px] lg:text-[10px] font-black text-slate-700 tracking-tight bg-transparent border-none focus:ring-0 rounded h-8 cursor-not-allowed opacity-80" 
                                             placeholder="Halaman" 
                                         />
                                     </td>
                                     {showAtm && (
                                         <>
                                             <td className="px-0.5 lg:px-1 py-1.5 border-r border-b border-slate-200 text-center bg-blue-50/5">
-                                                <input readOnly type="text" value={target.manzilAtm ? `${target.manzilAtm} Hal` : ''} className="w-full text-center text-[9px] lg:text-[10px] font-black text-amber-500 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
+                                                <input readOnly type="text" value={target.manzilAtm ? `${target.manzilAtm} Hal` : '-'} className="w-full text-center text-[9px] lg:text-[10px] font-black text-amber-500 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
                                             </td>
                                             <td className="px-0.5 lg:px-1 py-1.5 border-r border-b border-slate-200 text-center bg-blue-50/5">
-                                                <input readOnly type="text" value={target.hariAtm ? `${target.hariAtm} Hari` : ''} className="w-full text-center text-[9px] lg:text-[10px] font-black text-amber-500 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
+                                                <input readOnly type="text" value={target.hariAtm ? `${target.hariAtm} Hari` : '-'} className="w-full text-center text-[9px] lg:text-[10px] font-black text-amber-500 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
                                             </td>
                                             <td className="px-0.5 lg:px-1 py-1.5 border-r border-b border-slate-200 text-center bg-blue-50/5">
-                                                <input readOnly type="text" value={target.sabqiAtm ? `${target.sabqiAtm} Hal` : ''} className="w-full text-center text-[9px] lg:text-[10px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
+                                                <input readOnly type="text" value={target.sabqiAtm ? `${target.sabqiAtm} Hal` : '-'} className="w-full text-center text-[9px] lg:text-[10px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default" />
                                             </td>
                                         </>
                                     )}
@@ -977,14 +986,14 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
           </div>
           
           <div className="px-6 py-4 bg-slate-50/30 border-t border-slate-100 flex flex-col md:flex-row justify-between lg:items-center gap-4">
-              <div className="flex flex-col lg:flex-row lg:flex-wrap gap-x-8 gap-y-2 lg:gap-y-4 text-[9px] lg:text-[10px] font-bold text-slate-400">
+              <div className="flex flex-col lg:flex-row lg:flex-wrap gap-x-4 gap-y-1 lg:gap-y-4 text-[9px] lg:text-[10px] font-bold text-slate-400">
                   <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-primary-500 rounded-full shrink-0"></div> Manzil ideal rotasi 15 hari</div>
                   <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full shrink-0"></div> Sabqi ideal rotasi 5 hari</div>
                   <div className="flex items-start gap-2 pt-1 lg:pt-0">
                       <Info className="w-3.5 h-3.5 text-slate-300 shrink-0 mt-0.5" /> 
                       <p className="leading-relaxed">
                           Format Pengisian: [Nama surat]:[Ayat](Keterangan) 
-                          <span className="block lg:inline lg:ml-1 text-[8px] lg:text-[10px] text-slate-300 font-medium whitespace-nowrap">Contoh: Al-Baqarah:15(Lancar)</span>
+                          <span className="block lg:inline lg:ml-1 text-[8px] lg:text-[10px] text-slate-500 font-medium whitespace-nowrap">Contoh: Al-Baqarah:15(Lancar)</span>
                       </p>
                   </div>
               </div>

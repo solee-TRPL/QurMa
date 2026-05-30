@@ -173,7 +173,13 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <div className="flex-1 lg:w-1/2 flex items-center justify-center p-8 bg-white relative">
+      <div className="flex-1 lg:w-1/2 flex items-center justify-center p-6 lg:p-8 bg-white relative overflow-hidden">
+        {/* Subtle decorative blurs for mobile */}
+        <div className="lg:hidden absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+            <div className="absolute top-[-10%] right-[-10%] w-72 h-72 bg-jade-100/60 rounded-full blur-[60px]"></div>
+            <div className="absolute bottom-[-10%] left-[-10%] w-64 h-64 bg-jade-50/60 rounded-full blur-[50px]"></div>
+        </div>
+
         <button 
             onClick={handleBackToHome} 
             className="absolute top-6 left-6 p-2.5 text-slate-400 hover:bg-slate-50 hover:text-jade-600 rounded-full transition-all group flex items-center gap-2 z-50 border border-transparent hover:border-slate-100"
@@ -183,7 +189,7 @@ export default function LoginPage() {
             <span className="text-[10px] font-black uppercase tracking-widest hidden group-hover:block transition-all">Kembali</span>
         </button>
 
-        <div className="w-full max-w-[340px] p-2 relative transform animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="w-full max-w-[340px] p-2 relative z-10 transform animate-in fade-in slide-in-from-bottom-4 duration-700 mt-8 lg:mt-0">
           <div className="text-center mb-16 relative z-10">
             <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">
               {isSignUp ? 'Daftar Superadmin' : 'Masuk QurMa'}
@@ -229,7 +235,7 @@ export default function LoginPage() {
                       type="email" 
                       placeholder="email@sekolah.com"
                       autoComplete="off"
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl text-slate-800 font-bold text-xs focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-jade-100/20 outline-none transition-all placeholder:text-slate-300 shadow-sm"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl text-slate-800 font-bold text-xs focus:bg-white focus:border-jade-500 focus:ring-4 focus:ring-jade-500/10 outline-none transition-all placeholder:text-slate-300 shadow-sm"
                   />
                 </div>
               </div>
@@ -245,7 +251,7 @@ export default function LoginPage() {
                       type={showPassword ? 'text' : 'password'} 
                       placeholder="••••••••••••"
                       autoComplete="new-password"
-                      className="w-full pl-10 pr-12 py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl text-slate-800 font-bold text-xs focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-jade-100/20 outline-none transition-all placeholder:text-slate-300 shadow-sm"
+                      className="w-full pl-10 pr-12 py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl text-slate-800 font-bold text-xs focus:bg-white focus:border-jade-500 focus:ring-4 focus:ring-jade-500/10 outline-none transition-all placeholder:text-slate-300 shadow-sm"
                   />
                   <button
                       type="button"
@@ -265,10 +271,10 @@ export default function LoginPage() {
               <button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="w-full py-3.5 px-6 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-primary-500 bg-primary-50 text-primary-700 hover:bg-primary-500 hover:text-slate-900 shadow-xl shadow-black/5 transition-all active:scale-95 flex items-center justify-center gap-2 mt-4" 
+                  className="w-full py-3.5 px-6 font-black text-[11px] uppercase tracking-tight rounded-2xl border-2 border-jade-600 bg-jade-600 text-white hover:bg-jade-700 hover:border-jade-700 shadow-xl shadow-jade-600/20 transition-all active:scale-95 flex items-center justify-center gap-2 mt-4" 
               >
                 {isSubmitting ? (
-                  <div className="w-4 h-4 border-2 border-primary-500/20 border-t-primary-500 rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
                 ) : (
                   <>
                     {isSignUp ? 'Daftar Sekarang' : 'Masuk Aplikasi'}

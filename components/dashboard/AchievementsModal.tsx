@@ -54,9 +54,11 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ isOpen, on
                 <div className="p-4 overflow-y-auto scrollbar-hide max-h-[60vh] bg-slate-50/30">
                     <div className="space-y-2.5">
                         {achievements.length === 0 ? (
-                            <div className="py-12 flex flex-col items-center justify-center opacity-30 text-center">
-                                <Trophy className="w-12 h-12 mb-2 text-slate-300" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Belum ada pencapaian</p>
+                            <div className="py-8 flex flex-col items-center justify-center text-center bg-white rounded-xl border-2 border-dashed border-slate-200">
+                                <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 mb-2">
+                                    <Trophy className="w-4 h-4 text-slate-300" />
+                                </div>
+                                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Belum ada pencapaian</p>
                             </div>
                         ) : achievements.map((item) => (
                             <div key={item.id} className="flex items-center gap-3 bg-white p-3.5 rounded-xl border-2 border-slate-200 group hover:border-slate-300 transition-all shadow-none">

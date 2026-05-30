@@ -32,6 +32,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const getPageTitle = (page: PageView) => {
     switch (page) {
       case 'dashboard': return 'Dashboard Overview';
+      case 'dashboard-school': return 'Dashboard: Data Sekolah';
+      case 'dashboard-memorization': return 'Data Hafalan';
+      case 'dashboard-attendance': return 'Data Kehadiran';
       case 'users': return 'Manajemen User';
       case 'student-management': return 'Manajemen Halaqah';
       case 'classes': return 'Manajemen Kelas';
@@ -69,6 +72,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const getPageSubtitle = (page: PageView) => {
     switch (page) {
       case 'dashboard': return 'Ringkasan data & statistik operasional tahfidz';
+      case 'dashboard-school': return 'Ringkasan statistik santri, asatidz, dan halaqah';
+      case 'dashboard-memorization': return 'Tren setoran dan capaian target hafalan';
+      case 'dashboard-attendance': return 'Tren dan rekapitulasi kehadiran santri';
       case 'users': return 'Kelola akses administrator, guru, dan pengawas';
       case 'student-management': return 'Pengaturan halaqah, kelompok belajar, dan data santri';
       case 'classes': return 'Data Organisasi Kelas & Sub-Kelas';

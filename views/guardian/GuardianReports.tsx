@@ -27,7 +27,8 @@ import {
     Crosshair,
     Pen,
     Square,
-    CheckSquare
+    CheckSquare,
+    X
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -41,8 +42,6 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
   const [activeDays, setActiveDays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [weeklyTarget, setWeeklyTarget] = useState<any>(null);
   const [showTargetPanel, setShowTargetPanel] = useState(false);
-  // Checklist state: key = "date-type", value = true jika sudah dicentang wali
-  const [checkedRows, setCheckedRows] = useState<Set<string>>(new Set());
   const [parafLoading, setParafLoading] = useState<string | null>(null);
 
   // WEEKLY LOGIC — initialize from localStorage if available
@@ -122,67 +121,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
     fetchData();
   }, [user, selectedWeek]);
 
-  const [datesToVerify, setDatesToVerify] = useState<Set<string>>(new Set());
-
-  // --- SCROLL-BASED AUTO VERIFICATION (REFINED: DETECT VISIBLE ROWS) ---
-  useEffect(() => {
-    if (loading || !student || !weeklyData) return;
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const date = entry.target.getAttribute('data-date');
-            if (date) {
-                setDatesToVerify(prev => {
-                    if (prev.has(date)) return prev;
-                    return new Set(prev).add(date);
-                });
-            }
-        }
-      });
-    }, { threshold: 0.2, rootMargin: '0px 0px -10% 0px' });
-
-    // Observe each date's first row
-    const rowElements = document.querySelectorAll('.report-date-row');
-    rowElements.forEach(el => observer.observe(el));
-
-    return () => observer.disconnect();
-  }, [loading, weeklyData, weekDates]);
-
-  // Batch update DB every 2 seconds when user stops scrolling
-  useEffect(() => {
-    if (datesToVerify.size === 0 || !student || !user) return;
-
-    const timer = setTimeout(async () => {
-        const updatedData = { ...weeklyData };
-        let hasChanges = false;
-
-        Array.from(datesToVerify).forEach(date => {
-            if (updatedData[date]) {
-                Object.keys(updatedData[date]).forEach(type => {
-                    const entry = updatedData[date][type];
-                    if (entry && !entry.is_read_by_parent) {
-                        updatedData[date][type].is_read_by_parent = true;
-                        hasChanges = true;
-                    }
-                });
-            }
-        });
-
-        if (hasChanges) {
-            try {
-                await upsertWeeklyMemorization(student.id, selectedWeek, updatedData, user, student.full_name);
-                setWeeklyData(updatedData);
-                // We keep the dates in the set to avoid re-triggering, 
-                // but since they are now is_read_by_parent=true, they won't trigger hasChanges
-            } catch (err) {
-                console.error("Failed to batch update read status", err);
-            }
-        }
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [datesToVerify, student, user, selectedWeek]);
+  // Auto-verification dihapus agar paraf murni dilakukan manual oleh wali santri
 
   const stats = useMemo(() => {
     let sabaqCount = 0;
@@ -210,36 +149,27 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
     return notes.filter(n => weekDates.includes(n.date));
   }, [notes, weekDates]);
 
-  // Handler: toggle checkbox (wali harus centang dulu sebelum paraf)
-  const toggleCheck = useCallback((key: string) => {
-    setCheckedRows(prev => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key); else next.add(key);
-      return next;
-    });
-  }, []);
-
-  // Handler: simpan paraf ke weeklyData
+  // Handler: simpan/toggle paraf ke weeklyData langsung saat di klik
   const handleParaf = useCallback(async (date: string, type: MemorizationType) => {
     if (!student || !user) return;
     const key = `${date}-${type}`;
-    if (!checkedRows.has(key)) return; // Harus centang dulu
     setParafLoading(key);
     try {
-      const updatedData = { ...weeklyData };
+      // Deep copy agar tidak mereferensikan object lama di state
+      const updatedData = JSON.parse(JSON.stringify(weeklyData));
       if (updatedData[date]?.[type]) {
-        updatedData[date][type].is_read_by_parent = true;
+        // Toggle nilai paraf
+        const currentVal = updatedData[date][type].is_read_by_parent;
+        updatedData[date][type].is_read_by_parent = !currentVal;
       }
       await upsertWeeklyMemorization(student.id, selectedWeek, updatedData, user, student.full_name);
       setWeeklyData(updatedData);
-      // Hapus dari checkedRows setelah berhasil paraf
-      setCheckedRows(prev => { const next = new Set(prev); next.delete(key); return next; });
     } catch (err) {
       console.error('Gagal menyimpan paraf', err);
     } finally {
       setParafLoading(null);
     }
-  }, [checkedRows, weeklyData, student, user, selectedWeek]);
+  }, [weeklyData, student, user, selectedWeek]);
 
   if (loading && !student) return (
     <div className="p-20 flex flex-col items-center justify-center gap-4 h-full">
@@ -408,7 +338,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
               <div className="flex-1 bg-white rounded-xl border-2 border-slate-300 flex flex-col overflow-hidden shadow-none relative min-w-0">
                   
                   {/* Table Header Mirroring Teacher Style */}
-                  <div className="px-4 lg:px-6 py-3 lg:py-4 border-b-2 border-slate-100 flex items-center justify-between bg-white relative z-20 shrink-0 gap-3">
+                  <div className="px-4 lg:px-4 py-1 lg:py-4 border-b-2 border-slate-100 flex items-center justify-between bg-white relative z-20 shrink-0 gap-3">
                       <div className="flex items-center gap-3">
                           <div className="w-8 h-8 lg:w-9 lg:h-9 bg-slate-50 rounded-xl flex items-center justify-center border-2 border-slate-100 text-jade-600">
                               <FileText className="w-4 h-4" />
@@ -421,7 +351,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
 
                       <button 
                           onClick={() => setShowTargetPanel(!showTargetPanel)}
-                          className="lg:hidden w-9 h-9 rounded-xl bg-jade-50 text-jade-600 flex items-center justify-center border-2 border-jade-100 shadow-none active:scale-90 transition-all shrink-0"
+                          className="lg:hidden w-8 h-8 rounded-xl bg-jade-50 text-jade-600 flex items-center justify-center border-2 border-jade-100 shadow-none active:scale-90 transition-all shrink-0"
                       >
                           <Crosshair className={`w-4 h-4 ${showTargetPanel ? 'animate-pulse' : ''}`} />
                       </button>
@@ -471,48 +401,43 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                   className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300"
                                   onClick={() => setShowTargetPanel(false)}
                               />
-                              
-                              {/* Modal Card */}
-                              <div className="relative w-full max-w-sm bg-white rounded-32px shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-300">
-                                  <div className="p-5 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+                                                           {/* Modal Card */}
+                              <div className="relative w-full max-w-sm bg-white rounded-xl shadow-2xl border-2 border-slate-200 overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
+                                  <div className="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-xl">
                                       <div className="flex items-center gap-3">
-                                          <div className="w-8 h-8 rounded-xl bg-jade-600 text-white flex items-center justify-center shadow-md shadow-jade-100">
-                                              <Crosshair className="w-4 h-4" />
-                                          </div>
                                           <div>
-                                              <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest leading-none">Ringkasan Target</h3>
-                                              <p className="text-[7.5px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">{student.full_name}</p>
+                                              <h3 className="text-[11px] font-black uppercase">Ringkasan Target</h3>
+                                              <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest">{student.full_name}</p>
                                           </div>
                                       </div>
                                       <button 
                                           onClick={() => setShowTargetPanel(false)}
-                                          className="w-8 h-8 rounded-full bg-white border border-slate-100 text-slate-400 flex items-center justify-center active:scale-90 transition-all shadow-sm"
+                                          className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-slate-600 transition-all active:scale-90"
                                       >
-                                          <ChevronRight className="w-4 h-4 rotate-90" />
+                                          <X className="w-4 h-4" />
                                       </button>
                                   </div>
 
-                                  <div className="p-5 space-y-5">
+                                  <div className="p-4 space-y-5 bg-slate-50/30 overflow-y-auto max-h-[60vh]">
                                       {/* Target Section */}
                                       <div className="space-y-3">
                                           <div className="flex items-center gap-2">
-                                              <div className="w-1.5 h-4 bg-slate-200 rounded-full" />
                                               <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Target Pekan Ini</p>
                                           </div>
                                           <div className="grid grid-cols-3 gap-2">
-                                              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-center flex flex-col justify-center min-13.5">
+                                              <div className="p-3 bg-white rounded-xl border-2 border-slate-200 text-center flex flex-col justify-center min-13.5 shadow-none">
                                                   <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sabaq</p>
                                                   <p className="text-[10px] font-black text-slate-700 leading-tight">
                                                       {weeklyTarget?.sabaq_target || 0} <span className="text-[7.5px] font-bold text-slate-400 block mt-0.5">Baris</span>
                                                   </p>
                                               </div>
-                                              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-center flex flex-col justify-center min-13.5">
+                                              <div className="p-3 bg-white rounded-xl border-2 border-slate-200 text-center flex flex-col justify-center min-13.5 shadow-none">
                                                   <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sabqi</p>
                                                   <p className="text-[10px] font-black text-slate-700 leading-tight">
                                                       {weeklyTarget?.sabqi_target || 0} <span className="text-[7.5px] font-bold text-slate-400 block mt-0.5">Halaman</span>
                                                   </p>
                                               </div>
-                                              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-center flex flex-col justify-center min-13.5">
+                                              <div className="p-3 bg-white rounded-xl border-2 border-slate-200 text-center flex flex-col justify-center min-13.5 shadow-none">
                                                   <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-1">Manzil</p>
                                                   <p className="text-[10px] font-black text-slate-700 leading-tight">
                                                       {weeklyTarget?.manzil_target || 0} <span className="text-[7.5px] font-bold text-slate-400 block mt-0.5">Juz</span>
@@ -524,18 +449,17 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                       {/* Achievement Section */}
                                       <div className="space-y-3">
                                           <div className="flex items-center gap-2">
-                                              <div className="w-1.5 h-4 bg-jade-400 rounded-full" />
-                                              <p className="text-[8px] font-black text-jade-600 uppercase tracking-[0.2em]">Capaian Riil</p>
+                                              <p className="text-[8px] font-black text-jade-600 uppercase tracking-[0.2em]">Capaian</p>
                                           </div>
                                           <div className="grid grid-cols-2 gap-2">
-                                              <div className="p-3 bg-jade-50/50 rounded-2xl border border-jade-100 text-center relative overflow-hidden flex flex-col justify-center min-13.5">
+                                              <div className="p-3 bg-jade-50/50 rounded-xl border-2 border-jade-100 text-center relative overflow-hidden flex flex-col justify-center min-13.5">
                                                   <div className="absolute top-0 right-0 w-8 h-8 bg-jade-100/30 rounded-bl-3xl -mr-2 -mt-2" />
                                                   <p className="text-[7px] font-bold text-jade-400 uppercase tracking-widest mb-1">Sabaq</p>
                                                   <p className="text-[10px] font-black text-jade-700 leading-tight">
                                                       {stats.sabaqCount} <span className="text-[7.5px] font-bold text-jade-400 block mt-0.5">Baris</span>
                                                   </p>
                                               </div>
-                                              <div className="p-3 bg-jade-50/50 rounded-2xl border border-jade-100 text-center relative overflow-hidden flex flex-col justify-center min-13.5">
+                                              <div className="p-3 bg-jade-50/50 rounded-xl border-2 border-jade-100 text-center relative overflow-hidden flex flex-col justify-center min-13.5">
                                                   <div className="absolute top-0 right-0 w-8 h-8 bg-jade-100/30 rounded-bl-3xl -mr-2 -mt-2" />
                                                   <p className="text-[7px] font-bold text-jade-400 uppercase tracking-widest mb-1">Sabqi</p>
                                                   <p className="text-[10px] font-black text-jade-700 leading-tight">
@@ -544,12 +468,14 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                               </div>
                                           </div>
                                       </div>
+                                  </div>
 
+                                  <div className="p-4 border-t border-slate-100 bg-white flex justify-end shrink-0">
                                       <button 
                                           onClick={() => setShowTargetPanel(false)}
-                                          className="w-full py-3.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-slate-900/20 active:scale-[0.98] transition-all mt-2"
+                                          className="px-6 py-2.5 bg-white text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95 border-2 border-slate-300"
                                       >
-                                          Tutup Ringkasan
+                                          Tutup
                                       </button>
                                   </div>
                               </div>
@@ -561,8 +487,11 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                       <table className="w-full border-separate border-spacing-0">
                           <thead className="sticky top-0 z-40 bg-white">
                               <tr className="bg-slate-300 backdrop-blur-sm">
-                                  <th className="px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center lg:w-25 lg:min-25 w-17.5 min-17.5 sticky left-0 z-50 bg-slate-300 border-t border-b border-l border-r border-black">TANGGAL</th>
-                                  <th className="px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center lg:w-20 lg:min-20 w-15 min-15 sticky lg:left-25 left-17.5 z-50 bg-slate-300 border-t border-b border-r border-black shadow-none">SETORAN</th>
+                                  <th className="px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center lg:w-25 lg:min-w-25 w-14 min-w-14 max-w-14 sticky left-0 z-50 bg-slate-300 border-t border-b border-l border-r border-black">
+                                      <span className="lg:hidden">TGL</span>
+                                      <span className="hidden lg:inline">TANGGAL</span>
+                                  </th>
+                                  <th className="px-0 lg:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center lg:w-20 lg:min-w-20 w-15 min-w-15 max-w-15 sticky lg:left-25 left-14 z-50 bg-slate-300 border-t border-b border-r border-black shadow-none">SETORAN</th>
                                   <th className="px-4 py-4 text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-25 border-t border-b border-r border-black bg-slate-300">JUMLAH</th>
                                   <th className="px-2 lg:px-6 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r border-black bg-slate-300 whitespace-nowrap">SURAT / AYAT</th>
                                   <th className="px-6 py-4 text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-64 border-t border-b border-r border-black bg-slate-300">KETERANGAN</th>
@@ -592,7 +521,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                                 className={`${isToday ? 'bg-emerald-50/10' : 'hover:bg-slate-50/50'} transition-colors ${tIdx === 0 ? 'report-date-row' : ''}`}
                                                >
                                                   {tIdx === 0 && (
-                                                      <td rowSpan={3} className={`px-1 lg:px-2 py-3 align-middle lg:w-25 lg:min-25 w-17.5 min-17.5 sticky left-0 z-30 border-b border-r border-slate-200 text-center transition-colors opacity-100 ${isToday ? 'bg-emerald-50' : 'bg-white'}`}>
+                                                      <td rowSpan={3} className={`px-1 lg:px-2 py-3 align-middle lg:w-25 lg:min-w-25 w-14 min-w-14 max-w-14 sticky left-0 z-30 border-b border-r border-slate-200 text-center transition-colors opacity-100 ${isToday ? 'bg-emerald-50' : 'bg-white'}`}>
                                                           {isToday && (
                                                               <div className="absolute top-0 bottom-0 left-0 w-0.75 bg-emerald-600 shadow-none"></div>
                                                           )}
@@ -611,7 +540,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                                                       {new Date(date).toLocaleDateString('id-ID', { day: '2-digit' })}
                                                                   </p>
                                                                   <p className={`text-[9px] font-black uppercase pt-1 tracking-tighter ${isToday ? 'text-emerald-500' : 'text-slate-400'}`}>
-                                                                      {new Date(date).toLocaleDateString('id-ID', { month: 'long' }).toUpperCase()}
+                                                                      {new Date(date).toLocaleDateString('id-ID', { month: 'short' }).toUpperCase()}
                                                                   </p>
                                                               </div>
 
@@ -622,7 +551,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                                           </div>
                                                       </td>
                                                   )}
-                                                  <td className={`px-1 lg:px-2 py-3 sticky lg:left-25 left-17.5 z-30 lg:w-20 lg:min-20 w-15 min-15 border-b border-r border-slate-200 text-center transition-colors shadow-none opacity-100 ${isToday ? 'bg-emerald-50' : 'bg-white'}`}>
+                                                  <td className={`px-1 lg:px-2 py-3 sticky lg:left-25 left-14 z-30 lg:w-20 lg:min-w-20 w-15 min-w-15 max-w-15 border-b border-r border-slate-200 text-center transition-colors shadow-none opacity-100 ${isToday ? 'bg-emerald-50' : 'bg-white'}`}>
                                                       <span className={`text-[8.5px] lg:text-[10px] font-black uppercase tracking-widest ${isToday ? 'text-emerald-700' : 'text-slate-400'}`}>
                                                           {getTypeLabel(type)}
                                                       </span>
@@ -674,53 +603,29 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                                   {(() => {
                                                     const rowKey = `${date}-${type}`;
                                                     const isParafed = !!rec?.is_read_by_parent;
-                                                    const isChecked = checkedRows.has(rowKey);
                                                     const hasData = !!rec?.status && rec.status !== MemorizationStatus.EMPTY;
                                                     const isLoadingParaf = parafLoading === rowKey;
 
                                                     return (
                                                       <td className={`px-2 py-3 border-b border-r border-slate-200 text-center w-22.5 min-22.5 ${isToday ? 'bg-emerald-50/20' : ''}`}>
-                                                        {isParafed ? (
-                                                          // Sudah diparaf — tampilkan tanda centang hijau
-                                                          <div className="flex flex-col items-center justify-center gap-0.5">
-                                                            <div className="w-6 h-6 rounded-full bg-jade-500 flex items-center justify-center shadow-sm shadow-jade-100">
-                                                              <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
-                                                            </div>
-                                                            <span className="text-[6.5px] font-black text-jade-500 uppercase tracking-widest">Terparaf</span>
-                                                          </div>
-                                                        ) : hasData ? (
-                                                          // Ada data tapi belum diparaf — tampilkan checkbox + tombol paraf
-                                                          <div className="flex flex-col items-center justify-center gap-1.5">
-                                                            {/* Checkbox */}
+                                                        {hasData ? (
+                                                          <div className="flex items-center justify-center">
                                                             <button
-                                                              onClick={() => toggleCheck(rowKey)}
-                                                              title="Centang untuk mengaktifkan paraf"
-                                                              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                                                                isChecked
-                                                                  ? 'bg-jade-600 border-jade-600 text-white'
-                                                                  : 'border-slate-300 bg-white hover:border-jade-400'
-                                                              }`}
-                                                            >
-                                                              {isChecked && <Check className="w-3 h-3" strokeWidth={3} />}
-                                                            </button>
-                                                            {/* Tombol Paraf — aktif hanya jika sudah dicentang */}
-                                                            <button
-                                                              disabled={!isChecked || isLoadingParaf}
+                                                              disabled={isLoadingParaf}
                                                               onClick={() => handleParaf(date, type)}
-                                                              title={isChecked ? 'Klik untuk memberi paraf' : 'Centang dulu sebelum paraf'}
-                                                              className={`px-2 py-0.5 text-[7px] font-black uppercase tracking-widest rounded-lg border-2 transition-all flex items-center gap-1 ${
-                                                                isChecked
-                                                                  ? 'bg-jade-600 border-jade-600 text-white hover:bg-jade-700 active:scale-95 shadow-sm shadow-jade-100'
-                                                                  : 'bg-slate-50 border-slate-200 text-slate-300 cursor-not-allowed'
-                                                              }`}
+                                                              title={isParafed ? 'Klik untuk membatalkan paraf' : 'Klik untuk memberi paraf'}
+                                                              className={`relative w-8 h-8 rounded-xl flex items-center justify-center border-2 transition-all duration-300 ${
+                                                                isParafed
+                                                                  ? 'bg-jade-500 border-jade-600 shadow-sm shadow-jade-100 hover:bg-rose-500 hover:border-rose-600'
+                                                                  : 'bg-white border-slate-300 hover:border-jade-400 hover:bg-slate-50'
+                                                              } ${isLoadingParaf ? 'opacity-70 cursor-wait' : 'active:scale-90'}`}
                                                             >
                                                               {isLoadingParaf ? (
-                                                                <span className="animate-pulse">...</span>
+                                                                <div className="w-4 h-4 border-2 border-slate-200 border-t-jade-600 rounded-full animate-spin" />
+                                                              ) : isParafed ? (
+                                                                <Check className="w-4 h-4 text-white" strokeWidth={3} />
                                                               ) : (
-                                                                <>
-                                                                  <Pen className="w-2.5 h-2.5" />
-                                                                  <span>Paraf</span>
-                                                                </>
+                                                                <div className="w-3.5 h-3.5 rounded bg-slate-200 opacity-50" />
                                                               )}
                                                             </button>
                                                           </div>

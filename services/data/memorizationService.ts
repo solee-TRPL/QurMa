@@ -18,11 +18,17 @@ export const getStudentRecords = async (studentId: string): Promise<Memorization
  * that has actual surah/ayat data (status LANCAR or TIDAK_LANCAR)
  * to be used as a reference for "Not Depositing" states.
  */
-export const getLastProgressByType = async (studentId: string): Promise<Record<string, MemorizationRecord | null>> => {
-    const { data, error } = await supabase
+export const getLastProgressByType = async (studentId: string, untilDate?: string): Promise<Record<string, MemorizationRecord | null>> => {
+    let query = supabase
         .from('memorization_records')
         .select('*')
-        .eq('student_id', studentId)
+        .eq('student_id', studentId);
+        
+    if (untilDate) {
+        query = query.lt('record_date', untilDate);
+    }
+    
+    const { data, error } = await query
         .order('record_date', { ascending: false })
         .order('created_at', { ascending: false });
     

@@ -125,10 +125,10 @@ export default function LandingPage() {
                             ))}
                         </div>
 
-                        {/* Login Button - Always Visible */}
+                        {/* Login Button - Desktop Only */}
                         <button 
                             onClick={onLoginClick} 
-                            className={`h-9 lg:h-10 px-4 lg:px-6 font-black text-[9px] lg:text-[10px] uppercase tracking-widest rounded-full transition-all duration-300 ${
+                            className={`hidden md:block h-9 lg:h-10 px-4 lg:px-6 font-black text-[9px] lg:text-[10px] uppercase tracking-widest rounded-full transition-all duration-300 ${
                                 isScrolled 
                                 ? 'bg-jade-600 text-white shadow-lg shadow-jade-600/30 hover:bg-jade-700' 
                                 : 'bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white hover:text-jade-700'
@@ -152,17 +152,17 @@ export default function LandingPage() {
                 </div>
 
                 {/* Mobile Menu Overlay */}
-                <div className={`md:hidden absolute top-full left-0 right-0 transition-all duration-500 overflow-hidden shadow-2xl ${isMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'} ${
+                <div className={`md:hidden absolute top-full left-0 right-0 transition-all duration-500 overflow-hidden shadow-2xl ${isMenuOpen ? 'max-h-68 opacity-100' : 'max-h-0 opacity-0'} ${
                     isScrolled 
-                    ? 'bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-md' 
+                    ? 'bg-white backdrop-blur-md border-b border-slate-200 shadow-md' 
                     : 'bg-[#2D2419]/95 backdrop-blur-xl border-b border-white/5'
                 }`}>
-                    <div className="flex flex-col px-8 py-8 gap-0">
+                    <div className="flex flex-col px-8 py-4 gap-0">
                         {['Tentang Kami', 'Portofolio', 'FAQ'].map((item) => (
                             <button 
                                 key={item}
                                 onClick={() => setIsMenuOpen(false)}
-                                className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors py-5 border-b last:border-0 text-left ${
+                                className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors py-2 border-b last:border-0 text-left ${
                                     isScrolled 
                                     ? 'text-slate-600 hover:text-jade-600 border-slate-50' 
                                     : 'text-white/80 hover:text-white border-white/5'
@@ -171,6 +171,16 @@ export default function LandingPage() {
                                 {item}
                             </button>
                         ))}
+                        <button 
+                            onClick={() => { setIsMenuOpen(false); onLoginClick(); }}
+                            className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors py-2 border-b last:border-0 text-left ${
+                                isScrolled 
+                                ? 'text-slate-600 hover:text-jade-600 border-slate-50' 
+                                : 'text-white/80 hover:text-white border-white/5'
+                            }`}
+                        >
+                            LOGIN
+                        </button>
                     </div>
                 </div>
             </nav>
@@ -182,7 +192,7 @@ export default function LandingPage() {
                     <div className="max-w-3xl space-y-4 animate-in fade-in slide-in-from-bottom-10 duration-1000">
                         <h2 className="text-[28px] md:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-[1.2] md:leading-[1.1]">
                             Aplikasi Manajemen <br className="hidden sm:block"/>
-                            Tahfidz <span className="bg-gradient-to-b from-primary-200 via-primary-500 to-primary-700 bg-clip-text text-transparent uppercase drop-shadow-[0_2px_2px_rgba(0,0,0,0.3)]">Al Qur'an</span>
+                            Tahfidz <span className="bg-linear-to-b from-primary-200 via-primary-500 to-primary-700 bg-clip-text text-transparent uppercase drop-shadow-[0_2px_2px_rgba(0,0,0,0.3)]">Al Qur'an</span>
                         </h2>
                         <p className="text-white/90 text-[13px] md:text-lg font-medium leading-relaxed max-w-xl">
                             Tingkatkan program Tahfidz dengan menggunakan QurMa. <br className="hidden sm:block"/>Pantau, sinkron data realtime dan kontrol hafalan dengan mudah dan efektif.
@@ -208,7 +218,7 @@ export default function LandingPage() {
                             <img 
                                 src="/images/teacher_portrait.png" 
                                 alt="Ustadz" 
-                                className="w-full max-87.5 object-cover rounded-[32px] drop-shadow-2xl z-10"
+                                className="w-full max-87.5 object-cover rounded-32px drop-shadow-2xl z-10"
                             />
                         </div>
 
@@ -249,7 +259,7 @@ export default function LandingPage() {
                                     <div key={item.id} className="border-b border-slate-100 last:border-0 overflow-hidden">
                                         <button 
                                             onClick={() => setActiveAccordion(activeAccordion === item.id ? null : item.id)}
-                                            className={`w-full py-4 px-3 flex items-center border border-slate-300 justify-between transition-all group ${activeAccordion === item.id ? 'bg-jade-50/50 rounded-r-[28px]' : ''}`}
+                                            className={`w-full py-4 px-3 flex items-center border border-slate-300 justify-between transition-all group ${activeAccordion === item.id ? 'bg-jade-50/50 rounded-r-28px' : ''}`}
                                         >
                                             <span className={`text-lg lg:text-xl font-black transition-colors ${activeAccordion === item.id ? 'text-jade-700' : 'text-slate-400 group-hover:text-slate-600'}`}>
                                                 {item.title}
@@ -323,7 +333,7 @@ export default function LandingPage() {
                                      </div>
                                      <div className="w-1/2 flex justify-end">
                                          <div className="w-35 h-70 bg-slate-800 rounded-[20px] p-1 shadow-2xl relative rotate-3 hover:rotate-0 transition-transform duration-500">
-                                             <div className="w-full h-full bg-slate-50 rounded-[16px] flex flex-col overflow-hidden relative border border-slate-600">
+                                             <div className="w-full h-full bg-slate-50 rounded-2xl flex flex-col overflow-hidden relative border border-slate-600">
                                                 <div className="w-16 h-3 bg-slate-800 absolute top-0 left-1/2 -translate-x-1/2 rounded-b-md z-10"></div>
                                                 <div className="bg-jade-600 h-12 w-full shrink-0 flex items-end px-2 pb-2">
                                                     <div className="w-10 h-2 bg-white/20 rounded-full"></div>
@@ -386,7 +396,7 @@ export default function LandingPage() {
                                         </p>
                                     </div>
                                     <div className="w-1/2 relative h-full flex items-center justify-end">
-                                        <div className="w-40 h-80 bg-slate-800 rounded-[24px] p-1 shadow-2xl relative -rotate-6 translate-x-4 hover:rotate-0 hover:translate-x-0 transition-transform duration-500 border border-slate-700">
+                                        <div className="w-40 h-80 bg-slate-800 rounded-3xl p-1 shadow-2xl relative -rotate-6 translate-x-4 hover:rotate-0 hover:translate-x-0 transition-transform duration-500 border border-slate-700">
                                              <div className="w-full h-full bg-jade-600 rounded-[20px] flex flex-col overflow-hidden relative">
                                                 <div className="w-20 h-4 bg-slate-800 absolute top-0 left-1/2 -translate-x-1/2 rounded-b-lg z-10"></div>
                                                 <div className="pt-10 px-3 pb-3 grid grid-cols-2 gap-2 content-start flex-1 bg-[#20664a]">
@@ -435,7 +445,7 @@ export default function LandingPage() {
                                 <div key={i} className="border-b border-slate-100 last:border-0 overflow-hidden">
                                     <button 
                                         onClick={() => setActiveWhyQurMa(activeWhyQurMa === i ? null : i)}
-                                        className={`w-full py-4 px-3 flex items-center justify-between transition-all group ${activeWhyQurMa === i ? 'bg-jade-50/50 rounded-r-[28px]' : ''}`}
+                                        className={`w-full py-4 px-3 flex items-center justify-between transition-all group ${activeWhyQurMa === i ? 'bg-jade-50/50 rounded-r-28px' : ''}`}
                                     >
                                         <span className={`text-sm lg:text-base font-black transition-colors ${activeWhyQurMa === i ? 'text-jade-700' : 'text-slate-400 group-hover:text-slate-600'}`}>
                                             {item.title}
@@ -492,7 +502,7 @@ export default function LandingPage() {
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-jade-600/90 rounded-full -z-10" />
                                 
                                 <div className="w-70 h-145 bg-slate-900 rounded-[40px] p-2 shadow-2xl shadow-slate-900/40 relative transform transition-transform duration-500">
-                                     <div className="w-full h-full bg-slate-50 rounded-[32px] overflow-hidden flex flex-col relative border border-slate-200">
+                                     <div className="w-full h-full bg-slate-50 rounded-32px overflow-hidden flex flex-col relative border border-slate-200">
                                          <div className="bg-jade-600 pt-8 pb-10 px-5 text-white relative">
                                             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-xl z-20"></div>
                                             <div className="flex justify-between items-center mb-6">
@@ -570,7 +580,7 @@ export default function LandingPage() {
                         {testimonials.map((testi, i) => (
                             <div 
                                 key={i} 
-                                className={`flex-none snap-center w-full md:w-[calc(33.333%-1.5rem)] bg-white p-7 lg:p-9 rounded-[32px] shadow-sm border border-slate-100 flex flex-col gap-6 hover:shadow-md transition-all duration-500 relative overflow-hidden ${i === activeTesti ? 'shadow-lg shadow-emerald-600/10 scale-[1.02] border-emerald-100' : 'opacity-60 scale-95'}`}
+                                className={`flex-none snap-center w-full md:w-[calc(33.333%-1.5rem)] bg-white p-7 lg:p-9 rounded-32px shadow-sm border border-slate-100 flex flex-col gap-6 hover:shadow-md transition-all duration-500 relative overflow-hidden ${i === activeTesti ? 'shadow-lg shadow-emerald-600/10 scale-[1.02] border-emerald-100' : 'opacity-60 scale-95'}`}
                             >
                                 {i === activeTesti && (
                                     <div className="absolute top-0 left-0 right-0 h-1.5 bg-emerald-600 animate-in fade-in slide-in-from-top duration-500" />

@@ -305,8 +305,8 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                         nis: s.nis || '-',
                         name: s.full_name,
                         className: currentClassName,
-                        hafalanJuz: (juz && juz > 0) ? juz.toString() : '',
-                        hafalanHal: (hal && hal > 0) ? hal.toString() : '',
+                        hafalanJuz: (juz > 0 || hal > 0) ? juz.toString() : '',
+                        hafalanHal: (juz > 0 || hal > 0) ? hal.toString() : '',
                         manzilAtm: calculateManzilAtm(juz).toString() || '',
                         hariAtm: calculateHariAtm(juz, calculateManzilAtm(juz)).toString() || '',
                         sabqiAtm: calculateSabqiAtm(hal),
@@ -435,11 +435,11 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
   return (
     <div className="space-y-4 animate-fade-in">
       {/* Top Utility Strip - Rearranged for Mobile 2-Row Layout */}
-      <div className="flex flex-col lg:flex-row items-center gap-3 lg:gap-4 py-2">
+      <div className="flex flex-col lg:flex-row items-center gap-3 lg:gap-4">
           {/* BARIS 1: Halaqah / Teacher Selector & Search Bar */}
           <div className="flex flex-row items-center gap-2 w-full lg:flex-1">
               {/* Halaqah Selector */}
-              <div className="flex-1 lg:flex-none flex items-center gap-2.5 md:gap-3 bg-white px-3 md:px-4 rounded-xl border-2 border-slate-300 shadow-none lg:min-w-85 focus-within:ring-4 focus-within:ring-jade-50/50 focus-within:border-jade-400 transition-all h-10 lg:h-11">
+              <div className="flex-1 lg:flex-none flex items-center gap-2.5 md:gap-3 bg-white pt-2 md:pt-2 pb-2 md:pb-2 pl-4.5 pr-4.5 rounded-xl border-2 border-slate-300 shadow-none lg:min-w-85 focus-within:ring-4 focus-within:ring-jade-50/50 focus-within:border-jade-400 transition-all">
                   <div className="p-1.5 bg-primary-500 rounded-lg text-white shrink-0">
                       <GraduationCap className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   </div>
@@ -511,7 +511,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
 
       {/* Main Table Grid - PLEK KETIPLEK from WeeklyTarget.tsx */}
       <div className="bg-transparent rounded-none overflow-hidden flex flex-col">
-          <div className="px-1 py-3 bg-transparent flex flex-row justify-between items-center w-full gap-2 transition-all">
+          <div className="px-1 pb-3 bg-transparent flex flex-row justify-between items-center w-full gap-2 transition-all">
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => setShowNisKelas(!showNisKelas)}
@@ -551,7 +551,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                                 <th rowSpan={2} className="w-16.25 md:w-25 min-w-16.25 md:min-w-25 sticky sm:left-11.25 left-0 bg-slate-300 z-50 px-1 md:px-3 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r border-black animate-in slide-in-from-left-1 duration-300">NIS</th>
                             )}
                             <th rowSpan={2} className={`w-28.75 md:w-50 min-w-28.75 md:min-w-50 sticky ${showNisKelas ? 'sm:left-36.25 left-16.25' : 'sm:left-11.25 left-0'} bg-slate-300 z-50 px-2 md:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-left border-t border-b border-r border-black transition-all duration-300`}>NAMA SANTRI</th>
-                            <th rowSpan={2} className="hidden lg:table-cell px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r border-black bg-slate-300 min-w-45">HALAQOH ( PENGAMPU )</th>
+                            <th rowSpan={2} className="hidden lg:table-cell px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center border-t border-b border-r border-black bg-slate-300 w-45 min-w-45 max-w-45">HALAQOH ( PENGAMPU )</th>
                             
                             {!showNotes ? (
                               <>
@@ -579,7 +579,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                         </tr>
                     ) : (
                         <tr className="bg-white">
-                            <th className="px-4 py-3 text-[8.5px] font-black text-amber-600 uppercase text-left border-b border-r border-amber-600 bg-amber-50/5">CATATAN PERKEMBANGAN HAFALAN SANTRI</th>
+                            <th className="px-4 py-3 text-[8.5px] lg:text-[9.5px] font-black text-amber-600 uppercase text-left border-b border-r border-amber-600 bg-amber-50/5">CATATAN PERKEMBANGAN HAFALAN SANTRI</th>
                         </tr>
                     )}
                 </thead>
@@ -608,7 +608,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                                 <td className={`sticky ${showNisKelas ? 'sm:left-36.25 left-16.25' : 'sm:left-11.25 left-0'} bg-white px-2 md:px-4 py-1.5 text-[10.5px] md:text-[11px] font-bold text-slate-800 border-r border-b border-slate-100 z-20 transition-all duration-300 truncate shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-28.75 md:w-50`}>
                                     <div className="h-10 flex items-center">{target.name}</div>
                                 </td>
-                                <td className="hidden lg:table-cell px-4 py-1.5 border-r border-b border-slate-100 text-start bg-white">
+                                <td className="hidden lg:table-cell px-4 py-1.5 border-r border-b border-slate-100 text-start bg-white w-45 min-w-45 max-w-45">
                                     <div className="h-10 flex items-center text-[10px] font-black text-slate-500 uppercase tracking-tight truncate">{target.halaqahName}</div>
                                 </td>
                                 
@@ -649,11 +649,11 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                                                         const atmPerHari = Number(target.manzilAtm);
                                                         const targetHal = Number(target.manzilHal || 0);
                                                         if (!isNaN(atmPerHari) && !isNaN(targetHal)) {
-                                                            isManzilTargetKurang = targetHal > 0 && targetHal < (atmPerHari * 5);
+                                                            isManzilTargetKurang = targetHal > 0 && targetHal < (atmPerHari * activeDays.length);
                                                         }
                                                     }
                                                     return (
-                                                        <div className={`flex items-center border rounded-lg px-2 h-9 shadow-sm ${isManzilTargetKurang ? 'bg-red-50 border-red-200' : 'bg-white border-slate-100'}`} title={isManzilTargetKurang ? `Target kurang dari standar ATM (${Number(target.manzilAtm) * 5} Hal/Pekan)` : ''}>
+                                                        <div className={`flex items-center border rounded-lg px-2 h-9 shadow-sm ${isManzilTargetKurang ? 'bg-red-50 border-red-200' : 'bg-white border-slate-100'}`} title={isManzilTargetKurang ? `Target kurang dari standar ATM (${Number(target.manzilAtm) * activeDays.length} Hal/Pekan)` : ''}>
                                                             <span className={`text-xs font-bold ${isManzilTargetKurang ? 'text-red-600' : 'text-slate-700'}`}>{target.manzilHal || '0'}</span>
                                                             <span className={`text-[8px] font-extrabold uppercase ml-1 ${isManzilTargetKurang ? 'text-red-400' : 'text-emerald-400'}`}>Hal</span>
                                                         </div>
@@ -678,11 +678,11 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                                                         const atmPerHari = Number(target.sabqiAtm);
                                                         const targetHal = Number(target.sabqiTarget || 0);
                                                         if (!isNaN(atmPerHari) && !isNaN(targetHal)) {
-                                                            isSabqiTargetKurang = targetHal > 0 && targetHal < (atmPerHari * 5);
+                                                            isSabqiTargetKurang = targetHal > 0 && targetHal < (atmPerHari * activeDays.length);
                                                         }
                                                     }
                                                     return (
-                                                        <div className={`flex items-center border rounded-lg px-2 h-9 shadow-sm ${isSabqiTargetKurang ? 'bg-red-50 border-red-200' : 'bg-white border-slate-100'}`} title={isSabqiTargetKurang ? `Target kurang dari standar ATM (${Number(target.sabqiAtm) * 5} Hal/Pekan)` : ''}>
+                                                        <div className={`flex items-center border rounded-lg px-2 h-9 shadow-sm ${isSabqiTargetKurang ? 'bg-red-50 border-red-200' : 'bg-white border-slate-100'}`} title={isSabqiTargetKurang ? `Target kurang dari standar ATM (${Number(target.sabqiAtm) * activeDays.length} Hal/Pekan)` : ''}>
                                                             <span className={`text-xs font-bold ${isSabqiTargetKurang ? 'text-red-600' : 'text-slate-700'}`}>{target.sabqiTarget || '0'}</span>
                                                             <span className={`text-[8px] font-extrabold uppercase ml-1 ${isSabqiTargetKurang ? 'text-red-400' : 'text-emerald-400'}`}>Hal</span>
                                                         </div>
@@ -765,7 +765,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                                                                     disabled={loading}
                                                                     className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white text-[9px] font-black uppercase tracking-widest rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1 shadow-sm"
                                                                 >
-                                                                    {loading ? 'Menyimpan...' : 'Simpan'}
+                                                                    {loading ? 'Menyimpan' : 'Simpan'}
                                                                 </button>
                                                             </div>
                                                         </div>

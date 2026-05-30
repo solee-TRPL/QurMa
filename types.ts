@@ -22,6 +22,7 @@ export enum MemorizationStatus {
   IZIN = "IZIN",
   ALPA = "ALPA",
   PATOKAN_AWAL = "PATOKAN_AWAL",
+  HAFALAN_AWAL = "Hafalan Awal",
   EMPTY = "-",
 }
 
@@ -275,6 +276,9 @@ export interface WeeklyTarget {
 export type PageView =
   // Standard Roles
   | "dashboard"
+  | "dashboard-school"
+  | "dashboard-memorization"
+  | "dashboard-attendance"
   | "input-hafalan"
   | "recap-hafalan"
   | "data-santri"
