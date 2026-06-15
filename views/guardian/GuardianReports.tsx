@@ -28,7 +28,8 @@ import {
     Pen,
     Square,
     CheckSquare,
-    X
+    X,
+    Eye
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -483,7 +484,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                       )}
 
                   {/* High Density Table Body */}
-                  <div className="flex-1 overflow-x-auto overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent -mt-px">
+                  <div className="hidden lg:block flex-1 overflow-x-auto overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent -mt-px">
                       <table className="w-full border-separate border-spacing-0">
                           <thead className="sticky top-0 z-40 bg-white">
                               <tr className="bg-slate-300 backdrop-blur-sm">
@@ -572,11 +573,11 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                                   {/* SURAT : AYAT COLUMN */}
                                                   <td className={`px-4 py-3 border-b border-r border-slate-200 ${isToday ? 'bg-emerald-50/20' : ''}`}>
                                                       <div className="flex items-center justify-center gap-1.5 max-100 mx-auto">
-                                                          <span className={`text-[9px] font-black uppercase tracking-widest truncate ${rec?.surah_name ? 'text-jade-700' : 'text-slate-200'}`}>
+                                                          <span className={`text-[9px] font-black uppercase tracking-widest truncate ${rec?.surah_name ? 'text-jade-700' : 'text-slate-400'}`}>
                                                               {rec?.surah_name || '- SURAT -'}
                                                           </span>
-                                                          <span className="text-slate-300 font-black">:</span>
-                                                          <span className={`text-[10px] font-black ${rec?.ayat_end ? 'text-slate-800' : 'text-slate-200'}`}>
+                                                          <span className="text-slate-400 font-black">:</span>
+                                                          <span className={`text-[10px] font-black ${rec?.ayat_end ? 'text-slate-800' : 'text-slate-400'}`}>
                                                               {rec?.ayat_end || 0}
                                                           </span>
                                                       </div>
@@ -588,13 +589,14 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                                            {rec && rec.status && rec.status !== MemorizationStatus.EMPTY ? (
                                                                <span className={`text-[8.5px] lg:text-[9.5px] font-black uppercase tracking-widest whitespace-nowrap px-3 py-1 rounded-lg border-2 ${
                                                                    rec.status === MemorizationStatus.LANCAR ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                                                                   rec.status === MemorizationStatus.TIDAK_LANCAR ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                                                                   'bg-rose-50 text-rose-700 border-rose-100'
+                                                                   [MemorizationStatus.TIDAK_LANCAR, MemorizationStatus.SAKIT, MemorizationStatus.IZIN, MemorizationStatus.ALPA].includes(rec.status) ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                                                                   rec.status === MemorizationStatus.TIDAK_SETOR ? 'bg-rose-50 text-rose-700 border-rose-100' :
+                                                                   'bg-blue-50 text-blue-700 border-blue-100'
                                                                }`}>
                                                                    {rec.status?.replace('_', ' ')}
                                                                </span>
                                                            ) : (
-                                                               <span className="text-[8.5px] font-black text-slate-300 uppercase tracking-widest italic whitespace-nowrap opacity-40">- STATUS -</span>
+                                                               <span className="text-[8.5px] font-black text-slate-400 uppercase tracking-widest italic whitespace-nowrap opacity-40">- STATUS -</span>
                                                            )}
                                                        </div>
                                                   </td>
@@ -631,7 +633,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                                           </div>
                                                         ) : (
                                                           // Tidak ada data — kosong
-                                                          <span className="text-[8px] font-black text-slate-200">—</span>
+                                                          <span className="text-[8px] font-black text-slate-400">—</span>
                                                         )}
                                                       </td>
                                                     );
@@ -642,6 +644,214 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                   </React.Fragment>
                                   ))}
                           </tbody>
+                  </table>
+              </div>
+
+              {/* MOBILE VIEW - TRANSPOSED TABLE */}
+              <div className="lg:hidden h-full flex-1 overflow-x-auto overflow-y-hidden no-scrollbar snap-x snap-mandatory scroll-smooth" style={{ scrollPaddingLeft: "44px" }}>
+                  <table className="border-separate table-fixed w-max h-full border-spacing-0">
+                    <thead>
+                      <tr className="snap-start">
+                        <th className="sticky left-0 z-70 bg-slate-50 border-b border-r-2 border-slate-300 w-11 min-w-11">
+                          <div className="flex flex-col items-center justify-center gap-1.5 py-2 h-full">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">TGL</span>
+                          </div>
+                        </th>
+                        {weekDates.map((date) => {
+                          const isToday = date === new Date().toISOString().split('T')[0];
+                          const dayWidth = "calc(100vw - 80px)";
+                          return (
+                            <th
+                              key={date}
+                              colSpan={3}
+                              style={{ width: dayWidth, minWidth: dayWidth, scrollSnapAlign: "start", scrollSnapStop: "always" }}
+                              className={`relative px-2 py-2 text-[10px] font-black uppercase tracking-widest text-center border-b border-l border-slate-200 snap-start ${isToday ? 'bg-emerald-50/80 text-emerald-800 after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10 before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : "bg-slate-50 text-slate-500"}`}
+                            >
+                              {isToday && (
+                                <div className="absolute top-1 left-1/2 -translate-x-1/2">
+                                  <span className="bg-emerald-500 text-white text-[6px] px-1.5 py-0.5 rounded-full shadow-sm shadow-emerald-500/20">HARI INI</span>
+                                </div>
+                              )}
+                              <div className={isToday ? "mt-3" : ""}>
+                                {new Date(date).toLocaleDateString("id-ID", { weekday: "short" })}
+                                <span className={`block text-[7px] font-bold leading-none mt-0.5 ${isToday ? "text-emerald-600" : "opacity-60"}`}>{new Date(date).toLocaleDateString("id-ID", { day: "2-digit", month: "short" })}</span>
+                              </div>
+                            </th>
+                          );
+                        })}
+                      </tr>
+                      <tr className="snap-start">
+                        <th className="sticky left-0 z-70 bg-slate-50 border-b border-r-2 border-slate-300 w-11 min-w-11">
+                          <div className="flex items-center justify-center h-full w-full py-2">
+                            <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">SETORAN</span>
+                          </div>
+                        </th>
+                        {weekDates.map((date) => {
+                          const isToday = date === new Date().toISOString().split('T')[0];
+                          return [MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL].map((type) => {
+                            const colWidth = "calc((100vw - 80px) / 3)";
+                            return (
+                              <th
+                                key={`${date}-${type}`}
+                                style={{ width: colWidth, minWidth: colWidth }}
+                                className={`px-1 py-1 text-[8px] font-black uppercase tracking-tighter text-center border-b border-l border-slate-200 ${isToday ? "bg-emerald-50/80 text-emerald-700" : "bg-white text-slate-400"} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10' : ""} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : ""}`}
+                              >
+                                {type === MemorizationType.SABAQ ? "Sabaq" : type === MemorizationType.SABQI ? "Sabqi" : "Manzil"}
+                              </th>
+                            );
+                          });
+                        })}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* JUMLAH ROW */}
+                      <tr className="hover:bg-slate-50/30 snap-start">
+                        <th className="sticky left-0 z-50 bg-slate-50 border-b border-r-2 border-slate-300 w-11 min-w-11">
+                          <div className="flex items-center justify-center h-full w-full py-2">
+                            <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">JUMLAH</span>
+                          </div>
+                        </th>
+                        {weekDates.map((date) => {
+                          const isToday = date === new Date().toISOString().split('T')[0];
+                          return [MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL].map((type) => {
+                            const rec = weeklyData[date]?.[type];
+                            const colWidth = "calc((100vw - 80px) / 3)";
+                            return (
+                              <td
+                                key={`${date}-${type}-jumlah`}
+                                style={{ width: colWidth, minWidth: colWidth }}
+                                className={`p-1 border-b border-l border-slate-100 ${isToday ? "bg-emerald-50/40" : ""} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10' : ""} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : ""}`}
+                              >
+                                <div className="flex items-center justify-center gap-1">
+                                  <span className={`text-[10px] font-black ${rec?.jumlah ? 'text-slate-800' : 'text-slate-400'}`}>
+                                    {rec?.jumlah || 0}
+                                  </span>
+                                  <span className="text-[6px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
+                                    {type === MemorizationType.SABAQ ? 'Brs' : 'Hal'}
+                                  </span>
+                                </div>
+                              </td>
+                            );
+                          });
+                        })}
+                      </tr>
+                      {/* SURAT/AYAT ROW */}
+                      <tr className="hover:bg-slate-50/30 snap-start">
+                        <th className="sticky left-0 z-50 bg-slate-50 border-b border-r-2 border-slate-300 w-11 min-w-11">
+                          <div className="flex items-center justify-center h-full w-full py-4">
+                            <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">SURAT/AYAT</span>
+                          </div>
+                        </th>
+                        {weekDates.map((date) => {
+                          const isToday = date === new Date().toISOString().split('T')[0];
+                          return [MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL].map((type) => {
+                            const rec = weeklyData[date]?.[type];
+                            const colWidth = "calc((100vw - 80px) / 3)";
+                            return (
+                              <td
+                                key={`${date}-${type}-surah`}
+                                style={{ width: colWidth, minWidth: colWidth }}
+                                className={`p-1 border-b border-l border-slate-100 ${isToday ? "bg-emerald-50/40" : ""} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10' : ""} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : ""}`}
+                              >
+                                <div className="flex flex-col items-center justify-center gap-0.5 text-center">
+                                  <span className={`text-[8px] font-black uppercase tracking-widest truncate max-w-full px-1 ${rec?.surah_name ? 'text-jade-700' : 'text-slate-400'}`}>
+                                    {rec?.surah_name || '-'} : {rec?.ayat_end || 0}
+                                  </span>
+                                  {/* {rec?.surah_name && (
+                                    <span className={`text-[9px] font-black ${rec?.ayat_end ? 'text-slate-800' : 'text-slate-200'}`}>
+                                      
+                                    </span>
+                                  )} */}
+                                </div>
+                              </td>
+                            );
+                          });
+                        })}
+                      </tr>
+                      {/* KET ROW */}
+                      <tr className="hover:bg-slate-50/30 snap-start">
+                        <th className="sticky left-0 z-50 bg-slate-50 border-b border-r-2 border-slate-300 w-11 min-w-11">
+                          <div className="flex items-center justify-center h-full w-full py-2">
+                            <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">KET</span>
+                          </div>
+                        </th>
+                        {weekDates.map((date) => {
+                          const isToday = date === new Date().toISOString().split('T')[0];
+                          return [MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL].map((type) => {
+                            const rec = weeklyData[date]?.[type];
+                            const colWidth = "calc((100vw - 80px) / 3)";
+                            return (
+                              <td
+                                key={`${date}-${type}-ket`}
+                                style={{ width: colWidth, minWidth: colWidth }}
+                                className={`p-1 border-b border-l border-slate-100 text-center ${isToday ? "bg-emerald-50/40" : ""} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10' : ""} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : ""}`}
+                              >
+                                {rec && rec.status && rec.status !== 'HAFALAN AWAL' && rec.status !== 'EMPTY' ? (
+                                  <span className={`text-[8px] font-black uppercase tracking-widest whitespace-nowrap px-2 py-1 rounded-lg border-2 ${
+                                      rec.status === 'LANCAR' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                                      ['TIDAK_LANCAR', 'SAKIT', 'IZIN', 'ALPA'].includes(rec.status) ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                                      rec.status === 'TIDAK_SETOR' ? 'bg-rose-50 text-rose-700 border-rose-100' :
+                                      'bg-blue-50 text-blue-700 border-blue-100'
+                                  }`}>
+                                      {rec.status.replace('_', ' ')}
+                                  </span>
+                                ) : (
+                                  <span className="text-[8px] font-black text-slate-400">—</span>
+                                )}
+                              </td>
+                            );
+                          });
+                        })}
+                      </tr>
+                      {/* PARAF ROW */}
+                      <tr className="hover:bg-slate-50/30 snap-start">
+                        <th className="sticky left-0 z-50 bg-slate-50 border-b border-r-2 border-slate-300 w-11 min-w-11">
+                          <div className="flex items-center justify-center h-full w-full py-2">
+                            <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">PARAF</span>
+                          </div>
+                        </th>
+                        {weekDates.map((date) => {
+                          const isToday = date === new Date().toISOString().split('T')[0];
+                          return [MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL].map((type) => {
+                            const rec = weeklyData[date]?.[type];
+                            const isCompletable = rec && rec.status && rec.status !== 'EMPTY';
+                            const isLoading = parafLoading === `${date}-${type}`;
+                            const isRead = rec?.is_read_by_parent;
+                            const colWidth = "calc((100vw - 80px) / 3)";
+                            return (
+                              <td
+                                key={`${date}-${type}-paraf`}
+                                style={{ width: colWidth, minWidth: colWidth }}
+                                className={`p-1 border-b border-l border-slate-100 text-center ${isToday ? "bg-emerald-50/40" : ""} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10' : ""} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : ""}`}
+                              >
+                                {isCompletable ? (
+                                  <button 
+                                      onClick={() => handleParaf(date, type)}
+                                      disabled={isLoading}
+                                      title={isRead ? 'Klik untuk membatalkan paraf' : 'Klik untuk memberi paraf'}
+                                      className={`mx-auto relative w-7 h-7 rounded-lg flex items-center justify-center border-2 transition-all duration-300 ${
+                                          isRead 
+                                          ? 'bg-jade-500 border-jade-600 shadow-sm shadow-jade-100 hover:bg-rose-500 hover:border-rose-600' 
+                                          : 'bg-white border-slate-300 hover:border-jade-400 hover:bg-slate-50'
+                                      } ${isLoading ? 'opacity-70 cursor-wait' : 'active:scale-90'}`}
+                                  >
+                                      {isLoading ? (
+                                          <div className="w-3.5 h-3.5 border-2 border-slate-200 border-t-jade-600 rounded-full animate-spin"></div>
+                                      ) : isRead ? (
+                                          <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                                      ) : (
+                                          <div className="w-3 h-3 rounded-sm bg-slate-200 opacity-50" />
+                                      )}
+                                  </button>
+                                ) : (
+                                  <span className="text-[8px] font-black text-slate-400">—</span>
+                                )}
+                              </td>
+                            );
+                          });
+                        })}
+                      </tr>
+                    </tbody>
                   </table>
               </div>
           </div>

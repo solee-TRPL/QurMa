@@ -11,6 +11,7 @@ import {
   getTenant,
   updateTenant,
   getLastProgressByType,
+  getAbsoluteLastProgressByType,
   getWeeklyTargets,
   getLatestMemorizationBaselines,
   updateStudent,
@@ -34,6 +35,7 @@ import {
   Book,
   Check,
   Eye,
+  EyeOff,
   HelpCircle,
   AlertTriangle,
   Settings2,
@@ -47,7 +49,7 @@ import {
 import { useNotification } from "../../lib/NotificationContext";
 import { useLoading } from "../../lib/LoadingContext";
 import { SURAH_DATA, SURAH_PROGRESSION } from "../../lib/quranData";
-import { calculateLines, calculatePages, getNextAyah } from "../../lib/quranUtils";
+import { calculateLines, calculatePages, getNextAyah, getSabaqPositionFromHafalan, getPhysicalLocation, getJuzStart } from "../../lib/quranUtils";
 import { QURAN_NAME_TO_ID } from "../../lib/quranNameToId";
 
 interface InputHafalanProps {
@@ -67,6 +69,10 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [records, setRecords] = useState<MemorizationRecord[]>([]);
+  const [pendingChanges, setPendingChanges] = useState<Record<string, any>>({});
+  const [saveCounter, setSaveCounter] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
   const [firstRecordDate, setFirstRecordDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -86,10 +92,41 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
   const [tenant, setTenant] = useState<any>(null);
   const [lastProgress, setLastProgress] = useState<Record<string, MemorizationRecord | null>>({});
   const [isInitModalOpen, setIsInitModalOpen] = useState(false);
-  const [initForm, setInitForm] = useState<{ surah: string; ayat: number }>({
+  const [openInitDropdown, setOpenInitDropdown] = useState<"sabaq" | "sabqi" | "manzil" | null>(null);
+  const [openSurahDropdown, setOpenSurahDropdown] = useState<string | null>(null);
+  const [openStatusDropdown, setOpenStatusDropdown] = useState<string | null>(null);
+  const [surahSearchQuery, setSurahSearchQuery] = useState("");
+  const [dropdownPosition, setDropdownPosition] = useState<"top" | "bottom">("bottom");
+  const [initForm, setInitForm] = useState<{ surah: string; ayat: number; sabqiSurah: string; sabqiAyat: number; manzilSurah: string; manzilAyat: number }>({
     surah: "",
     ayat: 0,
+    sabqiSurah: "",
+    sabqiAyat: 1,
+    manzilSurah: "An-Naba'",
+    manzilAyat: 1,
   });
+
+  const getSabqiPosForSabaq = (surah: string, ayat: number) => {
+    const loc = getPhysicalLocation(surah, ayat);
+    if (loc) {
+      const juzStart = getJuzStart(loc.juz);
+      if (juzStart) {
+        return juzStart;
+      }
+    }
+    return { surah, ayah: 1 };
+  };
+
+  const handleInitSabaqChange = (surah: string, ayat: number) => {
+    const sabqiPos = getSabqiPosForSabaq(surah, ayat);
+    setInitForm((prev) => ({
+      ...prev,
+      surah,
+      ayat,
+      sabqiSurah: sabqiPos.surah,
+      sabqiAyat: sabqiPos.ayah,
+    }));
+  };
 
   const { addNotification } = useNotification();
   const { setLoading: setGlobalLoading } = useLoading();
@@ -108,7 +145,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
       });
     } else {
       // Fallback to calculation if element not found
-      const scrollAmount = window.innerWidth - 84;
+      const scrollAmount = window.innerWidth - 80;
       mobileScrollRef.current.scrollBy({
         left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth",
@@ -120,6 +157,32 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
   useEffect(() => {
     selectedStudentRef.current = selectedStudent;
   }, [selectedStudent]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if ((event.target as Element).closest('.surah-dropdown-container') || (event.target as Element).closest('.status-dropdown-container') || (event.target as Element).closest('.init-dropdown-container')) {
+        return;
+      }
+      if (openSurahDropdown) {
+        setOpenSurahDropdown(null);
+        setSurahSearchQuery("");
+      }
+      if (openStatusDropdown) {
+        setOpenStatusDropdown(null);
+      }
+      if (openInitDropdown) {
+        setOpenInitDropdown(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [openSurahDropdown, openStatusDropdown, openInitDropdown]);
 
   const getLocalDateString = (date: Date) => {
     const year = date.getFullYear();
@@ -160,13 +223,25 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
         });
       }
 
-      // Only add to table if it's an active day based on config and within active range
-      if (parsedActiveDays.includes(current.getDay()) && isWithinActiveRange) {
+      // Check if this date has any records or pending changes that are meaningful
+      const isMeaningful = (r: any) => {
+        if (!r) return false;
+        // if status is EMPTY ("-") and no surah is selected, it's virtually empty
+        if ((!r.status || r.status === MemorizationStatus.EMPTY) && !r.surah_name) return false;
+        return true;
+      };
+
+      const hasData = records.some(r => r.record_date === currentDateStr && isMeaningful(r)) || 
+                      Object.keys(pendingChanges).some(k => k.startsWith(currentDateStr + "|") && isMeaningful(pendingChanges[k]));
+
+      // Only add to table if it's an active day based on config (and within active range), 
+      // OR if it has ANY data (including Hafalan Awal or any other memorization history)
+      if ((parsedActiveDays.includes(current.getDay()) && isWithinActiveRange) || hasData) {
         dates.push(currentDateStr);
       }
     }
     return dates;
-  }, [currentWeekOffset, activeDaysStr, activePeriodsStr]);
+  }, [currentWeekOffset, activeDaysStr, activePeriodsStr, records, pendingChanges]);
 
   const checkHoliday = (offset: number) => {
     const today = new Date();
@@ -299,6 +374,15 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
     return `${startDay} ${startMonth} - ${endDay} ${endMonth} ${year}`;
   }, [weekDates]);
 
+  const currentMondayStr = useMemo(() => {
+    const today = new Date();
+    const day = today.getDay();
+    const diff = (day === 0 ? -6 : 1) - day + currentWeekOffset * 7;
+    const start = new Date(today);
+    start.setDate(today.getDate() + diff);
+    return getLocalDateString(start);
+  }, [currentWeekOffset]);
+
   const weekTotals = useMemo(() => {
     const sabaqLines = records.filter((r) => r.type === MemorizationType.SABAQ && r.status === MemorizationStatus.LANCAR).reduce((acc, r) => acc + (r.jumlah || 0), 0);
     const sabqiPages = records.filter((r) => r.type === MemorizationType.SABQI && r.status === MemorizationStatus.LANCAR).reduce((acc, r) => acc + (r.jumlah || 0), 0);
@@ -383,22 +467,18 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
     setRecords([]);
     setPendingChanges({});
 
-    // Comprehensive URL Sync (Student + Week)
     const url = new URL(window.location.href);
-    let changed = false;
-
     if (selectedStudent && selectedStudent.id !== studentIdParam) {
       url.searchParams.set("studentId", selectedStudent.id);
       setStudentIdParam(selectedStudent.id);
-      changed = true;
+      window.history.replaceState({}, "", url.toString());
     }
+  }, [selectedStudent]);
 
+  useEffect(() => {
+    const url = new URL(window.location.href);
     if (url.searchParams.get("weekOffset") !== currentWeekOffset.toString()) {
       url.searchParams.set("weekOffset", currentWeekOffset.toString());
-      changed = true;
-    }
-
-    if (changed) {
       window.history.replaceState({}, "", url.toString());
     }
 
@@ -449,7 +529,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
 
     setGlobalLoading(true);
     try {
-      const weekStart = weekDates[0];
+      const weekStart = currentMondayStr;
       const currentRecordsData = await getWeeklyMemorization(selectedStudent.id, weekStart);
       const newRecordsData = { ...currentRecordsData };
 
@@ -501,10 +581,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
     }
   };
 
-  const [pendingChanges, setPendingChanges] = useState<Record<string, any>>({});
-  const [saveCounter, setSaveCounter] = useState(0);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(false);
+
 
   useEffect(() => {
     const hasChanges = Object.keys(pendingChanges).length > 0;
@@ -524,18 +601,41 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
       // during a successful navigation. The parent (App.tsx) handles resetting.
     };
   }, [pendingChanges, onSetUnsavedChanges]);
+  const openInitModal = () => {
+    let initialSurah = "";
+    let initialAyat = 0;
+
+    if (selectedStudent) {
+      const juz = selectedStudent.current_juz || 0;
+      const hal = selectedStudent.current_page || 0;
+
+      const sabaqPos = getSabaqPositionFromHafalan(juz, hal);
+      if (sabaqPos) {
+        initialSurah = sabaqPos.surah;
+        initialAyat = sabaqPos.ayah;
+      }
+    }
+
+    const initialSabqiPos = initialSurah && initialAyat > 0 ? getSabqiPosForSabaq(initialSurah, initialAyat) : null;
+
+    setInitForm((prev) => ({ 
+      ...prev, 
+      surah: initialSurah, 
+      ayat: initialAyat,
+      sabqiSurah: initialSabqiPos?.surah || prev.sabqiSurah,
+      sabqiAyat: initialSabqiPos?.ayah || prev.sabqiAyat
+    }));
+    setIsInitModalOpen(true);
+  };
 
   const fetchRecords = async () => {
     if (!selectedStudent) return;
 
-    if (weekDates.length === 0) {
-      setRecords([]);
-      setPendingChanges({});
-      return;
-    }
-
+    // We removed the early return for weekDates.length === 0 so that records can fetch
+    // and populate weekDates for inactive days that have data.
+    
     const targetId = selectedStudent.id;
-    const weekStart = weekDates[0];
+    const weekStart = currentMondayStr;
     setIsFetchingRecords(true);
     try {
       const recordsData = await getWeeklyMemorization(targetId, weekStart);
@@ -555,11 +655,51 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
           });
         });
         setRecords(virtualRecords);
-        setPendingChanges({});
 
         // Fetch last progress BEFORE this week for reference
         const lastMap = await getLastProgressByType(targetId, weekStart);
         setLastProgress(lastMap);
+
+        // Pre-fill cross-week targets (Ripple Effect)
+        const absoluteLastMap = await getAbsoluteLastProgressByType(targetId, weekStart);
+        const initialPending: Record<string, any> = {};
+        const sortedDates = [...weekDates].sort((a, b) => a.localeCompare(b));
+        if (sortedDates.length > 0) {
+          const firstDate = sortedDates[0];
+          [MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL].forEach((type) => {
+            const absLast = absoluteLastMap[type];
+            if (absLast && absLast.status !== MemorizationStatus.LANCAR && absLast.status !== MemorizationStatus.EMPTY && absLast.status !== MemorizationStatus.HAFALAN_AWAL) {
+              const existing = virtualRecords.find((r) => r.record_date === firstDate && r.type === type);
+              if (!existing || (!existing.status && existing.status !== MemorizationStatus.EMPTY)) {
+                let nextJumlah = absLast.jumlah;
+                if (nextJumlah === 0 && absLast.surah_name && absLast.ayat_start) {
+                  const last = lastMap[type];
+                  if (last) {
+                    const startPoint = getNextAyah(last.surah_name, last.ayat_start); // DB ayat_start holds UI target ayat_end
+                    if (startPoint) {
+                      const calculatedVal = type === MemorizationType.SABAQ ? calculateLines(startPoint.surah, startPoint.ayah, absLast.surah_name, absLast.ayat_start) : calculatePages(startPoint.surah, startPoint.ayah, absLast.surah_name, absLast.ayat_start);
+                      nextJumlah = calculatedVal > 0 ? calculatedVal : 0;
+                    }
+                  }
+                }
+
+                initialPending[`${firstDate}|${type}`] = {
+                  surah_name: absLast.surah_name,
+                  ayat_end: absLast.ayat_start, // DB target is stored in ayat_start
+                  jumlah: nextJumlah,
+                  status: MemorizationStatus.EMPTY,
+                  keterangan: "-",
+                  is_verified: false,
+                  is_read_by_parent: false,
+                };
+              }
+            }
+          });
+        }
+        setPendingChanges(prev => ({
+          ...prev,
+          ...initialPending
+        }));
 
         // Fetch first record date for disabling previous days
         const firstDate = await getFirstRecordDate(targetId);
@@ -567,8 +707,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
 
         // Jika santri belum pernah sama sekali memiliki record, buka inisialisasi modal
         if (!firstDate && !loading) {
-          setInitForm({ surah: "", ayat: 0 });
-          setIsInitModalOpen(true);
+          openInitModal();
         }
       }
     } catch (error) {
@@ -594,6 +733,16 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
   }, [selectedStudent, records.length]);
 
   const toggleVerification = (date: string, type: MemorizationType, rec?: MemorizationRecord) => {
+    if (!firstRecordDate) {
+      openInitModal();
+      addNotification({
+        type: "warning",
+        title: "Inisialisasi Diperlukan",
+        message: "Data awal tiap santri harus ditentukan dari modal posisi hafalan terakhir.",
+      });
+      return;
+    }
+
     const key = `${date}|${type}`;
     const currentVerified = pendingChanges[key]?.is_verified ?? rec?.is_verified ?? false;
 
@@ -622,7 +771,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
         ...(activePending[key] || {}),
       };
 
-      if (curr.surah_name && curr.ayat_end) {
+      if (curr.surah_name && curr.ayat_end && (curr.status === MemorizationStatus.LANCAR || curr.status === MemorizationStatus.HAFALAN_AWAL || curr.is_provisional_baseline)) {
         return { surah_name: curr.surah_name, ayat_pos: curr.ayat_end };
       }
     }
@@ -667,9 +816,10 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                 keterangan: "-",
               };
             } else {
+              const isNotDepositingState = curr.status === MemorizationStatus.TIDAK_SETOR || curr.status === MemorizationStatus.SAKIT || curr.status === MemorizationStatus.IZIN || curr.status === MemorizationStatus.ALPA || curr.status === MemorizationStatus.TIDAK_LANCAR;
               newPending[k] = {
                 ...newPending[k],
-                jumlah: val > 0 ? val : 0,
+                jumlah: isNotDepositingState ? 0 : val > 0 ? val : 0,
                 is_verified: false,
               };
             }
@@ -687,24 +837,34 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
   const handleLocalChange = (date: string, type: MemorizationType, value: string, subType: string = "value") => {
     if (!selectedStudent) return;
 
+    if (!firstRecordDate) {
+      openInitModal();
+      addNotification({
+        type: "warning",
+        title: "Inisialisasi Diperlukan",
+        message: "Data awal tiap santri harus ditentukan dari modal posisi hafalan terakhir.",
+      });
+      return;
+    }
+
     const key = `${date}|${type}`;
 
     // Handle Status Dropdown (String)
     if (subType === "status") {
       const isNotDepositing = value === MemorizationStatus.TIDAK_SETOR || value === MemorizationStatus.SAKIT || value === MemorizationStatus.IZIN || value === MemorizationStatus.ALPA;
 
-      // Validation: LANCAR/TIDAK LANCAR requires Surah and Jumlah
+      // Validation: LANCAR/TIDAK LANCAR requires Surah
       if (value === MemorizationStatus.LANCAR || value === MemorizationStatus.TIDAK_LANCAR) {
         const current = {
           ...((recordsByDate[date] || []).find((r) => r.type === type) || {}),
           ...(pendingChanges[key] || {}),
         };
 
-        if (!current.surah_name || !current.jumlah || current.jumlah <= 0) {
+        if (!current.surah_name || (value === MemorizationStatus.LANCAR && (!current.jumlah || current.jumlah <= 0))) {
           addNotification({
             type: "error",
             title: "Data Tidak Lengkap",
-            message: `Mohon isi Nama Surah dan Total Baris/Hal terlebih dahulu sebelum memberi keterangan ${value}.`,
+            message: `Mohon isi Nama Surah${value === MemorizationStatus.LANCAR ? " dan Total Baris/Hal" : ""} terlebih dahulu sebelum memberi keterangan ${value}.`,
           });
           return;
         }
@@ -713,73 +873,144 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
       const lastRef = lastProgress[type];
 
       setPendingChanges((prev) => {
+        const current = {
+          ...((recordsByDate[date] || []).find((r) => r.type === type) || {}),
+          ...(prev[key] || {}),
+        };
+
+        let finalJumlah = current.jumlah;
+        if (value === MemorizationStatus.TIDAK_LANCAR || isNotDepositing) {
+          finalJumlah = 0;
+        } else if (value === MemorizationStatus.LANCAR) {
+          const last = findLatestPosition(type, date, prev);
+          if (current.surah_name && current.ayat_end && last) {
+            const startPoint = getNextAyah(last.surah_name, last.ayat_pos);
+            if (startPoint) {
+              const calculatedVal = type === MemorizationType.SABAQ ? calculateLines(startPoint.surah, startPoint.ayah, current.surah_name, current.ayat_end) : calculatePages(startPoint.surah, startPoint.ayah, current.surah_name, current.ayat_end);
+              finalJumlah = calculatedVal > 0 ? calculatedVal : 0;
+            }
+          }
+        }
+
         const newPending = {
           ...prev,
           [key]: {
             ...prev[key],
             status: value as MemorizationStatus,
             keterangan: value,
+            jumlah: finalJumlah,
             is_verified: false,
             is_read_by_parent: false,
           },
         };
 
-        // GENERAL REPEAT LOGIC: If status is anything other than LANCAR/EMPTY, repeat on next day
-        if (value !== MemorizationStatus.LANCAR && value !== MemorizationStatus.EMPTY) {
-          const current = {
-            ...((recordsByDate[date] || []).find((r) => r.type === type) || {}),
-            ...(newPending[key] || {}),
-          };
+        const isAbsenteeismStrict = value === MemorizationStatus.SAKIT || value === MemorizationStatus.IZIN || value === MemorizationStatus.ALPA;
+        
+        const cascadedTypes: MemorizationType[] = [type];
 
-          const sortedDates = [...weekDates].sort((a, b) => a.localeCompare(b));
-          const currentIndex = sortedDates.indexOf(date);
-          if (currentIndex !== -1 && currentIndex < sortedDates.length - 1) {
-            const nextDate = sortedDates[currentIndex + 1];
-            const nextKey = `${nextDate}|${type}`;
+        // Apply absenteeism cascade ONLY to EMPTY columns
+        if (isAbsenteeismStrict) {
+          const allTypes = [MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL];
+          allTypes.forEach((t) => {
+            if (t !== type) {
+              const otherKey = `${date}|${t}`;
+              const existingRec = recordsByDate[date]?.find((r) => r.type === t);
+              const pendingRec = prev[otherKey];
+              const currentStatus = pendingRec?.status ?? existingRec?.status ?? MemorizationStatus.EMPTY;
 
-            newPending[nextKey] = {
-              ...newPending[nextKey],
-              surah_name: current.surah_name,
-              ayat_end: current.ayat_end,
-              jumlah: current.jumlah,
-              status: MemorizationStatus.EMPTY,
-              keterangan: "-",
-              is_verified: false,
-              is_read_by_parent: false,
-            };
-          }
+              if (currentStatus === MemorizationStatus.EMPTY) {
+                cascadedTypes.push(t);
+                newPending[otherKey] = {
+                  ...prev[otherKey],
+                  status: value as MemorizationStatus,
+                  keterangan: value,
+                  is_verified: false,
+                  is_read_by_parent: false,
+                };
+              }
+            }
+          });
         }
-        // UNDO REPEAT LOGIC: If changed to LANCAR, clear the next day's repeat if it matches
-        else if (value === MemorizationStatus.LANCAR) {
-          const current = {
-            ...((recordsByDate[date] || []).find((r) => r.type === type) || {}),
-            ...(newPending[key] || {}),
-          };
 
-          const sortedDates = [...weekDates].sort((a, b) => a.localeCompare(b));
-          const currentIndex = sortedDates.indexOf(date);
-          if (currentIndex !== -1 && currentIndex < sortedDates.length - 1) {
-            const nextDate = sortedDates[currentIndex + 1];
-            const nextKey = `${nextDate}|${type}`;
-            const nextRec = {
-              ...((recordsByDate[nextDate] || []).find((r) => r.type === type) || {}),
-              ...(newPending[nextKey] || {}),
+        // Apply repeat logic for all affected types
+        cascadedTypes.forEach((t) => {
+          const tKey = `${date}|${t}`;
+          if (value !== MemorizationStatus.LANCAR && value !== MemorizationStatus.EMPTY && value !== MemorizationStatus.HAFALAN_AWAL) {
+            const current = {
+              ...((recordsByDate[date] || []).find((r) => r.type === t) || {}),
+              ...(newPending[tKey] || {}),
             };
 
-            // If next day is still EMPTY and matches current day's content, clear it
-            if (nextRec.status === MemorizationStatus.EMPTY && nextRec.surah_name === current.surah_name && nextRec.ayat_end === current.ayat_end) {
-              newPending[nextKey] = {
-                ...newPending[nextKey],
-                surah_name: "",
-                ayat_end: 0,
-                jumlah: 0,
-                status: MemorizationStatus.EMPTY,
-                keterangan: "-",
-                is_verified: false,
+            const sortedDates = [...weekDates].sort((a, b) => a.localeCompare(b));
+            const currentIndex = sortedDates.indexOf(date);
+            if (currentIndex !== -1 && currentIndex < sortedDates.length - 1) {
+              const nextDate = sortedDates[currentIndex + 1];
+              const nextKey = `${nextDate}|${t}`;
+              
+              const nextRec = {
+                ...((recordsByDate[nextDate] || []).find((r) => r.type === t) || {}),
+                ...(newPending[nextKey] || {}),
               };
+
+              // Only repeat if the next day hasn't been given a status yet
+              if (!nextRec.status || nextRec.status === MemorizationStatus.EMPTY) {
+                let nextJumlah = current.jumlah;
+                if (nextJumlah === 0 && current.surah_name && current.ayat_end) {
+                  const last = findLatestPosition(t, date, prev);
+                  if (last) {
+                    const startPoint = getNextAyah(last.surah_name, last.ayat_pos);
+                    if (startPoint) {
+                      const calculatedVal = t === MemorizationType.SABAQ ? calculateLines(startPoint.surah, startPoint.ayah, current.surah_name, current.ayat_end) : calculatePages(startPoint.surah, startPoint.ayah, current.surah_name, current.ayat_end);
+                      nextJumlah = calculatedVal > 0 ? calculatedVal : 0;
+                    }
+                  }
+                }
+
+                newPending[nextKey] = {
+                  ...newPending[nextKey],
+                  surah_name: current.surah_name,
+                  ayat_end: current.ayat_end,
+                  jumlah: nextJumlah,
+                  status: MemorizationStatus.EMPTY,
+                  keterangan: "-",
+                  is_verified: false,
+                  is_read_by_parent: false,
+                };
+              }
             }
           }
-        }
+          // UNDO REPEAT LOGIC: If changed to LANCAR, clear the next day's repeat if it matches
+          else if (value === MemorizationStatus.LANCAR) {
+            const current = {
+              ...((recordsByDate[date] || []).find((r) => r.type === t) || {}),
+              ...(newPending[tKey] || {}),
+            };
+
+            const sortedDates = [...weekDates].sort((a, b) => a.localeCompare(b));
+            const currentIndex = sortedDates.indexOf(date);
+            if (currentIndex !== -1 && currentIndex < sortedDates.length - 1) {
+              const nextDate = sortedDates[currentIndex + 1];
+              const nextKey = `${nextDate}|${t}`;
+              const nextRec = {
+                ...((recordsByDate[nextDate] || []).find((r) => r.type === t) || {}),
+                ...(newPending[nextKey] || {}),
+              };
+
+              // If next day is still EMPTY and matches current day's content, clear it
+              if (nextRec.status === MemorizationStatus.EMPTY && nextRec.surah_name === current.surah_name && nextRec.ayat_end === current.ayat_end) {
+                newPending[nextKey] = {
+                  ...newPending[nextKey],
+                  surah_name: "",
+                  ayat_end: 0,
+                  jumlah: 0,
+                  status: MemorizationStatus.EMPTY,
+                  keterangan: "-",
+                  is_verified: false,
+                };
+              }
+            }
+          }
+        });
 
         return newPending;
       });
@@ -816,7 +1047,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
             jumlah: autoJumlah > 0 ? autoJumlah : 0,
             is_verified: false,
             is_read_by_parent: false,
-            ...(value === "" ? { status: MemorizationStatus.EMPTY } : {}),
+            ...(value === "" ? { status: MemorizationStatus.EMPTY, is_provisional_baseline: false } : { is_provisional_baseline: true }),
           },
         };
         return applyRippleEffect(newPending, date, type);
@@ -858,6 +1089,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
         [subType === "score" ? "score" : subType === "ayat_end" ? "ayat_end" : "jumlah"]: value.trim() === "" ? null : numValue,
         is_verified: false,
         is_read_by_parent: false,
+        ...(subType === "ayat_end" && value.trim() !== "" ? { is_provisional_baseline: true } : {}),
       };
 
       // AUTO-CALCULATE LINES
@@ -890,60 +1122,74 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
     });
   };
 
-  const handleMassSave = async (isManual: boolean = false, isSilent: boolean = false) => {
+  const handleMassSave = async (isManual: boolean = false, isSilent: boolean = false): Promise<boolean> => {
     if (!selectedStudent || Object.keys(pendingChanges).length === 0) {
       if (isManual) {
         addNotification({ type: "info", title: "Info", message: "Tidak ada perubahan untuk disimpan." });
       }
-      return;
+      return false;
     }
 
     setIsSaving(true);
     try {
-      // PACK: Merge existing records with pending changes into one JSONB object
-      const weekStart = weekDates[0];
-      const currentRecordsData = await getWeeklyMemorization(selectedStudent.id, weekStart);
-      const newRecordsData = { ...currentRecordsData };
+      // Step 1: Find all unique weekStarts from pendingChanges
+      const uniqueWeekStarts = new Set<string>();
+      Object.keys(pendingChanges).forEach(key => {
+        const date = key.split("|")[0];
+        const dateObj = new Date(date);
+        const day = dateObj.getDay();
+        const diff = dateObj.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(dateObj.setDate(diff));
+        uniqueWeekStarts.add(getLocalDateString(monday));
+      });
 
-      // Validasi: Cegah simpan jika ada Surat yang diisi tapi Status masih kosong (- STATUS -)
-      let hasValidationError = false;
-      let errorMessage = "";
-      for (const [key, changes] of Object.entries(pendingChanges)) {
-        const [date, type] = key.split("|");
-        const currentChanges = changes as any;
-        const existing = (newRecordsData[date] && newRecordsData[date][type]) || {};
-        const finalStatus = currentChanges.status ?? existing.status ?? MemorizationStatus.EMPTY;
-        const finalSurah = currentChanges.surah_name ?? existing.surah_name ?? "";
-
-        if (finalSurah && finalStatus === MemorizationStatus.EMPTY) {
-          hasValidationError = true;
-          errorMessage = `Mohon lengkapi Status untuk hafalan surat ${finalSurah}.`;
-          break;
-        }
+      // Step 2: Fetch current records data for ALL relevant weeks
+      const recordsByWeek: Record<string, any> = {};
+      for (const ws of Array.from(uniqueWeekStarts)) {
+        const data = await getWeeklyMemorization(selectedStudent.id, ws);
+        recordsByWeek[ws] = { ...data };
       }
 
-      if (hasValidationError) {
-        addNotification({ type: "warning", title: "Data Belum Lengkap", message: errorMessage });
-        setIsSaving(false);
-        return;
-      }
+      // Validasi: Dihapus sesuai request. Jika Surat diisi tapi status kosong, default ke LANCAR.
 
       Object.entries(pendingChanges).forEach(([key, changes]) => {
         const [date, type] = key.split("|");
         const currentChanges = changes as any;
 
+        const dateObj = new Date(date);
+        const day = dateObj.getDay();
+        const diff = dateObj.getDate() - day + (day === 0 ? -6 : 1);
+        const ws = getLocalDateString(new Date(dateObj.setDate(diff)));
+        const newRecordsData = recordsByWeek[ws];
+
         const existing = (newRecordsData[date] && newRecordsData[date][type]) || {};
-        const finalStatus = currentChanges.status ?? existing.status ?? MemorizationStatus.EMPTY;
+        let finalStatus = currentChanges.status ?? existing.status ?? MemorizationStatus.EMPTY;
         const finalSurah = currentChanges.surah_name ?? existing.surah_name ?? "";
 
-        // Handle deletion (EMPTY status OR empty surah)
-        if (finalStatus === MemorizationStatus.EMPTY || !finalSurah) {
-          if (newRecordsData[date]) {
-            delete newRecordsData[date][type];
-            if (Object.keys(newRecordsData[date]).length === 0) {
-              delete newRecordsData[date];
-            }
+        // Default to LANCAR if status is not set but surah is provided, ONLY for past/present days
+        const todayStr = getLocalDateString(new Date());
+        if (finalSurah && finalStatus === MemorizationStatus.EMPTY) {
+          if (date <= todayStr) {
+            finalStatus = MemorizationStatus.LANCAR;
+            currentChanges.status = MemorizationStatus.LANCAR;
+            currentChanges.keterangan = MemorizationStatus.LANCAR;
           }
+        }
+
+        const isAbsenteeism = finalStatus === MemorizationStatus.SAKIT || finalStatus === MemorizationStatus.IZIN || finalStatus === MemorizationStatus.ALPA || finalStatus === MemorizationStatus.TIDAK_SETOR;
+
+        // Handle explicit deletion (empty surah AND NOT absenteeism)
+        if (!finalSurah && !isAbsenteeism) {
+          // Simpan sebagai record kosong di JSON agar mencegah auto-cascade dari initialPending
+          if (!newRecordsData[date]) newRecordsData[date] = {};
+          newRecordsData[date][type] = {
+            surah_name: "",
+            jumlah: 0,
+            ayat_end: 0,
+            status: MemorizationStatus.EMPTY,
+            keterangan: MemorizationStatus.EMPTY
+          };
+          
           // Force status to EMPTY so the next block deletes it from memorization_records too
           currentChanges.status = MemorizationStatus.EMPTY;
           return;
@@ -978,6 +1224,12 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
           return deleteRecord(selectedStudent.id, type, date, user, selectedStudent.full_name);
         }
 
+        const dateObj = new Date(date);
+        const day = dateObj.getDay();
+        const diff = dateObj.getDate() - day + (day === 0 ? -6 : 1);
+        const ws = getLocalDateString(new Date(dateObj.setDate(diff)));
+        const newRecordsData = recordsByWeek[ws];
+
         const existing = newRecordsData[date]?.[type];
         if (!existing) return Promise.resolve();
 
@@ -1000,7 +1252,13 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
         );
       });
 
-      await Promise.all([upsertWeeklyMemorization(selectedStudent.id, weekStart, newRecordsData, user, selectedStudent.full_name), ...savePromises]);
+      // Execute all saves: One upsert per week, plus all individual records
+      const upsertPromises = Array.from(uniqueWeekStarts).map(ws => 
+        upsertWeeklyMemorization(selectedStudent.id, ws, recordsByWeek[ws], user, selectedStudent.full_name)
+      );
+      await Promise.all([...upsertPromises, ...savePromises]);
+
+      setPendingChanges({}); // Clear pending changes after successful save!
 
       await fetchRecords();
 
@@ -1066,6 +1324,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
           message: `Progress ${selectedStudent.full_name} berhasil diperbarui${progressDetail}.`,
         });
       }
+      return true;
     } catch (error: any) {
       console.error("Mass save error:", error);
       addNotification({
@@ -1073,6 +1332,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
         title: "Gagal Menyimpan",
         message: error.message || "Terjadi kesalahan saat menyimpan data.",
       });
+      return false;
     } finally {
       setIsSaving(false);
     }
@@ -1190,6 +1450,12 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
     }
   };
 
+  const getSequenceScore = (surahName: string, ayat: number) => {
+    const sIndex = SURAH_PROGRESSION.indexOf(surahName);
+    if (sIndex === -1) return -1;
+    return sIndex * 1000 + ayat;
+  };
+
   const handleInitialize = async () => {
     if (!selectedStudent) return;
 
@@ -1200,12 +1466,38 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
       return;
     }
 
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const dateStr = (initForm as any).date ? (initForm as any).date : getLocalDateString(yesterday);
+    const dateObj = (initForm as any).date ? new Date((initForm as any).date) : yesterday;
+
+    // Check for changes before submitting
+    let sabaq: any, sabqi: any, manzil: any;
+    records.forEach((r) => {
+      if (r.record_date === dateStr && r.status === MemorizationStatus.HAFALAN_AWAL) {
+        if (r.type === MemorizationType.SABAQ) sabaq = r;
+        if (r.type === MemorizationType.SABQI) sabqi = r;
+        if (r.type === MemorizationType.MANZIL) manzil = r;
+      }
+    });
+
+    const isChanged = 
+      initForm.surah !== (sabaq?.surah_name || "") ||
+      initForm.ayat !== (sabaq?.ayat_end || 0) ||
+      initForm.sabqiSurah !== (sabqi?.surah_name || "") ||
+      initForm.sabqiAyat !== (sabqi?.ayat_end || 0) ||
+      initForm.manzilSurah !== (manzil?.surah_name || "") ||
+      initForm.manzilAyat !== (manzil?.ayat_end || 0);
+
+    if (!isChanged) {
+      addNotification({ type: "info", title: "Tidak Ada Perubahan", message: "Posisi hafalan tidak ada yang diubah." });
+      setIsInitModalOpen(false);
+      setInitForm((prev) => ({ ...prev, date: undefined }));
+      return;
+    }
+
     setIsInitializing(true);
     try {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const dateStr = getLocalDateString(yesterday);
-
       // Hitung week_start untuk pekan ini (Senin)
       const today = new Date();
       const todayDay = today.getDay();
@@ -1215,38 +1507,17 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
       const weekStartStr = getLocalDateString(weekStartObj);
 
       // Hitung week_start untuk yesterday (untuk upsert data inisialisasi)
-      const yestDay = yesterday.getDay();
+      const yestDay = dateObj.getDay();
       const diffYest = (yestDay === 0 ? -6 : 1) - yestDay;
-      const yestWeekStartObj = new Date(yesterday);
-      yestWeekStartObj.setDate(yesterday.getDate() + diffYest);
+      const yestWeekStartObj = new Date(dateObj);
+      yestWeekStartObj.setDate(dateObj.getDate() + diffYest);
       const yestWeekStartStr = getLocalDateString(yestWeekStartObj);
-
-      // Tentukan posisi Sabqi: Dimulai dari ayat pertama di Juz yang sama dengan Sabaq
-      let sabqiSurah = initForm.surah;
-      let sabqiAyat = 1;
-
-      const sabaqSurahInfo = SURAH_DATA.find((s) => s.name === initForm.surah);
-      const sabaqJuz = sabaqSurahInfo?.juz[0];
-
-      if (sabaqJuz) {
-        for (const sName of SURAH_PROGRESSION) {
-          const sInfo = SURAH_DATA.find((s) => s.name === sName);
-          if (sInfo && sInfo.juz.includes(sabaqJuz)) {
-            sabqiSurah = sName;
-            break;
-          }
-        }
-      }
-
-      // Tentukan posisi Manzil: Dimulai dari awal hafalan (Juz 30 -> An-Naba': 1)
-      let manzilSurah = "An-Naba'";
-      let manzilAyat = 1;
 
       // Susun posisi masing-masing tipe
       const typeData: Record<string, { surah: string; ayat: number }> = {
         [MemorizationType.SABAQ]: { surah: initForm.surah, ayat: initForm.ayat },
-        [MemorizationType.SABQI]: { surah: sabqiSurah, ayat: sabqiAyat },
-        [MemorizationType.MANZIL]: { surah: manzilSurah, ayat: manzilAyat },
+        [MemorizationType.SABQI]: { surah: initForm.sabqiSurah, ayat: initForm.sabqiAyat },
+        [MemorizationType.MANZIL]: { surah: initForm.manzilSurah, ayat: initForm.manzilAyat },
       };
 
       const types = [MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL];
@@ -1315,7 +1586,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
         );
       }
 
-      const info = `Sabqi → ${sabqiSurah}:${sabqiAyat}, Manzil → ${manzilSurah}:${manzilAyat}`;
+      const info = `Sabqi → ${initForm.sabqiSurah}:${initForm.sabqiAyat}, Manzil → ${initForm.manzilSurah}:${initForm.manzilAyat}`;
 
       addNotification({
         type: "success",
@@ -1335,8 +1606,8 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
 
   return (
     <div className="flex flex-col lg:flex-row h-[calc(100vh-140px)] gap-4 lg:gap-6 animate-fade-in overflow-hidden no-scrollbar">
-      {/* Sidebar Santri (Desktop Only) */}
-      <div className="lg:flex w-64 bg-white rounded-xl border-2 border-slate-300 flex flex-col overflow-hidden shadow-none shrink-0 h-full">
+      {/* Sidebar Santri */}
+      <div className="hidden lg:flex w-64 bg-white rounded-xl border-2 border-slate-300 flex-col overflow-hidden shadow-none shrink-0 h-full">
         <div className="p-5 border-b border-slate-100 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
@@ -1370,7 +1641,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                 <p className={`text-[11px] font-black uppercase tracking-tight truncate ${selectedStudent?.id === student.id ? "text-jade-700" : "text-slate-800"}`}>{student.full_name}</p>
                 <p className={`text-[9px] font-bold uppercase tracking-widest mt-0.5 ${selectedStudent?.id === student.id ? "text-jade-600" : "text-slate-400"}`}>NIS: {student.nis || "-"}</p>
               </div>
-              <ChevronRight className={`w-4 h-4 transition-transform ${selectedStudent?.id === student.id ? "rotate-90 text-jade-500 opacity-100" : "text-slate-300 opacity-0 group-hover:opacity-100 group-hover:translate-x-1"}`} />
+              <ChevronRight className={`w-4 h-4 transition-transform ${selectedStudent?.id === student.id ? "rotate-90 text-jade-500 opacity-100" : "text-slate-400 group-hover:opacity-100 group-hover:translate-x-1"}`} />
             </button>
           ))}
 
@@ -1386,8 +1657,8 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col gap-4 lg:gap-6 overflow-hidden min-h-0">
         {/* Mobile Student Selector (Visible only on mobile) */}
-        <div className="lg:hidden shrink-0 bg-white border border-slate-200 overflow-hidden shadow-sm">
-          <div className="flex flex-col gap-2">
+        <div className="lg:hidden shrink-0 bg-white rounded-xl border-2 border-slate-300 overflow-visible shadow-sm relative z-100">
+          <div className="flex flex-col">
             {/* Selected Student Display / Toggle Button */}
             <div className="relative">
               <button
@@ -1395,42 +1666,58 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                   const dropdown = document.getElementById("student-mobile-dropdown");
                   if (dropdown) dropdown.classList.toggle("hidden");
                 }}
-                className="w-full flex items-center justify-between p-3 lg:p-4 bg-emerald-50/50 border-b border-emerald-100 text-emerald-700"
+                className="w-full flex items-center justify-between p-3 bg-emerald-50/50 hover:bg-emerald-50 text-emerald-700 rounded-xl transition-colors"
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 bg-jade-600 rounded-lg flex items-center justify-center text-white shadow-sm">
-                    <User className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-jade-600 rounded-lg flex items-center justify-center text-white shadow-sm">
+                    <User className="w-4 h-4" />
                   </div>
                   <div className="text-left">
-                    <p className="text-[8px] font-black uppercase tracking-widest leading-none mb-0.5 opacity-60">Santri Terpilih</p>
-                    <p className="text-[10px] font-black uppercase tracking-tight leading-none">{selectedStudent?.full_name || "Pilih Santri"}</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest leading-none mb-0.5 opacity-60">Santri Terpilih</p>
+                    <p className="text-[11px] font-black uppercase tracking-tight leading-none">{selectedStudent?.full_name || "Pilih Santri"}</p>
                   </div>
                 </div>
-                <ChevronDown className="w-3 h-3" />
+                <div className="w-6 h-6 rounded-md bg-white border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm">
+                  <ChevronDown className="w-3 h-3" />
+                </div>
               </button>
 
               {/* Dropdown Menu */}
-              <div
-                id="student-mobile-dropdown"
-                className="hidden absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-100 max-h-75 overflow-y-auto no-scrollbar animate-in slide-in-from-top-2 duration-200"
-              >
-                <div className="p-2 space-y-1">
-                  {students.map((student) => (
+              <div id="student-mobile-dropdown" className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border-2 border-slate-300 rounded-xl shadow-xl z-50 max-h-[75vh] overflow-hidden flex flex-col">
+                <div className="p-3 border-b border-slate-100 bg-slate-50">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Cari santri..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="w-full pl-8 pr-3 py-2 text-[10px] font-black uppercase tracking-widest bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-jade-50/50 focus:border-jade-400 transition-all outline-none placeholder:text-slate-300"
+                    />
+                  </div>
+                </div>
+                <div className="flex-1 overflow-y-auto scrollbar-thin p-1.5">
+                  {filteredStudents.map((student) => (
                     <button
                       key={student.id}
                       onClick={() => {
                         handleStudentSwitch(student);
                         document.getElementById("student-mobile-dropdown")?.classList.add("hidden");
                       }}
-                      className={`w-full flex items-center justify-between p-3.5 rounded-xl transition-all ${selectedStudent?.id === student.id ? "bg-jade-600 text-white shadow-md shadow-primary-200" : "hover:bg-slate-50 text-slate-700"}`}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-lg transition-all ${selectedStudent?.id === student.id ? "bg-jade-50 text-jade-700" : "hover:bg-slate-50 text-slate-700"}`}
                     >
                       <div className="flex flex-col items-start">
-                        <span className={`text-[11px] font-black uppercase tracking-tight ${selectedStudent?.id === student.id ? "text-white" : "text-slate-800"}`}>{student.full_name}</span>
-                        <span className={`text-[9px] font-bold uppercase tracking-widest mt-0.5 ${selectedStudent?.id === student.id ? "text-jade-200" : "text-slate-400"}`}>NIS: {student.nis || "-"}</span>
+                        <span className={`text-[10px] font-black uppercase tracking-tight ${selectedStudent?.id === student.id ? "text-jade-700" : "text-slate-800"}`}>{student.full_name}</span>
+                        <span className={`text-[8px] font-bold uppercase tracking-widest mt-0.5 ${selectedStudent?.id === student.id ? "text-jade-500" : "text-slate-400"}`}>NIS: {student.nis || "-"}</span>
                       </div>
-                      {selectedStudent?.id === student.id && <CheckCircle2 className="w-4 h-4 text-white" />}
+                      {selectedStudent?.id === student.id && <CheckCircle2 className="w-3.5 h-3.5 text-jade-500" />}
                     </button>
                   ))}
+                  {filteredStudents.length === 0 && (
+                    <div className="py-6 text-center opacity-40">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tidak ditemukan</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1452,7 +1739,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                     <p className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-0.5">Mutaba'ah Hafalan</p>
                   </div>
                 </div>
-                <div className="flex items-center justify-between lg:justify-end gap-1.5 lg:gap-4 w-full lg:w-auto">
+                <div className="flex items-center justify-between lg:justify-end gap-1.5 w-full lg:w-auto">
                   <div className="flex bg-white p-0.5 rounded-xl border-2 border-slate-300 ring-1 ring-white scale-90 lg:scale-100 origin-left">
                     {!holidayBlock?.isBeforeStart ? (
                       <button
@@ -1529,20 +1816,27 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
               </div>
 
               {/* Dense Grid Table */}
-              <div ref={tableContainerRef} key={selectedStudent.id} className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent -mt-px">
+              <div ref={tableContainerRef} key={selectedStudent.id} className="flex-1 flex flex-col overflow-x-auto overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent -mt-px">
                 {/* DESKTOP VIEW - ORIGINAL TABLE */}
-                <div className="hidden lg:block">
-                  <table className="w-full border-separate border-spacing-0">
+                {/* UNIFIED TABLE FOR BOTH MOBILE & DESKTOP */}
+                <div className={`hidden lg:block ${weekDates.length === 0 ? "h-full min-h-100" : ""}`}>
+                  <table className={`w-full border-separate border-spacing-0 ${weekDates.length === 0 ? "h-full" : ""}`}>
                     <thead className="sticky top-0 z-50">
                       <tr>
-                        <th className="px-2 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-18.75 min-w-18.75 sticky left-0 z-50 bg-slate-300 border-t border-b border-l border-r border-black">
-                          TANGGAL
+                        <th className="px-2 lg:px-2 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-14 min-w-14 max-w-14 lg:w-18.75 lg:min-w-18.75 sticky left-0 z-50 bg-slate-300 border-t border-b border-l border-r border-black">
+                          <span className="lg:hidden">TGL</span>
+                          <span className="hidden lg:inline">TANGGAL</span>
                         </th>
-                        <th className="px-2 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-16.25 min-w-16.25 sticky left-18.75 z-50 bg-slate-300 border-t border-b border-r border-black">
-                          JENIS
+                        <th className="px-0 lg:px-0 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-15 min-w-15 max-w-15 lg:w-16.25 lg:min-w-16.25 sticky left-14 lg:left-18.75 z-50 bg-slate-300 border-t border-b border-r border-black">
+                          SETORAN
                         </th>
-                        <th className="px-6 py-4 text-[9px] lg:text-[10px] font-black text-emerald-700 uppercase tracking-widest text-center border-t border-b border-r border-emerald-700 bg-emerald-50">SURAT / AYAT</th>
-                        <th className="px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-black text-blue-700 uppercase tracking-widest text-center w-12 lg:w-48 border-t border-b border-r border-blue-700 bg-blue-50">
+                        <th className="px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-black text-slate-800 uppercase tracking-widest text-center w-20 min-w-20 lg:w-24 lg:min-w-24 border-t border-b border-r border-black bg-slate-300">
+                          JUMLAH
+                        </th>
+                        <th className="px-6 py-4 text-[9px] lg:text-[10px] font-black text-emerald-700 uppercase tracking-widest text-center border-t border-b border-r border-emerald-700 bg-emerald-50 w-28 min-w-28 lg:w-auto lg:min-w-auto">
+                          SURAT / AYAT
+                        </th>
+                        <th className="px-2 lg:px-4 py-4 text-[9px] lg:text-[10px] font-black text-blue-700 uppercase tracking-widest text-center w-24 min-w-24 lg:w-48 lg:min-w-48 border-t border-b border-r border-blue-700 bg-blue-50">
                           <span className="lg:hidden">KET</span>
                           <span className="hidden lg:inline">KETERANGAN / STATUS</span>
                         </th>
@@ -1599,32 +1893,41 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                     const isToday = date === getLocalDateString(new Date());
 
                                     return (
-                                      <tr key={`${date}-${type}`} className={`group transition-all ${isToday ? "bg-emerald-50/40" : "hover:bg-emerald-50/40"}`}>
+                                      <tr key={`${date}-${type}`} className={`group ${isToday ? "bg-emerald-50/40" : "hover:bg-emerald-50/40"}`}>
                                         {idx === 0 && (
                                           <td
                                             id={`row-${date}`}
                                             rowSpan={3}
-                                            className={`px-2 py-5 align-middle w-18.75 min-w-18.75 sticky left-0 z-20 border-l border-r border-b border-slate-200 opacity-100 after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[0.5px] after:bg-slate-100 ${isToday ? "bg-[#ECFDF5]" : isFuture ? "bg-[#FDFDFD]" : "bg-white"} group-hover:bg-emerald-50/60`}
+                                            className={`px-1 lg:px-2 py-3 lg:py-5 align-middle w-14 min-w-14 max-w-14 lg:w-18.75 lg:min-w-18.75 sticky left-0 z-20 border-l border-r border-b border-slate-200 opacity-100 after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[0.5px] after:bg-slate-100 ${isToday ? "bg-[#ECFDF5]" : isFuture ? "bg-[#FDFDFD]" : "bg-white"} group-hover:bg-emerald-50/60`}
                                           >
                                             {isToday && <div className="absolute top-0 bottom-0 left-0 w-1 bg-emerald-500 shadow-[2px_0_8px_rgba(16,185,129,0.3)]"></div>}
                                             <div className="flex flex-col items-center justify-center space-y-1 text-center relative z-10">
-                                              {isToday && <span className="mb-1 px-1.5 py-0.5 bg-emerald-500 text-white text-[7px] font-black rounded-full uppercase tracking-tighter">Hari Ini</span>}
-                                              <p className={`text-[10px] font-black uppercase tracking-tighter ${isToday ? "text-emerald-700" : "text-slate-800"}`}>{new Date(date).toLocaleDateString("id-ID", { weekday: "short" })}</p>
-                                              <p className={`text-[8px] font-medium uppercase tracking-widest ${isToday ? "text-emerald-500" : "text-slate-400"}`}>
+                                              {isToday && <span className="mb-1 lg:mb-2 px-1 lg:px-1.5 py-0.5 bg-emerald-500 text-white text-[6px] lg:text-[7px] font-black rounded-full uppercase tracking-tighter">Hari Ini</span>}
+                                              <p className={`text-[10px] lg:text-[11px] font-black uppercase tracking-tighter leading-tight ${isToday ? "text-emerald-700" : "text-slate-800"}`}>
+                                                {new Date(date).toLocaleDateString("id-ID", { weekday: "short" })}
+                                                <span className="lg:hidden">,</span>
+                                              </p>
+                                              <div className="lg:hidden flex flex-col items-center -space-y-0.5 mt-1">
+                                                <p className={`text-[13px] font-black leading-none ${isToday ? "text-emerald-600" : "text-slate-900"}`}>{new Date(date).toLocaleDateString("id-ID", { day: "2-digit" })}</p>
+                                                <p className={`text-[8.5px] font-black uppercase pt-1 tracking-tighter ${isToday ? "text-emerald-500" : "text-slate-400"}`}>
+                                                  {new Date(date).toLocaleDateString("id-ID", { month: "short" }).toUpperCase()}
+                                                </p>
+                                              </div>
+                                              <p className={`hidden lg:block text-[8px] font-medium uppercase tracking-widest ${isToday ? "text-emerald-500" : "text-slate-400"}`}>
                                                 {new Date(date).toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit" })}
                                               </p>
                                             </div>
                                           </td>
                                         )}
                                         <td
-                                          className={`px-2 py-3 sticky left-18.75 z-20 w-16.25 min-w-16.25 border-r border-b border-slate-200 text-center transition-colors shadow-[4px_0_8px_rgba(0,0,0,0.05)] opacity-100 after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[0.5px] after:bg-slate-200 ${isToday ? "bg-[#ECFDF5]" : isFuture ? "bg-[#FDFDFD]" : "bg-white group-hover:bg-emerald-50/60"}`}
+                                          className={`px-1 lg:px-2 py-3 sticky left-14 lg:left-18.75 z-20 w-15 min-w-15 max-w-15 lg:w-16.25 lg:min-w-16.25 border-r border-b border-slate-200 text-center transition-colors shadow-[4px_0_8px_rgba(0,0,0,0.05)] opacity-100 after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[0.5px] after:bg-slate-200 ${isToday ? "bg-[#ECFDF5]" : isFuture ? "bg-[#FDFDFD]" : "bg-white group-hover:bg-emerald-50/60"}`}
                                         >
                                           <span className={`text-[8px] font-black ${isToday ? "text-emerald-600" : "text-slate-500"} uppercase tracking-tighter ${isFuture ? "opacity-60" : ""}`}>{getTypeLabel(type)}</span>
                                         </td>
-                                        <td className={`px-2 py-1 border-b border-slate-200`}>
-                                          <div className="flex items-center gap-1 justify-center min-w-50">
-                                            {/* VOLUME - NOW "jumlah" */}
-                                            <div className="flex items-center bg-slate-100/50 border border-slate-200 rounded-lg focus-within:ring-1 focus-within:ring-jade-200 h-8 px-1.5 flex-none w-21">
+                                        {/* JUMLAH COLUMN */}
+                                        <td className="px-1 lg:px-2 py-1 border-b border-r border-slate-200 text-center">
+                                          <div className="flex items-center justify-center">
+                                            <div className="flex items-center bg-slate-100/50 border border-slate-200 rounded-lg focus-within:ring-1 focus-within:ring-jade-200 h-8 px-1.5 w-18 lg:w-21">
                                               <input
                                                 type="number"
                                                 readOnly
@@ -1639,7 +1942,12 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                               />
                                               <span className="text-[7px] font-black text-slate-400 uppercase opacity-60 flex-none">{type === MemorizationType.SABAQ ? "Baris" : "Hal"}</span>
                                             </div>
+                                          </div>
+                                        </td>
 
+                                        {/* SURAT / AYAT COLUMN */}
+                                        <td className={`px-2 py-1 border-b border-slate-200 ${openSurahDropdown === `desktop-surah-${date}-${type}` ? "relative z-60" : ""}`}>
+                                          <div className="flex items-center gap-1 justify-center min-w-36 lg:min-w-50">
                                             <div className="flex-1 min-w-15">
                                               {(() => {
                                                 let isKhatam = false;
@@ -1661,30 +1969,115 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                   );
                                                 }
 
+                                                const dropdownId = `desktop-${date}-${type}`;
+                                                const isOpen = openSurahDropdown === dropdownId;
+                                                const currentValue = pendingChanges[`${date}|${type}`]?.surah_name ?? rec?.surah_name ?? "";
+                                                const disabled = isHafalanAwal || isRowDisabled;
+
                                                 return (
-                                                  <select
-                                                    disabled={isHafalanAwal || isRowDisabled}
-                                                    value={pendingChanges[`${date}|${type}`]?.surah_name ?? rec?.surah_name ?? ""}
-                                                    onChange={(e) => handleLocalChange(date, type, e.target.value, "surah_name")}
-                                                    className={`w-full h-8 bg-white border border-slate-200 rounded-lg px-2 text-[9px] font-bold outline-none transition-all appearance-none text-center shadow-sm text-slate-700 focus:border-jade-400`}
-                                                  >
-                                                    <option value="">- Surat -</option>
-                                                    {SURAH_DATA.slice(0, 114).map((s) => {
-                                                      if (type === MemorizationType.SABAQ) {
-                                                        const prevPos = findLatestPosition(type, date);
-                                                        if (prevPos) {
-                                                          const prevSurahIndex = SURAH_PROGRESSION.indexOf(prevPos.surah_name);
-                                                          const currentSurahIndex = SURAH_PROGRESSION.indexOf(s.name);
-                                                          if (currentSurahIndex < prevSurahIndex) return null;
+                                                  <div className="relative group/surah w-full surah-dropdown-container">
+                                                    <div
+                                                      onClick={(e) => {
+                                                        if (disabled) return;
+                                                        e.stopPropagation();
+                                                        if (!isOpen) {
+                                                          setSurahSearchQuery("");
+                                                          const rect = e.currentTarget.getBoundingClientRect();
+                                                          const spaceBelow = window.innerHeight - rect.bottom;
+                                                          const spaceAbove = rect.top;
+                                                          setDropdownPosition(spaceBelow < 250 && spaceAbove > spaceBelow ? "top" : "bottom");
                                                         }
-                                                      }
-                                                      return (
-                                                        <option key={s.name} value={s.name}>
-                                                          {s.name}
-                                                        </option>
-                                                      );
-                                                    })}
-                                                  </select>
+                                                        setOpenSurahDropdown(isOpen ? null : dropdownId);
+                                                        if (!isOpen) setOpenStatusDropdown(null);
+                                                      }}
+                                                      title={isHafalanAwal ? "hubungi admin jika ingin mengubah hafalan awal" : undefined}
+                                                      className={`w-full h-8 bg-white px-2.5 rounded-lg border-2 shadow-none text-[8px] font-black uppercase tracking-widest text-slate-600 outline-none transition-all flex items-center justify-between ${isOpen ? "border-jade-400 ring-4 ring-jade-50/50" : "border-slate-300"} ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                                                    >
+                                                      <span className="truncate">{currentValue || "- Surat -"}</span>
+                                                      <ChevronDown className={`w-3 h-3 text-slate-300 transition-all ${isOpen ? "rotate-180 text-jade-500" : "group-hover/surah:text-jade-500"}`} />
+                                                    </div>
+
+                                                    {isOpen && (
+                                                      <>
+                                                        <div className={`absolute ${dropdownPosition === "top" ? "bottom-full mb-2" : "top-full mt-2"} left-0 w-40 bg-white border-2 border-slate-300 rounded-xl shadow-xl overflow-hidden z-100! flex flex-col animate-in fade-in ${dropdownPosition === "top" ? "slide-in-from-bottom-2" : "slide-in-from-top-2"} duration-200`} onMouseDown={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
+                                                          <div className="p-2 border-b border-slate-100 bg-slate-50/50">
+                                                            <input
+                                                              type="text"
+                                                              placeholder="CARI SURAT..."
+                                                              value={surahSearchQuery}
+                                                              onChange={(e) => setSurahSearchQuery(e.target.value)}
+                                                              onClick={(e) => e.stopPropagation()}
+                                                              className="w-full bg-white border border-slate-200 rounded px-2 py-1.5 text-[8px] font-black uppercase tracking-wider text-slate-700 outline-none focus:border-jade-400 focus:ring-2 focus:ring-jade-50/50 transition-all placeholder:text-slate-300"
+                                                            />
+                                                          </div>
+                                                          <div className="max-h-48 overflow-y-auto no-scrollbar">
+                                                            <div
+                                                              className={`px-3 py-2.5 text-[8px] font-black uppercase tracking-widest transition-all cursor-pointer border-b border-slate-50 last:border-0 ${currentValue === "" ? "bg-emerald-50 text-emerald-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
+                                                              onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleLocalChange(date, type, "", "surah_name");
+                                                                setOpenSurahDropdown(null);
+                                                                setSurahSearchQuery("");
+                                                              }}
+                                                            >
+                                                              - Surat -
+                                                            </div>
+                                                            {SURAH_DATA.slice(0, 114)
+                                                              .filter((s) => s.name.toLowerCase().includes(surahSearchQuery.toLowerCase()))
+                                                              .map((s) => {
+                                                            let skip = false;
+                                                            if (type === MemorizationType.SABAQ) {
+                                                              const prevPos = findLatestPosition(type, date);
+                                                              if (prevPos && prevPos.surah_name) {
+                                                                const baseScore = getSequenceScore(prevPos.surah_name, prevPos.ayat_pos);
+                                                                const surahScore = getSequenceScore(s.name, s.totalAyah);
+                                                                if (baseScore !== -1 && surahScore !== -1 && baseScore >= surahScore) {
+                                                                  skip = true;
+                                                                }
+                                                              }
+                                                            } else if (type === MemorizationType.SABQI || type === MemorizationType.MANZIL) {
+                                                              const sabaqCurrent = {
+                                                                ...((recordsByDate[date] || []).find((r) => r.type === MemorizationType.SABAQ) || {}),
+                                                                ...(pendingChanges[`${date}|${MemorizationType.SABAQ}`] || {})
+                                                              };
+                                                              let sabaqPos: { surah_name: string; ayat_pos: number } | null = null;
+                                                              if (sabaqCurrent.surah_name && sabaqCurrent.ayat_end) {
+                                                                sabaqPos = { surah_name: sabaqCurrent.surah_name, ayat_pos: sabaqCurrent.ayat_end };
+                                                              } else {
+                                                                sabaqPos = findLatestPosition(MemorizationType.SABAQ, date);
+                                                              }
+                                                              
+                                                              if (sabaqPos && sabaqPos.surah_name) {
+                                                                const sabaqScore = getSequenceScore(sabaqPos.surah_name, sabaqPos.ayat_pos);
+                                                                const surahScore = getSequenceScore(s.name, 1);
+                                                                if (sabaqScore !== -1 && surahScore !== -1 && surahScore > sabaqScore) {
+                                                                  skip = true;
+                                                                }
+                                                              }
+                                                            }
+                                                            if (skip) return null;
+                                                            
+                                                            const isSelected = currentValue === s.name;
+                                                            return (
+                                                              <div
+                                                                key={s.name}
+                                                                className={`px-3 py-2.5 text-[8px] font-black uppercase tracking-widest transition-all cursor-pointer border-b border-slate-50 last:border-0 ${isSelected ? "bg-emerald-50 text-emerald-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
+                                                                onClick={(e) => {
+                                                                  e.stopPropagation();
+                                                                  handleLocalChange(date, type, s.name, "surah_name");
+                                                                  setOpenSurahDropdown(null);
+                                                                  setSurahSearchQuery("");
+                                                                }}
+                                                              >
+                                                                {s.name}
+                                                              </div>
+                                                            );
+                                                          })}
+                                                        </div>
+                                                      </div>
+                                                      </>
+                                                    )}
+                                                  </div>
                                                 );
                                               })()}
                                             </div>
@@ -1737,75 +2130,161 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                             </div>
                                           </div>
                                         </td>
-                                        <td className={`px-1 lg:px-2 py-1 border-b border-slate-200 min-w-12.5 lg:min-w-45 ${isFuture ? "opacity-40 pointer-events-none grayscale-[0.5]" : ""}`}>
+                                        <td className={`px-1 lg:px-2 py-1 border-b border-slate-200 min-w-12.5 lg:min-w-45 ${isFuture ? "opacity-40 pointer-events-none grayscale-[0.5]" : ""} ${openStatusDropdown === `desktop-status-${date}-${type}` ? "relative z-60" : ""}`}>
                                           <div className="flex flex-col gap-1">
                                             {/* Desktop Select */}
-                                            <select
-                                              disabled={isFuture || isHafalanAwal || isRowDisabled}
-                                              value={currentStatus}
-                                              key={`${saveCounter}-${selectedStudent.id}-${date}-${type}-combined-status-desktop`}
-                                              className={`hidden lg:block w-full py-1 text-[9px] font-black text-center outline-none rounded border transition-all appearance-none whitespace-nowrap ${
+                                            {(() => {
+                                              const dropdownId = `desktop-status-${date}-${type}`;
+                                              const isOpen = openStatusDropdown === dropdownId;
+                                              const disabled = isFuture || isHafalanAwal || isRowDisabled;
+                                              const STATUS_OPTIONS = [
+                                                { value: MemorizationStatus.EMPTY, label: "- STATUS -" },
+                                                ...(isHafalanAwal ? [{ value: MemorizationStatus.HAFALAN_AWAL, label: "HAFALAN AWAL" }] : []),
+                                                { value: MemorizationStatus.LANCAR, label: "LANCAR" },
+                                                { value: MemorizationStatus.TIDAK_LANCAR, label: "TIDAK LANCAR" },
+                                                { value: MemorizationStatus.TIDAK_SETOR, label: "TIDAK SETOR" },
+                                                { value: MemorizationStatus.SAKIT, label: "SAKIT" },
+                                                { value: MemorizationStatus.IZIN, label: "IZIN" },
+                                                { value: MemorizationStatus.ALPA, label: "ALPA" },
+                                              ];
+                                              const currentLabel = STATUS_OPTIONS.find((o) => o.value === currentStatus)?.label || "- STATUS -";
+
+                                              const bgColor =
                                                 currentStatus === MemorizationStatus.HAFALAN_AWAL
-                                                  ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
+                                                  ? "bg-blue-100 text-blue-800 border-blue-400"
                                                   : currentStatus === MemorizationStatus.LANCAR
-                                                    ? "bg-emerald-50 text-emerald-600 border-emerald-100 cursor-pointer"
+                                                    ? "bg-emerald-100 text-emerald-800 border-emerald-400"
                                                     : currentStatus === MemorizationStatus.TIDAK_LANCAR
-                                                      ? "bg-amber-50 text-amber-600 border-amber-100 cursor-pointer"
+                                                      ? "bg-amber-100 text-amber-800 border-amber-400"
                                                       : currentStatus === MemorizationStatus.TIDAK_SETOR
-                                                        ? "bg-rose-50 text-rose-600 border-rose-100 cursor-pointer"
-                                                        : currentStatus === MemorizationStatus.SAKIT
-                                                          ? "bg-rose-50 text-rose-600 border-rose-100 cursor-pointer"
-                                                          : currentStatus === MemorizationStatus.IZIN
-                                                            ? "bg-rose-50 text-rose-600 border-rose-100 cursor-pointer"
-                                                            : currentStatus === MemorizationStatus.ALPA
-                                                              ? "bg-rose-50 text-rose-600 border-rose-100 cursor-pointer"
-                                                              : "bg-slate-50 text-slate-400 border-slate-200 cursor-pointer"
-                                              }`}
-                                              onChange={(e) => handleLocalChange(date, type, e.target.value, "status")}
-                                            >
-                                              <option value={MemorizationStatus.EMPTY}>- STATUS -</option>
-                                              {isHafalanAwal && <option value={MemorizationStatus.HAFALAN_AWAL}>HAFALAN AWAL</option>}
-                                              <option value={MemorizationStatus.LANCAR}>LANCAR</option>
-                                              <option value={MemorizationStatus.TIDAK_LANCAR}>TIDAK LANCAR</option>
-                                              <option value={MemorizationStatus.TIDAK_SETOR}>TIDAK SETOR</option>
-                                              <option value={MemorizationStatus.SAKIT}>SAKIT</option>
-                                              <option value={MemorizationStatus.IZIN}>IZIN</option>
-                                              <option value={MemorizationStatus.ALPA}>ALPA</option>
-                                            </select>
+                                                        ? "bg-rose-100 text-rose-800 border-rose-400"
+                                                        : currentStatus === MemorizationStatus.SAKIT || currentStatus === MemorizationStatus.IZIN || currentStatus === MemorizationStatus.ALPA
+                                                          ? "bg-rose-100 text-rose-800 border-rose-400"
+                                                          : "bg-white text-slate-800 border-slate-300";
+
+                                              return (
+                                                <div className="relative w-full status-dropdown-container hidden lg:block">
+                                                  <div
+                                                    onClick={(e) => {
+                                                      if (disabled) return;
+                                                      if (!isOpen) {
+                                                        const rect = e.currentTarget.getBoundingClientRect();
+                                                        const spaceBelow = window.innerHeight - rect.bottom;
+                                                        const spaceAbove = rect.top;
+                                                        setDropdownPosition(spaceBelow < 250 && spaceAbove > spaceBelow ? "top" : "bottom");
+                                                      }
+                                                      setOpenStatusDropdown(isOpen ? null : dropdownId);
+                                                      if (!isOpen) setOpenSurahDropdown(null);
+                                                    }}
+                                                    className={`group/status w-full h-8 px-2.5 rounded-lg border-2 shadow-none text-[8px] font-black uppercase tracking-widest outline-none transition-all cursor-pointer flex items-center justify-between ${isOpen ? "border-blue-400 ring-4 ring-blue-50/50" : ""} ${bgColor} ${disabled ? "opacity-50 pointer-events-none" : ""}`}
+                                                  >
+                                                    <span className="truncate">{currentLabel}</span>
+                                                    <ChevronDown className={`w-3 h-3 transition-all flex-none ml-1 opacity-50 group-hover/status:opacity-100 ${isOpen ? "rotate-180" : ""}`} />
+                                                  </div>
+                                                  {isOpen && (
+                                                    <div className={`absolute ${dropdownPosition === "top" ? "bottom-full mb-1" : "top-full mt-2"} left-0 w-full bg-white border-2 border-slate-300 rounded-xl shadow-xl overflow-hidden z-100! flex flex-col animate-in fade-in ${dropdownPosition === "top" ? "slide-in-from-bottom-2" : "slide-in-from-top-2"} duration-200`}>
+                                                      <div className="flex flex-col">
+                                                        {STATUS_OPTIONS.map((opt) => {
+                                                          const isSelected = currentStatus === opt.value;
+                                                          const isPlaceholder = opt.value === MemorizationStatus.EMPTY;
+                                                          const selectedClass = isPlaceholder ? "bg-slate-100 text-slate-700" : "bg-blue-50 text-blue-700";
+                                                          return (
+                                                            <div
+                                                              key={opt.value}
+                                                              className={`px-3 py-2.5 text-[8px] font-black uppercase tracking-widest transition-all cursor-pointer border-b border-slate-50 last:border-0 ${isSelected ? selectedClass : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
+                                                              onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleLocalChange(date, type, opt.value, "status");
+                                                                setOpenStatusDropdown(null);
+                                                              }}
+                                                            >
+                                                              {opt.label}
+                                                            </div>
+                                                          );
+                                                        })}
+                                                      </div>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              );
+                                            })()}
 
                                             {/* Mobile Select (Symbols Only) */}
-                                            <select
-                                              disabled={isFuture || isHafalanAwal || isRowDisabled}
-                                              value={currentStatus}
-                                              key={`${saveCounter}-${selectedStudent.id}-${date}-${type}-combined-status-mobile`}
-                                              className={`block lg:hidden w-full py-1 text-[10px] font-black text-center outline-none rounded border transition-all appearance-none whitespace-nowrap ${
+                                            {(() => {
+                                              const dropdownId = `mobile-inline-status-${date}-${type}`;
+                                              const isOpen = openStatusDropdown === dropdownId;
+                                              const disabled = isFuture || isHafalanAwal || isRowDisabled;
+                                              const STATUS_OPTIONS = [
+                                                { value: MemorizationStatus.EMPTY, label: "-" },
+                                                ...(isHafalanAwal ? [{ value: MemorizationStatus.HAFALAN_AWAL, label: "AWL" }] : []),
+                                                { value: MemorizationStatus.LANCAR, label: "LANCAR" },
+                                                { value: MemorizationStatus.TIDAK_LANCAR, label: "TIDAK LANCAR" },
+                                                { value: MemorizationStatus.TIDAK_SETOR, label: "TIDAK SETOR" },
+                                                { value: MemorizationStatus.SAKIT, label: "SAKIT" },
+                                                { value: MemorizationStatus.IZIN, label: "IZIN" },
+                                                { value: MemorizationStatus.ALPA, label: "ALPA" },
+                                              ];
+                                              const currentLabel = STATUS_OPTIONS.find((o) => o.value === currentStatus)?.label || "-";
+
+                                              const bgColor =
                                                 currentStatus === MemorizationStatus.HAFALAN_AWAL
-                                                  ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
+                                                  ? "bg-blue-50 text-blue-600 border-blue-200"
                                                   : currentStatus === MemorizationStatus.LANCAR
-                                                    ? "bg-emerald-50 text-emerald-600 border-emerald-100 cursor-pointer"
+                                                    ? "bg-emerald-50 text-emerald-600 border-emerald-200"
                                                     : currentStatus === MemorizationStatus.TIDAK_LANCAR
-                                                      ? "bg-amber-50 text-amber-600 border-amber-100 cursor-pointer"
+                                                      ? "bg-amber-50 text-amber-600 border-amber-200"
                                                       : currentStatus === MemorizationStatus.TIDAK_SETOR
-                                                        ? "bg-rose-50 text-rose-600 border-rose-100 cursor-pointer"
-                                                        : currentStatus === MemorizationStatus.SAKIT
-                                                          ? "bg-rose-50 text-rose-600 border-rose-100 cursor-pointer"
-                                                          : currentStatus === MemorizationStatus.IZIN
-                                                            ? "bg-rose-50 text-rose-600 border-rose-100 cursor-pointer"
-                                                            : currentStatus === MemorizationStatus.ALPA
-                                                              ? "bg-rose-50 text-rose-600 border-rose-100 cursor-pointer"
-                                                              : "bg-slate-50 text-slate-400 border-slate-200 cursor-pointer"
-                                              }`}
-                                              onChange={(e) => handleLocalChange(date, type, e.target.value, "status")}
-                                            >
-                                              <option value={MemorizationStatus.EMPTY}>-</option>
-                                              {isHafalanAwal && <option value={MemorizationStatus.HAFALAN_AWAL}>AWL</option>}
-                                              <option value={MemorizationStatus.LANCAR}>LANCAR</option>
-                                              <option value={MemorizationStatus.TIDAK_LANCAR}>TIDAK LANCAR</option>
-                                              <option value={MemorizationStatus.TIDAK_SETOR}>TIDAK SETOR</option>
-                                              <option value={MemorizationStatus.SAKIT}>SAKIT</option>
-                                              <option value={MemorizationStatus.IZIN}>IZIN</option>
-                                              <option value={MemorizationStatus.ALPA}>ALPA</option>
-                                            </select>
+                                                        ? "bg-rose-50 text-rose-600 border-rose-200"
+                                                        : currentStatus === MemorizationStatus.SAKIT || currentStatus === MemorizationStatus.IZIN || currentStatus === MemorizationStatus.ALPA
+                                                          ? "bg-rose-50 text-rose-600 border-rose-200"
+                                                          : "bg-white text-slate-600 border-slate-300";
+
+                                              return (
+                                                <div className="relative w-full status-dropdown-container block lg:hidden">
+                                                  <div
+                                                    onClick={(e) => {
+                                                      if (disabled) return;
+                                                      if (!isOpen) {
+                                                        const rect = e.currentTarget.getBoundingClientRect();
+                                                        const spaceBelow = window.innerHeight - rect.bottom;
+                                                        const spaceAbove = rect.top;
+                                                        setDropdownPosition(spaceBelow < 250 && spaceAbove > spaceBelow ? "top" : "bottom");
+                                                      }
+                                                      setOpenStatusDropdown(isOpen ? null : dropdownId);
+                                                      if (!isOpen) setOpenSurahDropdown(null);
+                                                    }}
+                                                    className={`group/status w-full h-8 px-2.5 rounded-lg border-2 shadow-none text-[8px] font-black uppercase tracking-widest outline-none transition-all cursor-pointer flex items-center justify-between ${isOpen ? "border-blue-400 ring-4 ring-blue-50/50" : ""} ${bgColor} ${disabled ? "opacity-50 pointer-events-none" : ""}`}
+                                                  >
+                                                    <span className="truncate">{currentLabel}</span>
+                                                    <ChevronDown className={`w-3 h-3 transition-all flex-none ml-1 opacity-50 group-hover/status:opacity-100 ${isOpen ? "rotate-180" : ""}`} />
+                                                  </div>
+                                                  {isOpen && (
+                                                    <div className={`absolute ${dropdownPosition === "top" ? "bottom-full mb-1" : "top-full mt-1"} left-0 w-24 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden z-100! flex flex-col animate-in fade-in ${dropdownPosition === "top" ? "slide-in-from-bottom-2" : "slide-in-from-top-2"} duration-200`}>
+                                                      <div className="flex flex-col">
+                                                        {STATUS_OPTIONS.map((opt) => {
+                                                          const isSelected = currentStatus === opt.value;
+                                                          const isPlaceholder = opt.value === MemorizationStatus.EMPTY;
+                                                          const selectedClass = isPlaceholder ? "bg-slate-100 text-slate-700" : "bg-blue-50 text-blue-700";
+                                                          return (
+                                                            <div
+                                                              key={opt.value}
+                                                              className={`px-3 py-2 text-[7.5px] font-black uppercase tracking-widest transition-all cursor-pointer border-b border-slate-50 last:border-0 ${isSelected ? selectedClass : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
+                                                              onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleLocalChange(date, type, opt.value, "status");
+                                                                setOpenStatusDropdown(null);
+                                                              }}
+                                                            >
+                                                              {opt.label}
+                                                            </div>
+                                                          );
+                                                        })}
+                                                      </div>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              );
+                                            })()}
                                           </div>
                                         </td>
                                         <td className={`px-2 py-3 border-b border-slate-200 text-center w-24`}>
@@ -1823,8 +2302,8 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                     (pendingChanges[`${date}|${type}`]?.is_verified ?? rec?.is_verified)
                                                       ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
                                                       : !isCompletable
-                                                        ? "bg-slate-50 border border-slate-100 text-slate-200 cursor-not-allowed opacity-50"
-                                                        : "bg-slate-50 border border-dashed border-slate-300 text-slate-300 hover:border-jade-400 hover:text-jade-400"
+                                                        ? "bg-slate-50 border border-slate-100 text-slate-400 cursor-not-allowed opacity-50"
+                                                        : "bg-slate-50 border border-slate-100 text-slate-400 opacity-20 hover:opacity-100 hover:border-jade-400 hover:text-jade-400 hover:bg-white"
                                                   }`}
                                                   title={
                                                     isFuture
@@ -1847,7 +2326,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                               }`}
                                               title="Paraf Orang Tua"
                                             >
-                                              <Eye className="w-3.5 h-3.5" />
+                                              {rec?.is_read_by_parent ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                                             </div>
                                           </div>
                                         </td>
@@ -1860,7 +2339,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                       })()}
                       {weekDates.length === 0 && (
                         <tr>
-                          <td colSpan={5} className={`text-center bg-slate-50/30 border border-slate-200 ${holidayBlock?.isOutsideActive ? "py-24" : "py-16"}`}>
+                          <td colSpan={6} className={`text-center bg-slate-50/30 border-b border-l border-r border-slate-300 shadow-inner ${holidayBlock?.isOutsideActive ? "py-24" : "py-16"}`}>
                             <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400 ring-1 ring-slate-100 shadow-sm">
                               <BookOpen className="w-8 h-8 opacity-50" />
                             </div>
@@ -1879,12 +2358,12 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                 </div>
 
                 {/* MOBILE VIEW - TRANSPOSED TABLE */}
-                <div ref={mobileScrollRef} className="lg:hidden h-full overflow-x-auto overflow-y-hidden no-scrollbar snap-x snap-mandatory scroll-smooth" style={{ scrollPaddingLeft: "50px" }}>
+                <div ref={mobileScrollRef} className={`lg:hidden flex-1 h-full overflow-x-auto overflow-y-hidden no-scrollbar snap-x snap-mandatory scroll-smooth ${weekDates.length === 0 ? "min-h-100" : ""}`} style={{ scrollPaddingLeft: "44px" }}>
                   {weekDates.length > 0 ? (
-                    <table className="border-collapse table-fixed w-max h-full border-spacing-0">
+                    <table className="border-separate table-fixed w-max border-spacing-0 h-full">
                       <thead>
                         <tr className="snap-start">
-                          <th className="sticky left-0 z-70 bg-slate-50 border-b border-r border-slate-200 w-12.5 min-w-12.5">
+                          <th className="sticky left-0 z-70 bg-slate-50 border-b border-r-2 border-slate-300 w-11 min-w-11">
                             <div className="flex flex-col items-center justify-center gap-1.5 py-2 h-full">
                               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">TGL</span>
                               <div className="flex items-center justify-center gap-1 w-full px-1">
@@ -1911,7 +2390,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                           </th>
                           {weekDates.map((date) => {
                             const isToday = date === getLocalDateString(new Date());
-                            const dayWidth = "calc(100vw - 84px)";
+                            const dayWidth = "calc(100vw - 80px)";
                             return (
                               <th
                                 key={date}
@@ -1933,7 +2412,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                           })}
                         </tr>
                         <tr className="snap-start">
-                          <th className="sticky left-0 z-70 bg-slate-50 border-b border-r border-slate-200 w-12.5 min-w-12.5">
+                          <th className="sticky left-0 z-70 bg-slate-50 border-b border-r-2 border-slate-300 w-11 min-w-11">
                             <div className="flex items-center justify-center h-full w-full py-2">
                               <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">SETORAN</span>
                             </div>
@@ -1941,7 +2420,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                           {weekDates.map((date) => {
                             const isToday = date === getLocalDateString(new Date());
                             return [MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL].map((type) => {
-                              const colWidth = "calc((100vw - 84px) / 3)";
+                              const colWidth = "calc((100vw - 80px) / 3)";
                               return (
                                 <th
                                   key={`${date}-${type}`}
@@ -1956,9 +2435,55 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                         </tr>
                       </thead>
                       <tbody>
+                        {/* JUMLAH ROW */}
+                        <tr className="hover:bg-slate-50/30 snap-start">
+                          <th className="sticky left-0 z-50 bg-slate-50 border-b border-r-2 border-slate-300 w-11 min-w-11">
+                            <div className="flex items-center justify-center h-full w-full py-2">
+                              <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">JUMLAH</span>
+                            </div>
+                          </th>
+                          {weekDates.map((date) => {
+                            const isToday = date === getLocalDateString(new Date());
+                            return [MemorizationType.SABAQ, MemorizationType.SABQI, MemorizationType.MANZIL].map((type) => {
+                              const rec = (recordsByDate[date] || []).find((r) => r.type === type);
+                              const rowDate = new Date(date);
+                              rowDate.setHours(0, 0, 0, 0);
+                              const isFuture = rowDate > new Date();
+                              const colWidth = "calc((100vw - 80px) / 3)";
+                              const currentStatus = pendingChanges[`${date}|${type}`]?.status ?? rec?.status ?? MemorizationStatus.EMPTY;
+                              const isHafalanAwal = currentStatus === MemorizationStatus.HAFALAN_AWAL;
+
+                              return (
+                                <td
+                                  key={`${date}-${type}-jumlah`}
+                                  style={{ width: colWidth, minWidth: colWidth }}
+                                  className={`p-1 border-b border-l border-slate-100 ${isToday ? "bg-emerald-50/40" : ""} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10' : ""} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : ""}`}
+                                >
+                                  <div className="flex flex-col items-center justify-center h-full w-full">
+                                    <div className="flex items-center bg-white border-2 border-slate-300 rounded-md shadow-none focus-within:border-jade-400 focus-within:ring-2 focus-within:ring-jade-50/50 transition-all h-6 px-1.5 w-[92%] max-w-12.5">
+                                      <input
+                                        type="number"
+                                        readOnly
+                                        disabled={isFuture || isHafalanAwal}
+                                        value={(() => {
+                                          const pending = pendingChanges[`${date}|${type}`];
+                                          const val = pending && Object.prototype.hasOwnProperty.call(pending, "jumlah") ? pending.jumlah : rec?.jumlah;
+                                          return val === 0 || val === null || val === undefined ? "" : val;
+                                        })()}
+                                        placeholder="0"
+                                        className="bg-transparent w-full text-[10px] font-black text-center text-slate-500 outline-none border-none ring-0 appearance-none cursor-default"
+                                      />
+                                      <span className="text-[6px] font-black text-slate-400 uppercase opacity-60 flex-none">{type === MemorizationType.SABAQ ? "Brs" : "Hal"}</span>
+                                    </div>
+                                  </div>
+                                </td>
+                              );
+                            });
+                          })}
+                        </tr>
                         {/* SURAT/AYAT ROW */}
                         <tr className="hover:bg-slate-50/30 snap-start">
-                          <th className="sticky left-0 z-50 bg-slate-50 border-b border-r border-slate-200 w-12.5 min-w-12.5">
+                          <th className="sticky left-0 z-50 bg-slate-50 border-b border-r-2 border-slate-300 w-11 min-w-11">
                             <div className="flex items-center justify-center h-full w-full py-4">
                               <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">SURAT / AYAT</span>
                             </div>
@@ -1970,44 +2495,138 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                               const rowDate = new Date(date);
                               rowDate.setHours(0, 0, 0, 0);
                               const isFuture = rowDate > new Date();
-                              const colWidth = "calc((100vw - 84px) / 3)";
+                              const colWidth = "calc((100vw - 80px) / 3)";
+                              const currentStatus = pendingChanges[`${date}|${type}`]?.status ?? rec?.status ?? MemorizationStatus.EMPTY;
+                              const isHafalanAwal = currentStatus === MemorizationStatus.HAFALAN_AWAL;
 
                               return (
                                 <td
                                   key={`${date}-${type}-surah`}
-                                  style={{ width: colWidth, minWidth: colWidth }}
+                                  style={{ width: colWidth, minWidth: colWidth, zIndex: openSurahDropdown === `mobile-${date}-${type}` ? 99 : undefined }}
                                   className={`p-1 border-b border-l border-slate-100 ${isToday ? "bg-emerald-50/40" : ""} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10' : ""} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : ""}`}
                                 >
                                   <div className="flex flex-col gap-1 w-full items-center">
                                     {/* Row 1: SURAH SELECT */}
-                                    <select
-                                      value={pendingChanges[`${date}|${type}`]?.surah_name ?? rec?.surah_name ?? ""}
-                                      onChange={(e) => handleLocalChange(date, type, e.target.value, "surah_name")}
-                                      className="w-[92%] h-6 bg-white border border-slate-200 rounded-md px-1 text-center text-[6.5px] font-bold text-slate-700 outline-none focus:border-jade-400 appearance-none"
-                                    >
-                                      <option value="">- Surat -</option>
-                                      {SURAH_DATA.slice(0, 114).map((s) => {
-                                        if (type === MemorizationType.SABAQ) {
-                                          const prevPos = findLatestPosition(type, date);
-                                          if (prevPos) {
-                                            // Filter menggunakan SURAH_PROGRESSION (alur sabaq: Juz 30→1, per-juz dari depan)
-                                            const prevSurahIndex = SURAH_PROGRESSION.indexOf(prevPos.surah_name);
-                                            const currentSurahIndex = SURAH_PROGRESSION.indexOf(s.name);
-                                            if (currentSurahIndex < prevSurahIndex) return null;
-                                          }
-                                        }
+                                    <div className="relative group/surah w-[92%] surah-dropdown-container">
+                                      {(() => {
+                                        const dropdownId = `mobile-${date}-${type}`;
+                                        const isOpen = openSurahDropdown === dropdownId;
+                                        const currentValue = pendingChanges[`${date}|${type}`]?.surah_name ?? rec?.surah_name ?? "";
+                                        const disabled = isFuture || isHafalanAwal;
+
                                         return (
-                                          <option key={s.name} value={s.name}>
-                                            {s.name}
-                                          </option>
+                                          <>
+                                            <div
+                                              onClick={(e) => {
+                                                if (disabled) return;
+                                                e.stopPropagation();
+                                                if (!isOpen) {
+                                                  setSurahSearchQuery("");
+                                                  const rect = e.currentTarget.getBoundingClientRect();
+                                                  const spaceBelow = window.innerHeight - rect.bottom;
+                                                  const spaceAbove = rect.top;
+                                                  setDropdownPosition(spaceBelow < 200 && spaceAbove > spaceBelow ? "top" : "bottom");
+                                                }
+                                                setOpenSurahDropdown(isOpen ? null : dropdownId);
+                                                if (!isOpen) setOpenStatusDropdown(null);
+                                              }}
+                                              title={isHafalanAwal ? "hubungi admin jika ingin mengubah hafalan awal" : undefined}
+                                              className={`w-full h-6 bg-white px-1.5 rounded-md border-2 shadow-none text-[6px] font-black uppercase tracking-wider text-slate-600 outline-none transition-all flex items-center justify-between ${isOpen ? "border-jade-400 ring-2 ring-jade-50/50" : "border-slate-300"} ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                                            >
+                                              <span className="truncate">{currentValue || "- Surat -"}</span>
+                                              <ChevronDown className={`w-2.5 h-2.5 text-slate-300 transition-all ${isOpen ? "rotate-180 text-jade-500" : "group-hover/surah:text-jade-500"}`} />
+                                            </div>
+
+                                            {isOpen && (
+                                              <>
+                                                <div className={`absolute ${dropdownPosition === "top" ? "bottom-full mb-1" : "top-full mt-1"} left-0 w-30 bg-white border-2 border-slate-200 rounded-xl shadow-xl overflow-hidden z-100! flex flex-col animate-in fade-in ${dropdownPosition === "top" ? "slide-in-from-bottom-2" : "slide-in-from-top-2"} duration-200`} onMouseDown={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
+                                                  <div className="p-1.5 border-b border-slate-100 bg-slate-50/50">
+                                                    <input
+                                                      type="text"
+                                                      placeholder="CARI SURAT..."
+                                                      value={surahSearchQuery}
+                                                      onChange={(e) => setSurahSearchQuery(e.target.value)}
+                                                      onClick={(e) => e.stopPropagation()}
+                                                      className="w-full bg-white border border-slate-200 rounded px-1.5 py-1 text-[6.5px] font-black uppercase tracking-wider text-slate-700 outline-none focus:border-jade-400 focus:ring-2 focus:ring-jade-50/50 transition-all placeholder:text-slate-300"
+                                                    />
+                                                  </div>
+                                                  <div className="max-h-40 overflow-y-auto no-scrollbar">
+                                                    <div
+                                                      className={`px-2.5 py-2 text-[7px] font-black uppercase tracking-widest transition-all cursor-pointer border-b border-slate-50 last:border-0 ${currentValue === "" ? "bg-emerald-50 text-emerald-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleLocalChange(date, type, "", "surah_name");
+                                                        setOpenSurahDropdown(null);
+                                                        setSurahSearchQuery("");
+                                                      }}
+                                                    >
+                                                      - Surat -
+                                                    </div>
+                                                    {SURAH_DATA.slice(0, 114)
+                                                      .filter((s) => s.name.toLowerCase().includes(surahSearchQuery.toLowerCase()))
+                                                      .map((s) => {
+                                                    let skip = false;
+                                                    if (type === MemorizationType.SABAQ) {
+                                                      const prevPos = findLatestPosition(type, date);
+                                                      if (prevPos && prevPos.surah_name) {
+                                                        const baseScore = getSequenceScore(prevPos.surah_name, prevPos.ayat_pos);
+                                                        const surahScore = getSequenceScore(s.name, s.totalAyah);
+                                                        if (baseScore !== -1 && surahScore !== -1 && baseScore >= surahScore) {
+                                                          skip = true;
+                                                        }
+                                                      }
+                                                    } else if (type === MemorizationType.SABQI || type === MemorizationType.MANZIL) {
+                                                      const sabaqCurrent = {
+                                                        ...((recordsByDate[date] || []).find((r) => r.type === MemorizationType.SABAQ) || {}),
+                                                        ...(pendingChanges[`${date}|${MemorizationType.SABAQ}`] || {})
+                                                      };
+                                                      let sabaqPos: { surah_name: string; ayat_pos: number } | null = null;
+                                                      if (sabaqCurrent.surah_name && sabaqCurrent.ayat_end) {
+                                                        sabaqPos = { surah_name: sabaqCurrent.surah_name, ayat_pos: sabaqCurrent.ayat_end };
+                                                      } else {
+                                                        sabaqPos = findLatestPosition(MemorizationType.SABAQ, date);
+                                                      }
+                                                      
+                                                      if (sabaqPos && sabaqPos.surah_name) {
+                                                        const sabaqScore = getSequenceScore(sabaqPos.surah_name, sabaqPos.ayat_pos);
+                                                        const surahScore = getSequenceScore(s.name, 1);
+                                                        if (sabaqScore !== -1 && surahScore !== -1 && surahScore > sabaqScore) {
+                                                          skip = true;
+                                                        }
+                                                      }
+                                                    }
+                                                    if (skip) return null;
+                                                    
+                                                    const isSelected = currentValue === s.name;
+                                                    return (
+                                                      <div
+                                                        key={s.name}
+                                                        className={`px-2.5 py-2 text-[7px] font-black uppercase tracking-widest transition-all cursor-pointer border-b border-slate-50 last:border-0 ${isSelected ? "bg-emerald-50 text-emerald-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          handleLocalChange(date, type, s.name, "surah_name");
+                                                          setOpenSurahDropdown(null);
+                                                          setSurahSearchQuery("");
+                                                        }}
+                                                      >
+                                                        {s.name}
+                                                      </div>
+                                                    );
+                                                  })}
+                                                </div>
+                                              </div>
+                                              </>
+                                            )}
+                                          </>
                                         );
-                                      })}
-                                    </select>
+                                      })()}
+                                    </div>
 
                                     {/* Row 2: AYAT INPUT */}
-                                    <div className="relative w-[92%]">
+                                    <div className="relative w-[92%] h-6 flex items-center justify-center bg-white border-2 border-slate-300 rounded-md focus-within:border-jade-400 focus-within:ring-2 focus-within:ring-jade-50/50 transition-all">
                                       <input
                                         type="number"
+                                        disabled={isFuture || isHafalanAwal}
                                         placeholder="Ayat"
                                         value={(() => {
                                           const pending = pendingChanges[`${date}|${type}`];
@@ -2015,24 +2634,8 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                           return val === 0 || val === null || val === undefined ? "" : val;
                                         })()}
                                         onChange={(e) => handleLocalChange(date, type, e.target.value, "ayat_end")}
-                                        className="w-full h-6 bg-slate-50 border border-slate-200 rounded-md text-[6.5px] font-black text-center outline-none focus:bg-white focus:border-jade-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                        className={`w-full bg-transparent text-[6.5px] font-black text-center outline-none border-none ring-0 h-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${isHafalanAwal ? "pointer-events-none" : ""}`}
                                       />
-                                    </div>
-
-                                    {/* Row 3: JUMLAH (ReadOnly) */}
-                                    <div className="relative group w-[92%]">
-                                      <input
-                                        type="number"
-                                        readOnly
-                                        placeholder="0"
-                                        value={(() => {
-                                          const pending = pendingChanges[`${date}|${type}`];
-                                          const val = pending && Object.prototype.hasOwnProperty.call(pending, "jumlah") ? pending.jumlah : rec?.jumlah;
-                                          return val === 0 || val === null || val === undefined ? "" : val;
-                                        })()}
-                                        className="w-full h-6 bg-slate-100 border border-slate-200 rounded-md text-[8.5px] font-black text-center text-slate-500 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                      />
-                                      <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[6px] font-bold text-slate-400 uppercase pointer-events-none">{type === MemorizationType.SABAQ ? "Baris" : "Halaman"}</span>
                                     </div>
                                   </div>
                                 </td>
@@ -2043,7 +2646,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
 
                         {/* KETERANGAN ROW */}
                         <tr className="hover:bg-slate-50/30 snap-start">
-                          <th className="sticky left-0 z-50 bg-slate-50 border-b border-r border-slate-200 w-12.5 min-w-12.5">
+                          <th className="sticky left-0 z-50 bg-slate-50 border-b border-r-2 border-slate-300 w-11 min-w-11">
                             <div className="flex items-center justify-center h-full w-full py-2">
                               <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">KET</span>
                             </div>
@@ -2055,8 +2658,9 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                               const rowDate = new Date(date);
                               rowDate.setHours(0, 0, 0, 0);
                               const isFuture = rowDate > new Date();
-                              const status = pendingChanges[`${date}|${type}`]?.status ?? rec?.status ?? MemorizationStatus.EMPTY;
-                              const colWidth = "calc((100vw - 84px) / 3)";
+                              const currentStatus = pendingChanges[`${date}|${type}`]?.status ?? rec?.status ?? MemorizationStatus.EMPTY;
+                              const isHafalanAwal = currentStatus === MemorizationStatus.HAFALAN_AWAL;
+                              const colWidth = "calc((100vw - 80px) / 3)";
 
                               return (
                                 <td
@@ -2064,31 +2668,83 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                   style={{ width: colWidth, minWidth: colWidth }}
                                   className={`p-1 border-b border-l border-slate-100 ${isFuture ? "opacity-30 pointer-events-none" : ""} ${isToday ? "bg-emerald-50/40" : ""} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10' : ""} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : ""}`}
                                 >
-                                  <div className="flex justify-center">
-                                    <select
-                                      value={status}
-                                      onChange={(e) => handleLocalChange(date, type, e.target.value, "status")}
-                                      className={`w-[92%] h-6 text-[6.5px] font-black text-center outline-none rounded border transition-all appearance-none cursor-pointer ${
-                                        status === MemorizationStatus.LANCAR
-                                          ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                                          : status === MemorizationStatus.TIDAK_LANCAR
-                                            ? "bg-amber-50 text-amber-600 border-amber-100"
-                                            : status === MemorizationStatus.TIDAK_SETOR
-                                              ? "bg-rose-50 text-rose-600 border-rose-100"
-                                              : status === MemorizationStatus.SAKIT || status === MemorizationStatus.IZIN || status === MemorizationStatus.ALPA
-                                                ? "bg-rose-50 text-rose-600 border-rose-100"
-                                                : "bg-white text-slate-400 border-slate-200"
-                                      }`}
-                                    >
-                                      <option value={MemorizationStatus.EMPTY}>-</option>
-                                      <option value={MemorizationStatus.LANCAR}>LANCAR</option>
-                                      <option value={MemorizationStatus.TIDAK_LANCAR}>TIDAK LANCAR</option>
-                                      <option value={MemorizationStatus.TIDAK_SETOR}>TIDAK SETOR</option>
-                                      <option value={MemorizationStatus.SAKIT}>SAKIT</option>
-                                      <option value={MemorizationStatus.IZIN}>IZIN</option>
-                                      <option value={MemorizationStatus.ALPA}>ALPA</option>
-                                    </select>
-                                  </div>
+                                  {(() => {
+                                        const dropdownId = `mobile-transposed-status-${date}-${type}`;
+                                        const isOpen = openStatusDropdown === dropdownId;
+                                        const disabled = isFuture || isHafalanAwal;
+                                        const STATUS_OPTIONS = [
+                                          { value: MemorizationStatus.EMPTY, label: "-" },
+                                          ...(isHafalanAwal ? [{ value: MemorizationStatus.HAFALAN_AWAL, label: "AWL" }] : []),
+                                          { value: MemorizationStatus.LANCAR, label: "LANCAR" },
+                                          { value: MemorizationStatus.TIDAK_LANCAR, label: "TIDAK LANCAR" },
+                                          { value: MemorizationStatus.TIDAK_SETOR, label: "TIDAK SETOR" },
+                                          { value: MemorizationStatus.SAKIT, label: "SAKIT" },
+                                          { value: MemorizationStatus.IZIN, label: "IZIN" },
+                                          { value: MemorizationStatus.ALPA, label: "ALPA" },
+                                        ];
+                                        const currentLabel = STATUS_OPTIONS.find((o) => o.value === currentStatus)?.label || "-";
+
+                                        const bgColor =
+                                          currentStatus === MemorizationStatus.HAFALAN_AWAL
+                                            ? "bg-blue-50 text-blue-600 border-blue-200"
+                                            : currentStatus === MemorizationStatus.LANCAR
+                                              ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+                                              : currentStatus === MemorizationStatus.TIDAK_LANCAR
+                                                ? "bg-amber-50 text-amber-600 border-amber-200"
+                                                : currentStatus === MemorizationStatus.TIDAK_SETOR
+                                                  ? "bg-rose-50 text-rose-600 border-rose-200"
+                                                  : currentStatus === MemorizationStatus.SAKIT || currentStatus === MemorizationStatus.IZIN || currentStatus === MemorizationStatus.ALPA
+                                                    ? "bg-rose-50 text-rose-600 border-rose-200"
+                                                    : "bg-white text-slate-600 border-slate-300";
+
+                                        return (
+                                          <div className="flex flex-col items-center justify-center h-full w-full">
+                                            <div className="relative w-[92%] status-dropdown-container flex justify-center">
+                                            <div
+                                              onClick={(e) => {
+                                                if (disabled) return;
+                                                if (!isOpen) {
+                                                  const rect = e.currentTarget.getBoundingClientRect();
+                                                  const spaceBelow = window.innerHeight - rect.bottom;
+                                                  const spaceAbove = rect.top;
+                                                  setDropdownPosition(spaceBelow < 200 && spaceAbove > spaceBelow ? "top" : "bottom");
+                                                }
+                                                setOpenStatusDropdown(isOpen ? null : dropdownId);
+                                                if (!isOpen) setOpenSurahDropdown(null);
+                                              }}
+                                              className={`group/status w-full h-6 px-1.5 rounded-md border-2 shadow-none text-[6.5px] font-black uppercase tracking-widest outline-none transition-all cursor-pointer flex items-center justify-center relative ${isOpen ? "border-blue-400 ring-2 ring-blue-50/50" : ""} ${bgColor} ${disabled && !isHafalanAwal ? "opacity-50 pointer-events-none" : ""}`}
+                                            >
+                                              <span className="w-full text-center truncate pr-3 pl-1">{currentLabel}</span>
+                                              <ChevronDown className={`w-2.5 h-2.5 transition-all absolute right-1.5 opacity-50 group-hover/status:opacity-100 ${isOpen ? "rotate-180" : ""}`} />
+                                            </div>
+                                            {isOpen && (
+                                              <div className={`absolute ${dropdownPosition === "top" ? "bottom-full mb-1" : "top-full mt-2"} left-1/2 -translate-x-1/2 w-20 bg-white border-2 border-slate-300 rounded-xl shadow-xl overflow-hidden z-100! flex flex-col animate-in fade-in ${dropdownPosition === "top" ? "slide-in-from-bottom-2" : "slide-in-from-top-2"} duration-200`}>
+                                                <div className="flex flex-col">
+                                                  {STATUS_OPTIONS.map((opt) => {
+                                                    const isSelected = currentStatus === opt.value;
+                                                    const isPlaceholder = opt.value === MemorizationStatus.EMPTY;
+                                                    const selectedClass = isPlaceholder ? "bg-slate-100 text-slate-700" : "bg-blue-50 text-blue-700";
+                                                    return (
+                                                      <div
+                                                        key={opt.value}
+                                                        className={`px-2 py-1.5 text-[6px] font-black uppercase tracking-widest transition-all cursor-pointer border-b border-slate-50 last:border-0 ${isSelected ? selectedClass : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          handleLocalChange(date, type, opt.value, "status");
+                                                          setOpenStatusDropdown(null);
+                                                        }}
+                                                      >
+                                                        {opt.label}
+                                                      </div>
+                                                    );
+                                                  })}
+                                                </div>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                        );
+                                      })()}
                                 </td>
                               );
                             });
@@ -2097,7 +2753,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
 
                         {/* PARAF ROW */}
                         <tr className="hover:bg-slate-50/30 snap-start">
-                          <th className="sticky left-0 z-50 bg-slate-50 border-b border-r border-slate-200 w-12.5 min-w-12.5">
+                          <th className="sticky left-0 z-50 bg-slate-50 border-b border-r-2 border-slate-300 w-11 min-w-11">
                             <div className="flex items-center justify-center h-full w-full py-2">
                               <span className="[writing-mode:vertical-lr] rotate-180 text-[8px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">PARAF</span>
                             </div>
@@ -2111,7 +2767,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                               const isFuture = rowDate > new Date();
                               const p = pendingChanges[`${date}|${type}`];
                               const isCompletable = (p?.surah_name ?? rec?.surah_name) && (p?.jumlah ?? rec?.jumlah) > 0 && (p?.status ?? rec?.status) && (p?.status ?? rec?.status) !== MemorizationStatus.EMPTY;
-                              const colWidth = "calc((100vw - 84px) / 3)";
+                              const colWidth = "calc((100vw - 80px) / 3)";
 
                               return (
                                 <td
@@ -2124,7 +2780,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                       disabled={isFuture || !isCompletable}
                                       onClick={() => toggleVerification(date, type, rec)}
                                       className={`w-5 h-5 rounded-md flex items-center justify-center transition-all shrink-0 ${
-                                        (pendingChanges[`${date}|${type}`]?.is_verified ?? rec?.is_verified) ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20" : "bg-slate-50 border border-slate-200 text-slate-300"
+                                        (pendingChanges[`${date}|${type}`]?.is_verified ?? rec?.is_verified) ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20" : !isCompletable ? "bg-slate-50 border border-slate-100 text-slate-400 opacity-20" : "bg-slate-50 border border-slate-100 text-slate-400 opacity-20 hover:opacity-100 hover:border-jade-400 hover:text-jade-400 hover:bg-white"
                                       }`}
                                     >
                                       <Check className="w-2.5 h-2.5" />
@@ -2134,7 +2790,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                         rec?.is_read_by_parent ? "bg-jade-50 text-jade-600 border border-jade-100" : "bg-slate-50 border border-slate-100 opacity-20"
                                       }`}
                                     >
-                                      <Eye className="w-2.5 h-2.5" />
+                                      {rec?.is_read_by_parent ? <Eye className="w-2.5 h-2.5" /> : <EyeOff className="w-2.5 h-2.5" />}
                                     </div>
                                   </div>
                                 </td>
@@ -2277,11 +2933,21 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                     className="w-full px-4 py-3 border-2 border-slate-50 bg-slate-50/50 rounded-2xl focus:ring-0 focus:border-jade-400 shadow-sm transition-all text-sm font-bold text-slate-800 outline-none appearance-none"
                   >
                     <option value="">-- Pilih Surah --</option>
-                    {SURAH_DATA.map((s) => (
-                      <option key={s.name} value={s.name}>
-                        {s.name}
-                      </option>
-                    ))}
+                    {SURAH_DATA.map((s) => {
+                      if (formData.type === MemorizationType.SABQI || formData.type === MemorizationType.MANZIL) {
+                        const sabaqPos = lastProgress[MemorizationType.SABAQ];
+                        if (sabaqPos) {
+                          const sabaqSurahIndex = SURAH_PROGRESSION.indexOf(sabaqPos.surah_name);
+                          const currentSurahIndex = SURAH_PROGRESSION.indexOf(s.name);
+                          if (currentSurahIndex > sabaqSurahIndex) return null;
+                        }
+                      }
+                      return (
+                        <option key={s.name} value={s.name}>
+                          {s.name}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -2518,13 +3184,11 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                   <span className="px-3.5 py-1.5 bg-white text-rose-600 border-2 border-rose-600 rounded-xl text-[10px] font-black uppercase tracking-wider">{weekTotals.manzilPages} Halaman</span>
                 </div>
               </div>
-
               <div className="p-3 bg-blue-50 rounded-xl border-2 border-blue-100 flex items-start gap-2.5">
                 <AlertCircle className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
                 <p className="text-[8.5px] font-black text-blue-700 leading-tight uppercase tracking-wide">Dihitung dari hafalan berstatus 'Lancar' pada pekan ini.</p>
               </div>
             </div>
-
             {/* Footer */}
             <div className="p-5 border-t border-slate-100 bg-white">
               <button
@@ -2537,35 +3201,58 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
           </div>
         </div>
       )}
+
       {/* Local Unsaved Changes Modal (for Switching Students) */}
       {showLocalUnsavedModal && (
-        <div className="fixed inset-0 z-999999 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in lg:pl-64 pt-16">
-          <div className="bg-white rounded-xl shadow-none w-full max-w-sm overflow-hidden animate-scale-in border-2 border-slate-300 flex flex-col">
-            <div className="p-8 text-center">
-              <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-amber-500 border-2 border-amber-100">
-                <AlertTriangle className="w-8 h-8" />
+        <div className="fixed top-16 right-0 bottom-0 left-0 lg:left-64 z-999 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200" onClick={() => { setShowLocalUnsavedModal(false); setPendingStudent(null); }} />
+          <div className="relative bg-white rounded-xl shadow-none w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200 border-2 border-slate-300 flex flex-col" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center text-amber-500 border border-amber-100">
+                  <AlertTriangle className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest leading-none">Tunggu Sebentar!</h3>
+                  <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest mt-1 opacity-70">Konfirmasi Sistem</p>
+                </div>
               </div>
-              <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-[0.2em] leading-normal mb-3">Tunggu Sebentar!</h3>
-              <p className="text-[10.5px] font-black text-slate-500 leading-relaxed uppercase tracking-widest opacity-80">
-                Anda memiliki perubahan data untuk <b>{selectedStudent?.full_name}</b> yang belum disimpan. Ingin menyimpannya dulu?
+              <button onClick={() => { setShowLocalUnsavedModal(false); setPendingStudent(null); }} className="p-1.5 hover:bg-slate-50 rounded-full transition-colors">
+                <X className="w-4 h-4 text-slate-400" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-4 text-center">
+              <p className="text-[10.5px] font-bold text-slate-500 leading-relaxed">
+                Anda memiliki perubahan data untuk <b className="text-slate-700">{selectedStudent?.full_name}</b> yang belum disimpan. Ingin menyimpannya dulu?
               </p>
             </div>
-            <div className="px-6 pb-8 flex items-center gap-2.5">
+
+            {/* Footer */}
+            <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex gap-2">
               <button
                 onClick={() => {
                   setShowLocalUnsavedModal(false);
                   setPendingStudent(null);
                 }}
-                className="flex-1 py-3 bg-white text-slate-400 border-2 border-slate-100 rounded-xl text-[9px] font-black uppercase tracking-widest hover:text-slate-600 transition-all active:scale-95"
+                className="flex-1 py-3 bg-white text-slate-500 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95 border-2 border-slate-200"
               >
                 Batal
               </button>
-              <button onClick={proceedStudentSwitch} className="flex-1 py-3 bg-rose-50 text-rose-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all active:scale-95 border-2 border-rose-100">
+              <button
+                onClick={proceedStudentSwitch}
+                className="flex-1 py-3 bg-rose-50 text-rose-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all active:scale-95 border-2 border-rose-200"
+              >
                 Buang
               </button>
               <button
-                onClick={handleLocalSaveAndSwitch}
-                className="flex-2 py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-jade-700 transition-all active:scale-95 outline-none border-2 border-jade-600"
+                onClick={async () => {
+                  const success = await handleMassSave();
+                  if (success) proceedStudentSwitch();
+                }}
+                className="flex-[1.5] py-3 bg-jade-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-jade-700 transition-all active:scale-95 border-2 border-jade-600"
               >
                 Simpan
               </button>
@@ -2573,10 +3260,18 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
           </div>
         </div>
       )}
+
       {/* Initialization Modal */}
       {isInitModalOpen && (
         <div className="fixed inset-0 z-999999 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fade-in lg:pl-64 pt-16">
-          <div className="bg-white rounded-xl shadow-none w-full max-w-sm overflow-hidden animate-scale-in border-2 border-slate-300 flex flex-col">
+          <div className="relative bg-white rounded-xl shadow-none w-full max-w-sm animate-scale-in border-2 border-slate-300 flex flex-col">
+            <button
+              onClick={() => setIsInitModalOpen(false)}
+              className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+              title="Tutup"
+            >
+              <X className="w-4 h-4" />
+            </button>
             <div className="p-6 text-center pb-2">
               <div className="w-12 h-12 bg-jade-50 rounded-xl flex items-center justify-center mx-auto mb-4 text-jade-500 border-2 border-jade-100">
                 <BookOpen className="w-6 h-6" />
@@ -2586,27 +3281,56 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                 Atur posisi hafalan terakhir <b>{selectedStudent?.full_name?.split(" ")[0]}</b>
               </p>
 
-              {/* Hanya input Sabaq — Sabqi & Manzil otomatis mengikuti */}
-              <div className="space-y-1.5 text-left">
+              <div className="space-y-1.5 text-left pb-2">
                 <div className="flex items-center gap-2 mb-2 px-1">
                   <span className="text-[9px] font-black text-jade-600 uppercase tracking-widest">Posisi Sabaq Terakhir</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 relative">
-                    <select
-                      value={initForm.surah}
-                      onChange={(e) => setInitForm((prev) => ({ ...prev, surah: e.target.value, ayat: 1 }))}
-                      className="w-full h-10 bg-white border-2 border-slate-100 rounded-xl px-3 text-[10.5px] font-black text-slate-700 outline-none focus:border-jade-400 transition-all appearance-none shadow-none"
-                    >
-                      <option value="">- Pilih Surat -</option>
-                      {SURAH_DATA.slice(0, 114).map((s) => (
-                        <option key={s.name} value={s.name}>
-                          {s.name}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 pointer-events-none" />
-                  </div>
+                    <div className="flex-1 relative init-dropdown-container">
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (openInitDropdown !== "sabaq") setSurahSearchQuery("");
+                          setOpenInitDropdown(openInitDropdown === "sabaq" ? null : "sabaq");
+                        }}
+                        className={`w-full h-10 bg-white border-2 rounded-xl px-3 text-[10.5px] font-black text-slate-700 outline-none transition-all flex items-center justify-between cursor-pointer ${openInitDropdown === "sabaq" ? "border-jade-400 ring-4 ring-jade-50/50" : "border-slate-100 hover:border-slate-200"}`}
+                      >
+                        <span className="truncate">{initForm.surah || "- Pilih Surat -"}</span>
+                        <ChevronDown className={`w-3.5 h-3.5 text-slate-300 transition-all ${openInitDropdown === "sabaq" ? "rotate-180 text-jade-500" : ""}`} />
+                      </div>
+                      
+                      {openInitDropdown === "sabaq" && (
+                        <div className="absolute top-full left-0 w-full mt-2 bg-white border-2 border-slate-300 rounded-xl shadow-xl overflow-hidden z-50 flex flex-col animate-in fade-in slide-in-from-top-2 duration-200" onMouseDown={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
+                          <div className="p-2 border-b border-slate-100 bg-slate-50/50">
+                            <input
+                              type="text"
+                              placeholder="CARI SURAT..."
+                              value={surahSearchQuery}
+                              onChange={(e) => setSurahSearchQuery(e.target.value)}
+                              className="w-full bg-white border border-slate-200 rounded px-2 py-1.5 text-[8.5px] font-black uppercase tracking-wider text-slate-700 outline-none focus:border-jade-400 focus:ring-2 focus:ring-jade-50/50 transition-all placeholder:text-slate-300"
+                              autoFocus
+                            />
+                          </div>
+                          <div className="max-h-48 overflow-y-auto no-scrollbar">
+                            {SURAH_DATA.slice(0, 114)
+                              .filter((s) => s.name.toLowerCase().includes(surahSearchQuery.toLowerCase()))
+                              .map((s) => (
+                                <div
+                                  key={s.name}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleInitSabaqChange(s.name, 1);
+                                    setOpenInitDropdown(null);
+                                  }}
+                                  className={`px-3 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer border-b border-slate-50 last:border-0 ${initForm.surah === s.name ? "bg-jade-50 text-jade-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
+                                >
+                                  {s.name}
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   <span className="text-slate-300 font-bold">:</span>
                   <div className="w-16">
                     <input
@@ -2614,14 +3338,144 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                       min={1}
                       max={SURAH_DATA.find((s) => s.name === initForm.surah)?.totalAyah || 1000}
                       value={initForm.ayat || ""}
-                      onChange={(e) => setInitForm((prev) => ({ ...prev, ayat: parseInt(e.target.value) || 0 }))}
+                      onChange={(e) => handleInitSabaqChange(initForm.surah, parseInt(e.target.value) || 0)}
                       className="w-full h-10 bg-white border-2 border-slate-100 rounded-xl px-2 text-[10.5px] font-black text-slate-800 focus:border-jade-400 transition-all outline-none text-center shadow-none"
                       placeholder="0"
                     />
                   </div>
                 </div>
-                {/* Info: Sabqi & Manzil mengikuti */}
-                <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest pt-2 px-1 opacity-70">✦ Sabqi dimulai dari awal Juz Sabaq. Manzil dari awal (An-Naba').</p>
+
+                {initForm.surah && initForm.ayat > 0 && (
+                  <div className="animate-in fade-in slide-in-from-top-4 duration-300">
+                    <div className="flex items-center gap-2 mb-2 px-1 mt-4">
+                      <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Posisi Sabqi Terakhir</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                    <div className="flex-1 relative init-dropdown-container">
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (openInitDropdown !== "sabqi") setSurahSearchQuery("");
+                          setOpenInitDropdown(openInitDropdown === "sabqi" ? null : "sabqi");
+                        }}
+                        className={`w-full h-10 bg-white border-2 rounded-xl px-3 text-[10.5px] font-black text-slate-700 outline-none transition-all flex items-center justify-between cursor-pointer ${openInitDropdown === "sabqi" ? "border-emerald-400 ring-4 ring-emerald-50/50" : "border-slate-100 hover:border-slate-200"}`}
+                      >
+                        <span className="truncate">{initForm.sabqiSurah || "- Pilih Surat -"}</span>
+                        <ChevronDown className={`w-3.5 h-3.5 text-slate-300 transition-all ${openInitDropdown === "sabqi" ? "rotate-180 text-emerald-500" : ""}`} />
+                      </div>
+                      
+                      {openInitDropdown === "sabqi" && (
+                        <div className="absolute top-full left-0 w-full mt-2 bg-white border-2 border-slate-300 rounded-xl shadow-xl overflow-hidden z-50 flex flex-col animate-in fade-in slide-in-from-top-2 duration-200" onMouseDown={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
+                          <div className="p-2 border-b border-slate-100 bg-slate-50/50">
+                            <input
+                              type="text"
+                              placeholder="CARI SURAT..."
+                              value={surahSearchQuery}
+                              onChange={(e) => setSurahSearchQuery(e.target.value)}
+                              className="w-full bg-white border border-slate-200 rounded px-2 py-1.5 text-[8.5px] font-black uppercase tracking-wider text-slate-700 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-50/50 transition-all placeholder:text-slate-300"
+                              autoFocus
+                            />
+                          </div>
+                          <div className="max-h-48 overflow-y-auto no-scrollbar">
+                            {SURAH_DATA.slice(0, 114)
+                              .filter((s) => s.name.toLowerCase().includes(surahSearchQuery.toLowerCase()))
+                              .map((s) => (
+                                <div
+                                  key={s.name}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setInitForm((prev) => ({ ...prev, sabqiSurah: s.name, sabqiAyat: 1 }));
+                                    setOpenInitDropdown(null);
+                                  }}
+                                  className={`px-3 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer border-b border-slate-50 last:border-0 ${initForm.sabqiSurah === s.name ? "bg-emerald-50 text-emerald-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
+                                >
+                                  {s.name}
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                      <span className="text-slate-300 font-bold">:</span>
+                      <div className="w-16">
+                        <input
+                          type="number"
+                          min={1}
+                          max={SURAH_DATA.find((s) => s.name === initForm.sabqiSurah)?.totalAyah || 1000}
+                          value={initForm.sabqiAyat || ""}
+                          onChange={(e) => setInitForm((prev) => ({ ...prev, sabqiAyat: parseInt(e.target.value) || 0 }))}
+                          className="w-full h-10 bg-white border-2 border-slate-100 rounded-xl px-2 text-[10.5px] font-black text-slate-800 focus:border-emerald-400 transition-all outline-none text-center shadow-none"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 mb-2 px-1 mt-4">
+                      <span className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Posisi Manzil Terakhir</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                    <div className="flex-1 relative init-dropdown-container">
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (openInitDropdown !== "manzil") setSurahSearchQuery("");
+                          setOpenInitDropdown(openInitDropdown === "manzil" ? null : "manzil");
+                        }}
+                        className={`w-full h-10 bg-white border-2 rounded-xl px-3 text-[10.5px] font-black text-slate-700 outline-none transition-all flex items-center justify-between cursor-pointer ${openInitDropdown === "manzil" ? "border-amber-400 ring-4 ring-amber-50/50" : "border-slate-100 hover:border-slate-200"}`}
+                      >
+                        <span className="truncate">{initForm.manzilSurah || "- Pilih Surat -"}</span>
+                        <ChevronDown className={`w-3.5 h-3.5 text-slate-300 transition-all ${openInitDropdown === "manzil" ? "rotate-180 text-amber-500" : ""}`} />
+                      </div>
+                      
+                      {openInitDropdown === "manzil" && (
+                        <div className="absolute bottom-full left-0 w-full mb-2 bg-white border-2 border-slate-300 rounded-xl shadow-xl overflow-hidden z-50 flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-200" onMouseDown={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
+                          <div className="p-2 border-b border-slate-100 bg-slate-50/50">
+                            <input
+                              type="text"
+                              placeholder="CARI SURAT..."
+                              value={surahSearchQuery}
+                              onChange={(e) => setSurahSearchQuery(e.target.value)}
+                              className="w-full bg-white border border-slate-200 rounded px-2 py-1.5 text-[8.5px] font-black uppercase tracking-wider text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-50/50 transition-all placeholder:text-slate-300"
+                              autoFocus
+                            />
+                          </div>
+                          <div className="max-h-48 overflow-y-auto no-scrollbar">
+                            {SURAH_DATA.slice(0, 114)
+                              .filter((s) => s.name.toLowerCase().includes(surahSearchQuery.toLowerCase()))
+                              .map((s) => (
+                                <div
+                                  key={s.name}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setInitForm((prev) => ({ ...prev, manzilSurah: s.name, manzilAyat: 1 }));
+                                    setOpenInitDropdown(null);
+                                  }}
+                                  className={`px-3 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer border-b border-slate-50 last:border-0 ${initForm.manzilSurah === s.name ? "bg-amber-50 text-amber-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
+                                >
+                                  {s.name}
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                      <span className="text-slate-300 font-bold">:</span>
+                      <div className="w-16">
+                        <input
+                          type="number"
+                          min={1}
+                          max={SURAH_DATA.find((s) => s.name === initForm.manzilSurah)?.totalAyah || 1000}
+                          value={initForm.manzilAyat || ""}
+                          onChange={(e) => setInitForm((prev) => ({ ...prev, manzilAyat: parseInt(e.target.value) || 0 }))}
+                          className="w-full h-10 bg-white border-2 border-slate-100 rounded-xl px-2 text-[10.5px] font-black text-slate-800 focus:border-amber-400 transition-all outline-none text-center shadow-none"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+
+                    <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest pt-3 px-1 opacity-70">✦ Anda dapat mengubah rekomendasi Sabqi dan Manzil di atas jika tidak sesuai.</p>
+                  </div>
+                )}
               </div>
             </div>
 

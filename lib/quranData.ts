@@ -120,18 +120,18 @@ export const SURAH_DATA = [
 export const SURAH_PROGRESSION: string[] = (() => {
   const juzMap: Record<number, typeof SURAH_DATA> = {};
   SURAH_DATA.forEach((s) => {
-    s.juz.forEach(j => {
+    s.juz.forEach((j) => {
       if (!juzMap[j]) juzMap[j] = [];
       juzMap[j].push(s);
     });
   });
-  
+
   const progression: string[] = [];
   const seenSurahs = new Set<string>();
-  
+
   for (let j = 30; j >= 1; j--) {
     if (juzMap[j]) {
-      juzMap[j].forEach(s => {
+      juzMap[j].forEach((s) => {
         if (!seenSurahs.has(s.name)) {
           progression.push(s.name);
           seenSurahs.add(s.name);

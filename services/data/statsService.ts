@@ -1,250 +1,256 @@
-import { supabase } from '../../lib/supabase';
-import { 
-    AdminStats, 
-    TeacherStats, 
-    GuardianDashboardStats, 
-    SuperAdminStats, 
-    Student, 
-    MemorizationType, 
-    MemorizationStatus 
-} from '../../types';
+import { getSupabase } from "../../lib/supabase";
+import { AdminStats, TeacherStats, GuardianDashboardStats, SuperAdminStats, Student, MemorizationType, MemorizationStatus } from "../../types";
 
 export const getSuperAdminStats = async (): Promise<SuperAdminStats> => {
-    try {
-        const { count: tenantCount, error: tErr } = await supabase.from('tenants').select('*', { count: 'exact', head: true });
-        const { count: userCount, error: uErr } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
-        const { count: teacherCount, error: trErr } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'teacher');
-        const { count: studentCount, error: sErr } = await supabase.from('students').select('*', { count: 'exact', head: true });
-        
-        return { 
-            totalTenants: tErr ? 0 : (tenantCount || 0), 
-            totalUsers: uErr ? 0 : (userCount || 0), 
-            totalTeachers: trErr ? 0 : (teacherCount || 0), 
-            totalStudents: sErr ? 0 : (studentCount || 0) 
-        };
-    } catch (e) {
-        return { totalTenants: 0, totalUsers: 0, totalTeachers: 0, totalStudents: 0 };
-    }
+  const supabase = getSupabase();
+  try {
+    const { count: tenantCount, error: tErr } = await supabase.from("tenants").select("*", { count: "exact", head: true });
+    const { count: userCount, error: uErr } = await supabase.from("profiles").select("*", { count: "exact", head: true });
+    const { count: teacherCount, error: trErr } = await supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "teacher");
+    const { count: studentCount, error: sErr } = await supabase.from("students").select("*", { count: "exact", head: true });
+
+    return {
+      totalTenants: tErr ? 0 : tenantCount || 0,
+      totalUsers: uErr ? 0 : userCount || 0,
+      totalTeachers: trErr ? 0 : teacherCount || 0,
+      totalStudents: sErr ? 0 : studentCount || 0,
+    };
+  } catch (e) {
+    return { totalTenants: 0, totalUsers: 0, totalTeachers: 0, totalStudents: 0 };
+  }
 };
 
-export const getAdminStats = async (tenantId: string): Promise<AdminStats> => { 
-    const { data: tenantStudents } = await supabase.from('students').select('id').eq('tenant_id', tenantId);
-    const studentIds = tenantStudents?.map(s => s.id) || [];
-    
-    const { count: totalStudents } = await supabase.from('students').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId);
-    const { count: totalTeachers } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId).eq('role', 'teacher');
-    const { count: totalHalaqahs } = await supabase.from('halaqah_classes').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId);
-    
-    if (studentIds.length === 0) {
-        return { 
-            totalStudents: totalStudents || 0, totalTeachers: totalTeachers || 0, totalHalaqahs: totalHalaqahs || 0, 
-            totalRecordsToday: 0, sabaqToday: 0, sabqiToday: 0, manzilToday: 0, notManzilToday: 0, 
-            manzilDoneIds: [], memorizationQuality: [], memorizationTrend: [], monthlyTrend: [],
-            kehadiranToday: { hadir: 0, sakit: 0, izin: 0, alpa: 0 }, kehadiranTrend: []
-        };
+export const getAdminStats = async (tenantId: string): Promise<AdminStats> => {
+  const supabase = getSupabase();
+  const { data: tenantStudents } = await supabase.from("students").select("id").eq("tenant_id", tenantId);
+  const studentIds = tenantStudents?.map((s) => s.id) || [];
+
+  const { count: totalStudents } = await supabase.from("students").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId);
+  const { count: totalTeachers } = await supabase.from("profiles").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId).eq("role", "teacher");
+  const { count: totalHalaqahs } = await supabase.from("halaqah_classes").select("*", { count: "exact", head: true }).eq("tenant_id", tenantId);
+
+  if (studentIds.length === 0) {
+    return {
+      totalStudents: totalStudents || 0,
+      totalTeachers: totalTeachers || 0,
+      totalHalaqahs: totalHalaqahs || 0,
+      totalRecordsToday: 0,
+      sabaqToday: 0,
+      sabqiToday: 0,
+      manzilToday: 0,
+      notManzilToday: 0,
+      manzilDoneIds: [],
+      memorizationQuality: [],
+      memorizationTrend: [],
+      monthlyTrend: [],
+      kehadiranToday: { hadir: 0, sakit: 0, izin: 0, alpa: 0 },
+      kehadiranTrend: [],
+    };
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const { data: recordsToday } = await supabase.from("memorization_records").select("student_id, type, status").eq("record_date", today).in("student_id", studentIds);
+  const safeRecordsToday = recordsToday || [];
+
+  const sabaqToday = safeRecordsToday.filter((r) => r.type === MemorizationType.SABAQ).length;
+  const sabqiToday = safeRecordsToday.filter((r) => r.type === MemorizationType.SABQI).length;
+  const manzilToday = safeRecordsToday.filter((r) => r.type === MemorizationType.MANZIL).length;
+
+  const studentsDoneManzilToday = new Set<string>(safeRecordsToday.filter((r) => r.type === MemorizationType.MANZIL).map((r) => r.student_id as string));
+  const notManzilToday = Math.max(0, (totalStudents || 0) - studentsDoneManzilToday.size);
+
+  // Kehadiran Today
+  const uniqueStudentsWithRecordsToday = new Set<string>();
+  let sakitToday = 0;
+  let izinToday = 0;
+  let alpaToday = 0;
+
+  safeRecordsToday.forEach((r) => {
+    if (!uniqueStudentsWithRecordsToday.has(r.student_id)) {
+      uniqueStudentsWithRecordsToday.add(r.student_id);
+      if (r.status === MemorizationStatus.SAKIT) {
+        sakitToday++;
+      } else if (r.status === MemorizationStatus.IZIN) {
+        izinToday++;
+      } else if (r.status === MemorizationStatus.ALPA) {
+        alpaToday++;
+      }
     }
+  });
 
-    const today = new Date().toISOString().split('T')[0];
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  // Hadir are ONLY those who have a record and are not sakit/izin/alpa
+  let hadirToday = 0;
+  uniqueStudentsWithRecordsToday.forEach((studentId) => {
+    // If they are in the set but not in absent counts, they must be present
+    // Wait, the set only has students with records.
+    // So present is total records - sakit - izin - alpa
+  });
+  hadirToday = uniqueStudentsWithRecordsToday.size - sakitToday - izinToday - alpaToday;
+  
+  // The rest are Alpa by default
+  alpaToday += Math.max(0, (totalStudents || 0) - uniqueStudentsWithRecordsToday.size);
 
-    const { data: recordsToday } = await supabase.from('memorization_records')
-        .select('student_id, type, status')
-        .eq('record_date', today)
-        .in('student_id', studentIds);
-    const safeRecordsToday = recordsToday || [];
-    
-    const sabaqToday = safeRecordsToday.filter(r => r.type === MemorizationType.SABAQ).length;
-    const sabqiToday = safeRecordsToday.filter(r => r.type === MemorizationType.SABQI).length;
-    const manzilToday = safeRecordsToday.filter(r => r.type === MemorizationType.MANZIL).length;
+  const { data: records } = await supabase.from("memorization_records").select("status, record_date").gte("record_date", thirtyDaysAgo.toISOString()).in("student_id", studentIds).order("record_date", { ascending: true });
+  const safeRecords = records || [];
 
-    const studentsDoneManzilToday = new Set<string>(safeRecordsToday.filter(r => r.type === MemorizationType.MANZIL).map(r => r.student_id as string));
-    const notManzilToday = Math.max(0, (totalStudents || 0) - studentsDoneManzilToday.size);
+  // Quality mapping (Last 30 days)
+  const statusCounts = {
+    [MemorizationStatus.LANCAR]: 0,
+    [MemorizationStatus.TIDAK_LANCAR]: 0,
+    [MemorizationStatus.TIDAK_SETOR]: 0,
+  };
+  safeRecords.forEach((r) => {
+    if (r.status in statusCounts) {
+      statusCounts[r.status as MemorizationStatus]++;
+    }
+  });
 
-    // Kehadiran Today
-    const uniqueStudentsWithRecordsToday = new Set<string>();
-    let sakitToday = 0;
-    let izinToday = 0;
-    let alpaToday = 0;
+  const totalQualityRecords = Object.values(statusCounts).reduce((a, b) => a + b, 0);
+  const memorizationQuality =
+    totalQualityRecords > 0
+      ? [
+          { name: "Lancar", value: Math.round((statusCounts[MemorizationStatus.LANCAR] / totalQualityRecords) * 100), color: "#10b981" },
+          { name: "Tidak Lancar", value: Math.round((statusCounts[MemorizationStatus.TIDAK_LANCAR] / totalQualityRecords) * 100), color: "#f59e0b" },
+          { name: "Tidak Setor", value: Math.round((statusCounts[MemorizationStatus.TIDAK_SETOR] / totalQualityRecords) * 100), color: "#f43f5e" },
+        ]
+      : [];
 
-    safeRecordsToday.forEach(r => {
-        if (!uniqueStudentsWithRecordsToday.has(r.student_id)) {
-            uniqueStudentsWithRecordsToday.add(r.student_id);
-            if (r.status === MemorizationStatus.SAKIT) {
-                sakitToday++;
-            } else if (r.status === MemorizationStatus.IZIN) {
-                izinToday++;
-            } else if (r.status === MemorizationStatus.ALPA) {
-                alpaToday++;
-            }
+  // Trend mapping (7 days)
+  const memorizationTrend: any[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split("T")[0];
+    const dayName = d.toLocaleDateString("id-ID", { weekday: "short" });
+    const count = safeRecords.filter((r) => r.record_date.startsWith(dateStr)).length;
+    memorizationTrend.push({ name: dayName, total: count, fullDate: dateStr });
+  }
+
+  // Monthly Trend (30 days)
+  const monthlyTrend: any[] = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split("T")[0];
+    const dayLabel = d.getDate().toString();
+    const count = safeRecords.filter((r) => r.record_date.startsWith(dateStr)).length;
+    monthlyTrend.push({ name: dayLabel, total: count });
+  }
+
+  // Kehadiran Trend (7 days)
+  const kehadiranTrend: any[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split("T")[0];
+    const dayName = d.toLocaleDateString("id-ID", { weekday: "short" });
+
+    const dayRecords = safeRecords.filter((r) => r.record_date.startsWith(dateStr));
+    const uniqueStudentsDay = new Set<string>();
+    let absentCountDay = 0;
+    let presentCountDay = 0;
+
+    dayRecords.forEach((r) => {
+      if (!uniqueStudentsDay.has(r.student_id)) {
+        uniqueStudentsDay.add(r.student_id);
+        if (r.status === MemorizationStatus.SAKIT || r.status === MemorizationStatus.IZIN || r.status === MemorizationStatus.ALPA) {
+          absentCountDay++;
+        } else {
+          presentCountDay++;
         }
+      }
     });
 
-    // Hadir are those who have records and are not sakit/izin/alpa PLUS those who haven't setoran yet (assumed present until marked absent)
-    // Actually, usually schools mark absence specifically. So Hadir = totalStudents - sakit - izin - alpa
-    const hadirToday = Math.max(0, (totalStudents || 0) - sakitToday - izinToday - alpaToday);
+    const hadirCountDay = presentCountDay;
+    const tidakHadirCountDay = Math.max(0, (totalStudents || 0) - presentCountDay);
+    kehadiranTrend.push({ name: dayName, hadir: hadirCountDay, tidak_hadir: tidakHadirCountDay });
+  }
 
-    const { data: records } = await supabase.from('memorization_records')
-        .select('status, record_date')
-        .gte('record_date', thirtyDaysAgo.toISOString())
-        .in('student_id', studentIds)
-        .order('record_date', { ascending: true });
-    const safeRecords = records || [];
+  return {
+    totalStudents: totalStudents || 0,
+    totalTeachers: totalTeachers || 0,
+    totalHalaqahs: totalHalaqahs || 0,
+    totalRecordsToday: safeRecordsToday.length,
+    sabaqToday,
+    sabqiToday,
+    manzilToday,
+    notManzilToday,
+    manzilDoneIds: Array.from(studentsDoneManzilToday),
+    memorizationQuality,
+    memorizationTrend,
+    monthlyTrend,
+    kehadiranToday: { hadir: hadirToday, sakit: sakitToday, izin: izinToday, alpa: alpaToday },
+    kehadiranTrend,
+  };
+};
 
-    // Quality mapping (Last 30 days)
-    const statusCounts = { 
-        [MemorizationStatus.LANCAR]: 0, 
-        [MemorizationStatus.TIDAK_LANCAR]: 0, 
-        [MemorizationStatus.TIDAK_SETOR]: 0 
-    };
-    safeRecords.forEach(r => {
-        if (r.status in statusCounts) {
-            statusCounts[r.status as MemorizationStatus]++;
-        }
+export const getTeacherStats = async (studentsInHalaqah: Student[]): Promise<TeacherStats | null> => {
+  const supabase = getSupabase();
+  if (studentsInHalaqah.length === 0) return null;
+  const todayDateStr = new Date().toLocaleDateString("en-CA");
+  const studentIds = studentsInHalaqah.map((s) => s.id);
+
+  const { data } = await supabase.from("memorization_records").select("type, ayat_end").in("student_id", studentIds).eq("record_date", todayDateStr);
+
+  const stats = {
+    totalStudentsInHalaqah: studentsInHalaqah.length,
+    sabaqToday: 0,
+    sabqiToday: 0,
+    manzilToday: 0,
+  };
+
+  if (data) {
+    data.forEach((rec) => {
+      if (rec.type === MemorizationType.SABAQ) stats.sabaqToday++;
+      else if (rec.type === MemorizationType.SABQI) stats.sabqiToday++;
+      else if (rec.type === MemorizationType.MANZIL) stats.manzilToday++;
     });
-
-    const totalQualityRecords = Object.values(statusCounts).reduce((a, b) => a + b, 0);
-    const memorizationQuality = totalQualityRecords > 0 ? [
-        { name: 'Lancar', value: Math.round((statusCounts[MemorizationStatus.LANCAR] / totalQualityRecords) * 100), color: '#10b981' },
-        { name: 'Tidak Lancar', value: Math.round((statusCounts[MemorizationStatus.TIDAK_LANCAR] / totalQualityRecords) * 100), color: '#f59e0b' },
-        { name: 'Tidak Setor', value: Math.round((statusCounts[MemorizationStatus.TIDAK_SETOR] / totalQualityRecords) * 100), color: '#f43f5e' }
-    ] : [];
-
-    // Trend mapping (7 days)
-    const memorizationTrend: any[] = [];
-    for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split('T')[0];
-        const dayName = d.toLocaleDateString('id-ID', { weekday: 'short' });
-        const count = safeRecords.filter(r => r.record_date.startsWith(dateStr)).length;
-        memorizationTrend.push({ name: dayName, total: count, fullDate: dateStr });
-    }
-
-    // Monthly Trend (30 days)
-    const monthlyTrend: any[] = [];
-    for (let i = 29; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split('T')[0];
-        const dayLabel = d.getDate().toString();
-        const count = safeRecords.filter(r => r.record_date.startsWith(dateStr)).length;
-        monthlyTrend.push({ name: dayLabel, total: count });
-    }
-
-    // Kehadiran Trend (7 days)
-    const kehadiranTrend: any[] = [];
-    for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split('T')[0];
-        const dayName = d.toLocaleDateString('id-ID', { weekday: 'short' });
-        
-        const dayRecords = safeRecords.filter(r => r.record_date.startsWith(dateStr));
-        const uniqueStudentsDay = new Set<string>();
-        let absentCountDay = 0;
-        
-        dayRecords.forEach(r => {
-            if (!uniqueStudentsDay.has(r.student_id)) {
-                uniqueStudentsDay.add(r.student_id);
-                if (r.status === MemorizationStatus.SAKIT || r.status === MemorizationStatus.IZIN || r.status === MemorizationStatus.ALPA) {
-                    absentCountDay++;
-                }
-            }
-        });
-        
-        const hadirCountDay = Math.max(0, (totalStudents || 0) - absentCountDay);
-        kehadiranTrend.push({ name: dayName, hadir: hadirCountDay, tidak_hadir: absentCountDay });
-    }
-
-    return { 
-        totalStudents: totalStudents || 0, 
-        totalTeachers: totalTeachers || 0, 
-        totalHalaqahs: totalHalaqahs || 0, 
-        totalRecordsToday: safeRecordsToday.length, 
-        sabaqToday,
-        sabqiToday,
-        manzilToday,
-        notManzilToday,
-        manzilDoneIds: Array.from(studentsDoneManzilToday),
-        memorizationQuality,
-        memorizationTrend,
-        monthlyTrend,
-        kehadiranToday: { hadir: hadirToday, sakit: sakitToday, izin: izinToday, alpa: alpaToday },
-        kehadiranTrend
-    }; 
+  }
+  return stats;
 };
 
-export const getTeacherStats = async (studentsInHalaqah: Student[]): Promise<TeacherStats | null> => { 
-    if (studentsInHalaqah.length === 0) return null;
-    const todayDateStr = new Date().toLocaleDateString('en-CA');
-    const studentIds = studentsInHalaqah.map(s => s.id);
-    
-    const { data } = await supabase.from('memorization_records')
-        .select('type, ayat_end')
-        .in('student_id', studentIds)
-        .eq('record_date', todayDateStr);
+export const getGuardianStats = async (id: string): Promise<GuardianDashboardStats> => {
+  const supabase = getSupabase();
+  // Try finding by student ID first
+  let { data: student } = await supabase.from("students").select("id, current_juz, daily_target").eq("id", id).maybeSingle();
 
-    const stats = {
-        totalStudentsInHalaqah: studentsInHalaqah.length,
-        sabaqToday: 0, sabqiToday: 0, manzilToday: 0
-    };
+  // If not found, try finding by parent_id (common for student users whose ID is the user ID)
+  if (!student) {
+    const { data: linkedStudent } = await supabase.from("students").select("id, current_juz, daily_target").eq("parent_id", id).maybeSingle();
+    student = linkedStudent;
+  }
 
-    if (data) {
-        data.forEach(rec => {
-            if (rec.type === MemorizationType.SABAQ) stats.sabaqToday++;
-            else if (rec.type === MemorizationType.SABQI) stats.sabqiToday++;
-            else if (rec.type === MemorizationType.MANZIL) stats.manzilToday++;
-        });
-    }
-    return stats;
-};
+  const studentId = student?.id || id; // Fallback to original id if still not found
 
-export const getGuardianStats = async (id: string): Promise<GuardianDashboardStats> => { 
-    // Try finding by student ID first
-    let { data: student } = await supabase.from('students').select('id, current_juz, daily_target').eq('id', id).maybeSingle();
-    
-    // If not found, try finding by parent_id (common for student users whose ID is the user ID)
-    if (!student) {
-        const { data: linkedStudent } = await supabase.from('students').select('id, current_juz, daily_target').eq('parent_id', id).maybeSingle();
-        student = linkedStudent;
-    }
+  const { data: lastRecord } = await supabase.from("memorization_records").select("surah_name, ayat_end, status").eq("student_id", studentId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+  const { data: lastNote } = await supabase.from("teacher_notes").select("content, date").eq("student_id", studentId).order("date", { ascending: false }).limit(1).maybeSingle();
 
-    const studentId = student?.id || id; // Fallback to original id if still not found
+  // Fetch current weekly target for the student
+  const now = new Date();
+  const day = now.getDay();
+  const diff = (day === 0 ? -6 : 1) - day; // Monday is 1, Sunday is 0
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diff);
 
-    const { data: lastRecord } = await supabase.from('memorization_records').select('surah_name, ayat_end, status').eq('student_id', studentId).order('created_at', { ascending: false }).limit(1).maybeSingle();
-    const { data: lastNote } = await supabase.from('teacher_notes').select('content, date').eq('student_id', studentId).order('date', { ascending: false }).limit(1).maybeSingle();
+  // Use local date string to avoid timezone issues with toISOString()
+  const weekStart = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, "0")}-${String(monday.getDate()).padStart(2, "0")}`;
 
-    // Fetch current weekly target for the student
-    const now = new Date();
-    const day = now.getDay();
-    const diff = (day === 0 ? -6 : 1) - day; // Monday is 1, Sunday is 0
-    const monday = new Date(now);
-    monday.setDate(now.getDate() + diff);
-    
-    // Use local date string to avoid timezone issues with toISOString()
-    const weekStart = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+  const { data: weeklyTarget } = await supabase.from("weekly_targets").select("target_data").eq("student_id", studentId).eq("week_start", weekStart).maybeSingle();
 
-    const { data: weeklyTarget } = await supabase
-        .from('weekly_targets')
-        .select('target_data')
-        .eq('student_id', studentId)
-        .eq('week_start', weekStart)
-        .maybeSingle();
+  const targetJuz = (weeklyTarget?.target_data as any)?.current_juz;
+  const currentJuz = targetJuz !== undefined && targetJuz !== null && targetJuz !== 0 ? targetJuz : student?.current_juz || 0;
 
-    const targetJuz = (weeklyTarget?.target_data as any)?.current_juz;
-    const currentJuz = (targetJuz !== undefined && targetJuz !== null && targetJuz !== 0) 
-        ? targetJuz 
-        : (student?.current_juz || 0);
-
-    return { 
-        currentSurah: lastRecord?.surah_name || '-', 
-        currentAyat: lastRecord?.ayat_end ? String(lastRecord.ayat_end) : '-', 
-        totalJuz: currentJuz, 
-        lastStatus: lastRecord?.status || MemorizationStatus.LANCAR, 
-        teacherNote: lastNote?.content || 'Belum ada catatan', 
-        teacherNoteDate: lastNote?.date || '', 
-        juzProgress: (currentJuz / 30) * 100, 
-        dailyTarget: student?.daily_target || '-'
-    }; 
+  return {
+    currentSurah: lastRecord?.surah_name || "-",
+    currentAyat: lastRecord?.ayat_end ? String(lastRecord.ayat_end) : "-",
+    totalJuz: currentJuz,
+    lastStatus: lastRecord?.status || MemorizationStatus.LANCAR,
+    teacherNote: lastNote?.content || "Belum ada catatan",
+    teacherNoteDate: lastNote?.date || "",
+    juzProgress: (currentJuz / 30) * 100,
+    dailyTarget: student?.daily_target || "-",
+  };
 };

@@ -1,6 +1,6 @@
-import React from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { MemorizationRecord, MemorizationStatus } from '../types';
+import React from "react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { MemorizationRecord, MemorizationStatus } from "../types";
 
 interface Props {
   records: MemorizationRecord[];
@@ -13,18 +13,18 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       <div className="bg-white/95 backdrop-blur-md p-4 rounded-xl shadow-xl border border-slate-100 ring-1 ring-slate-200/50">
         <p className="text-slate-500 text-xs font-semibold mb-3 uppercase tracking-wider">{label}</p>
         <div className="space-y-2">
-          {payload.slice().reverse().map((entry: any, index: number) => (
-            <div key={index} className="flex items-center justify-between gap-8 min-35">
-              <div className="flex items-center gap-2">
-                <div 
-                  className="w-3 h-3 rounded-full shadow-sm" 
-                  style={{ backgroundColor: entry.color }}
-                />
-                <span className="text-sm font-medium text-slate-700">{entry.name}</span>
+          {payload
+            .slice()
+            .reverse()
+            .map((entry: any, index: number) => (
+              <div key={index} className="flex items-center justify-between gap-8 min-35">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: entry.color }} />
+                  <span className="text-sm font-medium text-slate-700">{entry.name}</span>
+                </div>
+                <span className="text-sm font-bold text-slate-800">{entry.value}</span>
               </div>
-              <span className="text-sm font-bold text-slate-800">{entry.value}</span>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
     );
@@ -35,35 +35,45 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export const StudentProgressChart: React.FC<Props> = ({ records }) => {
   // Aggregate data for the chart (Group by Date)
   const data = React.useMemo(() => {
-    const grouped = records.reduce((acc, curr) => {
-      const date = new Date(curr.record_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
-      if (!acc[date]) {
-        acc[date] = { date, lancar: 0, perbaikan: 0, ulang: 0 };
-      }
-      if (curr.status === MemorizationStatus.LANCAR) acc[date].lancar += 1;
-      if (curr.status === MemorizationStatus.TIDAK_LANCAR) acc[date].perbaikan += 1;
-      if (curr.status === MemorizationStatus.TIDAK_SETOR) acc[date].ulang += 1;
-      return acc;
-    }, {} as Record<string, any>);
-    
-    // Take last 7 days for visibility
-    return Object.values(grouped).slice(0, 7).reverse();
-  }, [records]);
-
-  if (records.length === 0) {
-    return (
-      <div className="h-72 flex items-center justify-center bg-slate-50 rounded-xl border border-dashed border-slate-300 text-slate-400">
-        Belum ada data hafalan untuk ditampilkan grafiknya.
-      </div>
+    const grouped = records.reduce(
+      (acc, curr) => {
+        const date = new Date(curr.record_date).toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
+        if (!acc[date]) {
+          acc[date] = { date, lancar: 0, perbaikan: 0, ulang: 0 };
+        }
+        if (curr.status === MemorizationStatus.LANCAR) acc[date].lancar += 1;
+        if (curr.status === MemorizationStatus.TIDAK_LANCAR) acc[date].perbaikan += 1;
+        if (curr.status === MemorizationStatus.TIDAK_SETOR) acc[date].ulang += 1;
+        return acc;
+      },
+      {} as Record<string, any>,
     );
-  }
+
+    let result = Object.values(grouped).slice(0, 7).reverse();
+
+    // Jika data kosong, buat 7 hari terakhir dengan nilai 0 agar chart tetap muncul garis datar
+    if (result.length === 0) {
+      result = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        return {
+          date: d.toLocaleDateString("id-ID", { day: "2-digit", month: "short" }),
+          lancar: 0,
+          perbaikan: 0,
+          ulang: 0,
+        };
+      });
+    }
+
+    return result;
+  }, [records]);
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-full">
       <div className="flex justify-between items-center mb-6">
         <div>
-           <h3 className="text-lg font-bold text-slate-800">Kualitas Setoran</h3>
-           <p className="text-sm text-slate-500">Analisis hafalan 7 hari terakhir</p>
+          <h3 className="text-lg font-bold text-slate-800">Kualitas Setoran</h3>
+          <p className="text-sm text-slate-500">Analisis hafalan 7 hari terakhir</p>
         </div>
       </div>
 
@@ -72,69 +82,31 @@ export const StudentProgressChart: React.FC<Props> = ({ records }) => {
           <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="colorLancar" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="colorTidakLancar" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="colorTidakSetor" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
               </linearGradient>
             </defs>
-            
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-            
-            <XAxis 
-              dataKey="date" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{fill: '#94a3b8', fontSize: 12, fontWeight: 500}} 
-              dy={10} 
-            />
-            <YAxis 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{fill: '#94a3b8', fontSize: 12}} 
-            />
-            
-            <Tooltip content={<CustomTooltip />} />
-            
-            <Legend 
-              iconType="circle" 
-              iconSize={8}
-              wrapperStyle={{ paddingTop: '20px' }}
-            />
 
-            <Area 
-              type="monotone" 
-              dataKey="lancar" 
-              name="Lancar" 
-              stackId="1" 
-              stroke="#10b981" 
-              strokeWidth={2}
-              fill="url(#colorLancar)" 
-            />
-            <Area 
-              type="monotone" 
-              dataKey="perbaikan" 
-              name="Tidak Lancar" 
-              stackId="1" 
-              stroke="#f59e0b" 
-              strokeWidth={2}
-              fill="url(#colorTidakLancar)" 
-            />
-            <Area 
-              type="monotone" 
-              dataKey="ulang" 
-              name="Tidak Setor" 
-              stackId="1" 
-              stroke="#ef4444" 
-              strokeWidth={2}
-              fill="url(#colorTidakSetor)" 
-            />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+
+            <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 500 }} dy={10} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
+
+            <Tooltip content={<CustomTooltip />} />
+
+            <Legend iconType="circle" iconSize={8} wrapperStyle={{ paddingTop: "20px" }} />
+
+            <Area type="monotone" dataKey="lancar" name="Lancar" stackId="1" stroke="#10b981" strokeWidth={2} fill="url(#colorLancar)" />
+            <Area type="monotone" dataKey="perbaikan" name="Tidak Lancar" stackId="1" stroke="#f59e0b" strokeWidth={2} fill="url(#colorTidakLancar)" />
+            <Area type="monotone" dataKey="ulang" name="Tidak Setor" stackId="1" stroke="#ef4444" strokeWidth={2} fill="url(#colorTidakSetor)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>

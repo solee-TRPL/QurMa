@@ -1,1 +1,0 @@
-Get-ChildItem -Path c:\dataD\Project\QurMa-next\views\teacher" -Recurse -Filter *.tsx | ForEach-Object { (Get-Content .FullName) -replace border-separate border-spacing-0, border-collapse | Set-Content .FullName }

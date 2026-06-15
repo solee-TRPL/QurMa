@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { StudentManagement } from '@/views/admin/GuardianManagement';
-import { useAuth } from '@/lib/AuthContext';
-import { AccessDenied } from '@/components/ui/AccessDenied';
+import React from "react";
+import { StudentManagement } from "@/views/admin/GuardianManagement";
+import { useAuth } from "@/lib/AuthContext";
+import { AccessDenied } from "@/components/ui/AccessDenied";
 
 export default function StudentManagementPage() {
   const { user } = useAuth();

@@ -1,8 +1,44 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'GothamWeb';
+  src: url('/fonts/Gotham-Thin.otf');
+  font-weight: 100;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GothamWeb';
+  src: url('/fonts/Gotham-Book.otf');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GothamWeb';
+  src: url('/fonts/Gotham-Medium.otf');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GothamWeb';
+  src: url('/fonts/Gotham-Bold.otf');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GothamWeb';
+  src: url('/fonts/Gotham-Black.otf');
+  font-weight: 900;
+  font-style: normal;
+}
+
 @theme {
   --font-sans: "Plus Jakarta Sans", "Inter", sans-serif;
-  
+  --font-gotham: "GothamWeb", sans-serif;
+
   --color-primary-50: #fff9e6;
   --color-primary-100: #ffefcc;
   --color-primary-200: #ffdf99;
@@ -14,16 +50,16 @@
   --color-primary-800: #8c6621;
   --color-primary-900: #664a18;
 
-  --color-slate-50: #FFFFFF;
-  --color-slate-100: #F8FAFC;
-  --color-slate-200: #F1F5F9;
-  --color-slate-300: #E2E8F0;
-  --color-slate-400: #94A3B8;
-  --color-slate-500: #64748B;
+  --color-slate-50: #ffffff;
+  --color-slate-100: #f8fafc;
+  --color-slate-200: #f1f5f9;
+  --color-slate-300: #e2e8f0;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
   --color-slate-600: #475569;
   --color-slate-700: #334155;
-  --color-slate-800: #36453B;
-  --color-slate-900: #2D3A32;
+  --color-slate-800: #36453b;
+  --color-slate-900: #2d3a32;
 
   --color-jade-50: #eefcf5;
   --color-jade-100: #dcf7eb;
@@ -37,12 +73,22 @@
   --color-jade-900: #174333;
 
   @keyframes fade-in-right {
-    0% { opacity: 0; transform: translateX(20px); }
-    100% { opacity: 1; transform: translateX(0); }
+    0% {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
   @keyframes fade-out {
-    0% { opacity: 1; }
-    100% { opacity: 0; }
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
   }
 
   --z-index-60: 60;
@@ -65,23 +111,32 @@
 
 /* Hide scrollbar for IE, Edge and Firefox */
 * {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
-body {
-  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-}
+/* body { */
+  /* Tailwind handles default font via --font-sans */
+/* } */
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .animate-fade-in {

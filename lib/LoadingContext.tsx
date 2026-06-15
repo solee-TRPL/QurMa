@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { createContext, useState, useContext, useMemo, useRef, useCallback, useEffect } from 'react';
-import { GlobalLoader } from '../components/ui/GlobalLoader';
+import React, { createContext, useState, useContext, useMemo, useRef, useCallback, useEffect } from "react";
+import { GlobalLoader } from "../components/ui/GlobalLoader";
 
 interface LoadingContextType {
   isLoading: boolean;
@@ -50,10 +50,13 @@ export const LoadingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
   }, []);
 
-  const value = useMemo(() => ({
-    isLoading,
-    setLoading,
-  }), [isLoading, setLoading]);
+  const value = useMemo(
+    () => ({
+      isLoading,
+      setLoading,
+    }),
+    [isLoading, setLoading],
+  );
 
   return (
     <LoadingContext.Provider value={value}>
@@ -66,7 +69,7 @@ export const LoadingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 export const useLoading = (): LoadingContextType => {
   const context = useContext(LoadingContext);
   if (context === undefined) {
-    throw new Error('useLoading must be used within a LoadingProvider');
+    throw new Error("useLoading must be used within a LoadingProvider");
   }
   return context;
 };

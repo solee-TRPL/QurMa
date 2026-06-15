@@ -1,9 +1,9 @@
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { getAllUsersWithTenant, updateUser, getAllTenants } from '../../services/dataService';
 import { UserProfile, UserRole, Tenant } from '../../types';
 import { Button } from '../../components/ui/Button';
-import { Mail, Building, Edit, X, Save, ChevronDown, Filter, RefreshCcw, LogIn, Search, ChevronsLeft, ChevronsRight, ChevronRight, User, ShieldCheck, Lock } from 'lucide-react';
+import { Mail, Building, Edit, X, Save, ChevronDown, Filter, RefreshCcw, LogIn, Search, ChevronsLeft, ChevronsRight, ChevronRight, User, UserPlus, ShieldCheck, Lock } from 'lucide-react';
 import { useLoading } from '../../lib/LoadingContext';
 import { useNotification } from '../../lib/NotificationContext';
 
@@ -164,12 +164,34 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  
-  // Filter States
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [selectedTenant, setSelectedTenant] = useState<string>('all');
+  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
+  const [isTenantDropdownOpen, setIsTenantDropdownOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  
+  const roleDropdownRef = useRef<HTMLDivElement>(null);
+  const tenantDropdownRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (roleDropdownRef.current && !roleDropdownRef.current.contains(event.target as Node)) {
+        setIsRoleDropdownOpen(false);
+      }
+      if (tenantDropdownRef.current && !tenantDropdownRef.current.contains(event.target as Node)) {
+        setIsTenantDropdownOpen(false);
+      }
+    };
 
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
+  
   const { setLoading: setGlobalLoading } = useLoading();
   const { addNotification } = useNotification();
   
@@ -262,58 +284,106 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
   return (
     <div className="space-y-4 animate-fade-in">
       {/* Top Utility Strip - Optimized for Mobile Density */}
-      <div className="flex flex-row items-center gap-1.5 lg:gap-4">
+      <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-1.5 md:gap-2">
           {/* Search Area */}
-          <div className="relative flex-1 group">
-              <Search className="absolute left-3 lg:left-5 top-1/2 -translate-y-1/2 w-3.5 lg:w-4 h-3.5 lg:h-4 text-slate-300 group-focus-within:text-emerald-600 transition-colors" />
+          <div className="relative group h-10 w-full xl:flex-1 xl:min-w-50">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-emerald-600 transition-colors" />
               <input 
                   type="text" 
                   placeholder="Cari..." 
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-8 lg:pl-12 pr-4 py-1.5 lg:py-3 bg-white border-2 border-slate-300 rounded-xl focus:border-emerald-500 focus:bg-white transition-all text-[10px] lg:text-[12px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none h-8 lg:h-12 shadow-none"
+                  className="w-full h-full pl-10 pr-4 bg-white border-2 border-slate-300 rounded-xl focus:ring-4 focus:ring-emerald-50/50 focus:border-emerald-500 transition-all text-[10px] font-black uppercase tracking-tight placeholder:font-black placeholder:text-slate-300 outline-none shadow-none"
               />
           </div>
           
-          <div className="flex items-center gap-1.5 lg:gap-3">
+          <div className="flex items-center gap-2 w-full xl:w-auto flex-none">
               {/* Role Filter */}
-              <div className="relative group shrink-0">
-                  <select 
-                    value={selectedRole}
-                    onChange={(e) => setSelectedRole(e.target.value)}
-                    className="pl-3 lg:pl-6 pr-6 lg:pr-10 py-1.5 lg:py-3 bg-white border-2 border-slate-300 rounded-xl text-[8.5px] lg:text-[10px] font-black uppercase tracking-tighter lg:tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none min-17.5 lg:min-30 h-8 lg:h-12 shadow-none"
+              <div className="relative group shrink-0 z-30 flex-1 xl:flex-none" ref={roleDropdownRef}>
+                  <Filter className={`absolute left-3 lg:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 transition-colors pointer-events-none z-10 ${isRoleDropdownOpen ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-500'}`} />
+                  <div 
+                    onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
+                    className={`w-full pl-8 lg:pl-10 pr-8 lg:pr-10 h-10 bg-white border-2 rounded-xl text-slate-700 font-black text-[10px] uppercase tracking-widest outline-none cursor-pointer flex items-center transition-all shadow-none xl:w-40 truncate ${isRoleDropdownOpen ? 'border-emerald-400 ring-4 ring-emerald-50/50' : 'border-slate-300 hover:border-slate-400'}`}
                   >
-                      <option value="all">SEMUA ROLE</option>
-                      {Object.values(UserRole).map(role => (
-                          <option key={role} value={role}>{role.toUpperCase().replace('_', ' ')}</option>
-                      ))}
-                  </select>
-                  <ChevronDown className="absolute right-2 lg:right-4 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" />
+                      <span className="truncate">
+                        {selectedRole === 'all' ? 'SEMUA ROLE' : selectedRole.replace('_', ' ')}
+                      </span>
+                  </div>
+                  <ChevronDown className={`absolute right-3 lg:right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none transition-transform z-10 ${isRoleDropdownOpen ? 'text-emerald-500 rotate-180' : 'text-slate-400 group-hover:text-emerald-500'}`} />
+                  
+                  {isRoleDropdownOpen && (
+                      <>
+                        <div className="absolute top-[calc(100%+4px)] left-0 w-full min-w-max bg-white border-2 border-slate-300 rounded-xl shadow-lg z-50 py-1 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent animate-in fade-in zoom-in-95 duration-200">
+                            <div 
+                                className={`px-3 py-2.5 border-b border-slate-100 last:border-0 text-[10px] font-black tracking-widest cursor-pointer text-left hover:bg-slate-50 transition-colors uppercase ${selectedRole === 'all' ? "text-emerald-600 bg-emerald-50" : "text-slate-600"}`}
+                                onClick={() => { setSelectedRole('all'); setIsRoleDropdownOpen(false); }}
+                            >
+                                SEMUA ROLE
+                            </div>
+                            {Object.values(UserRole).map(role => (
+                                <div 
+                                    key={role}
+                                    className={`px-3 py-2.5 border-b border-slate-100 last:border-0 text-[10px] font-black tracking-widest cursor-pointer text-left hover:bg-slate-50 transition-colors uppercase ${selectedRole === role ? "text-emerald-600 bg-emerald-50" : "text-slate-600"}`}
+                                    onClick={() => { setSelectedRole(role); setIsRoleDropdownOpen(false); }}
+                                >
+                                    {role.replace('_', ' ')}
+                                </div>
+                            ))}
+                        </div>
+                      </>
+                  )}
               </div>
 
               {/* Tenant Filter (Hidden on very small mobile, visible on lg or sm) */}
-              <div className="relative group shrink-0 hidden sm:block">
-                  <select 
-                    value={selectedTenant}
-                    onChange={(e) => setSelectedTenant(e.target.value)}
-                    className="pl-3 lg:pl-6 pr-6 lg:pr-10 py-1.5 lg:py-3 bg-white border-2 border-slate-300 rounded-xl text-[8.5px] lg:text-[10px] font-black uppercase tracking-tighter lg:tracking-widest text-slate-600 focus:border-emerald-400 outline-none transition-all cursor-pointer appearance-none min-20 lg:min-45 h-8 lg:h-12 shadow-none max-50 truncate"
+              <div className="relative group shrink-0 hidden sm:block z-30 flex-1 xl:flex-none" ref={tenantDropdownRef}>
+                  <Building className={`absolute left-3 lg:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 transition-colors pointer-events-none z-10 ${isTenantDropdownOpen ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-500'}`} />
+                  <div 
+                    onClick={() => setIsTenantDropdownOpen(!isTenantDropdownOpen)}
+                    className={`w-full pl-8 lg:pl-10 pr-8 lg:pr-10 h-10 bg-white border-2 rounded-xl text-slate-700 font-black text-[10px] uppercase tracking-widest outline-none cursor-pointer flex items-center transition-all shadow-none xl:w-50 truncate ${isTenantDropdownOpen ? 'border-emerald-400 ring-4 ring-emerald-50/50' : 'border-slate-300 hover:border-slate-400'}`}
                   >
-                      <option value="all">SEMUA SEKOLAH</option>
-                      <option value="platform">SYSTEM</option>
-                      {tenants.map(t => (
-                          <option key={t.id} value={t.id}>{t.name.toUpperCase()}</option>
-                      ))}
-                  </select>
-                  <ChevronDown className="absolute right-2 lg:right-4 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" />
+                      <span className="truncate">
+                        {selectedTenant === 'all' ? 'SEMUA SEKOLAH' : selectedTenant === 'platform' ? 'SYSTEM' : tenants.find(t => t.id === selectedTenant)?.name || 'SEMUA SEKOLAH'}
+                      </span>
+                  </div>
+                  <ChevronDown className={`absolute right-3 lg:right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none transition-transform z-10 ${isTenantDropdownOpen ? 'text-emerald-500 rotate-180' : 'text-slate-400 group-hover:text-emerald-500'}`} />
+
+                  {isTenantDropdownOpen && (
+                      <>
+                        <div className="absolute top-[calc(100%+4px)] left-0 w-full min-w-max bg-white border-2 border-slate-300 rounded-xl shadow-lg z-50 py-1 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent animate-in fade-in zoom-in-95 duration-200">
+                            <div 
+                                className={`px-3 py-2.5 border-b border-slate-100 last:border-0 text-[10px] font-black tracking-widest cursor-pointer text-left hover:bg-slate-50 transition-colors uppercase ${selectedTenant === 'all' ? "text-emerald-600 bg-emerald-50" : "text-slate-600"}`}
+                                onClick={() => { setSelectedTenant('all'); setIsTenantDropdownOpen(false); }}
+                            >
+                                SEMUA SEKOLAH
+                            </div>
+                            <div 
+                                className={`px-3 py-2.5 border-b border-slate-100 last:border-0 text-[10px] font-black tracking-widest cursor-pointer text-left hover:bg-slate-50 transition-colors uppercase ${selectedTenant === 'platform' ? "text-emerald-600 bg-emerald-50" : "text-slate-600"}`}
+                                onClick={() => { setSelectedTenant('platform'); setIsTenantDropdownOpen(false); }}
+                            >
+                                SYSTEM
+                            </div>
+                            {tenants.map(t => (
+                                <div 
+                                    key={t.id}
+                                    className={`px-3 py-2.5 border-b border-slate-100 last:border-0 text-[10px] font-black tracking-widest cursor-pointer text-left hover:bg-slate-50 transition-colors uppercase ${selectedTenant === t.id ? "text-emerald-600 bg-emerald-50" : "text-slate-600"}`}
+                                    onClick={() => { setSelectedTenant(t.id); setIsTenantDropdownOpen(false); }}
+                                >
+                                    {t.name}
+                                </div>
+                            ))}
+                        </div>
+                      </>
+                  )}
               </div>
 
               <button 
-                onClick={resetFilters} 
-                className="p-2 lg:p-3 rounded-xl border-2 border-slate-300 bg-white text-slate-400 hover:text-emerald-600 transition-all active:scale-95 shadow-none h-8 lg:h-12 flex items-center justify-center shrink-0"
-                title="Reset Filter"
+                  onClick={resetFilters} 
+                  className="h-10 w-10 rounded-xl border-2 border-slate-300 bg-white text-slate-400 hover:text-emerald-600 transition-all active:scale-95 shadow-none flex items-center justify-center shrink-0"
+                  title="Reset Filter"
               >
-                  <RefreshCcw className="w-3.5 h-3.5" />
+                  <RefreshCcw className="w-4 h-4" />
               </button>
+
           </div>
       </div>
 
@@ -322,12 +392,12 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
             <table className="w-full table-fixed divide-y divide-slate-100 border-separate border-spacing-0">
             <thead>
                 <tr className="bg-slate-300">
-                <th className="hidden lg:table-cell w-8.75 min-8.75 lg:w-11.25 lg:min-11.25 sticky left-0 bg-slate-300 z-10 px-2 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-l border-b border-r border-slate-400">NO</th>
-                <th className="w-32.5 min-32.5 lg:w-62.5 lg:min-62.5 sticky left-0 lg:left-11.25 bg-slate-300 z-10 px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 shadow-none">PENGGUNA</th>
-                <th className="w-30 min-30 px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">ROLE</th>
-                <th className="w-45 min-45 px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">INSTITUSI</th>
-                <th className="w-50 min-50 px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">EMAIL ADDRESS</th>
-                <th className="w-25 min-25 px-4 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">AKSI</th>
+                <th className="hidden lg:table-cell w-8.75 min-8.75 lg:w-11.25 lg:min-11.25 sticky left-0 bg-slate-300 z-10 px-2 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-l border-b border-slate-400">NO</th>
+                <th className="w-35 min-w-35 lg:w-62.5 lg:min-w-62.5 sticky left-0 lg:left-11.25 bg-slate-300 z-10 px-2 lg:px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-l border-slate-400 shadow-none">PENGGUNA</th>
+                <th className="w-17.5 min-w-17.5 lg:w-30 lg:min-w-30 px-2 lg:px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">ROLE</th>
+                <th className="hidden md:table-cell w-45 min-w-45 px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">INSTITUSI</th>
+                <th className="hidden md:table-cell w-50 min-w-50 px-4 py-4 text-left text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">EMAIL ADDRESS</th>
+                <th className="w-20 min-w-20 lg:w-25 lg:min-w-25 px-2 lg:px-4 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-slate-400 bg-slate-300">AKSI</th>
                 </tr>
             </thead>
             <tbody key={currentPage} className="bg-white divide-y divide-slate-50 animate-fade-in">
@@ -336,14 +406,15 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                     <td className="hidden lg:table-cell sticky left-0 bg-white px-2 py-4 text-[10.5px] font-black text-slate-400 text-center border-r border-b border-slate-100 z-10 transition-colors uppercase">
                         {String(index + 1 + (currentPage - 1) * itemsPerPage)}
                     </td>
-                    <td className="sticky left-0 lg:left-11.25 bg-white px-4 py-4 border-r border-b border-slate-100 z-10 transition-colors">
+                    <td className="sticky left-0 lg:left-11.25 bg-white px-2 lg:px-4 py-4 border-r border-b border-slate-100 z-10 transition-colors">
                         <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className="text-[11px] font-bold text-slate-800 group-hover:text-jade-600 transition-colors truncate max-27.5 lg:max-w-none capitalize">{u.full_name}</span>
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter truncate max-27.5 lg:max-w-none opacity-60 sm:hidden">{u.email}</span>
+                            <span className="text-[11px] font-bold text-slate-800 group-hover:text-jade-600 transition-colors line-clamp-2 md:truncate w-full wrap-break-words capitalize">{u.full_name}</span>
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter truncate w-full opacity-60 md:hidden">{u.email}</span>
+                            <span className="text-[8px] font-black text-emerald-600 uppercase tracking-tighter truncate w-full md:hidden">{u.tenant_name || 'System Platform'}</span>
                         </div>
                     </td>
-                    <td className="px-4 py-4 border-r border-b border-slate-100">
-                        <span className={`px-2.5 py-1 text-[9px] font-black uppercase tracking-tight rounded-md border shadow-sm whitespace-nowrap
+                    <td className="px-2 lg:px-4 py-4 border-r border-b border-slate-100">
+                        <span className={`px-1.5 lg:px-2.5 py-1 text-[8.5px] lg:text-[9px] font-black uppercase tracking-tight rounded-md border shadow-sm whitespace-normal md:whitespace-nowrap w-full block text-center md:text-left md:inline-flex
                             ${u.role === UserRole.SUPERADMIN ? 'bg-slate-50 text-slate-600 border-slate-100' :
                             u.role === UserRole.ADMIN ? 'bg-jade-50 text-jade-600 border-jade-100' : 
                             u.role === UserRole.TEACHER ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
@@ -355,33 +426,33 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                              u.role === UserRole.SUPERADMIN ? 'Superadmin' : (u.role as string).replace('_', ' ')}
                         </span>
                     </td>
-                    <td className="px-4 py-4 border-r border-b border-slate-100">
+                    <td className="hidden md:table-cell px-4 py-4 border-r border-b border-slate-100">
                         <span className="text-[11px] font-black text-slate-700 tracking-tight truncate block">
                             {u.tenant_name || 'System Platform'}
                         </span>
                     </td>
-                    <td className="px-4 py-4 border-r border-b border-slate-100">
+                    <td className="hidden md:table-cell px-4 py-4 border-r border-b border-slate-100">
                         <div className="flex flex-col gap-0.5 truncate">
                             <span className="text-[11.5px] font-black text-slate-700 tracking-tight">{u.email}</span>
                         </div>
                     </td>
-                    <td className="px-4 py-4 border-b border-slate-100">
-                        <div className="flex justify-center gap-2">
+                    <td className="px-1 lg:px-4 py-4 border-b border-slate-100">
+                        <div className="flex flex-row justify-center items-center gap-1 md:gap-2">
                              {onImpersonate && u.role !== UserRole.SUPERADMIN && (
                                  <button 
                                     onClick={() => onImpersonate(u)}
-                                    className="p-2.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl border border-slate-200 hover:border-amber-100 transition-all bg-white shadow-sm group relative"
+                                    className="p-1.5 md:p-2.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg md:rounded-xl border border-slate-200 hover:border-amber-100 transition-all bg-white shadow-sm group relative"
                                     title={`Masuk sebagai ${u.full_name}`}
                                 >
-                                    <LogIn className="w-4 h-4" />
+                                    <LogIn className="w-3 h-3 md:w-4 md:h-4" />
                                 </button>
                              )}
                              <button 
                                 onClick={() => handleEdit(u)}
-                                className="p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-xl border-2 border-slate-300 hover:border-jade-300 transition-all bg-white shadow-none"
+                                className="p-1.5 md:p-2.5 text-slate-400 hover:text-jade-600 hover:bg-jade-50 rounded-lg md:rounded-xl border-2 border-slate-300 hover:border-jade-300 transition-all bg-white shadow-none"
                                 title="Edit"
                             >
-                                <Edit className="w-4 h-4"/>
+                                <Edit className="w-3 h-3 md:w-4 md:h-4"/>
                             </button>
                         </div>
                     </td>

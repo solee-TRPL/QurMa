@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { UserManagement } from '@/views/admin/UserManagement';
-import { useAuth } from '@/lib/AuthContext';
-import { AccessDenied } from '@/components/ui/AccessDenied';
+import React from "react";
+import { UserManagement } from "@/views/admin/UserManagement";
+import { useAuth } from "@/lib/AuthContext";
+import { AccessDenied } from "@/components/ui/AccessDenied";
 
 export default function UsersPage() {
   const { user } = useAuth();

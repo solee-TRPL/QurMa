@@ -6,6 +6,7 @@ export enum UserRole {
   TEACHER = "teacher", // Guru / Ustadz
   SANTRI = "santri", // Santri
   SUPERVISOR = "supervisor", // Supervisor
+  INACTIVE = "inactive", // Soft-deleted users
 }
 
 export enum MemorizationType {
@@ -36,7 +37,7 @@ export interface Tenant {
   cycle_config?: {
     academicYearStartMonth?: number;
     activeDays?: number[];
-    activePeriods?: { startDate: string, endDate: string }[];
+    activePeriods?: { startDate: string; endDate: string }[];
     [key: string]: any;
   };
   curriculum_config?: {
@@ -66,13 +67,14 @@ export interface Student {
   id: string;
   full_name: string;
   nis?: string;
+  nik?: string;
   tenant_id: string;
   parent_id?: string;
   halaqah_id?: string;
   class_id?: string;
   current_juz?: number;
   current_page?: number;
-  gender?: "L" | "P";
+  gender?: string; // "L" or "P"
   photo_url?: string;
   daily_target?: string;
   father_name?: string;
@@ -111,8 +113,8 @@ export interface MemorizationRecord {
   type: MemorizationType;
   surah_name: string;
   ayat_start: number; // Stores Position (Ayat Terakhir)
-  ayat_end: number;   // Stores Volume (Jumlah Baris/Halaman)
-  jumlah?: number;    // Optional virtual field for UI/JSON
+  ayat_end: number; // Stores Volume (Jumlah Baris/Halaman)
+  jumlah?: number; // Optional virtual field for UI/JSON
   status: MemorizationStatus;
   keterangan?: string;
   score?: number;
@@ -302,6 +304,7 @@ export type PageView =
   | "weekly-target-monitor"
   | "weekly-target-monitor-notes"
   | "monitor-hafalan"
+  | "monitor-hafalan-harian"
   | "student-progress-manage"
   | "pencapaian"
   | "teacher-notes"

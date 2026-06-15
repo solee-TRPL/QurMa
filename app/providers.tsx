@@ -1,17 +1,15 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { LoadingProvider } from '@/lib/LoadingContext';
-import { NotificationProvider } from '@/lib/NotificationContext';
-import { AuthProvider } from '@/lib/AuthContext';
+import React from "react";
+import { LoadingProvider } from "@/lib/LoadingContext";
+import { NotificationProvider } from "@/lib/NotificationContext";
+import { AuthProvider } from "@/lib/AuthContext";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <LoadingProvider>
       <NotificationProvider>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </NotificationProvider>
     </LoadingProvider>
   );

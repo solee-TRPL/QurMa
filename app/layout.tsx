@@ -12,8 +12,8 @@ export const metadata: Metadata = {
   title: "QurMa - Qur'an Management Platform",
   description: "Platform Manajemen Tahfidz Qur'an Modern",
   icons: {
-    icon: '/images/qurma-logo.png',
-  }
+    icon: "/images/qurma-logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -24,9 +24,7 @@ export default function RootLayout({
   return (
     <html lang="id" suppressHydrationWarning className="notranslate">
       <body className={`${jakarta.variable} font-sans bg-slate-50 text-slate-900 antialiased`}>
-        <Providers>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
