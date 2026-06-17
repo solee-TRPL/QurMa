@@ -132,9 +132,9 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({ user, 
               <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest leading-none">Akumulasi pendaftaran 6 bulan terakhir</p>
             </div>
           </div>
-          <div className="flex-1 w-full overflow-hidden">
+          <div className="flex-1 w-full overflow-hidden min-h-[250px]">
             {isMounted && (
-              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+              <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={growthData} margin={{ top: 10, right: 10, left: -30, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorGrowth" x1="0" y1="0" x2="0" y2="1">

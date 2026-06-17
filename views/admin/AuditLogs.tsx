@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { getAuditLogs } from "../../services/dataService";
+import { getAuditLogs, deleteAuditLog } from "../../services/dataService";
 import { AuditLogEntry } from "../../types";
-import { Download, Filter, Search, ShieldAlert, ShieldCheck, User, ChevronDown, Check, RefreshCw, ChevronRight } from "lucide-react";
+import { Download, Filter, Search, ShieldAlert, ShieldCheck, User, ChevronDown, Check, RefreshCw, ChevronRight, Trash2 } from "lucide-react";
+import { ConfirmModal } from "../../components/ui/ConfirmModal";
 import ExcelJS from "exceljs";
 
 export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
@@ -34,6 +35,22 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
   useEffect(() => {
     fetchLogs();
   }, [tenantId]);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [logToDelete, setLogToDelete] = useState<string | null>(null);
+
+  const confirmDeleteLog = async () => {
+    if (!logToDelete) return;
+    try {
+      await deleteAuditLog(logToDelete);
+      setLogs((prev) => prev.filter((log) => log.id !== logToDelete));
+      setIsDeleteModalOpen(false);
+      setLogToDelete(null);
+    } catch (error) {
+      console.error("Gagal menghapus log:", error);
+      alert("Gagal menghapus log. Silakan coba lagi.");
+    }
+  };
 
   const getActionColor = (action: string) => {
     switch (action) {
@@ -171,7 +188,7 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
                         setShowSortDropdown(false);
                       }}
                     />
-                    <div className="absolute top-[calc(100%+4px)] left-0 right-0 w-full bg-white border-2 border-slate-400 rounded-xl shadow-none z-50 py-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent animate-in fade-in zoom-in-95 duration-200">
+                    <div className="absolute top-[calc(100%+4px)] left-0 right-0 w-full bg-white border-2 border-slate-300 rounded-xl shadow-none z-50 py-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent animate-in fade-in zoom-in-95 duration-200">
                       {[
                         { value: "newest", label: "TERBARU" },
                         { value: "oldest", label: "TERLAMA" },
@@ -246,6 +263,7 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
                 </th>
                 <th className="px-2 md:px-6 py-4 text-center md:text-left text-[9.5px] font-black text-amber-600 uppercase tracking-widest border-t border-b border-r border-amber-600 w-16 md:w-24 whitespace-nowrap bg-amber-50">AKSI</th>
                 <th className="px-6 py-4 text-center md:text-left text-[9.5px] font-black text-blue-600 uppercase tracking-widest border-t border-b border-r border-blue-600 whitespace-nowrap min-75 bg-blue-50">ENTITAS & DETAIL</th>
+                <th className="px-4 py-4 text-center text-[9.5px] font-black text-rose-600 uppercase tracking-widest border-t border-b border-r border-rose-600 w-24 bg-rose-50">OPSI</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
@@ -272,9 +290,21 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
                   <td className="px-2 md:px-6 py-4 whitespace-nowrap border-r border-b border-slate-100 text-center md:text-left">
                     <span className={`px-2.5 py-1 inline-flex text-[8.5px] md:text-[9px] font-black uppercase tracking-tight rounded-md border ${getActionColor(log.action)} shadow-sm`}>{log.action}</span>
                   </td>
-                  <td className="px-6 py-4 border-b border-slate-100 min-75">
+                  <td className="px-6 py-4 border-r border-b border-slate-100 min-75">
                     <div className="text-[11px] text-slate-800 font-black capitalize tracking-tight leading-tight mb-1">{log.entity}</div>
                     <div className="text-[7.5px] text-slate-500 font-bold uppercase tracking-wide opacity-60 leading-tight line-clamp-2">{log.details}</div>
+                  </td>
+                  <td className="px-4 py-4 border-b border-slate-100 text-center">
+                    <button
+                      onClick={() => {
+                        setLogToDelete(log.id);
+                        setIsDeleteModalOpen(true);
+                      }}
+                      className="p-1.5 rounded-md border shadow-sm bg-white border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-300 hover:bg-rose-50 transition-colors"
+                      title="Hapus Log"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -372,14 +402,28 @@ export const AuditLogs: React.FC<{ tenantId: string }> = ({ tenantId }) => {
 
         {processedLogs.length === 0 && !loading && (
           <div className="p-16 text-center bg-white">
-            <div className="w-20 h-20 bg-slate-50 rounded-32px flex items-center justify-center mx-auto mb-6 border-2 border-slate-50/50">
-              <ShieldAlert className="w-10 h-10 text-slate-200" />
-            </div>
             <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight mb-1">Log Tidak Ditemukan</h3>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gunakan kata kunci atau filter yang berbeda</p>
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={confirmDeleteLog}
+        centerOnScreen={false}
+        title="Hapus Log?"
+        icon={<Trash2 className="w-8 h-8" />}
+        variant="danger"
+        confirmLabel="YA, HAPUS"
+        message={
+          <span>
+            Apakah Anda yakin ingin menghapus <span className="font-bold text-slate-800">log ini</span>?
+            <span className="text-red-600 font-bold mt-2 block text-[10px]">Aksi ini tidak dapat dibatalkan.</span>
+          </span>
+        }
+      />
     </div>
   );
 };

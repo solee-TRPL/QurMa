@@ -893,7 +893,7 @@ export const WeeklyTarget: React.FC<WeeklyTargetProps> = ({ user, tenantId, onSe
                                     <input
                                       readOnly
                                       type="text"
-                                      value={target.sabqiAtm ? `${target.sabqiAtm} Hal` : "-"}
+                                      value={target.sabqiAtm ? (target.sabqiAtm.toLowerCase() === "rabth" ? "Rabth" : `${target.sabqiAtm} Hal`) : "-"}
                                       className="w-full text-center text-[9px] lg:text-[10px] font-black text-blue-600 tracking-tight bg-slate-100/30 border-none focus:ring-0 rounded h-8 cursor-default"
                                     />
                                   </td>

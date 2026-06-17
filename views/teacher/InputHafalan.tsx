@@ -1683,7 +1683,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
               </button>
 
               {/* Dropdown Menu */}
-              <div id="student-mobile-dropdown" className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border-2 border-slate-300 rounded-xl shadow-xl z-50 max-h-[75vh] overflow-hidden flex flex-col">
+              <div id="student-mobile-dropdown" className={`absolute top-[calc(100%+8px)] left-0 right-0 bg-white border-2 border-slate-300 rounded-xl shadow-xl z-50 max-h-[75vh] overflow-hidden flex flex-col ${selectedStudent ? 'hidden' : ''}`}>
                 <div className="p-3 border-b border-slate-100 bg-slate-50">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
@@ -1727,7 +1727,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
         {selectedStudent ? (
           <>
             {/* Log Table Area */}
-            <div className="flex-1 bg-white rounded-xl border-2 border-slate-300 flex flex-col overflow-hidden shadow-none relative min-h-0">
+            <div className="flex-1 bg-white rounded-xl rounded-br-xs md:rounded-br-xl border-2 border-slate-300 flex flex-col overflow-hidden shadow-none relative min-h-0">
               {/* Table Header Filter / Title - MADE SOLID AND SEAMLESS */}
               <div className="px-4 lg:px-6 py-2 lg:py-4 border-b border-slate-100 flex flex-col lg:flex-row items-center justify-between bg-white relative z-20 gap-2 lg:gap-0">
                 <div className="hidden lg:flex items-center gap-3">
@@ -1946,7 +1946,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                         </td>
 
                                         {/* SURAT / AYAT COLUMN */}
-                                        <td className={`px-2 py-1 border-b border-slate-200 ${openSurahDropdown === `desktop-surah-${date}-${type}` ? "relative z-60" : ""}`}>
+                                        <td className={`px-2 py-1 border-b border-slate-200 ${openSurahDropdown === `desktop-${date}-${type}` ? "relative z-60" : ""}`}>
                                           <div className="flex items-center gap-1 justify-center min-w-36 lg:min-w-50">
                                             <div className="flex-1 min-w-15">
                                               {(() => {
@@ -2399,9 +2399,12 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                 className={`relative px-2 py-2 text-[10px] font-black uppercase tracking-widest text-center border-b border-l border-slate-200 snap-start ${isToday ? 'bg-emerald-50/80 text-emerald-800 after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10 before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : "bg-slate-50 text-slate-500"}`}
                               >
                                 {isToday && (
-                                  <div className="absolute top-1 left-1/2 -translate-x-1/2">
-                                    <span className="bg-emerald-500 text-white text-[6px] px-1.5 py-0.5 rounded-full shadow-sm shadow-emerald-500/20">HARI INI</span>
-                                  </div>
+                                  <>
+                                    <div className="absolute top-0 left-0 right-0 h-0.75 bg-emerald-500 z-10" />
+                                    <div className="absolute top-1 left-1/2 -translate-x-1/2">
+                                      <span className="bg-emerald-500 text-white text-[6px] px-1.5 py-0.5 rounded-full shadow-sm shadow-emerald-500/20">HARI INI</span>
+                                    </div>
+                                  </>
                                 )}
                                 <div className={isToday ? "mt-3" : ""}>
                                   {new Date(date).toLocaleDateString("id-ID", { weekday: "short" })}
@@ -2459,8 +2462,8 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                   style={{ width: colWidth, minWidth: colWidth }}
                                   className={`p-1 border-b border-l border-slate-100 ${isToday ? "bg-emerald-50/40" : ""} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10' : ""} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : ""}`}
                                 >
-                                  <div className="flex flex-col items-center justify-center h-full w-full">
-                                    <div className="flex items-center bg-white border-2 border-slate-300 rounded-md shadow-none focus-within:border-jade-400 focus-within:ring-2 focus-within:ring-jade-50/50 transition-all h-6 px-1.5 w-[92%] max-w-12.5">
+                                  <div className="flex flex-col items-center justify-center h-full w-full gap-0.5">
+                                    <div className="flex items-center justify-center bg-white border-2 border-slate-300 rounded-md shadow-none focus-within:border-jade-400 focus-within:ring-2 focus-within:ring-jade-50/50 transition-all h-6 px-1.5 w-[92%]">
                                       <input
                                         type="number"
                                         readOnly
@@ -2471,10 +2474,11 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                           return val === 0 || val === null || val === undefined ? "" : val;
                                         })()}
                                         placeholder="0"
-                                        className="bg-transparent w-full text-[10px] font-black text-center text-slate-500 outline-none border-none ring-0 appearance-none cursor-default"
+                                        className="bg-transparent w-full min-w-0 p-0 m-0 text-[10px] font-black text-center text-slate-500 outline-none border-none ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none cursor-default"
                                       />
-                                      <span className="text-[6px] font-black text-slate-400 uppercase opacity-60 flex-none">{type === MemorizationType.SABAQ ? "Brs" : "Hal"}</span>
+                                      <span className="hidden md:block text-[6px] font-black text-slate-400 uppercase opacity-60 flex-none">{type === MemorizationType.SABAQ ? "Brs" : "Hal"}</span>
                                     </div>
+                                    <span className="md:hidden text-[6px] font-black text-slate-400 uppercase opacity-80">{type === MemorizationType.SABAQ ? "Baris" : "Halaman"}</span>
                                   </div>
                                 </td>
                               );
@@ -2531,15 +2535,15 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                 if (!isOpen) setOpenStatusDropdown(null);
                                               }}
                                               title={isHafalanAwal ? "hubungi admin jika ingin mengubah hafalan awal" : undefined}
-                                              className={`w-full h-6 bg-white px-1.5 rounded-md border-2 shadow-none text-[6px] font-black uppercase tracking-wider text-slate-600 outline-none transition-all flex items-center justify-between ${isOpen ? "border-jade-400 ring-2 ring-jade-50/50" : "border-slate-300"} ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                                              className={`w-full h-6 bg-white px-1 rounded-md border-2 shadow-none text-[7.5px] font-black uppercase tracking-tight text-slate-600 outline-none transition-all flex items-center justify-center md:justify-between ${isOpen ? "border-jade-400 ring-2 ring-jade-50/50" : "border-slate-300"} ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                                             >
                                               <span className="truncate">{currentValue || "- Surat -"}</span>
-                                              <ChevronDown className={`w-2.5 h-2.5 text-slate-300 transition-all ${isOpen ? "rotate-180 text-jade-500" : "group-hover/surah:text-jade-500"}`} />
+                                              <ChevronDown className={`hidden md:block w-2.5 h-2.5 text-slate-300 transition-all ${isOpen ? "rotate-180 text-jade-500" : "group-hover/surah:text-jade-500"}`} />
                                             </div>
 
                                             {isOpen && (
                                               <>
-                                                <div className={`absolute ${dropdownPosition === "top" ? "bottom-full mb-1" : "top-full mt-1"} left-0 w-30 bg-white border-2 border-slate-200 rounded-xl shadow-xl overflow-hidden z-100! flex flex-col animate-in fade-in ${dropdownPosition === "top" ? "slide-in-from-bottom-2" : "slide-in-from-top-2"} duration-200`} onMouseDown={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
+                                                <div className={`absolute ${dropdownPosition === "top" ? "bottom-full mb-1" : "top-full mt-1"} ${type === MemorizationType.MANZIL ? "right-0" : type === MemorizationType.SABQI ? "left-1/2 -translate-x-1/2" : "left-0"} w-30 bg-white border-2 border-slate-200 rounded-md shadow-xl overflow-hidden z-100! flex flex-col animate-in fade-in ${dropdownPosition === "top" ? "slide-in-from-bottom-2" : "slide-in-from-top-2"} duration-200`} onMouseDown={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
                                                   <div className="p-1.5 border-b border-slate-100 bg-slate-50/50">
                                                     <input
                                                       type="text"
@@ -2550,7 +2554,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                                       className="w-full bg-white border border-slate-200 rounded px-1.5 py-1 text-[6.5px] font-black uppercase tracking-wider text-slate-700 outline-none focus:border-jade-400 focus:ring-2 focus:ring-jade-50/50 transition-all placeholder:text-slate-300"
                                                     />
                                                   </div>
-                                                  <div className="max-h-40 overflow-y-auto no-scrollbar">
+                                                  <div className="max-h-[104px] overflow-y-auto no-scrollbar">
                                                     <div
                                                       className={`px-2.5 py-2 text-[7px] font-black uppercase tracking-widest transition-all cursor-pointer border-b border-slate-50 last:border-0 ${currentValue === "" ? "bg-emerald-50 text-emerald-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
                                                       onClick={(e) => {
@@ -2627,14 +2631,14 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                       <input
                                         type="number"
                                         disabled={isFuture || isHafalanAwal}
-                                        placeholder="Ayat"
+                                        placeholder="0"
                                         value={(() => {
                                           const pending = pendingChanges[`${date}|${type}`];
                                           const val = pending && Object.prototype.hasOwnProperty.call(pending, "ayat_end") ? pending.ayat_end : rec?.ayat_end;
                                           return val === 0 || val === null || val === undefined ? "" : val;
                                         })()}
                                         onChange={(e) => handleLocalChange(date, type, e.target.value, "ayat_end")}
-                                        className={`w-full bg-transparent text-[6.5px] font-black text-center outline-none border-none ring-0 h-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${isHafalanAwal ? "pointer-events-none" : ""}`}
+                                        className={`w-full bg-transparent text-[10px] font-black text-center outline-none border-none ring-0 h-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${isHafalanAwal ? "pointer-events-none" : ""}`}
                                       />
                                     </div>
                                   </div>
@@ -2776,21 +2780,22 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                                   className={`p-1 border-b border-l border-slate-100 ${isFuture ? "opacity-30 pointer-events-none" : ""} ${isToday ? "bg-emerald-50/40" : ""} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10' : ""} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : ""}`}
                                 >
                                   <div className="flex flex-row items-center justify-center gap-1">
+                                    {isToday && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-emerald-500 z-10" />}
                                     <button
                                       disabled={isFuture || !isCompletable}
                                       onClick={() => toggleVerification(date, type, rec)}
-                                      className={`w-5 h-5 rounded-md flex items-center justify-center transition-all shrink-0 ${
+                                      className={`w-6 h-6 rounded flex items-center justify-center transition-all shrink-0 ${
                                         (pendingChanges[`${date}|${type}`]?.is_verified ?? rec?.is_verified) ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20" : !isCompletable ? "bg-slate-50 border border-slate-100 text-slate-400 opacity-20" : "bg-slate-50 border border-slate-100 text-slate-400 opacity-20 hover:opacity-100 hover:border-jade-400 hover:text-jade-400 hover:bg-white"
                                       }`}
                                     >
-                                      <Check className="w-2.5 h-2.5" />
+                                      <Check className="w-3.5 h-3.5" />
                                     </button>
                                     <div
-                                      className={`w-5 h-5 rounded-md flex items-center justify-center transition-all shrink-0 ${
+                                      className={`w-6 h-6 rounded flex items-center justify-center transition-all shrink-0 ${
                                         rec?.is_read_by_parent ? "bg-jade-50 text-jade-600 border border-jade-100" : "bg-slate-50 border border-slate-100 opacity-20"
                                       }`}
                                     >
-                                      {rec?.is_read_by_parent ? <Eye className="w-2.5 h-2.5" /> : <EyeOff className="w-2.5 h-2.5" />}
+                                      {rec?.is_read_by_parent ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                                     </div>
                                   </div>
                                 </td>
@@ -3348,7 +3353,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                 {initForm.surah && initForm.ayat > 0 && (
                   <div className="animate-in fade-in slide-in-from-top-4 duration-300">
                     <div className="flex items-center gap-2 mb-2 px-1 mt-4">
-                      <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Posisi Sabqi Terakhir</span>
+                      <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Posisi Sabqi</span>
                     </div>
                     <div className="flex items-center gap-2">
                     <div className="flex-1 relative init-dropdown-container">
@@ -3411,7 +3416,7 @@ export const InputHafalan: React.FC<InputHafalanProps> = ({ user, tenantId, onSe
                     </div>
 
                     <div className="flex items-center gap-2 mb-2 px-1 mt-4">
-                      <span className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Posisi Manzil Terakhir</span>
+                      <span className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Posisi Manzil</span>
                     </div>
                     <div className="flex items-center gap-2">
                     <div className="flex-1 relative init-dropdown-container">

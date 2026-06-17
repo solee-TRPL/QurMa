@@ -349,12 +349,32 @@ export const ClassManagement: React.FC<{ tenantId: string; user: UserProfile }> 
 
   const handleCreateOrUpdate = async (data: { names: string[] }) => {
     try {
+      for (const name of data.names) {
+        const newClassName = name.trim().toUpperCase();
+
+        // Validasi 1: Kelas tidak boleh duplikat
+        const isDuplicate = classes.some((c) => c.name.toUpperCase() === newClassName);
+        if (isDuplicate && (!isEditMode || (isEditMode && selectedClass?.name.toUpperCase() !== newClassName))) {
+          throw new Error(`Kelas dengan nama "${name}" sudah ada.`);
+        }
+
+        // Validasi 2: Kelas tidak boleh lebih dari 12
+        const numberMatch = newClassName.match(/\d+/);
+        if (numberMatch) {
+          const classNum = parseInt(numberMatch[0], 10);
+          if (classNum > 12) {
+            throw new Error(`Tingkat kelas tidak boleh lebih dari 12.`);
+          }
+        }
+      }
+
       if (isEditMode && selectedClass) {
-        await updateClass(selectedClass.id, { name: data.names[0] }, user);
-        addNotification({ type: "success", title: "Berhasil", message: `Kelas ${data.names[0]} telah diperbarui.` });
+        const newClassName = data.names[0].trim().toUpperCase();
+        await updateClass(selectedClass.id, { name: newClassName }, user);
+        addNotification({ type: "success", title: "Berhasil", message: `Kelas ${newClassName} telah diperbarui.` });
       } else {
         // Create multiple classes
-        const promises = data.names.map((name) => createClass({ name, tenant_id: tenantId }, user));
+        const promises = data.names.map((name) => createClass({ name: name.trim().toUpperCase(), tenant_id: tenantId }, user));
         await Promise.all(promises);
         addNotification({
           type: "success",
@@ -644,6 +664,9 @@ export const ClassManagement: React.FC<{ tenantId: string; user: UserProfile }> 
                   graduated_at: new Date().toISOString().split("T")[0],
                   graduated_year: new Date().getFullYear(),
                   nik: s.nik || "-",
+                  current_juz: s.current_juz || 0,
+                  current_page: s.current_page || 0,
+                  total_sabaq: (s as any).total_sabaq || 0,
                   father_name: s.father_name || "-",
                   father_phone: s.father_phone || "-",
                   mother_name: s.mother_name || "-",
@@ -865,7 +888,7 @@ export const ClassManagement: React.FC<{ tenantId: string; user: UserProfile }> 
                       }
                     }}
                     disabled={isSavingConfig}
-                    className={`h-10 flex-1 sm:flex-none min-w-35 flex items-center justify-center px-4 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap ${
+                    className={`h-10 flex-1 sm:flex-none w-35 flex items-center justify-center px-4 font-black text-[10px] uppercase tracking-widest rounded-xl border-2 transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap ${
                       isEditingConfig ? "border-jade-600 bg-jade-600 text-white shadow-none" : "border-slate-300 bg-white text-slate-500 hover:text-slate-600 hover:bg-slate-50 shadow-none"
                     }`}
                   >
@@ -1025,11 +1048,8 @@ export const ClassManagement: React.FC<{ tenantId: string; user: UserProfile }> 
 
             {classes.length === 0 && !loading && (
               <div className="col-span-full py-20 flex flex-col items-center justify-center text-center">
-                <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-slate-100">
-                  <School className="w-8 h-8 text-slate-200" />
-                </div>
-                <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight mb-1">Kosong</h3>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Belum ada data kelas</p>
+                <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight mb-1">Kosong</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Belum ada data kelas</p>
                 {
                   <button onClick={openCreateModal} className="mt-4 text-[10px] font-black text-jade-600 hover:text-jade-700 uppercase tracking-widest">
                     + Tambah Sekarang
@@ -1155,7 +1175,8 @@ export const ClassManagement: React.FC<{ tenantId: string; user: UserProfile }> 
                     </th>
                     <th className="px-4 py-4 text-left text-[9.5px] font-black text-amber-600 uppercase tracking-widest border-t border-b border-r border-amber-600 bg-amber-50 w-40">NIS</th>
                     <th className="px-6 py-4 text-center text-emerald-600 font-black uppercase text-[9.5px] tracking-widest border-t border-b border-r border-emerald-600 bg-emerald-50 min-30">GENDER</th>
-                    <th className="px-4 py-4 text-left text-[9.5px] font-black text-blue-600 uppercase tracking-widest border-t border-b border-r border-blue-600 bg-blue-50 w-44 whitespace-nowrap">KELAS TERAKHIR</th>
+                    <th className="px-4 py-4 text-center text-[9.5px] font-black text-emerald-600 uppercase tracking-widest border-t border-b border-r border-emerald-600 bg-emerald-50 w-32 whitespace-nowrap">JUMLAH HAFALAN</th>
+                    <th className="px-4 py-4 text-center text-[9.5px] font-black text-blue-600 uppercase tracking-widest border-t border-b border-r border-blue-600 bg-blue-50 w-32 whitespace-nowrap">JUMLAH SABAQ</th>
                     <th className="px-4 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black bg-slate-300 w-28 whitespace-nowrap">TAHUN LULUS</th>
                     <th className="px-4 py-4 text-center text-[9.5px] font-black text-slate-800 uppercase tracking-widest border-t border-b border-r border-black bg-slate-300 w-28 whitespace-nowrap">AKSI</th>
                   </tr>
@@ -1199,8 +1220,22 @@ export const ClassManagement: React.FC<{ tenantId: string; user: UserProfile }> 
                             <span className="hidden md:inline">{alumnus.gender === "L" ? "LAKI-LAKI" : "PEREMPUAN"}</span>
                           </span>
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap border-r border-b border-slate-100">
-                          <span className="font-black text-[10.5px] text-slate-700 tracking-tight uppercase">Kelas {alumnus.last_class}</span>
+                        <td className="px-4 py-4 whitespace-nowrap border-r border-b border-slate-100 text-center">
+                          {alumnus.current_juz !== undefined ? (
+                            <div className="flex flex-col items-center justify-center">
+                              <span className="font-black text-[10.5px] text-emerald-700 uppercase tracking-widest">{alumnus.current_juz || 0} Juz</span>
+                              <span className="font-bold text-[8.5px] text-emerald-600/70 uppercase tracking-widest">{alumnus.current_page || 0} Hal</span>
+                            </div>
+                          ) : (
+                            <span className="text-slate-300 font-black text-[9px] uppercase tracking-widest leading-none">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap border-r border-b border-slate-100 text-center">
+                          {alumnus.total_sabaq !== undefined ? (
+                            <span className="font-black text-[10.5px] text-blue-700 uppercase tracking-widest">{alumnus.total_sabaq || 0} Baris</span>
+                          ) : (
+                            <span className="text-slate-300 font-black text-[9px] uppercase tracking-widest leading-none">-</span>
+                          )}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-center border-r border-b border-slate-100">
                           <span className="font-black text-[10.5px] text-slate-700 tracking-tight">{alumnus.graduated_year}</span>
@@ -1226,11 +1261,8 @@ export const ClassManagement: React.FC<{ tenantId: string; user: UserProfile }> 
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={8} className="px-4 py-12 text-center border-b border-slate-100 rounded-b-xl">
+                      <td colSpan={9} className="px-4 py-12 text-center border-b border-slate-100 rounded-b-xl">
                         <div className="flex flex-col items-center justify-center text-center space-y-4">
-                          <div className="w-16 h-16 bg-slate-50 rounded-3xl border border-slate-100 flex items-center justify-center mx-auto shadow-sm">
-                            <GraduationCap className="w-8 h-8 text-slate-200" />
-                          </div>
                           <div>
                             <h4 className="text-xs font-black text-slate-800 uppercase tracking-tight mb-1">Data Masih Kosong</h4>
                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Belum ada data alumni di sistem.</p>
@@ -1416,9 +1448,6 @@ export const ClassManagement: React.FC<{ tenantId: string; user: UserProfile }> 
                 ))}
               {allStudents.filter((s) => s.class_id === selectedClass.id).length === 0 && (
                 <div className="text-center py-16">
-                  <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-slate-100">
-                    <GraduationCap className="w-8 h-8 text-slate-200" />
-                  </div>
                   <h3 className="text-xs font-black text-slate-800 uppercase tracking-tight mb-1">Kosong</h3>
                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Belum ada santri di kelas ini.</p>
                 </div>

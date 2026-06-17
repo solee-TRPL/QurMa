@@ -910,7 +910,7 @@ export const MonitorHafalan: React.FC<{ user: UserProfile; tenantId: string }> =
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-4 py-16 text-center border-b border-slate-100 bg-white">
+                  <td colSpan={9} className="px-4 py-16 text-center border-b border-slate-100 bg-white">
                     <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight mb-1">Data Tidak Ditemukan</h3>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gunakan kata kunci atau filter yang berbeda</p>
                   </td>

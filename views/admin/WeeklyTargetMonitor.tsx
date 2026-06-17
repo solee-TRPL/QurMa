@@ -635,9 +635,11 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
               <tbody className="bg-white divide-y divide-slate-100">
                 {paginatedStudents.length === 0 ? (
                   <tr>
-                    <td colSpan={20} className="py-24 text-center border-b border-slate-100">
-                      <AlertCircle className="w-12 h-12 text-slate-200 mx-auto mb-4" />
-                      <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Data tidak ditemukan</p>
+                    <td colSpan={20} className="p-0 border-b border-slate-100">
+                      <div className="sticky left-1/2 -translate-x-1/2 py-24 flex flex-col items-center justify-center w-max">
+                        <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight mb-1">Data Tidak Ditemukan</h3>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gunakan kata kunci atau filter yang berbeda</p>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -703,7 +705,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                             </td>
                             <td className="px-1 py-1.5 border-r border-b border-slate-100 text-center bg-blue-50/10">
                               <div className={`w-full text-center text-[11px] font-black h-10 flex items-center justify-center ${target.sabqiAtm && target.sabqiAtm !== "0" ? "text-blue-600" : "text-blue-200"}`}>
-                                {target.sabqiAtm && target.sabqiAtm !== "0" ? `${target.sabqiAtm} Hal` : "-"}
+                                {target.sabqiAtm && target.sabqiAtm !== "0" ? (target.sabqiAtm.toLowerCase() === "rabth" ? "Rabth" : `${target.sabqiAtm} Hal`) : "-"}
                               </div>
                             </td>
 
@@ -871,7 +873,7 @@ export const WeeklyTargetMonitor: React.FC<WeeklyTargetMonitorProps> = ({ user, 
                 {showPaginationDropdown && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowPaginationDropdown(false)} />
-                    <div className="absolute bottom-[calc(100%+4px)] left-0 bg-white border-2 border-slate-300 rounded-xl shadow-lg !z-[99] py-1 min-w-full overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <div className="absolute bottom-[calc(100%+4px)] left-0 bg-white border-2 border-slate-300 rounded-xl shadow-lg z-99! py-1 min-w-full overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
                       {[10, 25, 50, 100].map((val) => (
                         <div
                           key={val}

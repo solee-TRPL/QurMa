@@ -91,9 +91,9 @@ export const RecentActivityModal: React.FC<RecentActivityModalProps> = ({ isOpen
                                 if (isTidakSetor) return "TIDAK SETOR";
 
                                 return (() => {
-                                  const amount = rec.ayat_end;
-                                  const unit = rec.type === MemorizationType.SABAQ ? "BARIS" : rec.type === MemorizationType.SABQI ? "HALAMAN" : "";
-                                  const surahPart = rec.surah_name ? `${rec.surah_name} : ${Math.min(rec.ayat_start, rec.ayat_end)}-${Math.max(rec.ayat_start, rec.ayat_end)}` : "";
+                                  const amount = rec.ayat_end || 0;
+                                  const unit = rec.type === MemorizationType.SABAQ ? "BARIS" : "HALAMAN";
+                                  const surahPart = rec.surah_name ? `${rec.surah_name} : ${rec.ayat_start || 0}` : "";
 
                                   if (surahPart && unit)
                                     return (

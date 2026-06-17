@@ -37,3 +37,9 @@ export const getGlobalAuditLogs = async (): Promise<AuditLogEntry[]> => {
     tenant_name: log.tenants?.name || (log.tenant_id === null ? "Superadmin/System" : "Unknown School"),
   }));
 };
+
+export const deleteAuditLog = async (logId: string) => {
+  const supabase = getSupabase();
+  const { error } = await supabase.from("audit_logs").delete().eq("id", logId);
+  if (error) throw error;
+};

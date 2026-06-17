@@ -12,6 +12,7 @@ import {
   deleteStudent,
   updateUser,
   forceResetPassword,
+  createClass,
   getAchievements,
   createAchievement,
   updateAchievement,
@@ -1912,8 +1913,8 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
       { header: "NIK", key: "nik", width: 18 },
       { header: "Nama Santri", key: "name", width: 40 },
       { header: "Jenis Kelamin (L/P)", key: "gender", width: 20 },
-      { header: "Halaqah", key: "halaqah", width: 25 },
       { header: "Kelas", key: "kelas", width: 15 },
+      { header: "Halaqah", key: "halaqah", width: 25 },
       { header: "Jumlah Juz", key: "juz", width: 15 },
       { header: "Jumlah Halaman", key: "halaman", width: 15 },
       { header: "Email Akses Santri", key: "email", width: 30 },
@@ -1952,8 +1953,8 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
         nik: s.nik || "",
         name: s.full_name,
         gender: s.gender === "L" ? "Laki-laki" : "Perempuan",
-        halaqah: halaqahs.find((h) => h.id === s.halaqah_id)?.name || "",
         kelas: s.class_name || "",
+        halaqah: halaqahs.find((h) => h.id === s.halaqah_id)?.name || "",
         juz: s.current_juz || "",
         halaman: s.current_page || "",
         email: { formula: `IF(B${idx + 2}<>"", B${idx + 2} & "@qurma.com", "")`, result: s.parent_email || "" },
@@ -1982,8 +1983,8 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
         nik: "12345678",
         name: "Abdullah",
         gender: "L",
-        halaqah: "Ustman bin Affan",
         kelas: "1",
+        halaqah: "Ustman bin Affan",
         juz: "",
         halaman: "",
         email: "123456789@qurma.com",
@@ -2011,8 +2012,8 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
         nik: "",
         name: "",
         gender: "",
-        halaqah: "",
         kelas: "",
+        halaqah: "",
         juz: "",
         halaman: "",
         email: { formula: `IF(B${i + 2}<>"", B${i + 2} & "@qurma.com", "")` },
@@ -2256,14 +2257,14 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
 
           const cellNis = ws2.getCell(excelRowIdx, colStart + 2);
           cellNis.value = {
-            formula: `IFERROR(INDEX('Roster Halaqah'!$B:$B, MATCH(${targetKey}, 'Roster Halaqah'!$H:$H, 0)), "")`,
+            formula: `IFERROR(INDEX('Roster Halaqah'!$B:$B, MATCH(${targetKey}, 'Roster Halaqah'!$F:$F, 0)), "")`,
             result: s ? s.nis || "" : undefined,
           };
           cellNis.border = borderStyle;
 
           const cellName = ws2.getCell(excelRowIdx, colStart + 3);
           cellName.value = {
-            formula: `IFERROR(INDEX('Roster Halaqah'!$C:$C, MATCH(${targetKey}, 'Roster Halaqah'!$H:$H, 0)), "")`,
+            formula: `IFERROR(INDEX('Roster Halaqah'!$C:$C, MATCH(${targetKey}, 'Roster Halaqah'!$F:$F, 0)), "")`,
             result: s ? s.full_name : undefined,
           };
           cellName.border = borderStyle;
@@ -2481,13 +2482,80 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
         if (wb.SheetNames.includes("Roster Halaqah")) {
           const wsRoster = wb.Sheets["Roster Halaqah"];
           const rosterData = XLSX.utils.sheet_to_json(wsRoster) as any[];
-          rosterData.forEach((row) => {
+          for (let i = 0; i < rosterData.length; i++) {
+            const row = rosterData[i];
             const rowNis = String(row["NIS"] || "").trim();
             const rowHalaqahName = String(row["Halaqah"] || "").trim();
-            if (rowNis) {
+            const teacherName = String(row["Pengampu"] || "").trim();
+
+            if (rowNis && rowHalaqahName) {
               nisToHalaqahMap.set(rowNis, { halaqah: rowHalaqahName });
             }
-          });
+
+            if (rowHalaqahName && rowHalaqahName !== "-" && rowHalaqahName !== "(CONTOH)") {
+              // Ensure Teacher exists
+              let teacherId: string | undefined = undefined;
+              if (teacherName && teacherName !== "-") {
+                let teacher = latestUsers.find((u) => u.role === UserRole.TEACHER && u.full_name.toLowerCase() === teacherName.toLowerCase());
+                if (!teacher) {
+                  try {
+                    await new Promise((res) => setTimeout(res, 300));
+                    const baseEmail = teacherName.toLowerCase().replace(/[^a-z0-9]/g, "");
+                    const email = baseEmail ? `${baseEmail}@qurma.com` : `guru${Date.now()}@qurma.com`;
+                    const newUser = await createUser(
+                      {
+                        email,
+                        password: "guru" + (baseEmail.substring(0, 4) || "1234") + "123",
+                        full_name: teacherName,
+                        role: UserRole.TEACHER,
+                        tenant_id: tenantId,
+                      },
+                      currentUser,
+                    );
+                    latestUsers.push(newUser);
+                    teacher = newUser;
+                    newTeachersCount++;
+                  } catch (err: any) {
+                    console.error("Gagal membuat Ustadz otomatis dari Roster", teacherName, err);
+                  }
+                }
+                if (teacher) teacherId = teacher.id;
+              }
+
+              // Ensure Halaqah exists
+              if (!halaqahMap.has(rowHalaqahName.toLowerCase())) {
+                try {
+                  await new Promise((res) => setTimeout(res, 300));
+                  const newHalaqah = await createHalaqah(
+                    { name: rowHalaqahName, teacher_id: teacherId, tenant_id: tenantId },
+                    currentUser,
+                  );
+                  halaqahMap.set(rowHalaqahName.toLowerCase(), newHalaqah.id);
+                  currentHalaqahs.push(newHalaqah as any);
+                  newHalaqahsCount++;
+                } catch (err: any) {
+                  console.error("Gagal membuat Halaqah dari Roster", rowHalaqahName, err);
+                }
+              } else {
+                // Update existing halaqah if teacher missing/different
+                const existingHalaqahId = halaqahMap.get(rowHalaqahName.toLowerCase());
+                const existingHalaqah = currentHalaqahs.find((h) => h.id === existingHalaqahId);
+                if (existingHalaqah && existingHalaqahId && teacherId && existingHalaqah.teacher_id !== teacherId) {
+                  try {
+                    await new Promise((res) => setTimeout(res, 300));
+                    await updateHalaqah(
+                      existingHalaqahId,
+                      { name: rowHalaqahName, teacher_id: teacherId, tenant_id: tenantId },
+                      currentUser
+                    );
+                    existingHalaqah.teacher_id = teacherId;
+                  } catch (err: any) {
+                    console.error("Gagal update Halaqah dari Roster", rowHalaqahName, err);
+                  }
+                }
+              }
+            }
+          }
         }
 
         if (data.length === 0) {
@@ -2533,8 +2601,30 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
           const rosterData = nisToHalaqahMap.get(nis);
           const excelHalaqahName = rosterData?.halaqah || String(row["Halaqah"] || "");
           const importedHalaqahId = halaqahMap.get(excelHalaqahName.toLowerCase());
-          const excelClassName = String(row["Kelas"] || "");
-          const importedClassId = classMap.get(excelClassName.toLowerCase());
+          const excelClassName = String(row["Kelas"] || "").trim();
+          let importedClassId = classMap.get(excelClassName.toLowerCase());
+
+          // Auto-create Class if missing
+          if (excelClassName && excelClassName !== "-" && !importedClassId) {
+            const classNumMatch = excelClassName.match(/\d+/);
+            const classNum = classNumMatch ? parseInt(classNumMatch[0], 10) : null;
+            
+            if (classNum !== null && classNum > 12) {
+              errors.push(`Baris ${i + 2} (${studentName}): Kelas "${excelClassName}" tidak valid. Kelas maksimal adalah 12.`);
+              setImportProgress((prev) => ({ ...prev, current: i + 1, errors: [...errors] }));
+              continue;
+            }
+
+            try {
+              await new Promise((res) => setTimeout(res, 300));
+              const newClass = await createClass({ name: excelClassName, tenant_id: tenantId }, currentUser);
+              classMap.set(excelClassName.toLowerCase(), newClass.id);
+              importedClassId = newClass.id;
+              classes.push(newClass as any);
+            } catch (err: any) {
+              console.error("Gagal membuat kelas otomatis", excelClassName, err);
+            }
+          }
 
           // Check for duplicate NIS in system
           const existingStudent = rekapData.find((s) => String(s.nis).trim() === nis);
@@ -2720,6 +2810,29 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const toggleLocationDropdown = (e: React.MouseEvent, type: string) => {
+    e.preventDefault();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    setDropdownPosition(spaceBelow < 220 ? "top" : "bottom");
+
+    if (type === "province") setShowProvinceDropdown(!showProvinceDropdown);
+    else setShowProvinceDropdown(false);
+    
+    if (type === "regency") setShowRegencyDropdown(!showRegencyDropdown);
+    else setShowRegencyDropdown(false);
+    
+    if (type === "district") setShowDistrictDropdown(!showDistrictDropdown);
+    else setShowDistrictDropdown(false);
+    
+    if (type === "village") setShowVillageDropdown(!showVillageDropdown);
+    else setShowVillageDropdown(false);
+    
+    setShowGenderFormDropdown(false);
+    setShowHalaqahFormDropdown(false);
+    setShowClassFormDropdown(false);
+  };
+
   return (
     <div className="space-y-4 animate-fade-in pb-10">
       <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-4">
@@ -2738,7 +2851,7 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
           )}
         </div>
         <div className="relative group/scroll">
-          {!loading && halaqahs.length > 0 && (
+          {!loading && (
             <div className="flex gap-3 overflow-x-auto pb-4 pt-2 px-1 snap-x snap-mandatory no-scrollbar scroll-smooth">
               {/* TOP TOTAL CARD */}
               <div
@@ -3694,14 +3807,7 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
                       <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Provinsi</label>
                       <div className="relative">
                         <div
-                          onClick={() => {
-                            setShowProvinceDropdown(!showProvinceDropdown);
-                            setShowGenderFormDropdown(false);
-                            setShowHalaqahFormDropdown(false);
-                            setShowRegencyDropdown(false);
-                            setShowDistrictDropdown(false);
-                            setShowVillageDropdown(false);
-                          }}
+                          onClick={(e) => toggleLocationDropdown(e, "province")}
                           className={`w-full px-4 py-2 border-2 rounded-xl bg-white text-[13px] font-bold outline-none transition-all cursor-pointer flex items-center justify-between h-10.5 select-none ${showProvinceDropdown ? "border-jade-400 ring-4 ring-jade-50/50" : "border-slate-300"}`}
                         >
                           <span className={`block truncate pr-2 flex-1 min-w-0 text-left ${!formData.provinceId ? "text-slate-300" : "text-slate-800"}`}>
@@ -3712,7 +3818,7 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
 
                         {showProvinceDropdown && (
                           <>
-                            <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-white border-2 border-slate-300 rounded-xl shadow-lg z-200 py-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent animate-in fade-in zoom-in-95 duration-200">
+                            <div className={`absolute left-0 right-0 bg-white border-2 border-slate-300 rounded-xl shadow-lg z-200 py-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent animate-in fade-in duration-200 ${dropdownPosition === "top" ? "bottom-[calc(100%+4px)] slide-in-from-bottom-2" : "top-[calc(100%+4px)] slide-in-from-top-2"}`}>
                               <div
                                 className={`px-4 py-2 border-b border-slate-100 last:border-0 text-[11px] font-black tracking-widest cursor-pointer text-left hover:bg-slate-50 transition-colors uppercase ${!formData.provinceId ? "text-jade-600 bg-jade-50" : "text-slate-400"}`}
                                 onClick={(e) => {
@@ -3745,14 +3851,9 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
                       <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Kab / Kota</label>
                       <div className="relative">
                         <div
-                          onClick={() => {
+                          onClick={(e) => {
                             if (!formData.provinceId) return;
-                            setShowRegencyDropdown(!showRegencyDropdown);
-                            setShowGenderFormDropdown(false);
-                            setShowHalaqahFormDropdown(false);
-                            setShowProvinceDropdown(false);
-                            setShowDistrictDropdown(false);
-                            setShowVillageDropdown(false);
+                            toggleLocationDropdown(e, "regency");
                           }}
                           className={`w-full px-4 py-2 border-2 rounded-xl bg-white text-[13px] font-bold outline-none transition-all flex items-center justify-between h-10.5 select-none ${!formData.provinceId ? "opacity-50 cursor-not-allowed border-slate-200" : "cursor-pointer"} ${showRegencyDropdown ? "border-jade-400 ring-4 ring-jade-50/50" : "border-slate-300"}`}
                         >
@@ -3767,7 +3868,7 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
 
                         {showRegencyDropdown && formData.provinceId && (
                           <>
-                            <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-white border-2 border-slate-300 rounded-xl shadow-lg z-200 py-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent animate-in fade-in zoom-in-95 duration-200">
+                            <div className={`absolute left-0 right-0 bg-white border-2 border-slate-300 rounded-xl shadow-lg z-200 py-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent animate-in fade-in duration-200 ${dropdownPosition === "top" ? "bottom-[calc(100%+4px)] slide-in-from-bottom-2" : "top-[calc(100%+4px)] slide-in-from-top-2"}`}>
                               <div
                                 className={`px-4 py-2 border-b border-slate-100 last:border-0 text-[11px] font-black tracking-widest cursor-pointer text-left hover:bg-slate-50 transition-colors uppercase ${!formData.regencyId ? "text-jade-600 bg-jade-50" : "text-slate-400"}`}
                                 onClick={(e) => {
@@ -3806,14 +3907,9 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
                       <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Kecamatan</label>
                       <div className="relative">
                         <div
-                          onClick={() => {
+                          onClick={(e) => {
                             if (!formData.regencyId) return;
-                            setShowDistrictDropdown(!showDistrictDropdown);
-                            setShowGenderFormDropdown(false);
-                            setShowHalaqahFormDropdown(false);
-                            setShowProvinceDropdown(false);
-                            setShowRegencyDropdown(false);
-                            setShowVillageDropdown(false);
+                            toggleLocationDropdown(e, "district");
                           }}
                           className={`w-full px-4 py-2 border-2 rounded-xl bg-white text-[13px] font-bold outline-none transition-all flex items-center justify-between h-10.5 select-none ${!formData.regencyId ? "opacity-50 cursor-not-allowed border-slate-200" : "cursor-pointer"} ${showDistrictDropdown ? "border-jade-400 ring-4 ring-jade-50/50" : "border-slate-300"}`}
                         >
@@ -3825,7 +3921,7 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
 
                         {showDistrictDropdown && formData.regencyId && (
                           <>
-                            <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-white border-2 border-slate-300 rounded-xl shadow-lg z-200 py-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent animate-in fade-in zoom-in-95 duration-200">
+                            <div className={`absolute left-0 right-0 bg-white border-2 border-slate-300 rounded-xl shadow-lg z-200 py-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent animate-in fade-in duration-200 ${dropdownPosition === "top" ? "bottom-[calc(100%+4px)] slide-in-from-bottom-2" : "top-[calc(100%+4px)] slide-in-from-top-2"}`}>
                               <div
                                 className={`px-4 py-2 border-b border-slate-100 last:border-0 text-[11px] font-black tracking-widest cursor-pointer text-left hover:bg-slate-50 transition-colors uppercase ${!formData.districtId ? "text-jade-600 bg-jade-50" : "text-slate-400"}`}
                                 onClick={(e) => {
@@ -3858,14 +3954,9 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
                       <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Kel / Desa</label>
                       <div className="relative">
                         <div
-                          onClick={() => {
+                          onClick={(e) => {
                             if (!formData.districtId) return;
-                            setShowVillageDropdown(!showVillageDropdown);
-                            setShowGenderFormDropdown(false);
-                            setShowHalaqahFormDropdown(false);
-                            setShowProvinceDropdown(false);
-                            setShowRegencyDropdown(false);
-                            setShowDistrictDropdown(false);
+                            toggleLocationDropdown(e, "village");
                           }}
                           className={`w-full px-4 py-2 border-2 rounded-xl bg-white text-[13px] font-bold outline-none transition-all flex items-center justify-between h-10.5 select-none ${!formData.districtId ? "opacity-50 cursor-not-allowed border-slate-200" : "cursor-pointer"} ${showVillageDropdown ? "border-jade-400 ring-4 ring-jade-50/50" : "border-slate-300"}`}
                         >
@@ -3875,7 +3966,7 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
 
                         {showVillageDropdown && formData.districtId && (
                           <>
-                            <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-white border-2 border-slate-300 rounded-xl shadow-lg z-200 py-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent animate-in fade-in zoom-in-95 duration-200">
+                            <div className={`absolute left-0 right-0 bg-white border-2 border-slate-300 rounded-xl shadow-lg z-200 py-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent animate-in fade-in duration-200 ${dropdownPosition === "top" ? "bottom-[calc(100%+4px)] slide-in-from-bottom-2" : "top-[calc(100%+4px)] slide-in-from-top-2"}`}>
                               <div
                                 className={`px-4 py-2 border-b border-slate-100 last:border-0 text-[11px] font-black tracking-widest cursor-pointer text-left hover:bg-slate-50 transition-colors uppercase ${!formData.villageId ? "text-jade-600 bg-jade-50" : "text-slate-400"}`}
                                 onClick={(e) => {
@@ -3979,7 +4070,7 @@ export const StudentManagement: React.FC<{ tenantId: string; user: UserProfile }
                       {importProgress.total > 0 && importProgress.current === importProgress.total ? "IMPORT SELESAI" : "MEMPROSES DATA..."}
                     </span>
                     <span className="text-[10px] font-black text-slate-600 tabular-nums">
-                      {importProgress.current} / {importProgress.total}
+                      {importProgress.current} / {importProgress.total} Baris Data
                     </span>
                   </div>
                   <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-100">

@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState, useMemo, useRef } from 'react';
+import ExcelJS from "exceljs";
 import { getGlobalAuditLogs, getAllTenants } from '../../services/dataService';
 import { AuditLogEntry, Tenant } from '../../types';
 import { Button } from '../../components/ui/Button';
@@ -126,37 +127,81 @@ export const GlobalAuditLogs: React.FC = () => {
     return range;
   };
 
-  const handleExportCSV = () => {
+  const handleExportExcel = async () => {
     if (processedLogs.length === 0) {
-        alert("Tidak ada data untuk diekspor.");
-        return;
+      alert("Tidak ada data untuk diekspor.");
+      return;
     }
 
-    const headers = ['Timestamp', 'Sekolah', 'Aktor', 'Role', 'Aksi', 'Entitas', 'Detail', 'IP Address'];
-    const escapeCSV = (str: string) => `"${str.replace(/"/g, '""')}"`;
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Global Audit Logs");
 
-    const rows = processedLogs.map(log => [
-        escapeCSV(new Date(log.timestamp).toLocaleString('id-ID')),
-        escapeCSV(log.tenant_name || 'N/A'),
-        escapeCSV(log.actor_name),
-        escapeCSV(log.actor_role),
-        escapeCSV(log.action),
-        escapeCSV(log.entity),
-        escapeCSV(log.details),
-        escapeCSV(log.ip_address)
-    ].join(','));
+    const headerStyle: Partial<ExcelJS.Style> = {
+      font: { bold: true, color: { argb: "FFFFFFFF" } },
+      fill: { type: "pattern", pattern: "solid", fgColor: { argb: "FF4472C4" } },
+      alignment: { horizontal: "center" },
+      border: {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      },
+    };
 
-    const csvContent = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
+    const cellStyle: Partial<ExcelJS.Style> = {
+      border: {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      },
+      alignment: { horizontal: "left", vertical: "middle" },
+    };
+
+    worksheet.columns = [
+      { header: "No", key: "no", width: 8 },
+      { header: "Timestamp", key: "timestamp", width: 20 },
+      { header: "Sekolah", key: "sekolah", width: 25 },
+      { header: "Aktor", key: "aktor", width: 25 },
+      { header: "Role", key: "role", width: 15 },
+      { header: "Aksi", key: "aksi", width: 15 },
+      { header: "Entitas", key: "entitas", width: 25 },
+      { header: "Detail", key: "detail", width: 40 },
+      { header: "IP Address", key: "ip", width: 15 },
+    ];
+
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.style = headerStyle;
+    });
+
+    processedLogs.forEach((log, index) => {
+      const row = worksheet.addRow({
+        no: index + 1,
+        timestamp: new Date(log.timestamp).toLocaleString("id-ID"),
+        sekolah: log.tenant_name || 'System Internal',
+        aktor: log.actor_name,
+        role: log.actor_role,
+        aksi: log.action,
+        entitas: log.entity,
+        detail: log.details,
+        ip: log.ip_address
+      });
+      row.eachCell((cell) => {
+        cell.style = cellStyle;
+      });
+      row.getCell("no").alignment = { horizontal: "center" };
+      row.getCell("aksi").alignment = { horizontal: "center" };
+    });
+
     const date = new Date().toISOString().slice(0, 10);
-    link.setAttribute("download", `global-audit-logs-${date}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `global-audit-logs-${date}.xlsx`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   return (
@@ -217,22 +262,12 @@ export const GlobalAuditLogs: React.FC = () => {
               )}
           </div>
 
-              <button 
-                onClick={() => {
-                  setSearch('');
-                  setSelectedTenantId('all');
-                }} 
-                className="h-10 w-10 rounded-xl border-2 border-slate-300 bg-white text-slate-400 hover:text-emerald-600 transition-all active:scale-95 shadow-none flex items-center justify-center shrink-0"
-                title="Reset Filter"
-              >
-                  <RefreshCcw className="w-4 h-4" />
-              </button>
 
               {/* Export */}
               <button 
-                  onClick={handleExportCSV}
+                  onClick={handleExportExcel}
                   disabled={logs.length === 0}
-                  className="h-10 px-4 bg-slate-800 text-white rounded-xl shadow-none hover:bg-slate-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-slate-800 flex items-center justify-center shrink-0 whitespace-nowrap"
+                  className="h-10 px-4 bg-jade-600 text-white rounded-xl shadow-none hover:bg-jade-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-jade-700 flex items-center justify-center shrink-0 whitespace-nowrap"
               >
                   <Download className="w-4 h-4 mr-2" />
                   <span className="text-[10px] font-black uppercase tracking-widest leading-none mt-0.5">Ekspor</span>
@@ -306,13 +341,13 @@ export const GlobalAuditLogs: React.FC = () => {
                         </span>
                     </td>
 
-                    <td className="px-2 lg:px-4 py-4 border-b border-slate-100">
-                        <div className="flex flex-col gap-1">
-                            <span className="text-[11px] font-black text-slate-800 lg:truncate whitespace-normal wrap-break-words capitalize leading-tight group-hover:text-jade-600 transition-colors">
-                                {log.entity.replace(/-/g, '\u2011').replace(/\//g, '/\u200B')}
+                    <td className="px-2 lg:px-4 py-4 border-b border-slate-100 align-top">
+                        <div className="flex flex-col gap-1.5">
+                            <span className="text-[11px] font-bold text-slate-800 break-words leading-tight group-hover:text-jade-600 transition-colors">
+                                {log.entity}
                             </span>
-                            <p className="text-[10.5px] font-bold text-slate-500 leading-snug wrap-break-words" title={log.details}>
-                                {log.details.replace(/-/g, '\u2011').replace(/\//g, '/\u200B')}
+                            <p className="text-[10px] font-medium text-slate-500 leading-snug break-words" title={log.details}>
+                                {log.details}
                             </p>
                         </div>
                     </td>

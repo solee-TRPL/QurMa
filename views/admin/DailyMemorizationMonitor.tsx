@@ -2537,7 +2537,7 @@ export const DailyMemorizationMonitor: React.FC<DailyMemorizationMonitorProps> =
                                   className={`p-1 border-b border-l border-slate-100 ${isToday ? "bg-emerald-50/40" : ""} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10' : ""} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : ""}`}
                                 >
                                   <div className="flex flex-col items-center justify-center h-full w-full">
-                                    <div className="flex items-center bg-white border-2 border-slate-300 rounded-md shadow-none focus-within:border-jade-400 focus-within:ring-2 focus-within:ring-jade-50/50 transition-all h-6 px-1.5 w-[92%] max-w-12.5">
+                                    <div className="flex items-center justify-center bg-white border-2 border-slate-300 rounded-md shadow-none focus-within:border-jade-400 focus-within:ring-2 focus-within:ring-jade-50/50 transition-all h-6 px-1.5 w-[92%]">
                                       <input
                                         type="number"
                                         readOnly

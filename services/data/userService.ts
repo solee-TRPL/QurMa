@@ -150,9 +150,22 @@ export const updateUser = async (user: Partial<UserProfile>, actor: UserProfile)
 
 export const deleteUser = async (userId: string, userName: string, actor: UserProfile): Promise<void> => {
   const supabase = getSupabase();
-  const { error } = await supabase.from("profiles").update({ role: UserRole.INACTIVE }).eq("id", userId);
+  const { error } = await supabase.from("profiles").delete().eq("id", userId);
   if (error) throw error;
-  await logAudit(actor, "DELETE", `User: ${userName}`, `User dinonaktifkan (Soft Delete).`);
+  
+  // Try to delete from auth.users directly using the service key if available
+  const serviceKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (serviceKey && supabaseUrl) {
+    try {
+      const adminClient = require("@supabase/supabase-js").createClient(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
+      await adminClient.auth.admin.deleteUser(userId);
+    } catch (err) {
+      console.error("Failed to delete auth user:", err);
+    }
+  }
+
+  await logAudit(actor, "DELETE", `User: ${userName}`, `User dihapus (Hard Delete dari Profiles & Auth).`);
 };
 
 export const forceResetPassword = async (userId: string, targetPassword: string, actor: UserProfile): Promise<void> => {

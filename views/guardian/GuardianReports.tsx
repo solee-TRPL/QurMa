@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { MemorizationRecord, MemorizationStatus, TeacherNote, UserProfile, Student, MemorizationType } from '../../types';
 import { getStudentRecords, getStudentNotes, getStudents, getWeeklyMemorization, upsertWeeklyMemorization, getTenant, getWeeklyTargets } from '../../services/dataService';
 import { 
@@ -44,6 +44,8 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
   const [weeklyTarget, setWeeklyTarget] = useState<any>(null);
   const [showTargetPanel, setShowTargetPanel] = useState(false);
   const [parafLoading, setParafLoading] = useState<string | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [visibleDate, setVisibleDate] = useState<string>("");
 
   // WEEKLY LOGIC — initialize from localStorage if available
   const [selectedWeek, setSelectedWeek] = useState(() => {
@@ -72,6 +74,34 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
   useEffect(() => {
     localStorage.setItem('qurma_report_week', selectedWeek);
   }, [selectedWeek]);
+
+  useEffect(() => {
+    if (!scrollContainerRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const date = entry.target.getAttribute("data-date");
+            if (date) setVisibleDate(date);
+          }
+        });
+      },
+      { root: scrollContainerRef.current, threshold: 0.5 }
+    );
+    
+    // Slight delay to ensure DOM is updated
+    const timeout = setTimeout(() => {
+      if (scrollContainerRef.current) {
+        const elements = scrollContainerRef.current.querySelectorAll(".mobile-date-header");
+        elements.forEach((el) => observer.observe(el));
+      }
+    }, 100);
+
+    return () => {
+      clearTimeout(timeout);
+      observer.disconnect();
+    };
+  }, [weekDates]);
 
   const currentWeekOffset = useMemo(() => {
     const today = new Date();
@@ -336,7 +366,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
 
           <div className="flex-1 flex flex-col min-h-0 min-w-0">
               {/* TABLE CONTAINER - MIRROR OF TEACHER INPUT AREA */}
-              <div className="flex-1 bg-white rounded-xl border-2 border-slate-300 flex flex-col overflow-hidden shadow-none relative min-w-0">
+              <div className="flex-1 bg-white rounded-xl rounded-br-xs md:rounded-br-xl border-2 border-slate-300 flex flex-col overflow-hidden shadow-none relative min-w-0">
                   
                   {/* Table Header Mirroring Teacher Style */}
                   <div className="px-4 lg:px-4 py-1 lg:py-4 border-b-2 border-slate-100 flex items-center justify-between bg-white relative z-20 shrink-0 gap-3">
@@ -350,12 +380,43 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                           </div>
                       </div>
 
-                      <button 
-                          onClick={() => setShowTargetPanel(!showTargetPanel)}
-                          className="lg:hidden w-8 h-8 rounded-xl bg-jade-50 text-jade-600 flex items-center justify-center border-2 border-jade-100 shadow-none active:scale-90 transition-all shrink-0"
-                      >
-                          <Crosshair className={`w-4 h-4 ${showTargetPanel ? 'animate-pulse' : ''}`} />
-                      </button>
+                      <div className="flex items-center gap-2 lg:hidden">
+                          {(currentWeekOffset !== 0 || (visibleDate && visibleDate !== new Date().toISOString().split('T')[0])) && (
+                              <button 
+                                  onClick={() => {
+                                      const todayStr = new Date().toISOString().split('T')[0];
+                                      const d = new Date();
+                                      d.setDate(d.getDate() - d.getDay() + (d.getDay() === 0 ? -6 : 1));
+                                      const currentWeekStr = d.toISOString().split('T')[0];
+                                      
+                                      if (selectedWeek !== currentWeekStr) {
+                                          setSelectedWeek(currentWeekStr);
+                                          setTimeout(() => {
+                                              const todayEl = document.querySelector(`.mobile-date-header[data-date="${todayStr}"]`) as HTMLElement;
+                                              if (todayEl && scrollContainerRef.current) {
+                                                  scrollContainerRef.current.scrollTo({ left: todayEl.offsetLeft - 44, behavior: 'smooth' });
+                                              }
+                                          }, 100);
+                                      } else {
+                                          const todayEl = document.querySelector(`.mobile-date-header[data-date="${todayStr}"]`) as HTMLElement;
+                                          if (todayEl && scrollContainerRef.current) {
+                                              scrollContainerRef.current.scrollTo({ left: todayEl.offsetLeft - 44, behavior: 'smooth' });
+                                          }
+                                      }
+                                  }}
+                                  className="w-8 h-8 rounded-full bg-jade-50 text-jade-600 flex items-center justify-center border-2 border-jade-100 shadow-none active:scale-90 transition-all shrink-0"
+                                  title="Kembali ke Hari Ini"
+                              >
+                                  <RotateCcw className="w-4 h-4" />
+                              </button>
+                          )}
+                          <button 
+                              onClick={() => setShowTargetPanel(!showTargetPanel)}
+                              className="w-8 h-8 rounded-full bg-jade-50 text-jade-600 flex items-center justify-center border-2 border-jade-100 shadow-none active:scale-90 transition-all shrink-0"
+                          >
+                              <Crosshair className={`w-4 h-4 ${showTargetPanel ? 'animate-pulse' : ''}`} />
+                          </button>
+                      </div>
 
                         <div className="hidden lg:flex items-center gap-1 bg-jade-600 p-1 rounded-xl shadow-none h-10 justify-between min-w-50 border-2 border-jade-600 shrink-0">
                             <button 
@@ -648,7 +709,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
               </div>
 
               {/* MOBILE VIEW - TRANSPOSED TABLE */}
-              <div className="lg:hidden h-full flex-1 overflow-x-auto overflow-y-hidden no-scrollbar snap-x snap-mandatory scroll-smooth" style={{ scrollPaddingLeft: "44px" }}>
+              <div ref={scrollContainerRef} className="lg:hidden h-full flex-1 overflow-x-auto overflow-y-hidden no-scrollbar snap-x snap-mandatory scroll-smooth" style={{ scrollPaddingLeft: "44px" }}>
                   <table className="border-separate table-fixed w-max h-full border-spacing-0">
                     <thead>
                       <tr className="snap-start">
@@ -664,13 +725,17 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                             <th
                               key={date}
                               colSpan={3}
+                              data-date={date}
                               style={{ width: dayWidth, minWidth: dayWidth, scrollSnapAlign: "start", scrollSnapStop: "always" }}
-                              className={`relative px-2 py-2 text-[10px] font-black uppercase tracking-widest text-center border-b border-l border-slate-200 snap-start ${isToday ? 'bg-emerald-50/80 text-emerald-800 after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10 before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : "bg-slate-50 text-slate-500"}`}
+                              className={`mobile-date-header relative px-2 py-2 text-[10px] font-black uppercase tracking-widest text-center border-b border-l border-slate-200 snap-start ${isToday ? 'bg-emerald-50/80 text-emerald-800 after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10 before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : "bg-slate-50 text-slate-500"}`}
                             >
                               {isToday && (
-                                <div className="absolute top-1 left-1/2 -translate-x-1/2">
-                                  <span className="bg-emerald-500 text-white text-[6px] px-1.5 py-0.5 rounded-full shadow-sm shadow-emerald-500/20">HARI INI</span>
-                                </div>
+                                <>
+                                  <div className="absolute top-0 left-0 right-0 h-0.75 bg-emerald-500 z-10" />
+                                  <div className="absolute top-1 left-1/2 -translate-x-1/2">
+                                    <span className="bg-emerald-500 text-white text-[6px] px-1.5 py-0.5 rounded-full shadow-sm shadow-emerald-500/20">HARI INI</span>
+                                  </div>
+                                </>
                               )}
                               <div className={isToday ? "mt-3" : ""}>
                                 {new Date(date).toLocaleDateString("id-ID", { weekday: "short" })}
@@ -824,6 +889,7 @@ export const StudentReports: React.FC<{ user?: UserProfile }> = ({ user }) => {
                                 style={{ width: colWidth, minWidth: colWidth }}
                                 className={`p-1 border-b border-l border-slate-100 text-center ${isToday ? "bg-emerald-50/40" : ""} relative ${isToday && type === MemorizationType.SABAQ ? 'after:content-[""] after:absolute after:top-0 after:left-0 after:bottom-0 after:w-0.5 after:bg-emerald-500 after:z-10' : ""} ${isToday && type === MemorizationType.MANZIL ? 'before:content-[""] before:absolute before:top-0 before:right-0 before:bottom-0 before:w-0.5 before:bg-emerald-500 before:z-10' : ""}`}
                               >
+                                {isToday && <div className="absolute bottom-0 left-0 right-0 h-0.75 bg-emerald-500 z-10" />}
                                 {isCompletable ? (
                                   <button 
                                       onClick={() => handleParaf(date, type)}

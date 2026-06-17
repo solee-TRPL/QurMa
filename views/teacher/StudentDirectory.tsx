@@ -911,19 +911,19 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string; m
 
       records.forEach((rec) => {
         if (stats[rec.student_id]) {
-          // If typeFilter is NOT 'all', skip records that don't match the selected type
-          if (typeFilter !== "all" && rec.type !== typeFilter) return;
-
-          if (rec.status) {
+          // Update status counts ONLY if it matches the typeFilter
+          if (rec.status && (typeFilter === "all" || rec.type === typeFilter)) {
             stats[rec.student_id][rec.status] = (stats[rec.student_id][rec.status] || 0) + 1;
           }
-          if (rec.type === "sabaq" && rec.ayat_end) {
+
+          // ALWAYS update the volume sums regardless of typeFilter, using ayat_end
+          if (rec.type === "sabaq" && rec.ayat_end && rec.status === MemorizationStatus.LANCAR) {
             stats[rec.student_id].sabaq_sum += rec.ayat_end;
           }
-          if (rec.type === "sabqi" && rec.ayat_end) {
+          if (rec.type === "sabqi" && rec.ayat_end && rec.status === MemorizationStatus.LANCAR) {
             stats[rec.student_id].sabqi_sum += rec.ayat_end;
           }
-          if (rec.type === "manzil" && rec.ayat_end) {
+          if (rec.type === "manzil" && rec.ayat_end && rec.status === MemorizationStatus.LANCAR) {
             stats[rec.student_id].manzil_sum += rec.ayat_end;
           }
         }
@@ -1232,7 +1232,7 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string; m
 
                               const parts: string[] = [];
                               if (juz > 0) parts.push(`${juz} Juz`);
-                              if (pages > 0) parts.push(`${pages} Halaman`);
+                              if (pages > 0) parts.push(`${pages} Hal`);
                               if (lines > 0) parts.push(`${lines} Baris`);
 
                               return parts.length > 0 ? parts.join(" ") : "-";
@@ -1250,7 +1250,7 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string; m
 
                               const parts: string[] = [];
                               if (juz > 0) parts.push(`${juz} Juz`);
-                              if (pages > 0) parts.push(`${pages} Halaman`);
+                              if (pages > 0) parts.push(`${pages} Hal`);
 
                               return parts.length > 0 ? parts.join(" ") : "-";
                             })()
@@ -1267,7 +1267,7 @@ export const StudentDirectory: React.FC<{ user: UserProfile; tenantId: string; m
 
                               const parts: string[] = [];
                               if (juz > 0) parts.push(`${juz} Juz`);
-                              if (pages > 0) parts.push(`${pages} Halaman`);
+                              if (pages > 0) parts.push(`${pages} Hal`);
 
                               return parts.length > 0 ? parts.join(" ") : "-";
                             })()

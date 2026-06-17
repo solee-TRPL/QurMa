@@ -32,7 +32,7 @@ const Toast: React.FC<{ notification: Notification; onDismiss: (id: string) => v
           border: "border-[#10B981]/20",
           iconBg: "bg-[#10B981]/10",
           iconColor: "text-[#10B981]",
-          icon: <CheckCircle className="w-5 h-5" />,
+          icon: <CheckCircle className="w-3.5 h-3.5 sm:w-5 sm:h-5" />,
           title: "text-[#064E3B]",
           message: "text-[#64748B]",
         };
@@ -42,7 +42,7 @@ const Toast: React.FC<{ notification: Notification; onDismiss: (id: string) => v
           border: "border-[#F59E0B]/20",
           iconBg: "bg-[#F59E0B]/10",
           iconColor: "text-[#F59E0B]",
-          icon: <AlertTriangle className="w-5 h-5" />,
+          icon: <AlertTriangle className="w-3.5 h-3.5 sm:w-5 sm:h-5" />,
           title: "text-[#78350F]",
           message: "text-[#64748B]",
         };
@@ -52,7 +52,7 @@ const Toast: React.FC<{ notification: Notification; onDismiss: (id: string) => v
           border: "border-[#6366F1]/20",
           iconBg: "bg-[#6366F1]/10",
           iconColor: "text-[#6366F1]",
-          icon: <Info className="w-5 h-5" />,
+          icon: <Info className="w-3.5 h-3.5 sm:w-5 sm:h-5" />,
           title: "text-[#312E81]",
           message: "text-[#64748B]",
         };
@@ -63,7 +63,7 @@ const Toast: React.FC<{ notification: Notification; onDismiss: (id: string) => v
           border: "border-[#EF4444]/20",
           iconBg: "bg-[#EF4444]/10",
           iconColor: "text-[#EF4444]",
-          icon: <AlertTriangle className="w-5 h-5" />,
+          icon: <AlertTriangle className="w-3.5 h-3.5 sm:w-5 sm:h-5" />,
           title: "text-[#7F1D1D]",
           message: "text-[#64748B]",
         };
@@ -74,24 +74,24 @@ const Toast: React.FC<{ notification: Notification; onDismiss: (id: string) => v
 
   return (
     <div
-      className={`relative w-85 rounded-[22px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border-2 ${style.border} flex items-center p-4 pr-10 transition-all duration-300 transform ${isFadingOut ? "opacity-0 translate-x-10 scale-95" : "animate-in slide-in-from-right-10 fade-in duration-300"} ${style.bg}`}
+      className={`relative w-[66vw] sm:w-85 rounded-[16px] sm:rounded-[22px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border-2 ${style.border} flex items-center p-2.5 pr-8 sm:p-4 sm:pr-10 transition-all duration-300 transform ${isFadingOut ? "opacity-0 translate-x-10 scale-95" : "animate-in slide-in-from-right-10 fade-in duration-300"} ${style.bg}`}
     >
-      <div className="flex items-center gap-4 w-full">
+      <div className="flex items-center gap-2.5 sm:gap-4 w-full">
         {/* Circle Icon Container */}
-        <div className={`shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${style.iconBg} ring-1 ring-inset ${style.border}`}>
+        <div className={`shrink-0 w-8 h-8 sm:w-12 sm:h-12 rounded-full flex items-center justify-center ${style.iconBg} ring-1 ring-inset ${style.border}`}>
           <div className={style.iconColor}>{style.icon}</div>
         </div>
 
         {/* Text Content */}
         <div className="flex-1 min-w-0">
-          <h4 className={`font-black text-[13px] uppercase tracking-tight leading-none ${style.title}`}>{notification.title}</h4>
-          <p className={`text-[10px] font-bold uppercase tracking-tighter mt-1 leading-none ${style.message}`}>{notification.message}</p>
+          <h4 className={`font-black text-[9px] sm:text-[13px] uppercase tracking-tight leading-none ${style.title}`}>{notification.title}</h4>
+          <p className={`text-[7.5px] sm:text-[10px] font-bold uppercase tracking-tighter mt-0.5 sm:mt-1 leading-tight sm:leading-none ${style.message}`}>{notification.message}</p>
         </div>
       </div>
 
       {/* Close Button */}
-      <button onClick={handleDismiss} className="absolute right-4 p-1 text-slate-300 hover:text-slate-400 transition-colors">
-        <X className="w-4 h-4" />
+      <button onClick={handleDismiss} className="absolute right-2 sm:right-4 p-0.5 sm:p-1 text-slate-300 hover:text-slate-400 transition-colors">
+        <X className="w-3 h-3 sm:w-4 sm:h-4" />
       </button>
     </div>
   );
@@ -103,8 +103,8 @@ export const NotificationContainer: React.FC = () => {
   if (notifications.length === 0) return null;
 
   return (
-    <div className="fixed top-14 right-6 z-999999 flex flex-col items-end gap-3 pointer-events-none">
-      <div className="pointer-events-auto flex flex-col items-end gap-3">
+    <div className="fixed top-4 right-4 sm:top-14 sm:right-6 z-[999999] flex flex-col items-end gap-2 sm:gap-3 pointer-events-none">
+      <div className="pointer-events-auto flex flex-col items-end gap-2 sm:gap-3">
         {notifications.map((notif) => (
           <Toast key={notif.id} notification={notif} onDismiss={removeNotification} />
         ))}

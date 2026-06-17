@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ProblemSlider from "../components/landing/ProblemSlider";
+import { MarqueeRibbon } from "../components/landing/MarqueeRibbon";
 import {
   BookOpen,
   ShieldCheck,
@@ -14,6 +15,7 @@ import {
   FileText,
   MonitorPlay,
   ChevronRight,
+  ChevronLeft,
   Lock,
   Target,
   CheckCircle,
@@ -32,7 +34,8 @@ import {
   GraduationCap,
   UserCog,
   ArrowUpRight,
-  BookAudio
+  BookAudio,
+  Plus
 } from "lucide-react";
 import { getAllTenants } from "@/services/data/tenantService";
 import { Tenant } from "@/types";
@@ -45,8 +48,35 @@ export default function LandingPage() {
   const [activeWhyQurMa, setActiveWhyQurMa] = useState<number | null>(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const handleAccordionClick = (id: number) => {
+    if (activeAccordion === id) {
+      setActiveAccordion(null);
+    } else if (activeAccordion !== null) {
+      setActiveAccordion(null);
+      setTimeout(() => setActiveAccordion(id), 300); // Wait 300ms before opening the new one
+    } else {
+      setActiveAccordion(id);
+    }
+  };
+
   const onLoginClick = () => {
     router.push("/login");
+  };
+
+  const scrollToSection = (sectionName: string) => {
+    setIsMenuOpen(false);
+    const id = sectionName.toLowerCase();
+    const element = document.getElementById(id);
+    if (element) {
+      const headerOffset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.scrollY - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
   };
 
   useEffect(() => {
@@ -141,8 +171,12 @@ export default function LandingPage() {
           <div className="flex items-center gap-2 lg:gap-8">
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-8">
-              {["Tentang Kami", "Portofolio", "FAQ"].map((item) => (
-                <button key={item} className={`text-xs font-black uppercase tracking-widest transition-all duration-300 ${isScrolled ? "text-slate-600 hover:text-jade-600" : "text-white/80 hover:text-white hover:scale-105"}`}>
+              {["Solusi", "Keunggulan", "Fitur", "Testimoni"].map((item) => (
+                <button 
+                  key={item} 
+                  onClick={() => scrollToSection(item)}
+                  className={`text-xs font-black uppercase tracking-widest transition-all duration-300 ${isScrolled ? "text-slate-600 hover:text-jade-600" : "text-white/80 hover:text-white hover:scale-105"}`}
+                >
                   {item}
                 </button>
               ))}
@@ -177,10 +211,10 @@ export default function LandingPage() {
           }`}
         >
           <div className="flex flex-col px-8 py-4 gap-0">
-            {["Tentang Kami", "Portofolio", "FAQ"].map((item) => (
+            {["Solusi", "Keunggulan", "Fitur", "Testimoni"].map((item) => (
               <button
                 key={item}
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => scrollToSection(item)}
                 className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors py-2 last:border-0 text-left ${
                   isScrolled ? "text-slate-600 hover:text-jade-600 border-slate-50" : "text-white/80 hover:text-white border-white/5"
                 }`}
@@ -203,26 +237,30 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      <main className="min-h-screen overflow-hidden relative flex items-center bg-[url('/images/hero-image.png')] bg-cover bg-center">
-        <div className="absolute inset-0 bg-slate-900/40 z-0"></div>
+      <main className="relative flex flex-col justify-start md:justify-center pt-28 pb-12 md:py-0 md:min-h-screen overflow-hidden bg-jade-900 md:bg-[url('/images/hero-image.png')] md:bg-cover md:bg-center">
+        {/* Desktop overlay */}
+        <div className="hidden md:block absolute inset-0 bg-slate-900/40 z-0"></div>
 
-        <div className="container mx-auto px-8 md:px-16 relative z-10">
-          <div className="max-w-3xl space-y-4 animate-in fade-in slide-in-from-bottom-10 duration-1000">
-            <h2 className="text-[28px] md:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-[1.2] md:leading-[1.1]">
-              Aplikasi Manajemen <br className="hidden sm:block" />
-              Tahfidz <span className="bg-linear-to-b from-primary-200 via-primary-500 to-primary-700 bg-clip-text text-transparent uppercase drop-shadow-[0_2px_2px_rgba(0,0,0,0.3)]">Al Qur'an</span>
+        {/* Mobile top-right image blend */}
+        <div className="absolute top-0 right-0 w-[85%] h-87.5 md:hidden z-0">
+          <div className="absolute inset-0 bg-[url('/images/hero-image.png')] bg-cover bg-right opacity-50 mix-blend-overlay"></div>
+          <div className="absolute inset-0 bg-linear-to-b from-transparent via-jade-900/40 to-jade-900"></div>
+          <div className="absolute inset-0 bg-linear-to-r from-jade-900 via-jade-900/20 to-transparent"></div>
+        </div>
+
+        <div className="container mx-auto px-6 md:px-16 relative z-10">
+          <div className="max-w-3xl space-y-5 animate-in fade-in slide-in-from-bottom-10 duration-1000 relative z-10">
+            <h2 className="text-[32px] md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1] md:leading-[1.1]">
+              Aplikasi Manajemen <br className="hidden md:block" />
+              Tahfidz <span className="text-primary-300 drop-shadow-sm">Al Qur'an</span>
             </h2>
-            <p className="text-white/90 text-[13px] md:text-lg font-medium leading-relaxed max-w-xl">
-              Tingkatkan program Tahfidz dengan menggunakan QurMa. <br className="hidden sm:block" />
-              Pantau, sinkron data realtime dan kontrol hafalan dengan mudah dan efektif.
+            <p className="text-white/90 text-[15px] md:text-lg font-medium leading-relaxed max-w-xl">
+              Tingkatkan program Tahfidz dengan menggunakan QurMa. Pantau, sinkron data realtime dan kontrol hafalan dengan mudah dan efektif.
             </p>
-            <div className="flex flex-row items-center gap-2 sm:gap-4 pt-4 sm:pt-2">
-              <button className="h-10 sm:h-12 px-4 sm:px-8 bg-primary-500 text-amber-950 font-black uppercase text-[9px] sm:text-[11px] tracking-widest hover:bg-primary-400 shadow-xl shadow-primary-500/20 hover:scale-[1.05] transition-all active:scale-95 whitespace-nowrap">
-                BACA INFO
-              </button>
+            <div className="flex flex-row items-center pt-6 w-max">
               <button
                 onClick={onLoginClick}
-                className="h-10 sm:h-12 px-4 sm:px-8 font-black text-[9px] sm:text-[11px] uppercase tracking-widest bg-jade-600 text-white shadow-xl shadow-jade-600/20 hover:bg-jade-700 hover:scale-[1.05] transition-all active:scale-95 whitespace-nowrap"
+                className="w-auto h-11 sm:h-12 px-6 sm:px-8 font-black text-[10px] sm:text-[11px] uppercase tracking-widest bg-primary-400 text-amber-950 shadow-xl hover:bg-primary-300 transition-all rounded-lg whitespace-nowrap"
               >
                 LOGIN SEKARANG
               </button>
@@ -231,18 +269,18 @@ export default function LandingPage() {
         </div>
       </main>
 
-      <section className="py-24 bg-white">
+      <section id="solusi" className="pt-12 pb-4 bg-white">
         <div className="container mx-auto px-8 md:px-16 w-full">
-          <h2 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight text-center mb-16">Masalah yang Sering Dihadapi oleh Pimpinan dan Guru</h2>
 
-          <div className="flex flex-col md:flex-row items-start justify-center gap-16 lg:gap-20 w-full mx-auto">
-            <div className="md:w-1/2 relative flex justify-center">
+          <div className="flex flex-col md:flex-row-reverse items-center md:items-stretch justify-center gap-6 md:gap-16 lg:gap-20 w-full">
+            <div className="hidden md:flex md:w-1/2 relative justify-center py-4">
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-jade-600/20 rounded-full blur-[80px] -z-10" />
-              <img src="/images/teacher_portrait.png" alt="Ustadz" className="w-full max-87.5 object-cover rounded-32px drop-shadow-2xl z-10" />
+              <img src="/images/kartun-men-nobg.png" alt="Ustadz" className="w-full md:w-auto h-auto md:h-full object-contain drop-shadow-2xl z-10 max-h-100 md:max-h-none" />
             </div>
 
-            <div className="md:w-1/2">
-              <div className="space-y-2">
+            <div className="md:w-1/2 flex flex-col justify-center">
+              <h2 className="text-2xl md:text-4xl font-bold text-slate-800 tracking-tight mb-10 text-left">Masalah yang Sering Dihadapi</h2>
+              <div className="space-y-2 min-h-105 sm:min-h-90 md:min-h-95 lg:min-h-87.5">
                 {[
                   {
                     id: 0,
@@ -275,21 +313,21 @@ export default function LandingPage() {
                     ],
                   },
                 ].map((item) => (
-                  <div key={item.id} className="border-b border-slate-100 last:border-0 overflow-hidden">
+                  <div key={item.id} className="overflow-hidden flex flex-col">
                     <button
-                      onClick={() => setActiveAccordion(activeAccordion === item.id ? null : item.id)}
-                      className={`w-full py-4 px-3 flex items-center border border-slate-300 justify-between transition-all group ${activeAccordion === item.id ? "bg-jade-50/50 rounded-r-28px" : ""}`}
+                      onClick={() => handleAccordionClick(item.id)}
+                      className={`w-full text-left px-4 py-3 rounded-lg flex items-center justify-between transition-all duration-300 border ${
+                        activeAccordion === item.id ? "bg-jade-100/50 text-jade-700 border-jade-200 shadow-sm" : "bg-white text-neutral-darker hover:bg-slate-50 border-slate-300"
+                      }`}
                     >
-                      <span className={`text-lg lg:text-xl font-black transition-colors ${activeAccordion === item.id ? "text-jade-700" : "text-slate-400 group-hover:text-slate-600"}`}>{item.title}</span>
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${activeAccordion === item.id ? "bg-jade-600 text-white rotate-180" : "bg-slate-50 text-slate-400"}`}>
-                        <ChevronRight className={`w-4 h-4 ${activeAccordion === item.id ? "rotate-90" : ""}`} />
-                      </div>
+                      <span className={`text-sm md:text-base leading-[1.4] tracking-[-0.18px] pr-2 transition-all duration-300 font-bold`}>{item.title}</span>
+                      <Plus className={`w-4 h-4 text-jade-600 shrink-0 ml-auto transition-all duration-300 ${activeAccordion === item.id ? "rotate-45 opacity-100" : "rotate-0 opacity-90"}`} />
                     </button>
-                    <div className={`transition-all duration-500 ease-in-out ${activeAccordion === item.id ? "max-h-64 opacity-100 py-4" : "max-h-0 opacity-0"}`}>
+                    <div className={`transition-all duration-500 ease-in-out px-4 ${activeAccordion === item.id ? "max-h-64 opacity-100 py-4" : "max-h-0 opacity-0"}`}>
                       <ul className="space-y-3">
                         {item.problems.map((prob, idx) => (
                           <li key={idx} className="flex gap-3 items-start group/item">
-                            <div className="w-1.5 h-1.5 rounded-full bg-jade-400 mt-1.5 shrink-0" />
+                            <img src="/images/bottom-right.png" alt="icon" className="w-4 h-4 mt-0.5 shrink-0 opacity-70 group-hover/item:opacity-100 transition-opacity" />
                             <p className="text-xs lg:text-sm text-slate-600 font-medium leading-relaxed group-hover/item:text-slate-900 transition-colors">{prob}</p>
                           </li>
                         ))}
@@ -303,61 +341,68 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-24 bg-slate-50/50 border-t border-slate-100">
+      <section className="pt-8 pb-8 bg-slate-50/50 border-t border-slate-100">
         <div className="container mx-auto px-8 md:px-16 w-full">
-          <h2 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight text-center mb-16">Atasi Semua Permasalahan di Lembaga Anda dengan QurMa</h2>
+          <h2 className="text-2xl md:text-4xl font-bold text-slate-800 tracking-tight mb-10 text-center">Atasi Permasalahan Anda dengan QurMa</h2>
 
           <ProblemSlider />
         </div>
       </section>
 
-      <section className="py-24 bg-white border-t border-slate-100 font-gotham" style={{ fontFamily: '"GothamWeb", sans-serif' }}>
-        <div className="container mx-auto px-8 md:px-16 w-full max-w-6xl">
-          <h2 className="text-2xl md:text-4xl font-black text-slate-800 tracking-tight mb-10 text-center md:text-left">Kenapa Harus QurMa ?</h2>
+      <section id="keunggulan" className="pt-8 pb-8 border-t border-slate-100">
+        <div className="container mx-auto px-8 md:px-16 w-full">
+          <h2 className="text-2xl md:text-4xl font-bold text-slate-800 tracking-tight mb-10 text-center md:text-left">Kenapa Harus QurMa ?</h2>
 
           {(() => {
             const whyQurmaData = [
               {
                 menuTitle: "Pionir Digital",
-                title: "Pelopor Aplikasi Manajemen Tahfidz Al-Qur'an",
+                title: "Pelopor Aplikasi Manajemen Tahfidz Qur'an",
                 desc: "QurMa adalah pionir dalam digitalisasi tahfidz dengan pengalaman melayani ratusan lembaga pendidikan Islam di seluruh Indonesia.",
+                centerImage: "/images/pioneering.png",
               },
               {
                 menuTitle: "Fitur Lengkap",
                 title: "Fitur Tahfidz Komplit & Mudah Dioperasikan",
                 desc: "Sistem yang dirancang khusus untuk alur KBM tahfidz, mulai dari target mingguan, monitoring harian, hingga rapot otomatis yang sangat user-friendly.",
+                centerImage: "/images/feature.png",
               },
               {
                 menuTitle: "Sangat Amanah",
                 title: "Amanah dan Profesional",
-                desc: "Kami berkomitmen terhadap keamanan data lembaga Anda dan memberikan pendampingan penggunaan aplikasi secara berkelanjutan (Lifetime Maintenance).",
+                desc: "Kami berkomitmen terhadap keamanan data lembaga Anda dan memberikan pendampingan penggunaan aplikasi secara berkelanjutan.",
+                centerImage: "/images/trust.png",
               },
               {
                 menuTitle: "Terintegrasi Penuh",
                 title: "Aplikasi Terintegrasi 4 Role",
                 desc: "Satu platform yang menghubungkan Pimpinan, Guru, Santri, dan Wali Santri dalam satu ekosistem data yang realtime dan transparan.",
+                centerImage: "/images/gear-assembly.png",
               },
               {
                 menuTitle: "Dukungan Penuh",
                 title: "Layanan Dukungan 24/7",
                 desc: "Tim teknis kami siap membantu kapanpun dibutuhkan untuk memastikan operasional tahfidz di lembaga Anda berjalan tanpa hambatan.",
+                centerImage: "/images/24-hours.png",
               },
               {
                 menuTitle: "Akses Mudah",
                 title: "Akses Kapan Saja & Di Mana Saja",
-                desc: "Dapat diakses melalui berbagai perangkat dengan mudah, memberikan fleksibilitas maksimal dalam memantau perkembangan hafalan santri dari manapun.",
+                desc: "Dapat diakses melalui berbagai perangkat dengan mudah, memberikan fleksibilitas maksimal dalam memantau perkembangan hafalan santri.",
+                centerImage: "/images/anywhere.png",
               },
               {
-                menuTitle: "Harga Terjangkau",
-                title: "Biaya Operasional Terjangkau",
-                desc: "Solusi premium dengan harga yang bersahabat untuk semua kalangan pesantren, tanpa biaya tambahan yang tersembunyi untuk fitur dasar.",
+                menuTitle: "Gratis Pemakaian",
+                title: "Nol Biaya Operasional",
+                desc: "Solusi gratis untuk semua kalangan pesantren, tanpa biaya tambahan yang tersembunyi untuk fitur dasar.",
+                centerImage: "/images/free.png",
               },
             ];
 
             return (
-              <div className="flex flex-col md:flex-row items-stretch gap-6 lg:gap-8 w-full mx-auto">
-                {/* Left Menu */}
-                <div className="w-full md:w-1/3 flex flex-col gap-2">
+              <div className="flex flex-col-reverse md:flex-row items-stretch gap-6 lg:gap-8 w-full mx-auto">
+                {/* Desktop Menu */}
+                <div className="hidden md:flex flex-col w-1/3 gap-2">
                   {whyQurmaData.map((item, i) => (
                     <button
                       key={i}
@@ -372,34 +417,46 @@ export default function LandingPage() {
                   ))}
                 </div>
 
+                {/* Mobile Menu Navigator */}
+                <div className="flex md:hidden items-center justify-between bg-white border border-slate-300 rounded-lg p-1 shadow-sm w-full">
+                  <button 
+                    onClick={() => setActiveWhyQurMa((prev) => ((prev ?? 0) > 0 ? (prev ?? 0) - 1 : whyQurmaData.length - 1))}
+                    className="p-3 text-slate-400 hover:text-jade-600 hover:bg-slate-50 rounded-md transition-all"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <span className="text-[13px] sm:text-sm font-bold text-jade-700 tracking-tight text-center px-2 line-clamp-1">
+                    {whyQurmaData[activeWhyQurMa || 0].menuTitle}
+                  </span>
+                  <button 
+                    onClick={() => setActiveWhyQurMa((prev) => ((prev ?? 0) < whyQurmaData.length - 1 ? (prev ?? 0) + 1 : 0))}
+                    className="p-3 text-slate-400 hover:text-jade-600 hover:bg-slate-50 rounded-md transition-all"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+
                 {/* Right Content */}
                 <div className="w-full md:w-2/3 flex">
                   <div className="bg-white rounded-lg p-4 lg:p-6 border border-slate-300 shadow-xl shadow-slate-200/50 flex flex-col w-full h-full">
                     <div className="w-full h-40 md:h-48 rounded-xl mb-6 relative overflow-hidden flex items-center justify-center border border-slate-200 shrink-0 bg-cover bg-center" style={{ backgroundImage: "url('/images/bg-image-landing-page.png')" }}>
                       <div className="absolute inset-0 bg-black/5 z-0" />
-                      <div className="w-48 h-28 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-white/50 flex flex-col p-4 relative z-10 transform hover:scale-105 transition-transform duration-500">
-                        <div className="flex items-center justify-between mb-auto">
-                          <div className="w-7 h-7 rounded-lg bg-jade-600 flex items-center justify-center shadow-md">
-                            <BookOpen className="w-3.5 h-3.5 text-white" />
-                          </div>
-                          <div className="h-3 w-10 bg-slate-200 rounded flex items-center justify-center">
-                            <div className="w-5 h-1 bg-slate-400 rounded-full" />
-                          </div>
-                        </div>
-                        <div className="space-y-1.5 mt-4">
-                          <div className="h-2 w-full bg-slate-200 rounded-full" />
-                          <div className="h-2 w-2/3 bg-slate-200 rounded-full" />
-                        </div>
-                      </div>
+                      <img 
+                        key={activeWhyQurMa}
+                        src={whyQurmaData[activeWhyQurMa || 0].centerImage} 
+                        alt="Feature Illustration" 
+                        className="h-28 w-auto object-contain relative z-10 transform hover:scale-105 transition-transform duration-500 rounded-xl drop-shadow-2xl animate-scale-in" 
+                      />
                     </div>
 
                     <div className="flex flex-col flex-1">
-                      <h3 className="font-gotham text-neutral-darkest text-xl md:text-2xl font-black mb-3 leading-tight">{whyQurmaData[activeWhyQurMa || 0].title}</h3>
-                      <p className="text-neutral-darker font-medium leading-relaxed mb-6 text-xs md:text-sm">{whyQurmaData[activeWhyQurMa || 0].desc}</p>
+                      <div className="flex flex-col justify-end mt-auto min-h-32.5 md:min-h-37.5">
+                        <h3 className="text-neutral-darkest text-xl md:text-2xl font-black mb-3 leading-tight">{whyQurmaData[activeWhyQurMa || 0].title}</h3>
+                        <p className="text-neutral-darker font-medium leading-relaxed mb-0 text-xs md:text-sm min-h-22 md:min-h-24">{whyQurmaData[activeWhyQurMa || 0].desc}</p>
+                      </div>
 
                       <div className="mt-auto">
-                        <button className="h-10 px-12 font-black text-[10px] uppercase tracking-widest rounded-lg bg-jade-600 text-white hover:bg-jade-700 transition-colors shadow-lg shadow-jade-600/30">PELAJARI LEBIH LANJUT</button>
-
+                        {/*
                         <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
                           <a href="#" className="flex items-center leading-0 gap-2 text-slate-600 text-[11px] font-bold hover:text-jade-600 transition-colors group">
                             <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-jade-600" /> Lihat fitur selengkapnya
@@ -408,6 +465,7 @@ export default function LandingPage() {
                             <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-jade-600" /> Hubungi tim konsultasi kami
                           </a>
                         </div>
+                        */}
                       </div>
                     </div>
                   </div>
@@ -418,69 +476,59 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-24 bg-white overflow-hidden">
-        <div className="container mx-auto px-8 md:px-16 w-full max-w-6xl relative z-10">
-          <h2 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight text-center mb-16">Fiturnya Apa Saja ?</h2>
+      <section id="fitur" className="pt-8 pb-12 bg-white overflow-hidden">
+        <div className="container mx-auto px-8 md:px-16 w-full relative z-10">
+          <h2 className="text-2xl md:text-4xl font-bold text-slate-800 tracking-tight mb-10 text-left">Fiturnya Apa Saja ?</h2>
           
-          <div className="rounded-lg p-6 md:p-6 border border-slate-300">
-            <div className="flex flex-col gap-4 md:gap-4">
-              {/* Baris 1: 2 Box */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-4">
-                {[
-                  { title: "Manajemen Data", desc: "Kelola database santri & guru hingga buku induk otomatis", icon: Database, color: "text-blue-500", bg: "bg-blue-100" },
-                  { title: "Menu Tahfidz", desc: "Buat target, KBM, ujian, hingga laporan hafalan otomatis", icon: BookOpen, color: "text-emerald-600", bg: "bg-emerald-100" },
-                ].map((item, i) => (
-                  <div key={i} className="group relative bg-white rounded-lg p-4 lg:p-6 transition-all duration-300 border border-slate-300 shadow-xl shadow-slate-200/50 hover:border-jade-500 flex flex-col items-center text-center overflow-hidden cursor-pointer w-full h-full">
-                    <div className="absolute top-4 right-4 text-slate-300 group-hover:text-jade-600 transition-colors duration-300">
-                      <ArrowUpRight className="w-4 h-4 md:w-5 md:h-5" />
-                    </div>
-                    
-                    <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full ${item.bg} flex items-center justify-center mb-4 md:mb-6 transition-colors duration-500`}>
-                      <item.icon className={`w-7 h-7 md:w-8 md:h-8 ${item.color}`} />
-                    </div>
-                    
-                    <h3 className="text-[#0e5c3b] font-bold text-base md:text-lg mb-1.5 md:mb-2" style={{ fontFamily: '"GothamWeb", sans-serif' }}>{item.title}</h3>
-                    <p className="text-slate-600 text-xs md:text-sm leading-relaxed" style={{ fontFamily: '"GothamWeb", sans-serif' }}>{item.desc}</p>
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-24">
+            {/* Left Column: Feature List */}
+            <div className="w-full lg:w-1/2 flex flex-col gap-6">
+              {[
+                { title: "MANAJEMEN DATA SANTRI", desc: "Fitur pengelolaan database santri, pembagian halaqah, dan manajemen kelas secara terpusat" },
+                { title: "MANAJEMEN TAHFIDZ", desc: "Fitur pencatatan hafalan harian, setoran baru, muraja'ah, ziadah, hingga rekapitulasi hafalan santri" },
+                { title: "TARGET PEKANAN", desc: "Fitur pembuatan target hafalan pekanan dan pemantauan capaian target masing-masing santri" },
+                { title: "PRESENSI & KEHADIRAN", desc: "Fitur pencatatan absensi dan kehadiran santri secara digital dan terintegrasi" },
+                { title: "PENILAIAN & PENCAPAIAN", desc: "Fitur pengisian nilai ujian tahfidz dan pencatatan riwayat pencapaian prestasi santri" },
+                { title: "CATATAN PERKEMBANGAN", desc: "Fitur pemberian catatan evaluasi dan perkembangan harian dari musyrif/guru untuk santri" },
+                { title: "MANAJEMEN PENGGUNA", desc: "Fitur pengelolaan hak akses multi-peran untuk Pimpinan/Yayasan, Admin Sekolah, Guru/Musyrif, dan Wali Santri" }
+              ].map((item, i) => (
+                <div key={i} className="flex gap-4 items-start">
+                  <div className="mt-1 shrink-0 bg-white rounded-full">
+                    <CheckCircle className="w-6 h-6 text-[#156d4b]" fill="#e6fcf5" strokeWidth={2} />
                   </div>
-                ))}
-              </div>
+                  <div>
+                    <h3 className="text-slate-900 font-bold text-base md:text-[17px] mb-0.5">{item.title}</h3>
+                    <p className="text-slate-500 text-[13px] md:text-sm leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-              {/* Baris 2: 3 Box */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-4">
-                {[
-                  { title: "Menu Tahsin", desc: "Manajemen tahsin mulai dari target hingga kenaikan jilid", icon: BookAudio, color: "text-amber-500", bg: "bg-amber-100" },
-                  { title: "Menu Akademik", desc: "Kelola rombel, jadwal, RPP, jurnal, hingga rapot otomatis", icon: GraduationCap, color: "text-purple-500", bg: "bg-purple-100" },
-                  { title: "Data User", desc: "Hak akses khusus untuk pimpinan, admin, guru, & wali santri", icon: UserCog, color: "text-rose-500", bg: "bg-rose-100" },
-                ].map((item, i) => (
-                  <div key={i} className="group relative bg-white rounded-lg p-4 lg:p-6 transition-all duration-300 border border-slate-300 shadow-xl shadow-slate-200/50 hover:border-jade-500 flex flex-col items-center text-center overflow-hidden cursor-pointer w-full h-full">
-                    <div className="absolute top-4 right-4 text-slate-300 group-hover:text-jade-600 transition-colors duration-300">
-                      <ArrowUpRight className="w-4 h-4 md:w-5 md:h-5" />
-                    </div>
-                    
-                    <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full ${item.bg} flex items-center justify-center mb-4 md:mb-6 transition-colors duration-500`}>
-                      <item.icon className={`w-7 h-7 md:w-8 md:h-8 ${item.color}`} />
-                    </div>
-                    
-                    <h3 className="text-[#0e5c3b] font-bold text-base md:text-lg mb-1.5 md:mb-2" style={{ fontFamily: '"GothamWeb", sans-serif' }}>{item.title}</h3>
-                    <p className="text-slate-600 text-xs md:text-sm leading-relaxed" style={{ fontFamily: '"GothamWeb", sans-serif' }}>{item.desc}</p>
-                  </div>
-                ))}
-              </div>
+            {/* Right Column: Phone Mockup */}
+            <div className="w-full lg:w-1/2 flex justify-center relative mt-10 lg:mt-0">
+              {/* Circle Background */}
+              <div className="absolute w-[75%] md:w-[60%] lg:w-[75%] aspect-square bg-jade-700 rounded-full bottom-0 translate-y-[15%] lg:translate-y-[20%] left-1/2 -translate-x-1/2 z-0"></div>
+              
+              {/* Mockup Image */}
+              <img 
+                src="/images/iPhone-13-PRO.png" 
+                alt="QurMa App Mockup" 
+                className="relative z-10 w-[60%] md:w-[45%] lg:w-[55%] object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.2)]" 
+              />
             </div>
           </div>
         </div>
       </section>
 
-      <section className="py-24 bg-slate-50 border-t border-slate-100">
+      {/* Marquee Ribbon Section */}
+      <MarqueeRibbon />
+
+      <section id="testimoni" className="pt-4 pb-12 bg-linear-to-b from-white to-[#e6fcf5]">
         <div className="container mx-auto px-8 md:px-16 w-full">
-          <div className="text-center mb-16">
-            <h2 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">Testimonial</h2>
-            <p className="text-sm md:text-base font-bold text-slate-500 mt-2">Bagaimana QurMa Membantu Mereka?</p>
-          </div>
 
           <div
             ref={scrollRef}
-            className="flex overflow-x-auto snap-x snap-mandatory gap-8 pb-8 no-scrollbar scroll-smooth"
+            className="flex items-stretch overflow-x-auto snap-x snap-mandatory gap-8 pb-8 no-scrollbar scroll-smooth"
             onScroll={(e) => {
               const container = e.currentTarget;
               const centerOfContainer = container.scrollLeft + container.clientWidth / 2;
@@ -504,45 +552,34 @@ export default function LandingPage() {
             }}
           >
             {/* Kiri Spacer */}
-            <div className="flex-none w-[5vw] md:w-[calc(33.333%-1.5rem)] shrink-0 pointer-events-none" aria-hidden="true" />
+            <div className="flex-none w-[5vw] md:hidden shrink-0 pointer-events-none" aria-hidden="true" />
 
             {testimonials.map((testi, i) => (
               <div
                 key={i}
-                className={`flex-none snap-center w-[85vw] md:w-[calc(33.333%-1.5rem)] bg-white p-7 lg:p-9 rounded-32px shadow-sm border border-slate-100 flex flex-col gap-6 hover:shadow-md transition-all duration-500 relative overflow-hidden ${i === activeTesti ? "shadow-lg shadow-emerald-600/10 scale-[1.02] border-emerald-100" : "opacity-60 scale-95"}`}
+                className="h-50 lg:h-55 flex-none snap-center md:snap-start w-[85vw] md:w-[calc(33.3333%-1.333rem)] bg-slate-50 p-5 lg:p-6 rounded-2xl shadow-xl shadow-slate-200/60 flex flex-col gap-2 hover:bg-white hover:shadow-2xl hover:shadow-jade-600/10 transition-all duration-300 border border-slate-200"
               >
-                <div className="flex gap-1 shrink-0">
+                <div className="flex gap-1.5 shrink-0">
                   {[...Array(5)].map((_, starIdx) => (
-                    <Star key={starIdx} className="w-3.5 h-3.5 lg:w-4 lg:h-4 fill-amber-400 text-amber-400" />
+                    <Star key={starIdx} className="w-4 h-4 lg:w-5 lg:h-5 fill-[#f59e0b] text-[#f59e0b]" />
                   ))}
                 </div>
-                <p className="text-xs lg:text-sm text-slate-600 font-medium leading-relaxed">"{testi.text}"</p>
-                <div className="flex items-center gap-4 mt-auto shrink-0 pt-2">
-                  <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-slate-50 border border-slate-200 mb-0 overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
-                    {testi.image ? <img src={testi.image} className="w-full h-full object-cover" alt={testi.name} /> : <Users className="w-5 h-5 lg:w-6 lg:h-6 text-slate-300" />}
-                  </div>
-                  <div className="flex flex-col">
-                    <h4 className="text-[11px] lg:text-xs font-black text-slate-800 uppercase tracking-tight leading-none">{testi.name}</h4>
-                    <p className="text-[8px] lg:text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">{testi.role}</p>
-                  </div>
+                <p className="text-sm lg:text-sm text-slate-900 font-bold leading-relaxed">
+                  "{testi.text.length > 150 ? testi.text.substring(0, 150).substring(0, testi.text.substring(0, 150).lastIndexOf(' ')).trim() + ' ...' : testi.text}"
+                </p>
+                <div className="mt-auto shrink-0 pt-1">
+                  <p className="text-xs lg:text-[13px] text-slate-500 font-medium">
+                    — {testi.name}, {testi.role}
+                  </p>
                 </div>
               </div>
             ))}
 
             {/* Kanan Spacer */}
-            <div className="flex-none w-[5vw] md:w-[calc(33.333%-1.5rem)] shrink-0 pointer-events-none" aria-hidden="true" />
+            <div className="flex-none w-[5vw] md:hidden shrink-0 pointer-events-none" aria-hidden="true" />
           </div>
 
-          <div className="flex justify-center items-center gap-2 mt-8">
-            {testimonials.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => scrollTo(i)}
-                className={`h-2.5 rounded-full transition-all duration-300 ${activeTesti === i ? "w-8 bg-jade-600" : "w-2.5 bg-slate-200 hover:bg-slate-300"}`}
-                aria-label={`Go to testimonial ${i + 1}`}
-              />
-            ))}
-          </div>
+
         </div>
       </section>
 
@@ -571,11 +608,14 @@ export default function LandingPage() {
               <div>
                 <h4 className="text-white font-black text-xs uppercase tracking-[0.2em] mb-6">Navigasi</h4>
                 <ul className="space-y-3">
-                  {["Tentang Kami", "Portofolio", "FAQ"].map((link, i) => (
+                  {["Solusi", "Keunggulan", "Fitur", "Testimoni"].map((link, i) => (
                     <li key={i}>
-                      <a href="#" className="text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-primary-500 transition-colors">
+                      <button 
+                        onClick={() => scrollToSection(link)} 
+                        className="text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-primary-500 transition-colors text-left block p-0 leading-normal"
+                      >
                         {link}
-                      </a>
+                      </button>
                     </li>
                   ))}
                 </ul>

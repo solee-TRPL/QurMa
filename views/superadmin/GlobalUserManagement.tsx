@@ -376,13 +376,6 @@ export const GlobalUserManagement: React.FC<{ user: UserProfile; onImpersonate?:
                   )}
               </div>
 
-              <button 
-                  onClick={resetFilters} 
-                  className="h-10 w-10 rounded-xl border-2 border-slate-300 bg-white text-slate-400 hover:text-emerald-600 transition-all active:scale-95 shadow-none flex items-center justify-center shrink-0"
-                  title="Reset Filter"
-              >
-                  <RefreshCcw className="w-4 h-4" />
-              </button>
 
           </div>
       </div>

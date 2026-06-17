@@ -76,9 +76,32 @@ export const updateStudent = async (student: Partial<Student>, actor: UserProfil
 
 export const deleteStudent = async (studentId: string, studentName: string, actor: UserProfile): Promise<void> => {
   const supabase = getSupabase();
+  
+  // Ambil data santri dulu untuk tahu parent_id nya
+  const { data: student } = await supabase.from("students").select("parent_id").eq("id", studentId).single();
+  
+  // Hapus data santri
   const { error } = await supabase.from("students").delete().eq("id", studentId);
   if (error) throw error;
-  await logAudit(actor, "DELETE", `Student: ${studentName}`, `Santri dihapus.`);
+
+  // Jika ada parent_id (akun profil), hapus juga profil tersebut
+  if (student?.parent_id) {
+    await supabase.from("profiles").delete().eq("id", student?.parent_id);
+
+    // Coba hapus juga dari auth.users
+    const serviceKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (serviceKey && supabaseUrl) {
+      try {
+        const adminClient = require("@supabase/supabase-js").createClient(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
+        await adminClient.auth.admin.deleteUser(student.parent_id);
+      } catch (err) {
+        console.error("Failed to delete auth user:", err);
+      }
+    }
+  }
+
+  await logAudit(actor, "DELETE", `Student: ${studentName}`, `Santri dihapus beserta data profilnya.`);
 };
 
 // Notes

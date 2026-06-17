@@ -240,9 +240,6 @@ export const HalaqahDetailModal: React.FC<HalaqahDetailModalProps> = ({ isOpen, 
               ))
             ) : (
               <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-slate-50 rounded-3xl border border-slate-100 flex items-center justify-center mx-auto shadow-sm">
-                  <Users className="w-8 h-8 text-slate-200" />
-                </div>
                 <div>
                   <h4 className="text-xs font-black text-slate-800 uppercase tracking-tight mb-1">Halaqah Masih Kosong</h4>
                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Belum ada santri yang terdaftar di kelompok ini.</p>

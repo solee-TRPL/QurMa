@@ -373,12 +373,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error } = await supabase.rpc("get_all_device_sessions", { target_device_id: deviceId });
       if (!error && data) {
-        const normalized = data.map((d: any) => ({
-          id: d.user_id,
-          profile: d.profile_data,
-          session: { refresh_token: d.refresh_token, access_token: "" },
-          last_active: d.updated_at,
-        }));
+        const userIds = data.map((d: any) => d.user_id);
+        const { data: activeProfiles } = await supabase.from("profiles").select("id").in("id", userIds);
+        const activeIds = new Set(activeProfiles?.map((p: any) => p.id) || []);
+
+        const normalized = data
+          .filter((d: any) => activeIds.has(d.user_id))
+          .map((d: any) => ({
+            id: d.user_id,
+            profile: d.profile_data,
+            session: { refresh_token: d.refresh_token, access_token: "" },
+            last_active: d.updated_at,
+          }));
         localStorage.setItem("otherAccounts", JSON.stringify(normalized));
       }
     } catch (e) {}

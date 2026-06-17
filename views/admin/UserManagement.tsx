@@ -472,15 +472,14 @@ export const UserManagement: React.FC<{ tenantId: string; user: UserProfile }> =
 
   const handleDelete = async () => {
     if (!userToDelete) return;
-    setGlobalLoading(true);
     try {
       await deleteUser(userToDelete.id, userToDelete.full_name, user);
       addNotification({ type: "success", title: "Berhasil", message: `User ${userToDelete.full_name} telah dinonaktifkan.` });
       await fetchData();
-    } catch (error) {
-      addNotification({ type: "error", title: "Gagal", message: `Tidak dapat menonaktifkan user ${userToDelete.full_name}.` });
+    } catch (error: any) {
+      addNotification({ type: "error", title: "Gagal", message: error.message || `Tidak dapat menonaktifkan user ${userToDelete.full_name}.` });
     } finally {
-      setGlobalLoading(false);
+      setUserToDelete(null);
     }
   };
 

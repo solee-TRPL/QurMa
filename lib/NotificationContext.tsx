@@ -16,6 +16,9 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const addNotification = useCallback((notification: Omit<Notification, "id">) => {
+    if (notification.message && typeof notification.message === 'string' && notification.message.toLowerCase().includes('failed to fetch')) {
+      return; // Ignore noisy network errors that occur when device wakes from sleep
+    }
     const id = Date.now().toString() + Math.random().toString();
     setNotifications((prev) => [...prev, { id, ...notification }]);
   }, []);

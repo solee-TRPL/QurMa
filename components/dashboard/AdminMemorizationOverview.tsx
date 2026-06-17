@@ -253,9 +253,9 @@ export const AdminMemorizationOverview: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex-1 w-full overflow-hidden">
+          <div className="flex-1 w-full overflow-hidden mt-4">
             {adminTrendData && (
-              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+              <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
                 <LineChart data={adminTrendData} margin={{ top: 10, right: 10, left: -30, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
                   <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 8, fontWeight: 900 }} tickLine={false} axisLine={false} dy={8} interval={adminTrendPeriod === "weekly" ? 0 : adminTrendPeriod === "monthly" ? 2 : 0} />
@@ -674,7 +674,7 @@ export const AdminMemorizationOverview: React.FC = () => {
         <div className="flex-1 w-full overflow-hidden mt-4">
           {adminAvgSabaqData && (
             <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
-              <LineChart data={adminAvgSabaqData} margin={{ top: 10, right: 10, left: -30, bottom: 0 }}>
+              <LineChart data={adminAvgSabaqData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8fafc" />
                 <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 8, fontWeight: 900 }} tickLine={false} axisLine={false} dy={8} interval={adminAvgSabaqPeriod === "weekly" ? 0 : adminAvgSabaqPeriod === "monthly" ? 2 : 0} />
                 <YAxis tick={{ fill: "#94a3b8", fontSize: 8, fontWeight: 900 }} tickLine={false} axisLine={false} dx={-5} allowDecimals={true} />

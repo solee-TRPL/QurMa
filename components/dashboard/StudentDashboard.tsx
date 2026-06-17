@@ -97,7 +97,10 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, studen
       const diff = (monday.getDay() === 0 ? -6 : 1) - monday.getDay() + chartWeekOffset * 7;
       monday.setDate(monday.getDate() + diff);
 
-      data = fullDays.map((fd) => {
+      const displayDays = fullDays.filter(fd => activeDays?.some(d => Number(d) === fd.id));
+      const finalDays = displayDays.length > 0 ? displayDays : fullDays;
+
+      data = finalDays.map((fd) => {
         const d = new Date(monday);
         const dayOffset = fd.id === 0 ? 6 : fd.id - 1;
         d.setDate(monday.getDate() + dayOffset);
@@ -352,7 +355,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, studen
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center min-h-0 w-full overflow-hidden">
+        <div className="flex-1 flex flex-col items-center justify-center min-h-0 w-full overflow-visible">
           <div className="w-full flex-1 flex flex-col min-h-0">
             <div className="flex items-center justify-end mb-4 px-2">
               <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
@@ -365,7 +368,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, studen
 
             <div className="flex-1 w-full min-h-0">
               <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 25 }}>
+                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 25 }}>
                   <defs>
                     <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#10b981" stopOpacity={0.1} />
@@ -374,7 +377,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, studen
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 900, fill: "#94a3b8" }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 900, fill: "#94a3b8" }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 900, fill: "#94a3b8" }} width={35} />
                   <Tooltip
                     cursor={{ stroke: "#f1f5f9", strokeWidth: 2 }}
                     contentStyle={{ borderRadius: "12px", border: "2px solid #e2e8f0", backgroundColor: "#fff", color: "#1e293b", padding: "10px", boxShadow: "none" }}
